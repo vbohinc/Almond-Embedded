@@ -64,7 +64,7 @@ static inline bool downlink_handle_get_package (struct downlink_packet *p) {
 		case INFO_EXTENSION:
 			if (p->id < class_id_extensions_length) {
 				p->opcode = RET;
-				p->value = class_id_extensions[];
+				p->value = class_id_extensions[p->id];
 				return true;
 			} else {
 				return false;

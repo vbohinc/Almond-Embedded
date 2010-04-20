@@ -13,6 +13,7 @@
 #ifndef __DOWNLINK__
 #define __DOWNLINK__
 
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "../packet_types.h"
@@ -50,6 +51,16 @@ void downlink_discover ();
 #endif
 
 #ifdef NUT
+
+/**
+ * MUST BE IMPLEMENTED IN YOUR FILES 
+ */
+extern const uint8_t class_id_nut;
+extern const uint8_t class_id_extensions[];
+extern const uint8_t class_id_extensions_length;
+
+extern uint16_t get_value(uint8_t id);
+extern void set_value(uint8_t id, uint16_t value);
 
 /**
  * Returns true if the package was handled successfully and the buffer can be returned, false otherwise

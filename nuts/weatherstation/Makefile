@@ -135,6 +135,11 @@ else
 	CDEFS += -DATXMEGA
 endif
 
+#For nuts only:
+CDEFS += -DNUT
+#for squirrel only
+#CDEFS += -DSQUIRREL
+
 # Place -D or -U options here for ASM sources
 ADEFS = -DF_CPU=$(F_CPU)
 
@@ -284,10 +289,10 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # Type: avrdude -c ?
 # to get a full listing.
 #
-AVRDUDE_PROGRAMMER = stk200
+AVRDUDE_PROGRAMMER = stk500
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
-AVRDUDE_PORT = lpt1
+AVRDUDE_PORT = usb
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
