@@ -1,7 +1,7 @@
 # this will build all nuts
 # author Linus Lotz
 
-subdirs = squirrel
+subdirs = squirrel nuts test
 
 .PHONY: all
 all:

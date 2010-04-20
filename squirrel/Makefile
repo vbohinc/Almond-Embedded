@@ -41,8 +41,8 @@
 
 
 # MCU name
-MCU = atmega8535
-#MCU = atxmega128a1
+#MCU = atmega8535
+MCU = atxmega128a1
 
 # Processor frequency.
 #     This will define a symbol, F_CPU, in all source code files equal to the 
@@ -62,7 +62,7 @@ MCU = atmega8535
 #         F_CPU = 16000000
 #         F_CPU = 18432000
 #         F_CPU = 20000000
-F_CPU = 1000000
+F_CPU = 16000000
 
 
 # Output format. (can be srec, ihex, binary)
@@ -81,8 +81,8 @@ OBJDIR = .
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c  ../drivers/bluetooth/bluetooth.c ../shared/fifo.c ../drivers/usart/usart.c
-ifeq ($(MCU),atmega128a1)
-	SRC += ../../drivers/usart/usart_driver.c
+ifeq ($(MCU),atxmega128a1)
+	SRC += ../drivers/usart/usart_driver.c
 endif
 
 
@@ -136,6 +136,7 @@ ifeq ($(MCU),atmega8535)
 else
 	CDEFS += -DATXMEGA
 endif
+CDEFS += -DSQUIRREL
 
 # Place -D or -U options here for ASM sources
 ADEFS = -DF_CPU=$(F_CPU)
