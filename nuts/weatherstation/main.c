@@ -1,4 +1,4 @@
-#include <../sensor.hpp>
+#include <../sensors/twi.h>
 
 int main ()
 {

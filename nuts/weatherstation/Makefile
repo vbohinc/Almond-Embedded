@@ -81,7 +81,7 @@ OBJDIR = .
 
 # List C source files here. (C dependencies are automatically generated.)
 #SRC = $(TARGET).c ./drivers/bluetooth/bluetooth.c ./drivers/bluetooth/usart.c
-SRC = $(TARGET).c
+SRC = $(TARGET).c ../sensors/twi.c
 ifeq ($(MCU),atxmega128a1)
 	SRC += ./drivers/bluetooth/usart_driver.c
 endif
