@@ -11,11 +11,12 @@
 #ifndef _BLUETOOTH_H_
 #define _BLUETOOTH_H_
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-
-#include "usart.h"
-#include "fifo.h"
+#ifdef SERIAL
+#include "bluetooth_serial.h"
+#else
+#include "./../usart/usart.h"
+#endif
+#include "./../../shared/fifo.h"
 
 
 /**
@@ -92,17 +93,16 @@ extern uint8_t bluetooth_found_devices_count;
 extern void bluetooth_init(void);
 
 
+extern void bluetooth_close(void);
+
+
 /**
 * Function will be called by the usart interrupt handling when bytes had be received and last byte was NULL.
 * The bytes are stored in the global Array usart_receiveArray and the last byte is at the position usart_receiveArray_head-1.
 * @param arrayNumber The number of the Array where the data is stored.
 */
-extern void inline bluetooth_byte_received (uint8_t);
+extern void bluetooth_byte_received (uint8_t);
 
-/**
- * Processes received data stored in the FIFO.
- */
-extern void inline bluetooth_process_data (void);
 
 
 extern void bluetooth_handle_array(void);

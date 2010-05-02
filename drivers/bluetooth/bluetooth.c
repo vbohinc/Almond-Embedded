@@ -65,11 +65,27 @@ uint8_t bluetooth_cmd_buffer[20];
  */
 uint8_t bluetooth_response_code = 0;
 
+#ifndef SERIAL
+#include <util/delay.h>
+
+#else
+#include <stdio.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <time.h>
+#endif
+
 
 void bluetooth_init()
 {
 	fifo_init (&bluetooth_infifo,   bluetooth_inbuffer, BLUETOOTH_RECEIVE_BUFFER_SIZE);
+#ifdef SERIAL
+	bluetooth_serial_set_byte_handler(bluetooth_byte_received);
+	bluetooth_serial_init();
+#else
 	usart_set_byte_handler(bluetooth_byte_received);
+	usart_init();
+#endif
 	//Make all receiveBuffer arrays available to store data.
 	/*for (uint8_t i=0; i<BLUETOOTH_RECEIVE_BUFFER_ARRAYS; i++)
 	{
@@ -77,22 +93,17 @@ void bluetooth_init()
 	}*/
 }
 
-void inline bluetooth_byte_received (uint8_t byte)
+void bluetooth_close()
 {
-	//Put received byte into fifo
-	_inline_fifo_put (&bluetooth_infifo, byte);
-
-	//if array handling didn't finished jet, don't call again.
-	//After finished handling is another check, if data is available.
-	if (bluetooth_receiveArray_handling==1)
-		return;
-
-	bluetooth_receiveArray_handling=1;
-	bluetooth_process_data();
-	bluetooth_receiveArray_handling=0;
+#ifdef SERIAL
+	bluetooth_serial_close();
+#endif
 }
 
-void inline bluetooth_process_data (void)
+/**
+ * Processes received data stored in the FIFO.
+ */
+void bluetooth_process_data(void)
 {
 	while (bluetooth_infifo.count>0)
 	{ //read all bytes from fifo
@@ -100,7 +111,20 @@ void inline bluetooth_process_data (void)
 		if (bluetooth_is_connected==0)
 		{
 			//Data in FIFO is response to a sent command
+#ifdef SERIAL
 
+
+			int16_t byte = fifo_get_nowait(&bluetooth_infifo);
+			if ((byte >= 40 && byte <=62) ||  (byte >= 65 && byte <=90) ||  (byte >= 97 && byte <=122))
+				printf("%c", byte);
+			else if (byte == 13)
+				printf("<CR>\n");
+			else if (byte == 10)
+				printf("<LF>");
+			else
+				printf("[%d]",byte);
+			fflush(stdout);
+#endif
 		} else {
 			//Data in FIFO is a data package for the callback function
 			int16_t byte = fifo_get_nowait(&bluetooth_infifo);
@@ -140,6 +164,21 @@ void inline bluetooth_process_data (void)
 	}
 }
 
+void bluetooth_byte_received (uint8_t byte)
+{
+	//Put received byte into fifo
+	_inline_fifo_put (&bluetooth_infifo, byte);
+
+	//if array handling didn't finished jet, don't call again.
+	//After finished handling is another check, if data is available.
+	if (bluetooth_receiveArray_handling==1)
+		return;
+
+	bluetooth_receiveArray_handling=1;
+	bluetooth_process_data();
+	bluetooth_receiveArray_handling=0;
+}
+
 void bluetooth_handle_array(void)
 {
 	//Fill empty indexes with 0 (there shouldn't be any!!)
@@ -154,13 +193,54 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t length)
 	uint8_t error = 0;
 	for (uint8_t i=0; i<length && error==0; i++)
 	{
+#ifdef SERIAL
 		if (data[i]==BLUETOOTH_SPECIAL_BYTE)
+		{
+			error = (error || (bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE)==0));
+			//There must be a sleep otherwise the module returns always error
+			struct timespec s;
+			s.tv_sec = 0;
+			s.tv_nsec = 10000000L;
+			nanosleep(&s, NULL);
+		}
+		error = (error || (bluetooth_serial_putc(data[i])==0)); //F_CPU cycles is approx. 1 second
+		//There must be a sleep otherwise the module returns always error
+		struct timespec s;
+		s.tv_sec = 0;
+		s.tv_nsec = 10000000L;
+		nanosleep(&s, NULL);
+#else
+		if (data[i]==BLUETOOTH_SPECIAL_BYTE)
+		{
 			error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  F_CPU)==0)); //F_CPU cycles is approx. 1 second
+			/*! @TODO optimize delay */
+			_delay_ms(10);
+		}
 		error = (error || (usart_putc(data[i],  F_CPU)==0)); //F_CPU cycles is approx. 1 second
+
+		/*! @TODO optimize delay */
+		_delay_ms(10);
+#endif
+
 	}
+
+#ifdef SERIAL
+	//send stop byte
+	error = (error || (bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE)==0)); //F_CPU cycles is approx. 1 second
+
+	struct timespec s;
+	s.tv_sec = 0;
+	s.tv_nsec = 10000000L;
+	nanosleep(&s, NULL);
+	error = (error || (bluetooth_serial_putc(BLUETOOTH_STOP_BYTE)==0)); //F_CPU cycles is approx. 1 second
+
+#else
 	//send stop byte
 	error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  F_CPU)==0)); //F_CPU cycles is approx. 1 second
+	/*! @TODO optimize delay */
+	_delay_ms(10);
 	error = (error || (usart_putc(BLUETOOTH_STOP_BYTE,  F_CPU)==0)); //F_CPU cycles is approx. 1 second
+#endif
 	return (error==0);
 }
 
@@ -179,14 +259,26 @@ uint8_t bluetooth_cmd_send (uint8_t* cmd)
 	uint8_t command_length = 0;
 	while (cmd[command_length]!=0)
 		command_length++;
-	usart_send_bytes(cmd, command_length-1, F_CPU); //F_CPU cycles is approx. 1 second
-	return 0;
+	uint8_t retval;
+#ifdef SERIAL
+	retval = bluetooth_serial_send_bytes(cmd, command_length);
+#else
+	retval = usart_send_bytes(cmd, command_length, F_CPU); //F_CPU cycles is approx. 1 second
+#endif
+	return retval;
 }
 
 uint8_t bluetooth_cmd_wait_response (void)
 {
 	while (bluetooth_response_code == 0) //Wait until bluetooth devices has resonsed (handled by interrupt)
-		;
+	{
+#ifdef SERIAL
+		struct timespec s;
+		s.tv_sec = 0;
+		s.tv_nsec = 100000L;
+		nanosleep(&s, NULL);
+#endif
+	}
 	return bluetooth_response_code;
 }
 
@@ -215,9 +307,10 @@ uint8_t* bluetooth_cmd_get_address (void)
 	bluetooth_cmd_buffer[0] = 'A';
 	bluetooth_cmd_buffer[1] = 'T';
 	bluetooth_cmd_buffer[2] = 'B';
-	bluetooth_cmd_buffer[2] = '?';
+	bluetooth_cmd_buffer[3] = '?';
 	bluetooth_cmd_buffer[4] = 13; //<CR>
 	bluetooth_cmd_buffer[5] = 0;
+
 
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
