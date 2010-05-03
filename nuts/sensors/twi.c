@@ -1,6 +1,15 @@
 #include <../sensors/twi.h>
 #include <util/twi.h>
 
+<<<<<<< HEAD:nuts/sensors/twi.c
+void twi_start() {
+  TWSR = 0;
+  TWBR = 10;
+}
+
+void twi_stop() {
+
+=======
 void twi_wait(void);
 
 void twi_init(void) {
@@ -48,4 +57,5 @@ uint8_t twi_status(void)
 void twi_wait(void)
 {
    while (!(TWCR & (1<<TWINT)));
+>>>>>>> origin/nuts:nuts/sensors/twi.c
 }
