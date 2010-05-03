@@ -106,11 +106,13 @@ Hier kommt Text zum Controller hin...
 
 \subsection{Uplink}
 
-Verwendet für die Kommunikation zwischen Backend und Controller.
+Verwendet für die Kommunikation zwischen Backend und Controller.\\
+Über Bluetooth werden hier Pakete fester größe ausgetauscht um: Logdaten ans Backend zu übermitteln, die Konfiguration einzelner Nuts abzurufen oder zu ändern und schließlich die Squirrel selbst zu konfigurieren.
 
 \subsection{Downlink}
 
-Verwendet für die Kommunikation zwischen Aktor/Sensor Hardware und Controller.
+Verwendet für die Kommunikation zwischen Aktor/Sensor Hardware und Controller.\\
+Über Bluetooth werden Pakete fester größe ausgetauscht um: Daten von den Nuts abzurufen, d.h. Sensordaten und Geräteinformationen, sowie Konfigurationsänderungen und Aktoren auszulösen. 
 
 \section{Backend}
 
