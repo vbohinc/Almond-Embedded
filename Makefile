@@ -1,4 +1,3 @@
-<<<<<<< HEAD:Makefile
 # Hey Emacs, this is a -*- makefile -*-
 #----------------------------------------------------------------------------
 # WinAVR Makefile Template written by Eric B. Weddington, Jörg Wunsch, et al.
@@ -1270,4 +1269,3 @@ clean clean_list program debug gdb-config
 
 
 
->>>>>>> origin/nuts:Makefile
