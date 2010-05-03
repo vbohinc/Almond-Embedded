@@ -1,11 +1,14 @@
 # this will build all nuts
 # author Linus Lotz
 
+subdirs = weatherstation
+
 .PHONY: all
-all: weatherstation
+all: $(subdirs)
 
-.PHONY: weatherstation
-weatherstation:
-	$(MAKE) -C weatherstation
-
-
+.PHONY: $(subdirs)
+$(subdirs):
+	$(MAKE) -C $@
+.PHONY: clean
+clean:
+	$(foreach dirs,$(subdirs),$(MAKE) -C $(dirs) clean)
