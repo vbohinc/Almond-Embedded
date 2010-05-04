@@ -44,7 +44,7 @@ Den 9 Teilnehmern sind folgende Aufgabenbereiche im Projekt zugeteilt:\\
 	\item {\bf Matthias Schwab}: Backend, Webinterface
 	\item {\bf Christian Rupprecht}: I/O Interface für Controller (SD Karte), ... (bitte ergänzen)
 	\item {\bf Seán Labastille}: Controller, Up-/Downlink Protokolldsign
-	\item {\bf Stefan Profanter}: Bluetooth Implementation Aktoren/Sensoren/Backend, ... (bitte ergänzen)
+	\item {\bf Stefan Profanter}: Bluetooth Implementation Aktoren/Sensoren/Backend
 	\item {\bf Linus Lotz}: Boardesign Aktoren/Sensoren/Backend, ... (bitte ergänzen)
 	\item {\bf Thomas Parsch}: Displaysteuerung Controller, ... (bitte ergänzen)
 	\item {\bf Maximilian Karl}: Boardesign Aktoren/Sensoren/Backend, ... (bitte ergänzen)
@@ -105,14 +105,23 @@ Hier kommt Text zum Controller hin..
 \section{Protokolle}
 
 \subsection{Uplink}
+\label{subsec:uplink}
+
 
 Verwendet für die Kommunikation zwischen Backend und Controller.\\
 Über Bluetooth werden hier Pakete fester größe ausgetauscht um: Logdaten ans Backend zu übermitteln, die Konfiguration einzelner Nuts abzurufen oder zu ändern und schließlich die Squirrel selbst zu konfigurieren.
 
 \subsection{Downlink}
+\label{subsec:downlink}
 
 Verwendet für die Kommunikation zwischen Aktor/Sensor Hardware und Controller.\\
 Über Bluetooth werden Pakete fester größe ausgetauscht um: Daten von den Nuts abzurufen, d.h. Sensordaten und Geräteinformationen, sowie Konfigurationsänderungen und Aktoren auszulösen. 
+
+\subsection{Bluetooth}
+Das Squirrel besitzt ein BTM-222 Bluetooth Modul zur Kommunikation mit den Nuts, welche ebenfalls das BTM-222 Modul verwenden, sowie mit dem Computer. Zur Verbindung mit dem Computer wird wird bereits ein existierendes Bluetooth Modul am PC vorausgesetzt. 
+Um die Verbindung zwischen dem Microcontroller und dem BTM-222 Modul über USART herzustellen, wurde ein eigener Code entwickelt.\\
+Sobal das Squirrel mit einem Nut oder dem PC verbunden ist, wird ein proprietäres Protokoll verwendet, um die Daten auszutauschen. (Siehe: \ref{subsec:uplink} sowie \ref{subsec:downlink}). Da die Datenpakete jeweils eine feste größe haben, muss gewährleistet werden, dass im Falle einer Störung oder eines Übertragungsfehlers das Ende eines Paketes wieder erkannt wird. Deshalb werden am Ende eines jeden Paketes zwei spezielle Byte gesendet: das Special- und Stop-Byte. Dies kann man sich als '$\backslash$0'vorstellen. Damit nicht zufällig mit den gesendeten Daten ein falsches Ende erkannt wird, wird vor jedem Byte, welches den selben Wert hat wie das Special-Byte ein weiteres Special-Byte eingefügt (z.B. '3$\backslash$04' wird zu '3$\backslash\backslash$04' und dann erst übertragen). Beim Empfangen werden dann die doppelten Special Bytes wieder mit einem ersetzt und dadurch erkannt, dass die Bytes kein Ende darstellen.\\
+Zur Kommunikation mit dem PC werden ebenfalls feste Datenpakete verwendet wobei dort auch das Prinzip mit den Special- und Stop-Byte Anwendung findet (weitere Details siehe \ref{subsec:BTBackend}).
 
 \section{Backend}
 
@@ -125,6 +134,7 @@ Für die Darstellung der Web-Oberfläche wird eine in {\bf Perl} entwickelte Sof
 Der Vorteil der Weboberfläche ist, dass der Backend Server so von jedem Browser aus bedient werden kann (inklusiver Mobiler Endgeräte) und so eine bestmögliche Integration des Systems ermöglicht wird.
 
 \subsection{Backend Bluetooth Interface}
+\label{subsec:BTBackend}
 
 Hier kommt Text zum C++ und Bluetooth Teil des Backends hin...
 
