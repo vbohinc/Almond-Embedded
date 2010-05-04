@@ -14,8 +14,8 @@
 #define ADC_DF128 (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0)
 
 
-void init_adc(uchar8_t pin, uchar8_t factor);
-uchar16_t read_adc(uchar8_t pin);
+void init_adc(uint8_t pin, uint8_t factor);
+uint16_t read_adc(uint8_t pin);
 void close_adc();
 
 #endif // _NUTS_ADC_H
