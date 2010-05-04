@@ -80,16 +80,7 @@ OBJDIR = .
 
 
 # List C source files here. (C dependencies are automatically generated.)
-<<<<<<< HEAD:nuts/weatherstation/Makefile
-SRC = $(TARGET).c ./drivers/bluetooth/bluetooth.c ./drivers/bluetooth/usart.c
 SRC = $(TARGET).c ../sensors/twi.c
-=======
-SRC = $(TARGET).c ./drivers/bluetooth/bluetooth.c ./drivers/bluetooth/usart.c ./drivers/bluetooth/fifo.c
-
->>>>>>> origin/bluetooth_base_code:Makefile
-ifeq ($(MCU),atxmega128a1)
-	SRC += ./drivers/bluetooth/usart_driver.c
-endif
 
 
 

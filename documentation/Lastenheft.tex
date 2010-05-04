@@ -1,4 +1,5 @@
 \documentclass[12pt,a4paper]{article}
+
 \usepackage[german]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[pdftex]{graphicx}
@@ -25,7 +26,9 @@
 \end{titlepage}
 
 \tableofcontents
+
 % Inhalt
+
 \section{Übersicht}
 
 Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein System aus vernetzten Aktoren und Sensoren (sog. Nuts (Networked Utilities and Sensors)), die über einen zentralen Controller (Squirrel) gesteuert werden. Zusätzlich gibt es ein Backend für PCs, welches über eine Weboberfläche Zugriff auf Gerätedaten gibt und die Steuerung der Aktoren sowie Konfigurationsänderungen erlaubt.\\
@@ -69,23 +72,47 @@ Aus dem Entwurf des Downlink-Protokolls ergibt sich theoretisch die Möglichkeit
 	\item Nun sollte, je nach Entwicklungsstand der anderen Komponenten, die Anzeige der bekannten Daten auf dem Display, die Übergabe per Uplink an den Rechner und das Loggen auf SD-Karte implementiert werden. (4 Wochen)
 	\item Hierauf folgt die Umsetzung von Konfigurationsmöglichkeiten per Uplink oder Display. (1 Woche)
 \end{enumerate}
-\subsection{mögliche Erweiterungen}
-Eine wünschenswerte Erweiterung wäre die Möglichkeit timergesteuert Aktoren auszulösen oder auf Zustandsänderungen bei einem Sensor zu reagieren.
-\section{Aktor/Sensor Hardware}
-
-\subsection{Aufbau}
-
-Hier kommt Text zum Controller hin...
 
 \subsection{Display}
 
-\subsection{Uplink Protokoll}
+
 
 \subsection{Speicherung (SD-Karte)}
 
 \subsection{Zeitplan}
 
+
+
+
+
 \subsection{mögliche Erweiterungen}
+Eine wünschenswerte Erweiterung wäre die Möglichkeit timergesteuert Aktoren auszulösen oder auf Zustandsänderungen bei einem Sensor zu reagieren.
+
+
+
+
+
+\section{Aktor/Sensor Hardware}
+
+\subsection{Aufbau}
+
+
+Hier kommt Text zum Controller hin...
+
+\subsection{mögliche Erweiterungen}
+
+
+\section{Protokolle}
+
+\subsection{Uplink}
+
+Verwendet für die Kommunikation zwischen Backend und Controller.\\
+Über Bluetooth werden hier Pakete fester größe ausgetauscht um: Logdaten ans Backend zu übermitteln, die Konfiguration einzelner Nuts abzurufen oder zu ändern und schließlich die Squirrel selbst zu konfigurieren.
+
+\subsection{Downlink}
+
+Verwendet für die Kommunikation zwischen Aktor/Sensor Hardware und Controller.\\
+Über Bluetooth werden Pakete fester größe ausgetauscht um: Daten von den Nuts abzurufen, d.h. Sensordaten und Geräteinformationen, sowie Konfigurationsänderungen und Aktoren auszulösen. 
 
 \section{Backend}
 

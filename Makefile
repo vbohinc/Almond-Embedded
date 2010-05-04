@@ -80,7 +80,7 @@ OBJDIR = .
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c  ./drivers/bluetooth/bluetooth.c ./shared/fifo.c ./drivers/usart/usart.c 
+SRC = ./test/$(TARGET).c  ./drivers/bluetooth/bluetooth.c ./shared/fifo.c ./drivers/usart/usart.c 
 
 ifeq ($(MCU),atxmega128a1)
 	SRC += ./drivers/usart/usart_driver.c
@@ -630,6 +630,3 @@ $(shell mkdir $(OBJDIR) 2>/dev/null)
 .PHONY : all begin finish end sizebefore sizeafter gccversion \
 build elf hex eep lss sym coff extcoff \
 clean clean_list program debug gdb-config
-
-
-
