@@ -15,6 +15,7 @@
 
 
 void init_adc(uint8_t pin, uint8_t factor);
+
 uint16_t read_adc(uint8_t pin);
 void close_adc();
 
