@@ -1,9 +1,9 @@
 #include "adc.h"
 
-void init_adc(uchar8_t pin, uchar8_t factor)
+void init_adc(uint8_t pin, uint8_t factor)
 {
 	// Den ADC aktivieren und Teilungsfaktor auf 64 stellen
-	ADCSRA = (1<<ADEN) | divisionalfactor;
+	ADCSRA = (1<<ADEN) | factor;
 
 	// eingangspin waehlen
 	ADMUX = pin;
@@ -17,7 +17,7 @@ void init_adc(uchar8_t pin, uchar8_t factor)
 	read_adc(pin);
 }
 
-uchar16_t read_adc(uchar8_t pin)
+uint16_t read_adc(uint8_t pin)
 {
 	// wandlung starten
 	ADCSRA |= (1<<ADSC);
