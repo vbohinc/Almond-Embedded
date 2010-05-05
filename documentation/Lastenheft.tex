@@ -113,11 +113,33 @@ Eine wünschenswerte Erweiterung wäre die Möglichkeit timergesteuert Aktoren a
 
 \subsection{Aufbau}
 
+Die Aktoren/Sensoren (Nuts) basieren auf dem Atmel AVR AtMega8535. Die Nuts besitzen ein Bluetoothmodul zur Kommunikation mit dem Controller. Die Nuts sind die niedrgisten Geräte, die Sensordaten messen und zum Controller senden, und/oder Aktoren steuern.
+Es gibt verschiedene Arten an Nuts, die erste realisierte ist die Wetterstation.
 
+<<<<<<< HEAD
 Hier kommt Text zum Nuts Dingens hin..
+=======
+\subesection {Wetterstation}
+>>>>>>> 91061334c8e2a304e1d73b8079833369dcd3c8b0
 
-\subsection{mögliche Erweiterungen}
+Die Wetterstation badsiert auf der Aktor/Sensor Grundplatine mit zusätzlich folgenden Wetterstationsensoren:
 
+\begin{itemize}
+	\item Drucksensor (BMP085)
+	\item Temperatursensor (BMP085)
+	\item Windrichtungssensor (Eigenbau, optische Decodierung)
+	\item Windgeschwindigkeitssensor (Eigenbau, Dynamo)
+	\item Lichtstärke (Fotowiderstand)
+\end{itemize}
+
+Sie besitzt keine Aktoren, und ist Batterie betrieben.
+
+\subsection{mögliche Erweiterungen für Wetterstation}
+
+\begin{itemize}
+	\item Weitere Sensoren wie Niederschlagssensor/Niederschlagsmenge
+	\item Erweiterte Autonomität der Wetterstation durch Windenergie/Sonnenenergie
+\end{itemize}
 
 \section{Protokolle}
 
