@@ -53,7 +53,7 @@ void bluetooth_serial_init(void)
 	struct termios options;
 
 	/* open the port */
-	bluetooth_serial_port_fd = open("/dev/ttyUSB1", O_RDWR | O_NOCTTY | O_NDELAY);
+	bluetooth_serial_port_fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
 
 	if (bluetooth_serial_port_fd==-1)
 		perror("Couldn't open serial port:");
