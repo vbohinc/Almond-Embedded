@@ -34,6 +34,24 @@
 Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein System aus vernetzten Aktoren und Sensoren (sog. Nuts (Networked Utilities and Sensors)), die über einen zentralen Controller (Squirrel) gesteuert werden. Zusätzlich gibt es ein Backend für PCs, welches über eine Weboberfläche Zugriff auf Gerätedaten gibt und die Steuerung der Aktoren sowie Konfigurationsänderungen erlaubt.\\
 Die einzelnen Geräte werden über ein dafür entwickeltes Protkoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls über Bluetooth mit dem auf einem Linux/Windows/Mac laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensorwerte) mit übermittelt, die dann später auf dem Rechner ausgewertet werden können.
 
+\section{Ziele}
+Designkriterien:
+\begin{itemize}
+	\item kostengünstig im vergleich zu bestehenden Systemen
+	\item erweiterbar
+	\item einfache Benutzung
+	\item wartungsarm
+	\item einfache Installation
+\end{itemize}
+Es wäre für Entwickler ein Framework um drahtloses Steuern und Messen zu realisieren. Für Heimanwender einfache Möglichkeit Überwachung und Automatisierung kostengünstig zu benutzen. 
+
+\section{Realisierung}
+\begin{itemize}
+	\item Drahtlosnetzwerk über Bluetooth
+	\item Modulares Design durch generische Schnittstellen, damit beliebige neue Geräte, wenn auch eingeschränkt, sofort in Betrieb genommen werden können.
+\end{itemize}
+Das System besteht aus 3 Komponenten, einem Interface am Rechner für den Endanwender am PC, eine Zentrale Steuereinheit die die Komunikation mit den Sensoren und Steuereinheiten übernimmt und eine Reihe von Sensoren und Aktoren.
+
 \section{Teilnehmer und Aufgabenverteilung}
 
 Den 9 Teilnehmern sind folgende Aufgabenbereiche im Projekt zugeteilt:\\
