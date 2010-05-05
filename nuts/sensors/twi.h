@@ -2,17 +2,10 @@
 #define TWI_H_INCLUDED
 
 #include <avr/io.h>
-
-void twi_start();
-
-void twi_stop();
-=======
 #include <stdbool.h>
 
 
 void twi_init(void);
-
-//void twi_set_mode(); //only master read/write
 
 enum twi_access_mode { READ=1, WRITE=0};
 
