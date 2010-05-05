@@ -6,18 +6,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define DOWNLINK_PACKET_LENGTH 32
+const int downlink_packet_length = 32;
 
 typedef struct downlink_packet {
-	uint16_t 	TID; 
 	uint8_t 	opcode; 
-	uint8_t		payload; //[DOWNLINK_PACKET_LENGTH - 5];
-	uint16_t	checksum;
+	uint8_t		payload[downlink_packet_length -1]; //[DOWNLINK_PACKET_LENGTH - 5];
 };
 
-// #define sncp_TYPE // <--- TYPE SWITCH HERE
-
-enum sncp_Packet_Type {
+enum downlink_packet_type {
 	INFO	= 0x10, 
 	INFORET	= 0x11, 
 	GET		= 0x20,
