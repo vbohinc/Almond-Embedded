@@ -84,30 +84,14 @@ Mit dem Downlink-Protokoll spricht die Squirrel seine Nuts an und empfängt Date
 Mit dem Uplink-Protokoll kommuniziert die Squirrel mit dem Backend. Hiermit werden Logdaten zum Rechner geladen und Konfigurationsdaten der Nuts und auch der Squirrel selbst ausgetauscht.
 Aus dem Entwurf des Downlink-Protokolls ergibt sich theoretisch die Möglichkeit 254 Geräte mit je insgesamt 254 Sensoren, Aktoren und Konfigurationseinstellungen anzusprechen. Die von diesen Geräten ausgegebenen Sensordaten werden geloggt, Aktoren können gesteuert werden und die Konfiguration entsprechend angepasst werden.
 
-\subsubsection{Zeitplan}
-\begin{enumerate}
-	\item Anfangs zielt die Entwicklungsarbeit auf die Übermittlung von Datenpacketen über Downlink zwischen Nuts und Squirrel. Sobald diese Problemlos möglich ist und sofern nicht bereits implementiert müssen bekannte und/oder sichtbare Geräte in einer internen Datenstruktur verwaltet werden. (2 Wochen)
-	\item Nun sollte, je nach Entwicklungsstand der anderen Komponenten, die Anzeige der bekannten Daten auf dem Display, die Übergabe per Uplink an den Rechner und das Loggen auf SD-Karte implementiert werden. (4 Wochen)
-	\item Hierauf folgt die Umsetzung von Konfigurationsmöglichkeiten per Uplink oder Display. (1 Woche)
-\end{enumerate}
-
 \subsection{Display}
 
-Die Grafische Benuteroberfläche (GUI) des Squirrels, wird mit Hilfe des ST7565R - ein 65 x 132 Dot Matrix LCD Controller - realisiert.
-Dieser wird durch ein Atmel Mikroprozessor angesteuert, sodass hier eine zusätzliche Abstraktionsschicht zwischen Display-Controller und Squirrel-Controller eingefügt werden kann. Dies ermöglicht eine leichtere Display-Ansteuerung und eine höhere Kapselung der GUI-Funktionen.
-Zur ersten Ansteuerung wird zunächst in C ein Grundprogramm entworfen, das die Ausgabe von Fehlercodes und Statusmeldungen bereitstellt.
+Die Grafische Benutzeroberfläche (GUI) des Squirrels, wird mit Hilfe des ST7565R - ein 65 x 132 Dot Matrix LCD Controller - realisiert. \\
+Dieser wird durch ein Atmel Mikroprozessor angesteuert, sodass hier eine zusätzliche Abstraktionsschicht zwischen Display-Controller und Squirrel-Controller eingefügt werden kann. Dies ermöglicht eine leichtere Display-Ansteuerung und eine höhere Kapselung der GUI-Funktionen. \\
+Zur ersten Ansteuerung wird zunächst in C ein Grundprogramm entworfen, das die Ausgabe von Fehlercodes und Statusmeldungen bereitstellt. \\
 Anschließend wird eine GUI-Schnittstelle entworfen und im Wiki dokumentiert.
 Danach werden die Schnittstellenfunktionen in C für das Display implementiert.
 Abschließend werden Fehler beseitigt und die grafische Ausgabe weiter verbessert.
-
-\subsubsection{Zeitplan}
-
-\begin{enumerate}
-	\item Rascher Entwurf des Grundprogramms zum Ermöglichen erster Tests (1-2 Wochen)
-	\item Gründlicher Entwurf der Schnittstelle (2 Wochen)
-	\item Implementierung der Schnittstellen Funktionen (2-3 Wochen)
-	\item Verbesserungen in der Benutzerführung und der grafischen Darstellung (1-2 Wochen)
-\end{enumerate}
 
 \subsection{Speicherung (SD-Karte)}
 
@@ -122,10 +106,6 @@ Der Controlle besitzt folgende Zugriffsmöglichkeiten auf SD-Karten:
 
 So ist es möglich auf die Daten auch außerhalb des Controllers, z.B. vom PC aus zugreifen zu können.
 
-\subsubsection{Zeitplan}
-
-rumgammeln
-
 \subsection{mögliche Erweiterungen}
 Eine wünschenswerte Erweiterung wäre die Möglichkeit timergesteuert Aktoren auszulösen oder auf Zustandsänderungen bei einem Sensor zu reagieren.
 
@@ -134,7 +114,7 @@ Eine wünschenswerte Erweiterung wäre die Möglichkeit timergesteuert Aktoren a
 \subsection{Aufbau}
 
 
-Hier kommt Text zum Controller hin..
+Hier kommt Text zum Nuts Dingens hin..
 
 \subsection{mögliche Erweiterungen}
 
@@ -178,10 +158,6 @@ Hierbei muss natürlich das Bluetooth Interface zur Kommunikation mit dem Netz k
 Außerdem muss er auf Inputs des Webinterfaces reagieren und die geänderten Einstellungen oder Aktionen für Aktoren sofort wieder per Bluetooth in das Netz einspielen.\\
 Dies geschieht durch ein Event per Socket sobald Einstellungen in der DB geändert wurden, oder einen Aktion hinterlegt wurde.\\
 
-\subsection{Uplink Protokoll}
-
-Hier kommt die Spezifikation des Uplink Protokolls hin...
-
 \subsection{Web Oberfläche}
 
 \subsubsection{Funktionsweise}
@@ -193,15 +169,6 @@ Die Weboberfläche wird mit Perl über das CGI Interface des lighttpd Servers ve
 %\subsubsubsection{Dashboard}
 %\subsubsubsection{Log Ansicht}
 %\subsubsubsection{Einstellungen}
-
-\subsubsection{Zeitplan}
-
-\begin{enumerate}
-	\item Einrichten der Server-Umgebung (2 Wochen)
-	\item Entwurf und Implementation des SQL Tabellen Layouts (1 Woche)
-	\item Entwurf des Backend Bluetooth Interfaces
-	\item Implementation von Web Oberfläche und Funktionalitäten
-\end{enumerate}
 
 \subsubsection{mögliche Erweiterungen}
 
