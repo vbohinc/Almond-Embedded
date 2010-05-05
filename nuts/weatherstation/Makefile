@@ -80,7 +80,7 @@ OBJDIR = .
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c ../sensors/twi.c
+SRC = $(TARGET).c ../../drivers/twi/twi.c
 
 
 
@@ -115,7 +115,7 @@ DEBUG = dwarf-2
 #     Each directory must be seperated by a space.
 #     Use forward slashes for directory separators.
 #     For a directory that has spaces, enclose it in quotes.
-EXTRAINCDIRS = 
+EXTRAINCDIRS = ../../drivers/twi/ 
 
 
 # Compiler flag to set the C Standard level.

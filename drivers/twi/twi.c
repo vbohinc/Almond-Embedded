@@ -1,4 +1,4 @@
-#include <../sensors/twi.h>
+#include <twi.h>
 #include <util/twi.h>
 
 //TODO make all functions return 0 on success and -1 on failure, use twi_status to get error
