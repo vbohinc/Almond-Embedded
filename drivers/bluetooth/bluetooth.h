@@ -121,7 +121,7 @@ extern uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t length);
  * @param cmd The command as char array with '\0'. Ex: 'ATL1'
  * @return 1 on success, 0 on failure (timeout)
  */
-extern uint8_t bluetooth_cmd_send (uint8_t* cmd);
+extern uint8_t bluetooth_cmd_send (uint8_t* cmd, uint16_t delay_ms);
 
 /**
  * Waits until the bluetooth device returns one of the following responses. For each response will be returned a number which is given in the brackets:
