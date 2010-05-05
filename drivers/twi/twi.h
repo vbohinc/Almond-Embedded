@@ -10,7 +10,7 @@ enum twi_access_mode { READ=1, WRITE=0};
 
 uint8_t twi_start(void);
 
-uint8_t twi_stop(void);
+void twi_stop(void);
 
 uint8_t twi_connect(enum twi_access_mode, uint8_t);
 
