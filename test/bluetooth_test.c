@@ -5,9 +5,9 @@
  *      Author: stefan
  */
 
-#include "../drivers/bluetooth/bluetooth.h"
+#include "drivers/bluetooth/bluetooth.h"
 
-uint8_t main()
+int main(void)
 {
 	bluetooth_init();
 }
