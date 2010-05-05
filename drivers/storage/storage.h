@@ -38,6 +38,22 @@ uint_8 storage_pull_log(&file_buffer, uint_8 buffer_size);
 bool storage_pull_log_uplink_package(&package_buffer);
 
 /**
+* Sets the given value for the key indicated.
+* @param key Key of the configuration value to set
+* @value value The value to set
+* @return True if successful.
+*/
+bool storage_set_configuration(uint_8 key, uint_8 value);
+
+/**
+* Returns the configuration value for a certain key.
+* @param key Key of the requested configuration value
+* @return Configuration value for given key.
+*/
+uint_8 storage_get_configuration(uint_8 key);
+
+
+/**
 * Closes the currently opened log file.
 * @return True if successful.
 */
