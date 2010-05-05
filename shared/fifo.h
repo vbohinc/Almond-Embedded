@@ -10,7 +10,7 @@
 #define _FIFO_H_
 
 #ifdef SERIAL
-#include "BaseTypesBackend.h"
+#include "stdint.h"
 
 #else
 #include <avr/io.h>
