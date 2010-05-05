@@ -40,7 +40,7 @@ Den 9 Teilnehmern sind folgende Aufgabenbereiche im Projekt zugeteilt:\\
 
 \begin{itemize}
 	\item {\bf Salomon Sickert}: Teamleiter, Downlink-/Uplink Protokoll Design, Controller
-	\item {\bf Pascal Schnurr}: Backend Bluetooth Interface ... (bitte ergänzen)
+	\item {\bf Pascal Schnurr}: Backend, Settings/Logging, Kommunikation mit Webinterface, Bluetooth Interface
 	\item {\bf Matthias Schwab}: Backend, Webinterface
 	\item {\bf Christian Rupprecht}: I/O Interface für Controller (SD Karte), ... (bitte ergänzen)
 	\item {\bf Seán Labastille}: Controller, Up-/Downlink Protokolldsign
@@ -126,7 +126,10 @@ Der Vorteil der Weboberfläche ist, dass der Backend Server so von jedem Browser
 
 \subsection{Backend Bluetooth Interface}
 
-Hier kommt Text zum C++ und Bluetooth Teil des Backends hin...
+Der Backend Daemon muss regelmäsig neue Loggingdaten vom Controller leeren über Bluetooth und diese in die MySQL DB einspielen.\\
+Hierbei muss natürlich das Bluetooth Interface zur Kommunikation mit dem Netz kompatiebel zu der Controller implementierung sein.\\
+Auserdem muss er auf Inputs des Webinterfaces reagieren und die geänderten Einstellungen oder Aktionen für Aktoren sofort wieder per Bluetooth in das Netz einspielen.\\
+Dies geschieht durch ein event per socket sobalt Einstellungen in der DB geändert wurden, oder einen Aktion hinterlegt wurde.\\
 
 \subsection{Uplink Protokoll}
 
