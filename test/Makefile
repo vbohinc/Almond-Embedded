@@ -80,10 +80,10 @@ OBJDIR = .
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = ./test/$(TARGET).c  ./drivers/bluetooth/bluetooth.c ./shared/fifo.c ./drivers/usart/usart.c 
+SRC = $(TARGET).c  ../drivers/bluetooth/bluetooth.c ../shared/fifo.c ../drivers/usart/usart.c 
 
 ifeq ($(MCU),atxmega128a1)
-	SRC += ./drivers/usart/usart_driver.c
+	SRC += ../drivers/usart/usart_driver.c
 endif
 
 
@@ -119,7 +119,7 @@ DEBUG = dwarf-2
 #     Each directory must be seperated by a space.
 #     Use forward slashes for directory separators.
 #     For a directory that has spaces, enclose it in quotes.
-EXTRAINCDIRS = 
+EXTRAINCDIRS = ../drivers ../shared
 
 
 # Compiler flag to set the C Standard level.

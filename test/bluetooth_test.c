@@ -5,7 +5,7 @@
  *      Author: stefan
  */
 
-#include "drivers/bluetooth/bluetooth.h"
+#include "bluetooth/bluetooth.h"
 
 int main(void)
 {
