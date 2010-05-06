@@ -121,12 +121,12 @@ void inline bluetooth_process_response(void)
 {
 	if (bluetooth_cmd_buffer_head == 0)
 		return;
-	if (strncmp(bluetooth_cmd_buffer, "OK", 2)==0)
+	if (strncmp((char*)bluetooth_cmd_buffer, "OK", 2)==0)
 	{
 		bluetooth_response_code = 1;
 		return;
 	}
-	if (strncmp(bluetooth_cmd_buffer, "ERROR", 5)==0)
+	if (strncmp((char*)bluetooth_cmd_buffer, "ERROR", 5)==0)
 	{
 		bluetooth_response_code = 2;
 		return;
@@ -137,16 +137,16 @@ void inline bluetooth_process_response(void)
 	case 'A':
 		break;
 	case 'B':
-		strcpy(bluetooth_cmd_buffer,bluetooth_data_package); //copy received address into return array
+		strcpy((char*)bluetooth_cmd_buffer,(char*)bluetooth_data_package); //copy received address into return array
 		break;
 	case 'C':
-		strcpy(bluetooth_cmd_buffer,bluetooth_data_package); //copy received value into return array
+		strcpy((char*)bluetooth_cmd_buffer,(char*)bluetooth_data_package); //copy received value into return array
 		break;
 	case 'D':
-		strcpy(bluetooth_cmd_buffer,bluetooth_data_package); //copy received address into return array
+		strcpy((char*)bluetooth_cmd_buffer,(char*)bluetooth_data_package); //copy received address into return array
 		break;
 	case 'E':
-		strcpy(bluetooth_cmd_buffer,bluetooth_data_package); //copy received value into return array
+		strcpy((char*)bluetooth_cmd_buffer,(char*)bluetooth_data_package); //copy received value into return array
 		break;
 	case 'F':
 		break;
@@ -156,7 +156,7 @@ void inline bluetooth_process_response(void)
 
 		}
 		else
-			strcpy(bluetooth_cmd_buffer,bluetooth_data_package); //copy received value into return array
+			strcpy((char*)bluetooth_cmd_buffer,(char*)bluetooth_data_package); //copy received value into return array
 		break;
 	case 'I':
 		break;
