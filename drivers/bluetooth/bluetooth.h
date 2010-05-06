@@ -53,8 +53,21 @@
 extern uint8_t bluetooth_is_connected;
 
 
-/*! Array to put data package into. Callback is called with this array. */
-extern uint8_t bluetooth_data_package[BLUETOOTH_DATA_PACKAGE_SIZE];
+/*! Array to put data package to send into. Also Callback is called with this array to return a received package.
+ * This array is also used to return a response of a command.
+ * The biggest response is of the ATF? command.
+ * The maximum number of found devices is: 8
+ * The maximum lenght of a name is: 16
+ * The length of an address is: 12 (without '-')
+ * The data is stored in the following format (where x is the index of found device: Device '1' is at index '0'):
+ * arr[0]: Number of found devices
+ * arr[1+x*(16+12)] to arr[1+x*(16+12)+15]: Name of found device.
+ * 		Ex: arr[1] to arr[15] contains first name terminated by null if shorter than 16 chars
+ * arr[1+x*(16+12)+16] to arr[1+x*(16+12)+11]: address of found device.
+ * In total there are 1+(16+12)*8=225 bytes needed.
+ * ATTENTION: change also in .c file the size!!
+ */
+extern uint8_t bluetooth_data_package[225];
 
 /**
 * The number of receive buffer arrays
@@ -65,27 +78,6 @@ extern uint8_t bluetooth_data_package[BLUETOOTH_DATA_PACKAGE_SIZE];
 
 /*! Arrays to put received data in. */
 //extern uint8_t bluetooth_receiveArray[BLUETOOTH_RECEIVE_BUFFER_ARRAYS][BLUETOOTH_RECEIVE_BUFFER_SIZE];
-
-
-/**
-* Maximum number of found bluetooth devices.
-* Must be smaller or equal than 8.
-*/
-#define BLUETOOTH_MAX_DEVICES 8
-
-/**
-* Maximum length of the name of a bluetooth device.
-* Should be 16.
-*/
-#define BLUETOOTH_MAX_NAME_LENGTH 16
-
-/*! Arrays with the addresses and names of found bluetooth devices. */
-extern uint8_t bluetooth_found_devices[BLUETOOTH_MAX_DEVICES][BLUETOOTH_MAX_NAME_LENGTH];
-
-/*! Number of found bluetooth devices. */
-extern uint8_t bluetooth_found_devices_count;
-
-
 
 /**
 * Initialization routine for the bluetooth module.
@@ -107,7 +99,7 @@ extern void bluetooth_byte_received (uint8_t);
 
 extern void bluetooth_handle_array(void);
 
-extern uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t length);
+extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
 
 
 //---------------------------------------------------------
@@ -121,7 +113,7 @@ extern uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t length);
  * @param cmd The command as char array with '\0'. Ex: 'ATL1'
  * @return 1 on success, 0 on failure (timeout)
  */
-extern uint8_t bluetooth_cmd_send (uint8_t* cmd, uint16_t delay_ms);
+extern uint8_t bluetooth_cmd_send (uint8_t* cmd, const uint16_t delay_ms);
 
 /**
  * Waits until the bluetooth device returns one of the following responses. For each response will be returned a number which is given in the brackets:
@@ -142,6 +134,14 @@ extern uint8_t bluetooth_cmd_wait_response (void);
  * @return 1 on success, 0 otherwise
  */
 extern uint8_t bluetooth_cmd_connect (const uint8_t dev_num);
+
+/**
+ * Command: AT
+ * Check connection to bluetooth device
+ * @return Returns 1 on success check, 0 otherwise if timeout occured or error returned
+ * @TODO add timeout
+ */
+extern uint8_t bluetooth_cmd_test_connection (void);
 
 /**
  * Command: ATB?
@@ -167,9 +167,10 @@ extern uint8_t bluetooth_cmd_set_remote_address (uint8_t* address);
  * Search bluetooth devices.
  * The data of found devices will be stored in bluetooth_found_devices.
  * bluetooth_found_devices_count will also be set.
- * @return Returns 0 on failure otherwise the number of found devices.
+ * @return Returns NULL on failure otherwise the array with found devices.
+ * @TODO add format description
  */
-extern uint8_t bluetooth_cmd_search_devices (void);
+extern uint8_t* bluetooth_cmd_search_devices (void);
 
 
 /**
@@ -186,9 +187,9 @@ extern uint8_t bluetooth_cmd_set_name (uint8_t *name);
  * Get device name.
  * Gets the friendly name of the device.
  * @param name Char array to store the name into. name must be initialized and minimum 16 bytes long.
- * @return Returns 1 on success otherwise 0.
+ * @return Returns array with name on success otherwise NULL.
  */
-extern uint8_t bluetooth_cmd_get_name (uint8_t *name);
+extern uint8_t* bluetooth_cmd_get_name (uint8_t *name);
 
 
 /**

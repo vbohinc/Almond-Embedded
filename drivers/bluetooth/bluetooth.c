@@ -31,7 +31,8 @@ uint8_t bluetooth_receiveArray_handling = 0;
 
 uint8_t bluetooth_is_connected = 0;
 
-uint8_t bluetooth_data_package[BLUETOOTH_DATA_PACKAGE_SIZE];
+/* Change also in .h file the size!! */
+uint8_t bluetooth_data_package[225];
 
 /*! Index in the bluetooth_data_package array to store new byte */
 uint8_t bluetooth_data_package_index=0;
@@ -50,15 +51,7 @@ int16_t bluetooth_previous_byte=-1;
 //uint8_t bluetooth_receiveArray_bytes_to_discard = 0;
 
 
-/*! Count of unhandled arrays. If no one is currently unhandled, the value is set to 0*/
-//uint8_t bluetooth_receiveArray_tohandle_count = 0;
-
-uint8_t bluetooth_found_devices[BLUETOOTH_MAX_DEVICES][BLUETOOTH_MAX_NAME_LENGTH];
-
-/*! Number of found bluetooth devices. */
-uint8_t bluetooth_found_devices_count=0;
-
-/*! Size of Buffer to build cmd to send or to parse resonse of bluetooth device.
+/*! Size of Buffer to build cmd to send.
  * Should be at least 31 bytes (maximum length of response ATF?
  */
 #define BLUETOOTH_CMD_BUFFER_SIZE 31
@@ -149,6 +142,7 @@ void bluetooth_process_response(void)
 		strcpy((char*)bluetooth_cmd_buffer,(char*)bluetooth_data_package); //copy received value into return array
 		break;
 	case 'F':
+		//Kompliziertes gefummel!!
 		break;
 	case 'H':
 		if (bluetooth_cmd_sent[1]==0)
@@ -294,7 +288,7 @@ void bluetooth_handle_array(void)
 	//Call callback function
 }
 
-uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t length)
+uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 {
 	uint8_t error = 0;
 	for (uint8_t i=0; i<length && error==0; i++)
@@ -309,7 +303,7 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t length)
 			s.tv_nsec = 10000000L;
 			nanosleep(&s, NULL);
 		}
-		error = (error || (bluetooth_serial_putc(data[i])==0)); //F_CPU cycles is approx. 1 second
+		error = (error || (bluetooth_serial_putc(data[i])==0));
 		//There must be a sleep otherwise the module returns always error
 		struct timespec s;
 		s.tv_sec = 0;
@@ -318,11 +312,11 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t length)
 #else
 		if (data[i]==BLUETOOTH_SPECIAL_BYTE)
 		{
-			error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  F_CPU)==0)); //F_CPU cycles is approx. 1 second
+			error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  10)==0));
 			/*! @TODO optimize delay */
 			_delay_ms(10);
 		}
-		error = (error || (usart_putc(data[i],  F_CPU)==0)); //F_CPU cycles is approx. 1 second
+		error = (error || (usart_putc(data[i],  10)==0));
 
 		/*! @TODO optimize delay */
 		_delay_ms(10);
@@ -332,20 +326,20 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t length)
 
 #ifdef SERIAL
 	//send stop byte
-	error = (error || (bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE)==0)); //F_CPU cycles is approx. 1 second
+	error = (error || (bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE)==0));
 
 	struct timespec s;
 	s.tv_sec = 0;
 	s.tv_nsec = 10000000L;
 	nanosleep(&s, NULL);
-	error = (error || (bluetooth_serial_putc(BLUETOOTH_STOP_BYTE)==0)); //F_CPU cycles is approx. 1 second
+	error = (error || (bluetooth_serial_putc(BLUETOOTH_STOP_BYTE)==0));
 
 #else
 	//send stop byte
-	error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  F_CPU)==0)); //F_CPU cycles is approx. 1 second
+	error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  10)==0));
 	/*! @TODO optimize delay */
 	_delay_ms(10);
-	error = (error || (usart_putc(BLUETOOTH_STOP_BYTE,  F_CPU)==0)); //F_CPU cycles is approx. 1 second
+	error = (error || (usart_putc(BLUETOOTH_STOP_BYTE,  10)==0));
 #endif
 	return (error==0);
 }
@@ -359,7 +353,7 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t length)
 //---------------------------------------------------------
 
 
-uint8_t bluetooth_cmd_send (uint8_t* cmd, uint16_t delay_ms)
+uint8_t bluetooth_cmd_send (uint8_t* cmd, const uint16_t delay_ms)
 {
 	bluetooth_response_code = 0;
 
@@ -378,7 +372,7 @@ uint8_t bluetooth_cmd_send (uint8_t* cmd, uint16_t delay_ms)
 #else
 	while (cmd[command_length]!=0)
 	{
-		if (usart_putc(cmd[command_length], F_CPU) == 0)
+		if (usart_putc(cmd[command_length], 10) == 0)
 			return 0;
 		_delay_ms(delay_ms);
 		command_length++;
@@ -422,6 +416,19 @@ uint8_t bluetooth_cmd_connect (const uint8_t dev_num)
 	return (bluetooth_cmd_wait_response()==2); //CONNECT
 }
 
+uint8_t bluetooth_cmd_test_connection (void)
+{
+	bluetooth_cmd_buffer[0] = 'A';
+	bluetooth_cmd_buffer[1] = 'T';
+	bluetooth_cmd_buffer[2] = 13; //<CR>
+	bluetooth_cmd_buffer[3] = 0;
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+		return 0;
+
+	return (bluetooth_cmd_wait_response()==1); //OK
+
+}
+
 uint8_t* bluetooth_cmd_get_address (void)
 {
 	bluetooth_cmd_buffer[0] = 'A';
@@ -438,7 +445,7 @@ uint8_t* bluetooth_cmd_get_address (void)
 	if (bluetooth_cmd_wait_response()!=1) //OK
 		return NULL;
 	else
-		return bluetooth_cmd_buffer;
+		return bluetooth_data_package;
 }
 
 uint8_t bluetooth_cmd_set_remote_address (uint8_t* address)
@@ -468,80 +475,119 @@ uint8_t bluetooth_cmd_set_remote_address (uint8_t* address)
 	return (bluetooth_cmd_wait_response()==1); //OK
 }
 
-/**
- * Command: ATF?
- * Search bluetooth devices.
- * The data of found devices will be stored in bluetooth_found_devices.
- * bluetooth_found_devices_count will also be set.
- * @return Returns 0 on failure otherwise the number of found devices.
- */
-uint8_t bluetooth_cmd_search_devices (void)
+uint8_t* bluetooth_cmd_search_devices (void)
 {
-	return 0;
+	bluetooth_cmd_buffer[0] = 'A';
+	bluetooth_cmd_buffer[1] = 'T';
+	bluetooth_cmd_buffer[2] = 'F';
+	bluetooth_cmd_buffer[3] = '?';
+	bluetooth_cmd_buffer[4] = 13; //<CR>
+	bluetooth_cmd_buffer[5] = 0;
+
+
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+		return 0;
+
+	if (bluetooth_cmd_wait_response()!=1) //OK
+		return NULL;
+	else
+		return bluetooth_data_package;
 }
 
 
-/**
- * Command: ATN=xxxxx
- * Set device name.
- * Sets the friendly name of the device using 0 to 9, A to Z, a to z, space and '-'. First and last space or '-' isn't permitted.
- * @param name New name of the device. Max length is 16.
- * @return Returns 1 on success otherwise 0.
- */
 uint8_t bluetooth_cmd_set_name (uint8_t *name)
 {
-	return 0;
+	bluetooth_cmd_buffer[0] = 'A';
+	bluetooth_cmd_buffer[1] = 'T';
+	bluetooth_cmd_buffer[2] = 'N';
+	if (name == NULL)
+		return 0;
+
+	uint8_t i;
+	for (i=0; i<16 && name[i]!=0; i++)
+	{
+		bluetooth_cmd_buffer[i+3] = name[i];
+	}
+	bluetooth_cmd_buffer[i] = 13; //<CR>
+	bluetooth_cmd_buffer[i+1] = 0;
+
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+			return 0;
+
+	return (bluetooth_cmd_wait_response()==1); //OK
 
 }
 
-/**
- * Command: ATN?
- * Get device name.
- * Gets the friendly name of the device.
- * @param name Char array to store the name into. name must be initialized and minimum 16 bytes long.
- * @return Returns 1 on success otherwise 0.
- */
-uint8_t bluetooth_cmd_get_name (uint8_t *name)
+uint8_t* bluetooth_cmd_get_name (uint8_t *name)
 {
-	return 0;
+	bluetooth_cmd_buffer[0] = 'A';
+	bluetooth_cmd_buffer[1] = 'T';
+	bluetooth_cmd_buffer[2] = 'N';
+	bluetooth_cmd_buffer[3] = '?';
+	bluetooth_cmd_buffer[4] = 13; //<CR>
+	bluetooth_cmd_buffer[5] = 0;
+
+
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+		return 0;
+
+	if (bluetooth_cmd_wait_response()!=1) //OK
+		return NULL;
+	else
+		return bluetooth_data_package;
 
 }
 
 
-/**
- * Command: ATP
- * Set device pin.
- * Sets the pin number of the device or turns the pin authorization off.
- * @param pin New pin for the device or NULL to turn it off. Max length is 4.
- * @return Returns 1 on success otherwise 0.
- */
 uint8_t bluetooth_cmd_set_pin (uint8_t *pin)
 {
-	return 0;
+	bluetooth_cmd_buffer[0] = 'A';
+	bluetooth_cmd_buffer[1] = 'T';
+	bluetooth_cmd_buffer[2] = 'P';
+	if (pin == NULL)
+		return 0;
+
+	uint8_t i;
+	for (i=0; i<16 && pin[i]!=0; i++)
+	{
+		bluetooth_cmd_buffer[i+3] = pin[i];
+	}
+	bluetooth_cmd_buffer[i] = 13; //<CR>
+	bluetooth_cmd_buffer[i+1] = 0;
+
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+			return 0;
+
+	return (bluetooth_cmd_wait_response()==1); //OK
 
 }
 
-/**
- * Command: ATR
- * Set mode of the device: master or slave.
- * The device will warm-start and clear all paired addresses.
- * @param mode Master = 0, Slave = 1
- * @return Returns 1 on success otherwise 0.
- */
 uint8_t bluetooth_cmd_set_mode (uint8_t mode)
 {
-	return 0;
+	bluetooth_cmd_buffer[0] = 'A';
+	bluetooth_cmd_buffer[1] = 'T';
+	bluetooth_cmd_buffer[2] = 'R';
+	bluetooth_cmd_buffer[3] = mode+48; //Convert number to number as char
+	bluetooth_cmd_buffer[4] = 13; //<CR>
+	bluetooth_cmd_buffer[5] = 0;
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+		return 0;
+
+	return (bluetooth_cmd_wait_response()==1); //OK
 
 }
 
-/**
- * Command: ATZ
- * Restore factory/default settings.
- * @return Returns 1 on success otherwise 0.
- */
 uint8_t bluetooth_cmd_restore_settings (void)
 {
-	return 0;
+	bluetooth_cmd_buffer[0] = 'A';
+	bluetooth_cmd_buffer[1] = 'T';
+	bluetooth_cmd_buffer[2] = 'Z';
+	bluetooth_cmd_buffer[3] = '0';
+	bluetooth_cmd_buffer[4] = 13; //<CR>
+	bluetooth_cmd_buffer[5] = 0;
+
+
+	return (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0);
 
 }
 
