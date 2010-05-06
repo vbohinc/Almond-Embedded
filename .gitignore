@@ -10,3 +10,5 @@
 *.lss
 *.o
 .dep
+*~
+.thumbsdb

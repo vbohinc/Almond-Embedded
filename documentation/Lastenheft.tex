@@ -27,12 +27,40 @@
 
 \tableofcontents
 
+\newpage
+
 % Inhalt
 
 \section{Übersicht}
 
-Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein System aus vernetzten Aktoren und Sensoren (sog. Nuts (Networked Utilities and Sensors)), die über einen zentralen Controller (Squirrel) gesteuert werden. Zusätzlich gibt es ein Backend für PCs, welches über eine Weboberfläche Zugriff auf Gerätedaten gibt und die Steuerung der Aktoren sowie Konfigurationsänderungen erlaubt.\\
-Die einzelnen Geräte werden über ein dafür entwickeltes Protkoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls über Bluetooth mit dem auf einem Linux/Windows/Mac laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensorwerte) mit übermittelt, die dann später auf dem Rechner ausgewertet werden können.
+Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein System aus vernetzten Aktoren und Sensoren: Nuts ({\bf N}etworked {\bf Ut}ilities and {\bf S}ensors), die über einen zentralen Controller (Squirrel) gesteuert werden. Zusätzlich gibt es ein Backend für PCs, welches über eine Weboberfläche Zugriff auf Gerätedaten gibt und die Steuerung der Aktoren sowie Konfigurationsänderungen erlaubt.\\
+Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls über Bluetooth mit dem auf einem Linux/Windows/Mac laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensor-Werte) mit übermittelt, die dann später auf dem Rechner ausgewertet werden können.
+
+\section{Ziele}
+
+\subsection{Endanwender}
+
+Für Endanwender bietet Almond eine einfache Möglichkeit zur Überwachung und Automatisierung von Vorgängen mithilfe eines drahtlosen Netzes aus Geräten. \\
+Dabei ist Almond im Gegensatz zu bestehenden Systemen
+
+\begin{itemize}
+	\item kostengünstig
+	\item wartungsarm
+	\item einfach zu installieren und zu benutzen
+\end{itemize}
+
+\subsection{Entwickler}
+
+Für Entwickler bietet Almond ein Framework um drahtloses Steuern und Messen zu realisieren. \\
+Dabei wird auf folgende Kriterien Wert gelegt
+
+\begin{itemize}
+	\item kostengünstig im vergleich zu bestehenden Systemen
+	\item erweiterbar
+	\item einfache Benutzung
+	\item wartungsarm
+	\item einfache Installation
+\end{itemize}
 
 \section{Teilnehmer und Aufgabenverteilung}
 
@@ -40,113 +68,121 @@ Den 9 Teilnehmern sind folgende Aufgabenbereiche im Projekt zugeteilt:\\
 
 \begin{itemize}
 	\item {\bf Salomon Sickert}: Teamleiter, Downlink-/Uplink Protokoll Design, Controller
-	\item {\bf Pascal Schnurr}: Backend Bluetooth Interface ... (bitte ergänzen)
+	\item {\bf Pascal Schnurr}: Backend, Kommunikation mit Webinterface, Bluetooth Interface
 	\item {\bf Matthias Schwab}: Backend, Webinterface
-	\item {\bf Christian Rupprecht}: I/O Interface für Controller (SD Karte), ... (bitte ergänzen)
-	\item {\bf Seán Labastille}: Controller, Up-/Downlink Protokolldsign
-	\item {\bf Stefan Profanter}: Bluetooth Implementation Aktoren/Sensoren/Backend, ... (bitte ergänzen)
-	\item {\bf Linus Lotz}: Boardesign Aktoren/Sensoren/Backend, ... (bitte ergänzen)
-	\item {\bf Thomas Parsch}: Displaysteuerung Controller, ... (bitte ergänzen)
-	\item {\bf Maximilian Karl}: Boardesign Aktoren/Sensoren/Backend, ... (bitte ergänzen)
+	\item {\bf Christian Rupprecht}: I/O Interface für Controller (SD Karte)
+	\item {\bf Seán Labastille}: Controller, Up-/Downlink Protokolldesign
+	\item {\bf Stefan Profanter}: Bluetooth Treiber für Aktoren/Sensoren, Backend
+	\item {\bf Linus Lotz}: Hardwarelayout Aktoren/Sensoren, Controller
+	\item {\bf Thomas Parsch}: Displaysteuerung des Controllers
+	\item {\bf Maximilian Karl}: Hardwarelayout Aktoren/Sensoren, Controller
 \end{itemize}
-
 Die einzelnen Projektteile werden im Folgenden genauer erläutert.
 
 \section{Controller}
 
 \subsection{Aufbau}
 
-Der Controller (Squirrel) basiert auf einem Atmel XMega 128a1 AVR Mikroprozessor.
-Er dient als Zentrale für das System welches autark vom Rechner arbeitet, und auch als Schnittstelle zum Rechner.
+Der Controller (``Squirrel'') basiert auf einem Atmel XMega 128a1 AVR Mikroprozessor. \\
+Er dient als Zentrale für das System, welches autark vom Rechner arbeitet und auch als Schnittstelle zum Rechner. \\
 Am Controller selbst befindet sich zusätzlich ein SD-Kartenleser für die Speicherung von Logdaten, ein Display mit Tasten für Statusüberprüfung und ggf. Konfigurationsänderungen.
-Wie alle Client-Geräte (Nuts) besitzt der Controller ein Bluetoothmodul.\\
+Wie alle Client-Geräte (``Nuts'') besitzt der Controller ein Bluetooth Modul.
 
 \subsection{Features}
-Mit dem Downlink-Protokoll spricht die Squirrel seine Nuts an und empfängt Daten von diesen. Die Squirrel führt Buch über die ihr bekannten Geräte und speichert diese intern zwecks Identifizierung, Displayausgabe, Logverwaltung und Konfiguration durch das Backend.\\
-Mit dem Uplink-Protokoll kommuniziert die Squirrel mit dem Backend. Hiermit werden Logdaten zum Rechner geladen und Konfigurationsdaten der Nuts und auch der Squirrel selbst ausgetauscht.
-Aus dem Entwurf des Downlink-Protokolls ergibt sich theoretisch die Möglichkeit 254 Geräte mit je insgesamt 254 Sensoren, Aktoren und Konfigurationseinstellungen anzusprechen. Die von diesen Geräten ausgegebenen Sensordaten werden geloggt, Aktoren können gesteuert werden und die Konfiguration entsprechend angepasst werden.
 
-\subsection{Zeitplan}
-\begin{enumerate}
-	\item Anfangs zielt die Entwicklungsarbeit auf die Übermittlung von Datenpacketen über Downlink zwischen Nuts und Squirrel. Sobald diese Problemlos möglich ist und sofern nicht bereits implementiert müssen bekannte und/oder sichtbare Geräte in einer internen Datenstruktur verwaltet werden. (2 Wochen)
-	\item Nun sollte, je nach Entwicklungsstand der anderen Komponenten, die Anzeige der bekannten Daten auf dem Display, die Übergabe per Uplink an den Rechner und das Loggen auf SD-Karte implementiert werden. (4 Wochen)
-	\item Hierauf folgt die Umsetzung von Konfigurationsmöglichkeiten per Uplink oder Display. (1 Woche)
-\end{enumerate}
+Mit dem Downlink-Protokoll spricht der Controller die Client-Geräte an und empfängt Daten von diesen. Der Controller führt Buch über die ihm bekannten Geräte und speichert diese intern zwecks Identifizierung, Displayausgabe und Logverwaltung.\\
+Mit dem Uplink-Protokoll kommuniziert der Controller mit dem Backend. Hiermit werden Daten (zum Beispiel zeitlicher Verlauf von Sensorwerten) zum Rechner geladen. \\
 
 \subsection{Display}
 
-
+Die grafische Benutzeroberfläche (GUI) des Controllers wird durch einen zweiten Mikroprozessor realisiert. \\
+Das Display wird durch einen Mikroprozessor angesteuert, sodass hier eine zusätzliche Abstraktionsschicht zwischen Display-Controller und Controller eingeführt wird. Dies trennt die GUI Funktion von der Grundfunktion des Contollers. \\
 
 \subsection{Speicherung (SD-Karte)}
 
-\subsection{Zeitplan}
+Der Controller besitzt folgende Zugriffsmöglichkeiten auf SD-Karten:
 
+\begin{enumerate}
+	\item SD-Karte mit FAT-32 formatieren
+	\item Log-Datei schreiben/lesen
+	\item Konfigurationsdatei schreiben/lesen
+	\item beliebige Textdatei schreiben/lesen
+\end{enumerate}
 
+So ist es möglich auf die Daten auch außerhalb des Controllers, z.B. vom PC aus zugreifen zu können.
 
+\subsubsection{mögliche Erweiterungen}
 
-
-\subsection{mögliche Erweiterungen}
-Eine wünschenswerte Erweiterung wäre die Möglichkeit timergesteuert Aktoren auszulösen oder auf Zustandsänderungen bei einem Sensor zu reagieren.
-
-
-
-
+Eine wünschenswerte Erweiterung wäre die Möglichkeit zeitgesteuert Aktoren auszulösen oder auf Zustandsänderungen bei einem Sensor zu reagieren.
 
 \section{Aktor/Sensor Hardware}
 
 \subsection{Aufbau}
 
+Die Aktoren/Sensoren basieren auf dem Atmel AVR AtMega8535. Sie besitzen ein Bluetooth-Modul zur Kommunikation mit dem Controller. \\
+Ein Designkriterium der Aktoren/Sensoren ist, dass sie einfach gehalten sind und wenig eigene Funktionalität bieten um kosten- und energiesparend zu sein.
 
-Hier kommt Text zum Controller hin...
+\subsection{Anwendungsbeispiel: Wetterstation}
 
-\subsection{mögliche Erweiterungen}
+Die Wetterstation basiert auf der Aktor/Sensor Grundplatine mit zusätzlichen folgenden Sensoren:
 
+\begin{itemize}
+	\item Drucksensor (BMP085)
+	\item Temperatursensor (BMP085)
+	\item Windrichtungssensor (Eigenbau, optische Dekodierung)
+	\item Windgeschwindigkeitssensor (Eigenbau, Dynamo)
+	\item Lichtstärke (Fotowiderstand)
+\end{itemize}
+
+Sie besitzt keine Aktoren und ist batteriebetrieben.
+
+\subsubsection{mögliche Erweiterungen der Wetterstation}
+
+\begin{itemize}
+	\item weitere Sensoren wie Niederschlagssensor/Niederschlagsmenge
+	\item erweiterte Unabhängigkeit der Wetterstation durch Windenergie/Sonnenenergie
+\end{itemize}
 
 \section{Protokolle}
 
-\subsection{Uplink}
+Den Up-/Downlink Protokollen ist gemeinsam, dass Pakete fester Größe ausgetauscht werden.
 
-Verwendet für die Kommunikation zwischen Backend und Controller.\\
-Über Bluetooth werden hier Pakete fester größe ausgetauscht um: Logdaten ans Backend zu übermitteln, die Konfiguration einzelner Nuts abzurufen oder zu ändern und schließlich die Squirrel selbst zu konfigurieren.
+\subsection{Uplink}
+\label{subsec:uplink}
+
+Dient der Kommunikation zwischen Backend und Controller, bei dem Logdaten und Konfiguration ausgetauscht werden.
 
 \subsection{Downlink}
+\label{subsec:downlink}
 
-Verwendet für die Kommunikation zwischen Aktor/Sensor Hardware und Controller.\\
-Über Bluetooth werden Pakete fester größe ausgetauscht um: Daten von den Nuts abzurufen, d.h. Sensordaten und Geräteinformationen, sowie Konfigurationsänderungen und Aktoren auszulösen. 
+Dient der Kommunikation zwischen Aktor/Sensor Hardware und Controller.\\
+Es werden Eigenschaften und Daten von Aktoren/Sensoren abgerufen (z.B. Sensordaten, Geräteinformationen sowie Aktorsteuerung). 
+
+\subsection{Bluetooth}
+Alle Geräte besitzen ein BTM-222 Bluetooth Modul zur Kommunikation untereinander sowie mit dem Computer (Backend). Zur Verbindung mit dem Computer wird ein bereits existierendes Bluetooth Modul am PC vorausgesetzt. \\
+Sobald der Controller mit einem Aktor/Sensor oder dem PC verbunden ist, wird das Up- bzw. Downlink Protokoll genutzt.
 
 \section{Backend}
 
 \subsection{Aufbau}
 
-Das Backend ist ein Softwarepaket für Linux, Windows oder Mac OS X basierte Computer. Mit dem Backend ist es möglich über eine Web basierte Oberfläche auf die Sensordaten der vernetzten Geräte zuzugreifen. Die Backend Software kommuniziert über ein Bluetooth-Protokoll mit der Controller Hardware. Dabei werden zum einen aktuelle Sensorwerte übermittelt, wie auch auf dem Controlle gespeicherte Log-Daten zum Verlauf der Sonsorwerte seit dem letzten Update.\\
+Das Backend ist ein Softwarepaket für Linux, Windows oder Mac OS X basierte Computer. Mit dem Backend ist es möglich über eine webbasierte Oberfläche auf die Sensordaten der vernetzten Geräte zuzugreifen. \\
+Der Vorteil der Weboberfläche ist, dass der Backend Server so von jedem Browser aus bedient werden kann (inklusive mobiler Endgeräte) und so eine bestmögliche Integration des Systems ermöglicht wird. \\
 Als Webserver kommt der {\bf lighttpd} zum Einsatz. Zusätzlich wird eine lokale {\bf MySQL} Datenbank zur Speicherung von Einstellungen und Daten auf der Backend-Seite verwendet.\\
-Die Software zur Kommunikation mit dem Backend wird in C++ entwickelt und schreibt empfangene Daten direkt in die Datenbank.\\
-Für die Darstellung der Web-Oberfläche wird eine in {\bf Perl} entwickelte Software verwendet, die auf die selbe Datenbank zugreift um zB aktuelle Sensorwerte anzuzeigen oder Diagramme und Graphen mithilfe der verfügbaren Log-Daten zu erzeugen oder Einstellungen für den Controller zu ändern.\\
-Der Vorteil der Weboberfläche ist, dass der Backend Server so von jedem Browser aus bedient werden kann (inklusiver Mobiler Endgeräte) und so eine bestmögliche Integration des Systems ermöglicht wird.
+Die Software zur Kommunikation mit dem Backend wird in C++ entwickelt und schreibt empfangene Daten direkt in die Datenbank.
 
 \subsection{Backend Bluetooth Interface}
+\label{subsec:BTBackend}
 
-Hier kommt Text zum C++ und Bluetooth Teil des Backends hin...
+Das Backend Bluetooth Interface lädt regelmäßig neue Logdaten vom Controller und speichert diese in die MySQL Datenbank.\\
+Außerdem werden geänderten Einstellungen oder Aktionen für Aktoren sofort wieder per Bluetooth in das Netz eingespielt.
 
-\subsection{Uplink Protokoll}
+\subsubsection{mögliche Erweiterungen}
 
-Hier kommt die Spezifikation des Uplink Protokolls hin...
-
-\subsection{Web Oberfläche}
-
-\subsubsection{Funktionsweise}
-
-Die Weboberfläche wird mit Perl über das CGI Interface des lighttpd Servers verfügbar gemacht. Es wird keine Perl Installation auf dem Rechner vorausgesetzt, da eine Version inklusive der benötigten Module bereits mitgeliefert wird. Ein MySQL Server wird auch mitgeliefert und mit dem Backend und Webserver gestartet.
-
-%\subsubsection{Installation}
-%\subsubsection{Oberfläche}
-%\subsubsubsection{Dashboard}
-%\subsubsubsection{Log Ansicht}
-%\subsubsubsection{Einstellungen}
-
-\subsection{Zeitplan}
-\subsection{mögliche Erweiterungen}
-
-
+\begin{enumerate}
+	\item Benutzerverwaltung für das Webinterface
+	\item Konfigurationseditor im Web
+	\item evtl. verschlüsselte Kommunikation mit dem Controller
+\end{enumerate}
 
 \end{document}

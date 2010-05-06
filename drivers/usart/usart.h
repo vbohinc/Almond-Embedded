@@ -15,7 +15,7 @@
 #define _USART_H_
 
 #ifdef SERIAL
-#include "./../../shared/BaseTypesBackend.h"
+#include "stdint.h"
 #else
 
 #include <avr/io.h>
