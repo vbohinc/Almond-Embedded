@@ -45,14 +45,6 @@
  */
 #define BLUETOOTH_STOP_BYTE 255
 
-/**
- * Stores connection status of the bluetooth module.
- * 1 = connected (received data are data packages)
- * 0 = disconnected (received data are responses from the bluetooth module of sent commands)
- */
-extern uint8_t bluetooth_is_connected;
-
-
 /*! Array to put data package to send into. Also Callback is called with this array to return a received package.
  * This array is also used to return a response of a command.
  * The biggest response is of the ATF? command.
@@ -63,21 +55,16 @@ extern uint8_t bluetooth_is_connected;
  * arr[0]: Number of found devices
  * arr[1+x*(16+12)] to arr[1+x*(16+12)+15]: Name of found device.
  * 		Ex: arr[1] to arr[15] contains first name terminated by null if shorter than 16 chars
- * arr[1+x*(16+12)+16] to arr[1+x*(16+12)+11]: address of found device.
+ * arr[1+x*(16+12)+16] to arr[1+x*(16+12)+25]: address of found device.
  * In total there are 1+(16+12)*8=225 bytes needed.
  * ATTENTION: change also in .c file the size!!
  */
 extern uint8_t bluetooth_data_package[225];
 
-/**
-* The number of receive buffer arrays
-* Must be smaller than (uint8_t-2). Max value is 254.
-*/
-//#define BLUETOOTH_RECEIVE_BUFFER_ARRAYS 3
-
-
-/*! Arrays to put received data in. */
-//extern uint8_t bluetooth_receiveArray[BLUETOOTH_RECEIVE_BUFFER_ARRAYS][BLUETOOTH_RECEIVE_BUFFER_SIZE];
+/*
+ * Contains the address of the connected device or [0]=0 if disconnected
+ */
+extern uint8_t bluetooth_connected_with[12];
 
 /**
 * Initialization routine for the bluetooth module.
@@ -139,7 +126,7 @@ extern uint8_t bluetooth_cmd_connect (const uint8_t dev_num);
  * Command: AT
  * Check connection to bluetooth device
  * @return Returns 1 on success check, 0 otherwise if timeout occured or error returned
- * @TODO add timeout
+ * @todo add timeout
  */
 extern uint8_t bluetooth_cmd_test_connection (void);
 
@@ -168,9 +155,24 @@ extern uint8_t bluetooth_cmd_set_remote_address (uint8_t* address);
  * The data of found devices will be stored in bluetooth_found_devices.
  * bluetooth_found_devices_count will also be set.
  * @return Returns NULL on failure otherwise the array with found devices.
- * @TODO add format description
+ * @todo add format description
  */
 extern uint8_t* bluetooth_cmd_search_devices (void);
+
+/**
+ * Command: ATH (only in online command mode)
+ * Drop (close) connection.
+ * @return Returns 1 on success otherwise 0.
+ */
+extern uint8_t bluetooth_cmd_close_connection (void);
+
+/**
+ * Command: ATH1 / ATH0
+ * Set discoverable mode.
+ * @param discoverable 1 for yes, 0 for no
+ * @return Returns 1 on success otherwise 0.
+ */
+extern uint8_t bluetooth_cmd_discoverable (const uint8_t discoverable);
 
 
 /**
