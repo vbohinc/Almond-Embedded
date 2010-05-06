@@ -4,9 +4,6 @@
  * Common classes definition 
  */
 
-#ifndef __CLASSES__
-#define __CLASSES__
-
 enum class_id_nuts {
 	GENERIC = 0x00,
 
@@ -26,6 +23,6 @@ enum class_id_actors {
 
 	SWITCH		= 0x81,
 	DIMMER		= 0x82,
-}: 
-
-#endif
+	
+	INVALID		= 0xFF, // Used to mark N/A
+};
