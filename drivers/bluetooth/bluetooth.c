@@ -84,12 +84,12 @@ uint8_t bluetooth_response_code = 0;
 
 #ifndef SERIAL
 #include <util/delay.h>
-
 #else
+
+#include <time.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <time.h>
 #endif
 
 
@@ -117,7 +117,7 @@ void bluetooth_close()
 #endif
 }
 
-void inline bluetooth_process_response(void)
+void bluetooth_process_response(void)
 {
 	if (bluetooth_cmd_buffer_head == 0)
 		return;
