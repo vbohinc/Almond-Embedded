@@ -1,4 +1,4 @@
-/**
+﻿/**
 * @file fifo.h
 * @author Stefan Profanter
 * @date 01.05.2010

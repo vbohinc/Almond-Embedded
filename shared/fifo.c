@@ -1,4 +1,4 @@
-#include "fifo.h"
+﻿#include "fifo.h"
 
 void fifo_init (fifo_t *f, uint8_t *buffer, const uint8_t size)
 {
