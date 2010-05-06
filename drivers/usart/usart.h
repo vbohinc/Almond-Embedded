@@ -17,9 +17,9 @@
 #ifdef SERIAL
 #include "stdint.h"
 #else
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 #endif
 
  #if !defined(null)

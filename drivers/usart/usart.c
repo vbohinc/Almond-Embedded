@@ -13,10 +13,6 @@
 */
 
 #include "usart.h"
-#include <util/delay.h>
-
-
-
 
 #ifdef ATMEGA8535
 

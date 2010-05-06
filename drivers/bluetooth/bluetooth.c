@@ -337,7 +337,7 @@ uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 #else
 	//send stop byte
 	error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  10)==0));
-	/*! @TODO optimize delay */
+	/*! @todo optimize delay */
 	_delay_ms(10);
 	error = (error || (usart_putc(BLUETOOTH_STOP_BYTE,  10)==0));
 #endif
