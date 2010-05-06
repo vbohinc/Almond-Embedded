@@ -14,9 +14,6 @@
 
 #include "usart.h"
 
-
-
-
 #ifdef ATMEGA8535
 
 
@@ -38,7 +35,7 @@
 */
 
 
-void usart_set_byte_handler(void (*byte_handling_function)(uint8_t))
+void usart_set_byte_handler(void (*byte_handling_function)(const uint8_t))
 {
 	usart_byte_handling_function = byte_handling_function;
 }
@@ -97,31 +94,37 @@ void usart_init(void)
 #endif
 }
 
-uint8_t usart_putc (const uint8_t byte, const uint32_t cycle_count_timeout)
+uint8_t usart_putc (const uint8_t byte, const uint8_t max_try_count)
 {
-	uint32_t current_cycle_count = 0;
 
 #ifdef ATMEGA8535
     // Wait until UDR is ready for new value
-    while (!(UCSRA & (1 << UDRE)))
+	if (max_try_count>0)
 	{
-		//assume that check of condition is one cycle, addition one cycle, if statement one cycle
-		current_cycle_count+=3;
-		if (current_cycle_count > cycle_count_timeout)
+    	uint8_t count;
+		for (count=0; count<max_try_count && (!(UCSRA & (1 << UDRE))); count++)
+		{
+			_delay_ms(10);
+		}
+		if (count==max_try_count)
 			return 0;
 	}
 
-    // UDR Schreiben startet die �bertragung 
+    // Writing UDR starts sending
     UDR = byte;
 #elif ATXMEGA
 	// Wait until write buffer is ready for new value
-	while(!USART_IsTXDataRegisterEmpty(&USART))
-	{
-		//assume that check of condition is one cycle, addition one cycle, if statement one cycle, function call two cylcle
-		current_cycle_count+=5;
-		if (current_cycle_count > cycle_count_timeout)
+
+    if (max_try_count > 0)
+    {
+    	uint8_t count;
+		for (count=0; count<max_try_count && (!USART_IsTXDataRegisterEmpty(&USART)); count++)
+		{
+			_delay_ms(10);
+		}
+		if (count==max_try_count)
 			return 0;
-	}
+    }
 
 	USART_PutChar(&USART, byte);
 #endif
@@ -129,11 +132,11 @@ uint8_t usart_putc (const uint8_t byte, const uint32_t cycle_count_timeout)
     return 1;
 }
 
-uint8_t usart_send_bytes(uint8_t *bytes, const uint8_t length , const uint32_t cycle_count_timeout)
+uint8_t usart_send_bytes(uint8_t *bytes, const uint8_t length , const uint8_t max_try_count)
 {
 	for (uint8_t i=0; i<length; i++)
 	{
-		if (usart_putc(bytes[i], cycle_count_timeout)==0)
+		if (usart_putc(bytes[i], max_try_count)==0)
 			return 0;
 	}
 

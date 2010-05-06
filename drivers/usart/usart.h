@@ -17,9 +17,9 @@
 #ifdef SERIAL
 #include "stdint.h"
 #else
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 #endif
 
  #if !defined(null)
@@ -27,12 +27,12 @@
  #endif
 
 /*! Callback handler for received bytes */
-void (*usart_byte_handling_function)(uint8_t);
+void (*usart_byte_handling_function)(const uint8_t);
 
 /**
 * The baudrate for USART <-> Bluetooth
 */
-#define USART_BAUD        19200UL
+#define USART_BAUD        115200UL
 
 /**
 * The value for USART_BAUD to store in UBRR register
@@ -49,32 +49,32 @@ extern void usart_init(void);
 * This function sets the callback function for a received byte.
 * @param byte_handling_function callback function to call when when a byte was received
 */
-extern void usart_set_byte_handler(void (*byte_handling_function)(uint8_t));
+extern void usart_set_byte_handler(void (*byte_handling_function)(const uint8_t));
 
 
 
 /**
  * Sends the given bytes over usart.
-* If cycle_count_timeout is 0 waits until the send-buffer of the usart module is empty and send then one byte. If cycle_count_timeout > 0
-* waits until the send-buffer is empty and send then one byte or returns 1 on timeout.
-* cycle_count_timeout defines the approx count of cycles for timeout.
+* If max_try_count is 0 waits until the send-buffer is empty and send then the byte. If max_try_count > 0
+* waits until the send-buffer is empty by checking every 10ms for max_try_count times if buffer is empty
+* and send then the byte or returns 1 on timeout.
 * @param bytes The byte array to send
 * @param length The length of the byte array
-* @param cycle_count_timeout send timeout or 0 for no timeout
+* @param max_try_count maximum try time = max_try_count*10ms
 * @return 1 on success or 0 on timeout
  */
-extern uint8_t usart_send_bytes(uint8_t *bytes, const uint8_t length , const uint32_t cycle_count_timeout);
+extern uint8_t usart_send_bytes(uint8_t *bytes, const uint8_t length , const uint8_t max_try_count);
 
 /**
 * Send a byte over the USART module.
-* If cycle_count_timeout is 0 waits until the send-buffer is empty and send then the byte. If cycle_count_timeout > 0
-* waits until the send-buffer is empty and send then the byte or returns 1 on timeout.
-* cycle_count_timeout defines the approx count of cycles for timeout.
+* If max_try_count is 0 waits until the send-buffer is empty and send then the byte. If max_try_count > 0
+* waits until the send-buffer is empty by checking every 10ms for max_try_count times if buffer is empty
+* and send then the byte or returns 1 on timeout.
 * @param byte to send
-* @param cycle_count_timeout send timeout or 0 for no timeout
+* @param max_try_count maximum try time = max_try_count*10ms
 * @return 1 on success or 0 on timeout
 */
-extern uint8_t usart_putc (const uint8_t byte, const uint32_t cycle_count_timeout);
+extern uint8_t usart_putc (const uint8_t byte, const uint8_t max_try_count);
 
 /**
 * Function will be called by the RXComplete interrupt when a new byte is in the usart buffer.
