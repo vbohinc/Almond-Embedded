@@ -7,7 +7,6 @@ all: $(subdirs)
 
 .PHONY: $(subdirs)
 $(subdirs):
-	$(MAKE) -C $@ clean
 	$(MAKE) -C $@
 .PHONY: clean
 clean:

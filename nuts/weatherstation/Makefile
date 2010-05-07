@@ -385,10 +385,10 @@ MSG_CREATING_LIBRARY = Creating library:
 
 
 # Define all object files.
-OBJ = $(SRC:%.c=$(OBJDIR)/%.o) $(CPPSRC:%.cpp=$(OBJDIR)/%.o) $(ASRC:%.S=$(OBJDIR)/%.o) 
+OBJ = $(SRC:%.c=$(OBJDIR)/%-$(MCU).o) $(CPPSRC:%.cpp=$(OBJDIR)/%-$(MCU).o) $(ASRC:%.S=$(OBJDIR)/%-$(MCU).o) 
 
 # Define all listing files.
-LST = $(SRC:%.c=$(OBJDIR)/%.lst) $(CPPSRC:%.cpp=$(OBJDIR)/%.lst) $(ASRC:%.S=$(OBJDIR)/%.lst) 
+LST = $(SRC:%.c=$(OBJDIR)/%-$(MCU).lst) $(CPPSRC:%.cpp=$(OBJDIR)/%-$(MCU).lst) $(ASRC:%.S=$(OBJDIR)/%-$(MCU).lst) 
 
 
 # Compiler flags to generate dependency files.
@@ -558,14 +558,14 @@ extcoff: $(TARGET).elf
 
 
 # Compile: create object files from C source files.
-$(OBJDIR)/%.o : %.c
+$(OBJDIR)/%-$(MCU).o : %.c
 	@echo
 	@echo $(MSG_COMPILING) $<
 	$(CC) -c $(ALL_CFLAGS) $< -o $@ 
 
 
 # Compile: create object files from C++ source files.
-$(OBJDIR)/%.o : %.cpp
+$(OBJDIR)/%-$(MCU).o : %.cpp
 	@echo
 	@echo $(MSG_COMPILING_CPP) $<
 	$(CC) -c $(ALL_CPPFLAGS) $< -o $@ 
@@ -582,7 +582,7 @@ $(OBJDIR)/%.o : %.cpp
 
 
 # Assemble: create object files from assembler source files.
-$(OBJDIR)/%.o : %.S
+$(OBJDIR)/%-$(MCU).o : %.S
 	@echo
 	@echo $(MSG_ASSEMBLING) $<
 	$(CC) -c $(ALL_ASFLAGS) $< -o $@
