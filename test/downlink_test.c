@@ -4,12 +4,12 @@
 #include <stdio.h>
 #include "../protocols/downlink/downlink.h"
 
+#define NUT
+#define SQUIRREL
 
 int main (void) {
 	struct downlink_packet packet;
-	packet.TID = 0;	
-	bool test;
-	test = downlink_handle_packet (&packet);
-	printf("%i", packet.TID);
-
+	packet.opcode = 0;	
+	/*bool test;
+	test = downlink_handle_package (&packet);*/
 }

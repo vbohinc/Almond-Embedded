@@ -1,49 +1,63 @@
-/*
-* downlink.h
-* Header for libdownlink - The Squirrel-Nuts Communication Protocol
-*/
+/**
+ * 
+ * downlink.h
+ * Header for downlink - The Squirrel-Nuts Communication Protocol
+ *
+ * Everybody using this header must provide following:
+ *
+ * const uint8_t class_id_nut;
+ * const uint8_t class_id_sensors[128];
+ * const uint8_t class_id_actors[128];
+ */
+
+
+#ifndef __DOWNLINK__
+#define __DOWNLINK__
 
 #include <stdint.h>
 #include <stdbool.h>
 
-#define DOWNLINK_PACKET_LENGTH 32
+const int DOWNLINK_PACKET_LENGTH = 4;
 
+
+/**
+ * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
+ *
+ * Package format:
+ * | OPCODE (1) | ID (1) | VALUE (2) |
+ */
+ 
 typedef struct downlink_packet {
-	uint16_t 	TID; 
 	uint8_t 	opcode; 
-	uint8_t		payload; //[DOWNLINK_PACKET_LENGTH - 5];
-	uint16_t	checksum;
+	uint8_t		id;
+	uint16_t	value;
 };
 
-// #define sncp_TYPE // <--- TYPE SWITCH HERE
 
-enum sncp_Packet_Type {
-	INFO	= 0x10, 
-	INFORET	= 0x11, 
-	GET		= 0x20,
-	SET		= 0x21, 
-	SLEEP	= 0x23,
-	RET		= 0x22, 
-	ACK		= 0x30, 
-	ERROR	= 0x31
-};
+// Switch functionality 
 
-// Returns true if valid and handled, false if not valid.
+#ifdef SQUIRREL
 
-bool downlink_handle_packet (struct downlink_packet *packet);
-
-/*
-#ifdef SNCP_SQUIRREL
-//	void downlink_init(int[16] *device_name); // char?
+	/**
+	 * Discover nuts, returns ???
+	 */
+	
+	void downlink_discover ();
+	
+	/**
+	 *
+	 */
+	 
 #endif
 
-#ifdef SNCP_NUTS
-//	void downlink_nut_init(int[16] *device_name, &sleep_callback);
-//	void downlink_nut_register(int class_number, &callback); // Type is defined through class number
+#ifdef NUT
+
+	/**
+	 * Returns true if the package was handled successfully and the buffer can be returned, false otherwise
+	 */
+	bool downlink_handle_package ( *(struct downlink_packet) );
+	
 #endif
 
-//
-void downlink_handle_package(*downlink_packet);
 
-// void sncp_send_package(sncp_Packet_Type t, &data, &error); Internal use!
-*/
+#endif
