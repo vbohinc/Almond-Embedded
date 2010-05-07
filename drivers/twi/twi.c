@@ -16,7 +16,7 @@ uint8_t twi_start(void) {
   if(status == 0x08 || status == 0x10)
     return 0;
   else
-    return -1;
+    return 1;
 }
 
 void twi_stop(void) {
@@ -31,7 +31,7 @@ uint8_t twi_connect(enum twi_access_mode mode, uint8_t addr)
   if(status == 0x08 || status == 0x10)
     return 0;
   else
-    return -1;
+    return 1;
   TWDR = (addr<<1)|mode;
   TWCR = (1<<TWINT)|(1<<TWEN);
   twi_wait();
@@ -39,7 +39,7 @@ uint8_t twi_connect(enum twi_access_mode mode, uint8_t addr)
   if(status == 0x18 || status == 0x20 || status == 0x40 || status == 0x48)
     return 0;
   else
-    return -1;
+    return 1;
 }
 
 uint8_t twi_write(uint8_t data)
@@ -51,21 +51,20 @@ uint8_t twi_write(uint8_t data)
   if(status == 0x28 || status == 0x30)
     return 0;
   else
-    return -1;
+    return 1;
 
 }
 
-uint8_t twi_read(uint8_t* data)
+uint8_t twi_read(uint8_t* data, enum twi_send_ack ack)
 {
-  //TODO check for a correct result
   *data = TWDR;
-  TWCR = (1<<TWINT)|(1<<TWEN);
+  TWCR = (1<<TWINT)|(1<<TWEN)|(ack<<TWEA);
   twi_wait();
   uint8_t status = twi_status();
   if(status == 0x50 || status == 0x58)
     return 0;
   else
-    return -1;
+    return 1;
 }
 
 uint8_t twi_status(void)
