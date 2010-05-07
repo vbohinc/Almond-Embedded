@@ -3,11 +3,10 @@
 
 subdirs = nuts test
 
-all: $(subdirs)
+.PHONY: all
+all:
+	$(foreach dirs,$(subdirs),$(MAKE) -C $(dirs);)
 
-.PHONY: $(subdirs)
-$(subdirs):
-	$(MAKE) -C $@
 .PHONY: clean
 clean:
 	$(foreach dirs,$(subdirs),$(MAKE) -C $(dirs) clean;)
