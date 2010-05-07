@@ -11,14 +11,14 @@
 * Writes a sensor value to the log-file.
 * @return True if successful.
 */
-bool storage_save_log(uint_8 device_id, uint_8 sensor_id, uint_8 value, uint_8 date);
+bool storage_save_log(uint8_t device_id, uint8_t sensor_id, uint8_t value, uint8_t date);
 
 /**
 * Opens a log file for reading.
 * @return True if successful.
 *
 */
-bool storage_open_log(uint_8 device_id, uint_8 sensor_id);
+bool storage_open_log(uint8_t device_id, uint8_t sensor_id);
 
 /**
 * Pulls a section of the open log file sequentially.
@@ -27,7 +27,7 @@ bool storage_open_log(uint_8 device_id, uint_8 sensor_id);
 * @param buffer_size Size of the buffer passed
 * @return Size of data read. If /= buffer_size, EOF encountered.
 */
-uint_8 storage_pull_log(&file_buffer, uint_8 buffer_size);
+uint8_t storage_pull_log(&file_buffer, uint8_t buffer_size);
 
 /**
 * Pulls uplink packages from the open log file sequentially.
@@ -43,14 +43,14 @@ bool storage_pull_log_uplink_package(&package_buffer);
 * @value value The value to set
 * @return True if successful.
 */
-bool storage_set_configuration(uint_8 key, uint_8 value);
+bool storage_set_configuration(uint8_t key, uint8_t value);
 
 /**
 * Returns the configuration value for a certain key.
 * @param key Key of the requested configuration value
 * @return Configuration value for given key.
 */
-uint_8 storage_get_configuration(uint_8 key);
+uint8_t storage_get_configuration(uint8_t key);
 
 
 /**
