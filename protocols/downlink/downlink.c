@@ -11,6 +11,9 @@ void downlink_discover () {
 }
 
 static bool ret_package (struct downlink_packet *p) {
+
+	// I think an unbounded array is a better idea, as we don't need to store these huge bunch of pointers.
+	
 	typedef struct nut_info_list {
 		nut_info_entry *head;
 		nut_info_entry *end;
@@ -72,7 +75,7 @@ static bool ret_package (struct downlink_packet *p) {
 #endif
 
 #ifdef NUT
-static bool get_package (struct downlink_packet *p) {
+static inline bool downlink_handle_get_package (struct downlink_packet *p) {
 
 	switch (p->opcode & 0x0F) {
 		case STANDARD: // Clarify numbers etc...? Maybe adjust proto
@@ -98,7 +101,7 @@ static bool get_package (struct downlink_packet *p) {
 	}
 }
 
-static bool set_package (struct downlink_packet *p) {
+static inline bool downlink_handle_set_package (struct downlink_packet *p) {
 	return true;
 }
 
@@ -106,9 +109,9 @@ static bool set_package (struct downlink_packet *p) {
 bool downlink_handle_package (struct downlink_packet *p) {
 	switch (p->opcode & 0xF0) {
 		case GET:
-			return get_package (p);
+			return downlink_handle_get_package (p);
 		case SET:
-			return set_package (p);
+			return downlink_handle_set_package (p);
 		case ECHO:
 			return true;
 		default:
