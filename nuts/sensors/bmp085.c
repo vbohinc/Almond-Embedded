@@ -72,3 +72,18 @@ void get_conversion_data(void)
   eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
 }
 
+int16_t calculate_true_temprature(struct temprature_conversion_data data, int32_t* B5, int16_t utemprature)
+{
+  int32_t X1 = (int32_t)(utemprature-data.AC6) * (int32_t)(data.AC5) / (2<<15);
+  int32_t X2 = ((int32_t)data.MC << 11) / (X1 + data.MD);
+  B5 = X1+X2;
+  return (B5+8)/(2<<4);
+}
+
+int32_t calculate_true_pressure(struct pressure_conversion_data data, int32_t* B5, int16_t upressure)
+{
+  int32_t B6 = B5 - 4000;
+  int32_t X1 = ((int32_t)data.B2 * (data.B6 * data.B6)) / 2<<11;
+  int32_t X2 = data.AC2 * B6 / (2<<11)
+  int32_t X3 = X1 + X2;
+
