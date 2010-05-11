@@ -13,9 +13,30 @@
 #include <time.h>
 #include <string.h>
 
+void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_type)
+{
+	if (callback_type == 0) {//is data package
+		printf("Data Package received:\n");
+		printf("[");
+		for (int i=0; i<BLUETOOTH_DATA_PACKAGE_SIZE; i++)
+		{
+			printf("%d:%d,", i, data_package[i]);
+		}
+		printf("]\n");
+	} else if (callback_type == 1) //connected
+	{
+		printf("Connected to: %s\n", data_package);
+	} else if (callback_type == 2) //disconnected
+	{
+		printf("Disconnected from: %s\n", data_package);
+	} else
+		printf("Invalid callback type: %d\n", callback_type);
+}
+
+
 int main()
 {
-	bluetooth_init();
+	bluetooth_init(bluetooth_callback_handler);
 
 	char buffer[255];
 	uint8_t cmd[255];
@@ -44,7 +65,11 @@ int main()
 	printf("\nATD ret=%d", retval);
 	*/
 
-	uint8_t *found = bluetooth_cmd_search_devices();
+	int retval = bluetooth_cmd_set_remote_address("701A041CDBF1");
+
+	printf("\nATD ret=%d",retval);
+
+	/*uint8_t *found = bluetooth_cmd_search_devices();
 	if (found == NULL)
 		printf("SEARCH ERROR!");
 	else {
@@ -52,7 +77,7 @@ int main()
 		printf("\nCount=%d", count);
 		for (int i=0; i<count; i++)
 		{
-			printf("\n%d: '", i);
+			printf("\n%d: '", i+1);
 			for (int j=0; j<16; j++)
 			{
 				printf("%c", found[1+i*(16+12)+j]);
@@ -61,7 +86,37 @@ int main()
 			for (int j=0; j<12; j++)
 				printf("%c", found[1+i*(16+12)+16+j]);
 		}
+	}*/
+
+	retval = bluetooth_cmd_connect(0);
+	printf("\nATA ret=%d", retval);
+
+	if (retval == 0)
+	{
+		retval = bluetooth_cmd_connect(1);
+		printf("\nATA ret=%d", retval);
 	}
+
+
+	for (int i=0; i<BLUETOOTH_DATA_PACKAGE_SIZE; i++)
+	{
+		bluetooth_data_package[i]=i+48;
+	}
+
+
+	/*if (retval ==1)
+	{
+		retval = bluetooth_send_data_package(bluetooth_data_package, BLUETOOTH_DATA_PACKAGE_SIZE);
+		printf("\nSend ret=%d", retval);
+
+		retval = bluetooth_cmd_online_command();
+		printf("\n+++ ret=%d", retval);
+
+		retval = bluetooth_cmd_close_connection();
+		printf("\nATH ret=%d", retval);
+
+	}*/
+
 
 	printf("Gib befehle ein:\n");
 
@@ -86,16 +141,6 @@ int main()
 		if (bluetooth_cmd_send(cmd, 10)==0)
 			perror("Couldn't send cmd");
 	}
-
-
-	/*uint8_t *arr = bluetooth_cmd_get_address();
-
-	while(1);
-
-	int i=0;
-
-	while (arr[i]!=0)
-		printf("%d:%c\n",i,arr[i]);*/
 
 	bluetooth_close();
 }

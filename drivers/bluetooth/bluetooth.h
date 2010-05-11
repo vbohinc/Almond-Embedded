@@ -64,12 +64,12 @@ extern uint8_t bluetooth_data_package[225];
 /*
  * Contains the address of the connected device or [0]=0 if disconnected
  */
-extern uint8_t bluetooth_connected_with[12];
+extern uint8_t bluetooth_is_connected;
 
 /**
 * Initialization routine for the bluetooth module.
 */
-extern void bluetooth_init(void);
+extern void bluetooth_init(void (*bluetooth_callback_handler)(uint8_t *data_package, const uint8_t callback_type));
 
 
 extern void bluetooth_close(void);
@@ -83,6 +83,7 @@ extern void bluetooth_close(void);
 extern void bluetooth_byte_received (uint8_t);
 
 
+void (*bluetooth_callback)(uint8_t *data_package, const uint8_t callback_type);
 
 extern void bluetooth_handle_array(void);
 
@@ -100,7 +101,7 @@ extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
  * @param cmd The command as char array with '\0'. Ex: 'ATL1'
  * @return 1 on success, 0 on failure (timeout)
  */
-extern uint8_t bluetooth_cmd_send (uint8_t* cmd, const uint16_t delay_ms);
+extern uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms);
 
 /**
  * Waits until the bluetooth device returns one of the following responses. For each response will be returned a number which is given in the brackets:
@@ -147,7 +148,7 @@ extern uint8_t* bluetooth_cmd_get_address (void);
  * @param address The remote address in the format 'xxxxxxxxxxxx' (12 Characters) or NULL to clear.
  * @return Returns 1 on success otherwise 0.
  */
-extern uint8_t bluetooth_cmd_set_remote_address (uint8_t* address);
+extern uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address);
 
 /**
  * Command: ATF?
@@ -182,7 +183,7 @@ extern uint8_t bluetooth_cmd_discoverable (const uint8_t discoverable);
  * @param name New name of the device. Max length is 16.
  * @return Returns 1 on success otherwise 0.
  */
-extern uint8_t bluetooth_cmd_set_name (uint8_t *name);
+extern uint8_t bluetooth_cmd_set_name (const uint8_t *name);
 
 /**
  * Command: ATN?
@@ -191,7 +192,7 @@ extern uint8_t bluetooth_cmd_set_name (uint8_t *name);
  * @param name Char array to store the name into. name must be initialized and minimum 16 bytes long.
  * @return Returns array with name on success otherwise NULL.
  */
-extern uint8_t* bluetooth_cmd_get_name (uint8_t *name);
+extern uint8_t* bluetooth_cmd_get_name (const uint8_t *name);
 
 
 /**
@@ -201,7 +202,7 @@ extern uint8_t* bluetooth_cmd_get_name (uint8_t *name);
  * @param pin New pin for the device or NULL to turn it off. Max length is 4.
  * @return Returns 1 on success otherwise 0.
  */
-extern uint8_t bluetooth_cmd_set_pin (uint8_t *pin);
+extern uint8_t bluetooth_cmd_set_pin (const uint8_t *pin);
 
 /**
  * Command: ATR
@@ -218,6 +219,13 @@ extern uint8_t bluetooth_cmd_set_mode (uint8_t mode);
  * @return Returns 1 on success otherwise 0.
  */
 extern uint8_t bluetooth_cmd_restore_settings (void);
+
+/**
+ * Command: +++
+ * Switch from Data to Online-Command mode
+ * @return Returns 1 on success otherwise 0.
+ */
+extern uint8_t bluetooth_cmd_online_command (void);
 
 
 
