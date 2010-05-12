@@ -17,7 +17,15 @@
 		uint8_t config_types[16];
 	};
 	device_info *device_list[16]; // FIXME: Unbounded array
+	void main() {
+		squirrel_init();
+	}
 
 	void squirrel_init() {
+		bluetooth_init(blubb);
+
+	}
+
+	void blubb(uint8_t *data_package, const uint8_t callback_type) {
 
 	}

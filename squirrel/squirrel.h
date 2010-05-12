@@ -2,8 +2,8 @@
 * Core libraries for squirrel
 */
 
-#include libsncp.h
-#include libuplink.h
+#include "../protocols/downlink/downlink.h"
+#include "../protocols/uplink/uplink.h"
 
 #define SNCP_MASTER // We're on the Squirrel here, so we'll be operating SNCP in Master mode
 
