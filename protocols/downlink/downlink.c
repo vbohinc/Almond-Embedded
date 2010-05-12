@@ -22,16 +22,25 @@ static bool downlink_handle_ret_package (struct downlink_packet *p) {
 			// Insert into mac_lookup
 			// Insert into class_lookup
 		}
-		case INFO_ID:
+		case INFO_EXTENSION:
 		// Determine running number
 		// Insert into relevant lookup table
 
 	}
 }
 
-void downlink_request_sensor_data(uint8_t class, uint8_t id) {
-
-
+uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_packet *p) {
+  p->opcode = GET;
+  p->id = id;
+  p->value = 0;
+  
+  bluetooth_handle_package (p);
+  
+  if (p->opcode == 0xF0 && p->id == id) {
+    return p->value;
+  } else {
+    return -1;
+  }  
 }
 
 
