@@ -1,15 +1,14 @@
 /**
- * 
  * downlink.h
- * Header for downlink - The Squirrel-Nuts Communication Protocol
+ * 
+ * Header files for downlink.c
  *
- * Everybody using this header must provide following:
+ * Everybody using this header for a nut must provide following:
  *
  * const uint8_t class_id_nut;
- * const uint8_t class_id_sensors[128];
- * const uint8_t class_id_actors[128];
+ * const uint8_t class_id_extensions[];
+ * const uint8_t class_id_extensions_length;
  */
-
 
 #ifndef __DOWNLINK__
 #define __DOWNLINK__
@@ -17,8 +16,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "../packet_types.h"
-const int DOWNLINK_PACKET_LENGTH = 4;
 
+const int DOWNLINK_PACKET_LENGTH = 4;
 
 /**
  * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
@@ -26,38 +25,36 @@ const int DOWNLINK_PACKET_LENGTH = 4;
  * Package format:
  * | OPCODE (1) | ID (1) | VALUE (2) |
  */
- 
-typedef struct downlink_packet {
-	uint8_t 	opcode; 
-	uint8_t		id;
-	uint16_t	value;
-} downlink_packet;
 
+typedef struct downlink_packet {
+	uint8_t opcode;
+	uint8_t id;
+	uint16_t value;
+} downlink_packet;
 
 // Switch functionality 
 
 #ifdef SQUIRREL
 
-	/**
-	 * Discover nuts, returns ???
-	 */
-	
-	void downlink_discover ();
-	
-	/**
-	 *
-	 */
-	 
+/**
+ * Discover nuts, returns ???
+ */
+
+void downlink_discover ();
+
+/**
+ *
+ */
+
 #endif
 
 #ifdef NUT
 
-	/**
-	 * Returns true if the package was handled successfully and the buffer can be returned, false otherwise
-	 */
-	bool downlink_handle_package ( *(struct downlink_packet) );
-	
-#endif
+/**
+ * Returns true if the package was handled successfully and the buffer can be returned, false otherwise
+ */
+bool downlink_handle_package ( *(struct downlink_packet) );
 
+#endif
 
 #endif

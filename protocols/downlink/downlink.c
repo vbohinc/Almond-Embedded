@@ -8,9 +8,12 @@
 void downlink_discover () {
 	return;
 }
-// Handles a RET package received
-static bool ret_package (struct downlink_packet *p) {
 
+
+/**
+ * Handle RET package
+ */
+static bool downlink_handle_ret_package (struct downlink_packet *p) {
 
 	// Utility functions
 	switch (p->opcode & 0x0F) {
@@ -23,19 +26,21 @@ static bool ret_package (struct downlink_packet *p) {
 		case INFO_ID:
 		// Determine running number
 		// Insert into relevant lookup table
-		
-		
+
 	}
 }
 
 #endif
 
 #ifdef NUT
-static inline bool downlink_handle_get_package (struct downlink_packet *p) {
 
+/**
+ * Handle GET package
+ */
+static inline bool downlink_handle_get_package (struct downlink_packet *p) {
 	switch (p->opcode & 0x0F) {
-		case STANDARD: // Clarify numbers etc...? Maybe adjust proto
-			if (p->id < 128 && class_id_sensors[p->id] != INVALID) {
+		case STANDARD:
+			if (p->id < class_id_extensions_length && class_id_extensions[p->id] < GENERIC_ACTOR) {
 				p->opcode = RET;
 				p->value = get_value (p->id);
 				return true;
@@ -43,25 +48,49 @@ static inline bool downlink_handle_get_package (struct downlink_packet *p) {
 				return false;
 			}
 		case INFO_NUT:
-			p->opcode = RET;			
+			p->opcode = RET;
 			p->id = 0;
 			p->value = class_id_nut;
 			return true;
-		case INFO_ID:
-			p->opcode = RET;			
-			p->id = 0;
-			p->value = class_id_nut;
-			return true;
+		case INFO_EXTENSION:
+			if (p->id < class_id_extensions_length) {
+				p->opcode = RET;
+				p->value = class_id_extensions[];
+				return true;
+			} else {
+				return false;
+			}
+		case CONFIG:
+			return false;
 		default:
 			return false;
 	}
 }
 
+/**
+ * Handle SET packages
+ */
 static inline bool downlink_handle_set_package (struct downlink_packet *p) {
-	return true;
+	switch (p->opcode & 0x0F) {
+		case STANDARD:
+			if (p->id < class_id_extensions_length && class_id_extensions[p->id] >= GENERIC_ACTOR) {
+				p->opcode = RET;
+				/*FIXME: Return Value?? */
+				set_value (p->id, p->value);
+				return true;
+			} else {
+				return false;
+			}
+		case CONFIG:
+			return false;
+		default:
+			return false;
+	}
 }
 
-
+/**
+ * Major package downlink handling function
+ */
 bool downlink_handle_package (struct downlink_packet *p) {
 	switch (p->opcode & 0xF0) {
 		case GET:
@@ -75,6 +104,4 @@ bool downlink_handle_package (struct downlink_packet *p) {
 	}
 }
 #endif
-
-
 

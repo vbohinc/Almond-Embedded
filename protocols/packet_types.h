@@ -1,6 +1,7 @@
 /**
- *	Define Packet Types
+ * packet_types.h
  *
+ * Define Packet Types
  */
 
 #ifndef __PACKET_TYPES__
@@ -19,7 +20,7 @@ enum packet_type_flags {
 	STANDARD = 0x00,	// Standard modifier
 
 	INFO_NUT = 0x01,	// Get the class of the Nut 
-	INFO_ID  = 0x02,    // Get the class of the Sensor/Actor
+	INFO_EXTENSION = 0x02,    // Get the class of the Sensor/Actor
 
 	// Squirrel specific
 	LOG		 = 0x0A, 	// Returns the latest log data in chronological order
