@@ -1,4 +1,4 @@
-#include <twi.h>
+#include <twi/twi.h>
 #include <util/twi.h>
 
 void twi_wait(void);

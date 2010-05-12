@@ -3,7 +3,7 @@
  * 
  */
 
-#include <twi.h>
+#include <twi/twi.h>
 #include <avr/eeprom.h>
 #include <stdint.h>
 #include <stdbool.h>

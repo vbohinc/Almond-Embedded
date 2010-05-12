@@ -9,4 +9,9 @@
  * @param pressure a pointer to the pressure data
  * @return 1 on failure 0 otherwise
  */
+#ifdef __BMP085_H__
+#define __BMP085_H__
 uint8_t bmp085_get_data(uint16_t * temprature, uint16_t * pressure);
+
+#endif //__BMP085_H__
+

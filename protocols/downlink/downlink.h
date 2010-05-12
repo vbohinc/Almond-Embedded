@@ -27,11 +27,11 @@ const int DOWNLINK_PACKET_LENGTH = 4;
  * | OPCODE (1) | ID (1) | VALUE (2) |
  */
 
-typedef struct downlink_packet {
+struct downlink_packet {
 	uint8_t opcode;
 	uint8_t id;
 	uint16_t value;
-} downlink_packet;
+};
 
 // Switch functionality 
 

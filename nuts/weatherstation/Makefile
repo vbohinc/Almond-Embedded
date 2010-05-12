@@ -80,7 +80,7 @@ OBJDIR = .
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c ../../drivers/twi/twi.c ../../drivers/bluetooth/bluetooth.c ../../shared/fifo.c ../../drivers/usart/usart.c ../sensors/bmp085.c
+SRC = $(TARGET).c ../../drivers/twi/twi.c ../../drivers/bluetooth/bluetooth.c ../../shared/fifo.c ../../drivers/usart/usart.c ../sensors/bmp085.c ../../protocols/downlink/downlink.c
 
 
 
@@ -115,7 +115,7 @@ DEBUG = dwarf-2
 #     Each directory must be seperated by a space.
 #     Use forward slashes for directory separators.
 #     For a directory that has spaces, enclose it in quotes.
-EXTRAINCDIRS = ../../drivers/twi/ ../../drivers/bluetooth/ ../sensors/
+EXTRAINCDIRS = ../../drivers/ ../../drivers/ ../sensors/ ../../protocols/
 
 
 # Compiler flag to set the C Standard level.
