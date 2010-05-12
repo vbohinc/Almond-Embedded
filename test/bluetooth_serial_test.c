@@ -7,7 +7,7 @@
 * It's purpose is to test command handling. So don't compile this file for embedded system.
 *
 */
-#include "drivers/bluetooth/bluetooth.h"
+#include "../drivers/bluetooth/bluetooth.h"
 
 #include <stdio.h>
 #include <time.h>

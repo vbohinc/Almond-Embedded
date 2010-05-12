@@ -14,13 +14,11 @@
 const int UPLINK_PACKET_LENGTH = 64;
 
 /**
- *
- *
  * Package format:
  * | OPCODE (1) | ID (1) | VALUE (2) |
  */
 
-typedef struct downlink_packet {
+typedef struct uplink_packet {
 	uint8_t opcode;
 	uint8_t id;
 	uint16_t value;

@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "../packet_types.h"
+#include "../classes.h"
 
 const int DOWNLINK_PACKET_LENGTH = 4;
 
