@@ -138,7 +138,7 @@ uint8_t bluetooth_serial_putc (const uint8_t byte)
 	for (tries = 0; tries < 3; tries ++)
 	{
 		/* send an AT command followed by a CR */
-		if (write(bluetooth_serial_port_fd, bytes, 1) < 1)
+		if (write(bluetooth_serial_port_fd, bytes, 1) < 0)
 		{
 			perror("Couldn't write");
 			continue;
