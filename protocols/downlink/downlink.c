@@ -12,14 +12,7 @@ void downlink_discover () {
 // Handles a RET package received
 static bool ret_package (struct downlink_packet *p) {
 
-	// I think an unbounded array is a better idea, as we don't need to store these huge bunch of pointers. √
-	// Proposed lookup arrays. Every Nut receives a running number when first encountered
-	// These arrays are indexed as follows: [running number]([actor/sensor/configuration ID])
-	(char[6])[16] nut_mac_lookup;
-	uint8_t[16] nut_class_lookup;
-	uint8_t[16][16] nut_actor_type;
-	uint8_t[16][16] nut_sensor_type;
-	uint8_t[16][16] nut_config_type;
+
 	// Utility functions
 	switch (p->opcode & 0x0F) {
 		case INFO_NUT:

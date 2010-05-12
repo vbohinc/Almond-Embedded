@@ -10,6 +10,6 @@
 #ifndef SQUIRREL
 #define SQUIRREL
 	void squirrel_init(); // Initialize, check for known devices, scan for new devices, start polling/accept pushed messages, output to display, respond to backend requests, log activity
-	void __bluetooth_init();
+	//void __bluetooth_init();
 	
 #endif
