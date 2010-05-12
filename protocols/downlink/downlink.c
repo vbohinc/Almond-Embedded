@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "downlink.h"
-#include "packet_types.h"
 #include "../classes.h"
 
 #ifdef SQUIRREL
