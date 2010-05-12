@@ -1,8 +1,7 @@
-/*
-* Uplink.h
-* Header for Uplink - Communication with the backend
-*
-*/
+/**
+ *
+ *
+ */
 
 #ifndef __UPLINK__
 #define __UPLINK__
