@@ -6,6 +6,7 @@
 #include <twi.h>
 #include <avr/eeprom.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "bmp085.h"
 
@@ -29,8 +30,11 @@ struct pressure_conversion_data {
 
 
 //the eeprom saved conversion data
-const struct temprature_conversion_data tempconv EEMEM;
-const struct pressure_conversion_data pressconv EEMEM;
+const struct temprature_conversion_data tempconv EEMEM = {0, 0, 0, 0};
+const struct pressure_conversion_data pressconv EEMEM = {0, 0, 0, 0, 0, 0};
+const uint8_t have_bmp_conversion_data EEMEM = false;
+const uint8_t oversampling_setting = 0;
+
 
 uint16_t get_word(const uint8_t word)
 {
@@ -41,7 +45,7 @@ uint16_t get_word(const uint8_t word)
   uint8_t temp;
   uint16_t result;
   twi_read(&temp,ACK);
-  result = (temp<<8);
+  result = (((uint16_t)temp)<<8);
   twi_read(&temp,NACK);
   result += temp;
   twi_stop();
@@ -70,20 +74,42 @@ void get_conversion_data(void)
   presstable.B1  = get_word(0xB6);
   presstable.B2  = get_word(0xB8);
   eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
+
 }
 
-int16_t calculate_true_temprature(struct temprature_conversion_data data, int32_t* B5, int16_t utemprature)
+int16_t calculate_true_temprature(struct temprature_conversion_data* data, int32_t* B5, int16_t utemprature)
 {
-  int32_t X1 = (int32_t)(utemprature-data.AC6) * (int32_t)(data.AC5) / (2<<15);
-  int32_t X2 = ((int32_t)data.MC << 11) / (X1 + data.MD);
-  B5 = X1+X2;
-  return (B5+8)/(2<<4);
+  int32_t X1 = ((int32_t)(utemprature-data->AC6) * (int32_t)(data->AC5))>>15;
+  int32_t X2 = ((int32_t)data->MC << 11) / (X1 + data->MD);
+  *B5 = X1+X2;
+  return (*B5+8)>>4;
 }
 
-int32_t calculate_true_pressure(struct pressure_conversion_data data, int32_t* B5, int16_t upressure)
+int32_t calculate_true_pressure(struct pressure_conversion_data* data, int32_t* B5, int16_t upressure)
 {
-  int32_t B6 = B5 - 4000;
-  int32_t X1 = ((int32_t)data.B2 * (data.B6 * data.B6)) / 2<<11;
-  int32_t X2 = data.AC2 * B6 / (2<<11)
-  int32_t X3 = X1 + X2;
+  int32_t B6, X1, X2, X3, B3, p;
+  uint32_t B4, B7;
+  B6 = *B5 - 4000;
+  X1 = ((int32_t)data->B2 * ((B6 * B6)>>12))>>11;
+  X2 = (data->AC2 * B6)>>11;
+  X3 = X1 + X2;
+  B3 = ((((((int32_t)data->AC1)<<2)+X3)<<oversampling_setting) + 2)>>2;
+  X1 = (data->AC3 * B6)>>13;
+  X2 = (data->B1 * ((B6 * B6)>>12))>>16;
+  X3 = ((X1 + X2) + 2)>>2;
+  B4 = (data->AC4 * (uint32_t)(X3 + 32768))>>15;
+  B7 = ((uint32_t)upressure - B3) * (50000>>oversampling_setting);
+  if(B7 < 0x80000000){
+    p = (B7<<1)/B4;
+  }
+  else
+  {
+    p = (B7/B4)<<1;
+  }
+  X1 = (p>>8)*(p>>8);
+  X1 = (X1 * 3038)>>16;
+  X2 = (-7357 * p)>>16;
+  p = p + ((X1 + X2 + 3791)>>4);
+  return p;
+}
 
