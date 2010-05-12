@@ -18,7 +18,7 @@
 #include "../packet_types.h"
 #include "../classes.h"
 
-const int DOWNLINK_PACKET_LENGTH = 4;
+extern const int DOWNLINK_PACKET_LENGTH;
 
 /**
  * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
@@ -54,7 +54,7 @@ void downlink_discover ();
 /**
  * Returns true if the package was handled successfully and the buffer can be returned, false otherwise
  */
-bool downlink_handle_package ( *(struct downlink_packet) );
+bool downlink_handle_package ( struct downlink_packet* );
 
 #endif
 

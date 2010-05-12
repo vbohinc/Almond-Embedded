@@ -2,6 +2,9 @@
 #include <stdbool.h>
 #include "downlink.h"
 
+
+const int DOWNLINK_PACKET_LENGTH = 4;
+
 #ifdef SQUIRREL
 
 void downlink_discover () {
