@@ -7,12 +7,12 @@
 #define __CLASSES_H__
 
 enum class_id_nuts {
-	GENERIC3 = 0x00,
+	GENERIC_CLASS = 0x00,
 	WEATHERSTATION = 0x01
 };
 
 enum class_id_sensors {
-	GENERIC1 	= 0x00,
+	GENERIC_SENSOR = 0x00,
 
 	TEMPERATURE = 0x01,
 	PRESSURE 	= 0x02,
@@ -20,7 +20,7 @@ enum class_id_sensors {
 };
 
 enum class_id_actors {
-	GENERIC2 	= 0x80,
+	GENERIC_ACTOR = 0x80,
 
 	SWITCH		= 0x81,
 	DIMMER		= 0x82,

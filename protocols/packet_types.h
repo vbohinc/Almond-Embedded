@@ -1,38 +1,34 @@
 /**
+ * packet_types.h
  *
- *
+ * Define Packet Types
  */
 
-#ifndef PACKET_TYPES
-#define PACKET_TYPES
-enum downlink_packet_type {
-	GET		= 0x10,		// Used by: Squirrel
-	SET		= 0x20,     // Used by: Squirrel                                                   
-	RET		= 0x30, 	// Used by: Nut
-	ECHO	= 0xF0,		// Used for debug, returns the packet
+#ifndef __PACKET_TYPES__
+#define __PACKET_TYPES__
+
+enum packet_type {
+	GET		 = 0x10,	// Used by: Squirrel/Backend
+	SET		 = 0x20,	// Used by: Squirrel/Backend
+	RET		 = 0x30, 	// Used by: Nut/Squirrel
+	TUNNEL	 = 0xE0,	// To tunnel things through the squirrel
+	ECHO	 = 0xF0,	// Used for debug, returns the packet
 };
 
-enum downlink_packet_type_flags {
+enum packet_type_flags {
+	// Nut specific
 	STANDARD = 0x00,	// Standard modifier
 
 	INFO_NUT = 0x01,	// Get the class of the Nut 
-	INFO_ID  = 0x02,    // Get the class of the Sensor/Actor
-	CONFIG	 = 0x0A,    // Access the configuration
-	ADVANCED = 0x0F,	// Advanced features
+	INFO_EXTENSION = 0x02,    // Get the class of the Sensor/Actor
+
+	// Squirrel specific
+	LOG		 = 0x0A, 	// Returns the latest log data in chronological order
+	TIME	 = 0x0B,	// Access the time of the squirrel, (get, set)
+	LIST	 = 0x0C, 	// Returns a list of known devices
+
+	// Shared
+	CONFIG	 = 0x0F,    // Access the configuration
 };
 
-enum uplink_packet_type {
-	GET = 0x10, //
-	SET = 0x20, //
-	RET = 0x30, //
-	TUNNEL = 0xE0, //
-	ECHO = 0xF0 //
-};
-
-enum uplink_packet_type_flags {
-	CONFIG = 0x01, // Returns the latest log data in chronological order
-	LOG = 0x02,
-	TIME = 0x03,
-	LIST = 0x04 // Returns a list of known devices
-};
 #endif

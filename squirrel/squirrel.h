@@ -7,7 +7,7 @@
 //#include "../protocols/uplink/uplink.h"
 
 
-#define SNCP_MASTER // We're on the Squirrel here, so we'll be operating SNCP in Master mode
+#define SQUIRREL // We're on the Squirrel here, so we'll be operating DOWNLINK in Master mode
 
 
 	extern void squirrel_init(); // Initialize, check for known devices, scan for new devices, start polling/accept pushed messages, output to display, respond to backend requests, log activity
