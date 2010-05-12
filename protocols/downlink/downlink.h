@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "../packet_types.h"
 const int DOWNLINK_PACKET_LENGTH = 4;
 
 
@@ -31,7 +31,7 @@ typedef struct downlink_packet {
 	uint8_t 	opcode; 
 	uint8_t		id;
 	uint16_t	value;
-};
+} downlink_packet;
 
 
 // Switch functionality 
