@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "downlink.h"
-#include "../classes.h"
 
 #ifdef SQUIRREL
 
@@ -29,6 +28,13 @@ static bool downlink_handle_ret_package (struct downlink_packet *p) {
 
 	}
 }
+
+void downlink_request_sensor_data(uint8_t class, uint8_t id) {
+
+
+}
+
+
 
 #endif
 
