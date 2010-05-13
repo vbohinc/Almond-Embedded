@@ -23,11 +23,15 @@
  */
 typedef struct
 {
+	/**
+	 * Member of the struct
+	 */
 	uint8_t volatile count;       /*! Number of bytes in fifo */
 	uint8_t size;                 /*! Size of fifo (buffer) */
 	uint8_t *pread;               /*! read pointer */
 	uint8_t *pwrite;              /*! write pointer */
-	uint8_t read2end, write2end;  /*! number of bytes to overflow of read/write pointer */
+	uint8_t read2end;             /*! number of bytes to overflow of read pointer */
+	uint8_t write2end;  		  /*! number of bytes to overflow of write pointer */
 } fifo_t;
 
 /**
