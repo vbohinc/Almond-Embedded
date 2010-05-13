@@ -16,12 +16,24 @@
 #include <time.h>
 
 
-
+/**
+ * File descriptor of the open serial port
+ */
 int bluetooth_serial_port_fd = 0;
+
+/**
+ * Set to 1 to abort the read thread
+ */
 int bluetooth_serial_thread_abort = 0;
 
+/**
+ * The read thread
+ */
 pthread_t bluetooth_serial_read_thread;
 
+/**
+ * Thread loop to check for new input data and read it.
+ */
 void *bluetooth_serial_thread_read()
 {
 	/* read characters into our string buffer until we get a CR or NL */
@@ -142,6 +154,8 @@ uint8_t bluetooth_serial_putc (const uint8_t byte)
 		{
 			perror("Couldn't write");
 			continue;
+		} else {
+			printf("putc:%d,%c\n", byte, byte);
 		}
 		return 1;
 	}

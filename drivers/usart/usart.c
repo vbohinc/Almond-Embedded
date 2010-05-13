@@ -30,10 +30,6 @@
 #	error ATMEGA8535 or ATXMEGA not defined
 #endif
 
-/**
-* @TODO maxi fragen, wo btm-222 beim atxmega dranh�ngt
-*/
-
 
 void usart_set_byte_handler(void (*byte_handling_function)(const uint8_t))
 {
@@ -57,6 +53,10 @@ void usart_init(void)
 
 
 #elif ATXMEGA
+
+	/**
+	* @todo maxi fragen, wo btm-222 beim atxmega dranhaengt.
+	*/
 
 	/* This PORT setting is only valid to USARTC0 if other USARTs is used a
 	 * different PORT and/or pins is used. */

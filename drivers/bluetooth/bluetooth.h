@@ -20,13 +20,15 @@
 
 
 /**
-* The size of receive buffer in bytes.
+* The size of a data package. If BLUETOOTH_DATA_PACKAGE_SIZE received, the callback function with
+* received bytes will be called.
 * Must be smaller than (uint8_t-2). Max value is 254.
 */
 #define BLUETOOTH_DATA_PACKAGE_SIZE 30
 
 /**
-* The size of receive buffer in bytes.
+* The size of receive buffer in bytes. Each received byte will be stored in this buffer
+* until the callback returned and data can be deleted.
 * Must be smaller than (uint8_t-2). Max value is 254.
 * Should be BLUETOOTH_DATA_PACKAGE_SIZE*3
 */
@@ -45,7 +47,9 @@
  */
 #define BLUETOOTH_STOP_BYTE 255
 
-/*! Array to put data package to send into. Also Callback is called with this array to return a received package.
+/**
+ * Array to put data package to send into.
+ * Also Callback is called with this array to return a received package.
  * This array is also used to return a response of a command.
  * The biggest response is of the ATF? command.
  * The maximum number of found devices is: 8
@@ -68,25 +72,50 @@ extern uint8_t bluetooth_is_connected;
 
 /**
 * Initialization routine for the bluetooth module.
+* @param bluetooth_callback_handler Callback handler for received data.
+*
+* @li data_package contains the received data or the Connect-Address or disconnect-Address
+* @li callback_type 0 for data package, 1 for connect, 2 for disconnect
+* @li data_length Length of the received data or the address
 */
-extern void bluetooth_init(void (*bluetooth_callback_handler)(uint8_t *data_package, const uint8_t callback_type));
+extern void bluetooth_init(void (*bluetooth_callback_handler)(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length));
 
 
+/**
+ * In SERIAL mode (PC) closes the opened sockets and threads
+ */
 extern void bluetooth_close(void);
 
 
 /**
-* Function will be called by the usart interrupt handling when bytes had be received and last byte was NULL.
-* The bytes are stored in the global Array usart_receiveArray and the last byte is at the position usart_receiveArray_head-1.
-* @param arrayNumber The number of the Array where the data is stored.
+* Function will be called by the usart interrupt handling when a byte was read.
+* The byte is stored in the buffer bluetooth_inbuffer of the fifo bluetooth_infifo.
+* Calls bluetooth_process_data on each byte.
+* @param byte the read byte.
+* @see bluetooth_process_data
 */
-extern void bluetooth_byte_received (uint8_t);
+extern void bluetooth_byte_received (uint8_t byte);
 
+/**
+ * Callback handler for received bytes or connect/disconnet notification
+ * @li data_package contains the received data or the Connect-Address or disconnect-Address
+ * @li callback_type 0 for data package, 1 for connect, 2 for disconnect
+ * @li data_length Length of the received data or the address
+ */
+void (*bluetooth_callback)(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length);
 
-void (*bluetooth_callback)(uint8_t *data_package, const uint8_t callback_type);
-
+/**
+ * Called by bluetooth_process_data if a stop byte was received or the data-package is complete-
+ */
 extern void bluetooth_handle_array(void);
 
+/**
+ * Sends the data to the connected client.
+ * Adds the stop-byte at the end of the package
+ * @param data The data to send
+ * @param length the length (number of bytes) in the data array
+ * @return 1 on success, 0 on error
+ */
 extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
 
 
@@ -98,7 +127,8 @@ extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
 
 /**
  * Sends an AT-Command as a String to the bluetooth module
- * @param cmd The command as char array with '\0'. Ex: 'ATL1'
+ * @param cmd The command as char array with '"backslash"0'. Ex: 'ATL1'
+ * @param delay_ms milliseconds to wait between each byte
  * @return 1 on success, 0 on failure (timeout)
  */
 extern uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms);
@@ -127,7 +157,7 @@ extern uint8_t bluetooth_cmd_connect (const uint8_t dev_num);
  * Command: AT
  * Check connection to bluetooth device
  * @return Returns 1 on success check, 0 otherwise if timeout occured or error returned
- * @todo add timeout
+ *
  */
 extern uint8_t bluetooth_cmd_test_connection (void);
 
@@ -156,7 +186,8 @@ extern uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address);
  * The data of found devices will be stored in bluetooth_found_devices.
  * bluetooth_found_devices_count will also be set.
  * @return Returns NULL on failure otherwise the array with found devices.
- * @todo add format description
+ *
+ * @see bluetooth_data_package
  */
 extern uint8_t* bluetooth_cmd_search_devices (void);
 
@@ -188,11 +219,19 @@ extern uint8_t bluetooth_cmd_set_name (const uint8_t *name);
 /**
  * Command: ATN?
  * Get device name.
- * Gets the friendly name of the device.
- * @param name Char array to store the name into. name must be initialized and minimum 16 bytes long.
+ * Gets the friendly name of the device. Maximum 16 bytes long.
  * @return Returns array with name on success otherwise NULL.
  */
-extern uint8_t* bluetooth_cmd_get_name (const uint8_t *name);
+extern uint8_t* bluetooth_cmd_get_name (void);
+
+
+/**
+ * Command: ATO
+ * Enable/Disable autoconnect.
+ * @param autoconnect 1 for autoconnect with address of ATD or 0 to disable
+ * @return 1 on success or 0.
+ */
+extern uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect);
 
 
 /**
@@ -203,6 +242,14 @@ extern uint8_t* bluetooth_cmd_get_name (const uint8_t *name);
  * @return Returns 1 on success otherwise 0.
  */
 extern uint8_t bluetooth_cmd_set_pin (const uint8_t *pin);
+
+/**
+ * Command: ATP?
+ * Get device pin.
+ * Gets the connection pin of the device
+ * @return Returns array with pin on success otherwise NULL.
+ */
+extern uint8_t* bluetooth_cmd_get_pin (void);
 
 /**
  * Command: ATR
