@@ -201,6 +201,7 @@ void slave_test()
 
 int main()
 {
+
 	bluetooth_init(bluetooth_callback_handler);
 
 	for (int i=0; i<4; i++)
@@ -212,8 +213,14 @@ int main()
 			break;
 	}
 
+	int retval = bluetooth_cmd_set_pin((uint8_t*)"6666");
+	printf("\nATP ret=%d",retval);
+
+	uint8_t* ret = bluetooth_cmd_get_pin();
+		printf("\nATP ret=%s",ret);
+
 	//master_test();
-	slave_test();
+	//slave_test();
 
 	bluetooth_close();
 }
