@@ -90,7 +90,7 @@ uint8_t bluetooth_is_connected;
 #endif
 
 
-void bluetooth_init(void (*bluetooth_callback_handler)(uint8_t *data_package, const uint8_t callback_type))
+void bluetooth_init(void (*bluetooth_callback_handler)(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length))
 {
 	bluetooth_callback = bluetooth_callback_handler;
 	fifo_init (&bluetooth_infifo,   bluetooth_inbuffer, BLUETOOTH_RECEIVE_BUFFER_SIZE);
@@ -159,7 +159,7 @@ void bluetooth_process_response(void)
 		bluetooth_is_connected = 1;
 		bluetooth_response_code = 2;
 		//Call callback function
-		bluetooth_callback(bluetooth_data_package, 1);
+		bluetooth_callback(bluetooth_data_package, 1, 12);
 		return;
 	}
 	if (strncmp((char*)bluetooth_cmd_buffer, "DISCONNECT", 10)==0)
@@ -168,7 +168,7 @@ void bluetooth_process_response(void)
 		bluetooth_is_connected =  0;
 		bluetooth_response_code = 3;
 		//Call callback function
-		bluetooth_callback(bluetooth_data_package, 2);
+		bluetooth_callback(bluetooth_data_package, 2, 12);
 		return;
 	}
 
@@ -274,9 +274,10 @@ void bluetooth_process_data(void)
 		//Check if received data is a datapackage or a response to a sent command.
 		//ATH, ATO, and ATI2 are also available when connection is open.
 		if ((bluetooth_is_connected==0) ||
-		  (bluetooth_cmd_buffer[0]=='H' && bluetooth_cmd_buffer[1]=='0') ||
-		  (bluetooth_cmd_buffer[0]=='O' && bluetooth_cmd_buffer[1]=='0') ||
-		  (bluetooth_cmd_buffer[0]=='I' && bluetooth_cmd_buffer[1]=='2'))
+		  (bluetooth_cmd_sent[0]=='+' && bluetooth_cmd_sent[1]=='+') ||
+		  (bluetooth_cmd_sent[0]=='H' && bluetooth_cmd_sent[1]==13) ||
+		  (bluetooth_cmd_sent[0]=='O' && bluetooth_cmd_sent[1]==13) ||
+		  (bluetooth_cmd_sent[0]=='I' && bluetooth_cmd_sent[1]=='2'))
 		{
 			//Data in FIFO is response to a sent command
 			int16_t byte = fifo_get_nowait(&bluetooth_infifo);
@@ -317,17 +318,38 @@ void bluetooth_process_data(void)
 			if (byte == -1)
 				return;
 
-			if (bluetooth_data_package_index < BLUETOOTH_DATA_PACKAGE_SIZE-1)
+			//check if module sent disconnect message
+			if (bluetooth_data_package_index > 10 && strstr((char*)bluetooth_data_package, "\r\nDISCONNECT")!=NULL)
+			{
+				if(byte == 10 && bluetooth_data_package_index==31)
+				{ //data was DISCONNECT message from module
+					uint8_t i;
+					for (i =0 ; i<28; i++)
+					{
+						bluetooth_cmd_buffer[i] = bluetooth_data_package[i+2];
+					}
+					bluetooth_cmd_buffer_head = i;
+					bluetooth_cmd_buffer[bluetooth_cmd_buffer_head]=0;
+					bluetooth_process_response();
+					bluetooth_cmd_buffer_head = 0;
+					bluetooth_data_package_index=0;
+				} else {
+					bluetooth_data_package[bluetooth_data_package_index] = (uint8_t)byte;
+					bluetooth_previous_byte = byte;
+					bluetooth_data_package_index++;
+				}
+			}
+			else if (bluetooth_data_package_index < BLUETOOTH_DATA_PACKAGE_SIZE-1)
 			{
 
 				if ((byte == BLUETOOTH_SPECIAL_BYTE) && (bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE))
 				{ //Double special byte means that there is one byte in the data package with the value of special byte
+					//don't write byte to array
 					bluetooth_previous_byte = -1; //to make sure next time this if can't be called
-					bluetooth_data_package[bluetooth_data_package_index] = (uint8_t)byte;
-					bluetooth_data_package_index++;
 				} else if ((byte==BLUETOOTH_STOP_BYTE) && (bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE))
 				{
 					//Handle array because last byte was stop byte
+					bluetooth_data_package_index--;//don't handle last special byte because is part of stop byte
 					bluetooth_handle_array();
 					bluetooth_data_package_index=0;
 				} else {
@@ -335,7 +357,7 @@ void bluetooth_process_data(void)
 					bluetooth_previous_byte = byte;
 					bluetooth_data_package_index++;
 				}
-				if (bluetooth_data_package_index < BLUETOOTH_DATA_PACKAGE_SIZE-1)
+				if (bluetooth_data_package_index >= BLUETOOTH_DATA_PACKAGE_SIZE)
 				{
 					//array is full, handle it
 					bluetooth_handle_array();
@@ -372,7 +394,7 @@ void bluetooth_handle_array(void)
 		bluetooth_data_package[i]=0;
 
 	//Call callback function
-	bluetooth_callback(bluetooth_data_package, 0);
+	bluetooth_callback(bluetooth_data_package, 0, bluetooth_data_package_index);
 }
 
 uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
@@ -672,6 +694,19 @@ uint8_t* bluetooth_cmd_get_name (const uint8_t *name)
 
 }
 
+uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect)
+{
+	bluetooth_cmd_buffer[0] = 'A';
+	bluetooth_cmd_buffer[1] = 'T';
+	bluetooth_cmd_buffer[2] = 'O';
+	bluetooth_cmd_buffer[3] = autoconnect+48; //Convert number to number as char
+	bluetooth_cmd_buffer[4] = 13; //<CR>
+	bluetooth_cmd_buffer[5] = 0;
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+		return 0;
+
+	return (bluetooth_cmd_wait_response()==1); //OK
+}
 
 uint8_t bluetooth_cmd_set_pin (const uint8_t *pin)
 {
@@ -732,10 +767,13 @@ uint8_t bluetooth_cmd_online_command (void)
 	bluetooth_cmd_buffer[0] = '+';
 	bluetooth_cmd_buffer[1] = '+';
 	bluetooth_cmd_buffer[2] = '+';
-	bluetooth_cmd_buffer[3] = 0;
+	bluetooth_cmd_buffer[3] = '+';//write four '+'. Only three needed, but sometimes one isn't recognized
+	bluetooth_cmd_buffer[4] = 0;
 
 
-	return (bluetooth_cmd_send(bluetooth_cmd_buffer, 5000) == 0);
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 1500) == 0)
+			return 0;
+	return (bluetooth_cmd_wait_response()==1); //OK
 }
 
 

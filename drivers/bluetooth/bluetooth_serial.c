@@ -142,6 +142,8 @@ uint8_t bluetooth_serial_putc (const uint8_t byte)
 		{
 			perror("Couldn't write");
 			continue;
+		} else {
+			printf("putc:%d,%c\n", byte, byte);
 		}
 		return 1;
 	}

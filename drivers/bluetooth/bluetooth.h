@@ -69,7 +69,7 @@ extern uint8_t bluetooth_is_connected;
 /**
 * Initialization routine for the bluetooth module.
 */
-extern void bluetooth_init(void (*bluetooth_callback_handler)(uint8_t *data_package, const uint8_t callback_type));
+extern void bluetooth_init(void (*bluetooth_callback_handler)(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length));
 
 
 extern void bluetooth_close(void);
@@ -83,7 +83,7 @@ extern void bluetooth_close(void);
 extern void bluetooth_byte_received (uint8_t);
 
 
-void (*bluetooth_callback)(uint8_t *data_package, const uint8_t callback_type);
+void (*bluetooth_callback)(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length);
 
 extern void bluetooth_handle_array(void);
 
@@ -193,6 +193,15 @@ extern uint8_t bluetooth_cmd_set_name (const uint8_t *name);
  * @return Returns array with name on success otherwise NULL.
  */
 extern uint8_t* bluetooth_cmd_get_name (const uint8_t *name);
+
+
+/**
+ * Command: ATO
+ * Enable/Disable autoconnect.
+ * @param autoconnect 1 for autoconnect with address of ATD or 0 to disable
+ * @return 1 on success or 0.
+ */
+extern uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect);
 
 
 /**
