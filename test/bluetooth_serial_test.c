@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <unistd.h>
 
 int connected = 0;
 
@@ -147,29 +148,81 @@ void master_test()
 		}
 }
 
+/**
+ * Test if connection with bluetooth module is OK.
+ * @param tries Number of tries
+ * @return 1 on successful test, 0 otherwise
+ */
+uint8_t testConnection(uint8_t tries)
+{
+	uint8_t i;
+	for (i=0; i<tries; i++)
+	{
+		if (bluetooth_cmd_test_connection()==1)
+			break;
+	}
+	return (i<tries);
+}
+
+/**
+ * Checks if it is already master (0).
+ * If not it switches to master mode and disables autoconnect.
+ * @return 1 on success, 0 on failure
+ */
+uint8_t setAsMaster()
+{
+	uint8_t* currentMode = bluetooth_cmd_get_mode();
+	if (currentMode == NULL)
+		return 0;
+	if (currentMode[0] == '0') //already in master mode
+		return 1;
+	if (bluetooth_cmd_set_mode(0)==0)
+		return 0;
+	if (bluetooth_cmd_autoconnect(0)==0)
+		return 0;
+	else
+		return 1;
+
+}
+
+/**
+ * Checks if it is already slave (1).
+ * If not it switches to slave mode and disables autoconnect.
+ * @return 1 on success, 0 on failure
+ */
+uint8_t setAsSlave()
+{
+	uint8_t* currentMode = bluetooth_cmd_get_mode();
+	if (currentMode == NULL)
+		return 0;
+	if (currentMode[0] == '1') //already in slave mode
+		return 1;
+	if (bluetooth_cmd_set_remote_address(NULL)==0)
+		return 0;
+
+	if (bluetooth_cmd_autoconnect(1)==0)
+		return 0;
+	if (bluetooth_cmd_set_mode(1)==0)
+		return 0;
+	else
+		return 1;
+
+}
+
 void slave_test()
 {
-	//int retval = 0;
-	//retval = bluetooth_cmd_autoconnect(0);
-	//printf("\nATO0 ret=%d", retval);
-
-	//retval = bluetooth_cmd_set_mode(1);
-	//printf("\nATO0 ret=%d", retval);
-
-
-	int retval = bluetooth_cmd_set_remote_address((uint8_t*)"701A041CDBF1");
-
-	printf("\nATD ret=%d",retval);
+	if (setAsSlave() == 0)
+	{
+		printf("Couldn't set as slave\n");
+		return;
+	}
 
 	printf("Waiting for connection ...\n");
 
 
 	while (!connected)
 	{
-	    struct timespec s;
-	    s.tv_sec = 0;
-	    s.tv_nsec = 100000L;
-	    nanosleep(&s, NULL);
+		usleep(1000);
 	}
 
 	printf("Gib daten ein:\n");
@@ -204,23 +257,32 @@ int main()
 
 	bluetooth_init(bluetooth_callback_handler);
 
-	for (int i=0; i<4; i++)
+	int ret = testConnection(4);
+	if (ret == 0)
 	{
-		int retval = bluetooth_cmd_test_connection();
-		if (retval != 1)
-			printf("\nAT%d ret=%d",i, retval);
-		else
-			break;
+		printf("Couldn't test connection!\n");
+		return -1;
 	}
 
-	int retval = bluetooth_cmd_set_pin((uint8_t*)"6666");
+	/*ret = setAsMaster();
+	if (ret == 0)
+	{
+		printf("Couldn't set as master\n");
+		return -1;
+	}*/
+
+
+
+	//return 0;
+
+	/*int retval = bluetooth_cmd_set_pin((uint8_t*)"6666");
 	printf("\nATP ret=%d",retval);
 
 	uint8_t* ret = bluetooth_cmd_get_pin();
 		printf("\nATP ret=%s",ret);
 
-	//master_test();
-	//slave_test();
+	//master_test();*/
+	slave_test();
 
 	bluetooth_close();
 }

@@ -513,6 +513,12 @@ uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms)
 	}
 #endif
 
+	#ifdef SERIAL
+		usleep(500000); //Wait until device has finished command
+	#else
+		_delay_ms(500); //Wait until device has finished command
+	#endif
+
 	return 1;
 }
 
@@ -612,7 +618,16 @@ uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address)
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
 		return 0;
 
-	return (bluetooth_cmd_wait_response()==1); //OK
+	if (bluetooth_cmd_wait_response()==1) //OK
+	{
+		#ifdef SERIAL
+			usleep(2000000); //Wait until device has finished command
+		#else
+			_delay_ms(2000); //Wait until device has finished command
+		#endif
+		return 1;
+	} else
+		return 0;
 }
 
 uint8_t* bluetooth_cmd_search_devices (void)
@@ -710,13 +725,26 @@ uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect)
 	bluetooth_cmd_buffer[0] = 'A';
 	bluetooth_cmd_buffer[1] = 'T';
 	bluetooth_cmd_buffer[2] = 'O';
-	bluetooth_cmd_buffer[3] = autoconnect+48; //Convert number to number as char
+	if (autoconnect)
+		bluetooth_cmd_buffer[3] = '0';
+	else
+		bluetooth_cmd_buffer[3] = '1';
+
 	bluetooth_cmd_buffer[4] = 13; //<CR>
 	bluetooth_cmd_buffer[5] = 0;
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
 		return 0;
 
-	return (bluetooth_cmd_wait_response()==1); //OK
+	if (bluetooth_cmd_wait_response()==1) //OK
+	{
+		#ifdef SERIAL
+			usleep(3000000); //Wait until device has finished warm start
+		#else
+			_delay_ms(3000); //Wait until device has finished warm start
+		#endif
+		return 1;
+	} else
+		return 0;
 }
 
 uint8_t bluetooth_cmd_set_pin (const uint8_t *pin)
@@ -775,8 +803,36 @@ uint8_t bluetooth_cmd_set_mode (uint8_t mode)
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
 		return 0;
 
-	return (bluetooth_cmd_wait_response()==1); //OK
+	if (bluetooth_cmd_wait_response()==1) //OK
+	{
+		#ifdef SERIAL
+			usleep(3500000); //Wait until device has finished warm start
+		#else
+			_delay_ms(3500); //Wait until device has finished warm start
+		#endif
+		return 1;
+	} else
+		return 0;
 
+}
+
+uint8_t* bluetooth_cmd_get_mode ()
+{
+	bluetooth_cmd_buffer[0] = 'A';
+	bluetooth_cmd_buffer[1] = 'T';
+	bluetooth_cmd_buffer[2] = 'R';
+	bluetooth_cmd_buffer[3] = '?';
+	bluetooth_cmd_buffer[4] = 13; //<CR>
+	bluetooth_cmd_buffer[5] = 0;
+
+
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+		return NULL;
+
+	if (bluetooth_cmd_wait_response()!=1) //OK
+		return NULL;
+	else
+		return bluetooth_data_package;
 }
 
 uint8_t bluetooth_cmd_restore_settings (void)
