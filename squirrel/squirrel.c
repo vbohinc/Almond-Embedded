@@ -36,7 +36,7 @@
 
 
 	void squirrel_init(void) {
-		bluetooth_init(blubb);
+		bluetooth_init(NULL);
 
 	}
 

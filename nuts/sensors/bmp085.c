@@ -87,6 +87,7 @@ int16_t calculate_true_temprature(struct temprature_conversion_data* data, int32
 
 int32_t calculate_true_pressure(struct pressure_conversion_data* data, int32_t* B5, int16_t upressure)
 {
+  //Behold: Magic!
   int32_t B6, X1, X2, X3, B3, p;
   uint32_t B4, B7;
   B6 = *B5 - 4000;

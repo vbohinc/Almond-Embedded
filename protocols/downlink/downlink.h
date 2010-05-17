@@ -42,7 +42,7 @@ struct downlink_packet {
  * Discover nuts, returns ???
  */
 
-void downlink_discover ();
+void downlink_discover (void);
 
 /**
  *
