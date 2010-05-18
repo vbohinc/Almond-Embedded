@@ -60,7 +60,13 @@ static inline bool downlink_handle_get_package (struct downlink_packet *p) {
 		case STANDARD:
 			if (p->id < class_id_extensions_length && class_id_extensions[p->id] < GENERIC_ACTOR) {
 				p->opcode = RET;
-				p->value = get_value (p->id);
+				if (0 == p->value ) {
+					p->value = get_value (p->id);
+				} else if (0 < p->value && p->value <= MAX_HISTORY) {
+					p->value = get_cached_value (p->id, p->value);
+				} else {
+					return false;
+				}
 				return true;
 			} else {
 				return false;
@@ -78,6 +84,7 @@ static inline bool downlink_handle_get_package (struct downlink_packet *p) {
 			} else {
 				return false;
 			}
+		/* Not supported yet */
 		case CONFIG:
 			return false;
 		default:
@@ -99,6 +106,7 @@ static inline bool downlink_handle_set_package (struct downlink_packet *p) {
 			} else {
 				return false;
 			}
+		/* Not supported yet */
 		case CONFIG:
 			return false;
 		default:
@@ -106,8 +114,9 @@ static inline bool downlink_handle_set_package (struct downlink_packet *p) {
 	}
 }
 
+
 /**
- * Major package downlink handling function
+ * Major downlink package handling function
  */
 bool downlink_handle_package (struct downlink_packet *p) {
 	switch (p->opcode & 0xF0) {
@@ -115,6 +124,13 @@ bool downlink_handle_package (struct downlink_packet *p) {
 			return downlink_handle_get_package (p);
 		case SET:
 			return downlink_handle_set_package (p);
+		/* FIXME: Should we return something. Maybe a GLOBAL Bluetooth activated? */
+		case BYE:
+			bluetooth_disabled_for_s = p->value;
+			p->opcode = RET;
+			p->id = 0;
+			p->value = 0;
+			return true;
 		case ECHO:
 			return true;
 		default:
