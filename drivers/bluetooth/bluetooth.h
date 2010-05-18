@@ -265,7 +265,7 @@ extern uint8_t bluetooth_cmd_set_mode (uint8_t mode);
  * Get mode of the device: master(0) or slave(1).
  * @return Returns array with mode at index 0 or NULL if error.
  */
-extern uint8_t *bluetooth_cmd_get_mode ();
+extern uint8_t *bluetooth_cmd_get_mode (void);
 
 /**
  * Command: ATZ

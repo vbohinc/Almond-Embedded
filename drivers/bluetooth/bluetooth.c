@@ -816,7 +816,7 @@ uint8_t bluetooth_cmd_set_mode (uint8_t mode)
 
 }
 
-uint8_t* bluetooth_cmd_get_mode ()
+uint8_t* bluetooth_cmd_get_mode (void)
 {
 	bluetooth_cmd_buffer[0] = 'A';
 	bluetooth_cmd_buffer[1] = 'T';
