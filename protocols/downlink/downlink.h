@@ -20,7 +20,7 @@
 #include "../classes.h"
 
 extern const int DOWNLINK_PACKET_LENGTH;
-
+extern const int MAX_HISTORY; // FIXME!
 /**
  * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
  *
@@ -65,8 +65,10 @@ extern void set_value(uint8_t id, uint16_t value);
 /**
  * Returns true if the package was handled successfully and the buffer can be returned, false otherwise
  */
-bool downlink_handle_package ( struct downlink_packet* );
+bool downlink_handle_packet ( struct downlink_packet* );
 
 #endif
-
+#ifdef SERIAL
+bool downlink_handle_packet ( struct downlink_packet* );
+#endif
 #endif

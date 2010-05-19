@@ -8,6 +8,9 @@
 #include "../drivers/bluetooth/bluetooth.h"
 #ifdef SERIAL
 #include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 #endif
 
 	// Proposed lookup arrays. Every Nut receives a running number when first encountered
@@ -45,17 +48,17 @@
 	}
 
 
-	void bluetooth_handle(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length) {
+	void bluetooth_handle(uint8_t * data_package, const uint8_t callback_type, const uint8_t data_length) {
 #ifdef SERIAL
 		printf("Handler called: %d", callback_type);
 		if (callback_type == 0) {//is data package
 				printf("Data Package received:\n");
 				if (data_length == 64) {
 										printf("Uplink Packet.");
-										uplink_handle_package(data_package);
+										uplink_handle_packet((struct uplink_packet *) data_package);
 									} else if (data_length == 4) {
 										printf("Downlink Packet.");
-										downlink_handle_package(data_package);
+										downlink_handle_packet((struct downlink_packet *) data_package);
 									}
 				printf("[");
 
@@ -77,17 +80,17 @@
 			} else if (callback_type == 1) //connected
 			{
 				printf("Connected to: %s\n", data_package);
-				connected = 1;
+				// bluetooth_is_connected is set
 			} else if (callback_type == 2) //disconnected
 			{
 				printf("Disconnected from: %s\n", data_package);
-				connected = 0;
+				// bluetooth_is_connected is set
 			} else
 				printf("Invalid callback type: %d\n", callback_type);
 #endif
 		}
 
-	void master_test()
+	void master_test(void)
 	{
 		/*
 			uint8_t* address = bluetooth_cmd_get_address();
@@ -169,7 +172,8 @@
 
 #ifdef SERIAL
 			printf("Gib daten ein:\n");
-
+			char buffer[255];
+			uint8_t cmd[255];
 			while(1)
 			{
 				fgets(buffer, 255, stdin);
@@ -199,7 +203,7 @@
 	 * If not it switches to master mode and disables autoconnect.
 	 * @return 1 on success, 0 on failure
 	 */
-	uint8_t setAsMaster()
+	uint8_t setAsMaster(void)
 	{
 		uint8_t* currentMode = bluetooth_cmd_get_mode();
 		if (currentMode == NULL)
@@ -220,7 +224,7 @@
 	 * If not it switches to slave mode and disables autoconnect.
 	 * @return 1 on success, 0 on failure
 	 */
-	uint8_t setAsSlave()
+	uint8_t setAsSlave(void)
 	{
 		uint8_t* currentMode = bluetooth_cmd_get_mode();
 		if (currentMode == NULL)
@@ -239,28 +243,30 @@
 
 	}
 
-	void slave_test()
+	void slave_test(void)
 	{
+#ifdef SERIAL
 		if (setAsSlave() == 0)
 		{
-#ifdef SERIAL
 			printf("Couldn't set as slave\n");
-#endif
+
 			return;
 		}
-#ifdef SERIAL
-		printf("Waiting for connection ...\n");
-#endif
 
-		while (!connected)
+		printf("Waiting for connection ...\n");
+
+
+		while (!bluetooth_is_connected)
 		{
 			usleep(1000);
 		}
-#ifdef SERIAL
+
 		printf("Gib daten ein:\n");
-#endif
-		while(connected)
+
+		while(bluetooth_is_connected)
 		{
+			char buffer[255];
+			uint8_t cmd[255];
 			fgets(buffer, 255, stdin);
 			if (strncmp(buffer, "exit",4)==0)
 				break;
@@ -278,16 +284,15 @@
 			//cmd[count] = 0;
 
 			if (bluetooth_send_data_package(cmd, count-1)==0) {
-#ifdef SERIAL
 				perror("Couldn't send cmd");
-#endif
+
 			}
 		}
-
+#endif
 
 	}
 
-	void squirrel_main() {
+	void squirrel_main(void) {
 
 	}
 

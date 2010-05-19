@@ -11,8 +11,8 @@
 #include <stdbool.h>
 #include "../packet_types.h"
 
-const int UPLINK_PACKET_LENGTH = 64;
-const int UPLINK_PAYLOAD_LENGTH = 62;
+extern const int UPLINK_PACKET_LENGTH;
+extern const int UPLINK_PAYLOAD_LENGTH;
 /**
  * Package format:
  * | OPCODE (1) | ID (1) | PAYLOAD (62) |
@@ -42,18 +42,51 @@ const int UPLINK_PAYLOAD_LENGTH = 62;
  * | DATA   (4) | -- (52) |
  */
 
+struct uplink_payload_list {
+	uint8_t bt_address[6];
+	uint8_t nut_class;
+	uint8_t extension_class[55];
+};
+
+struct  uplink_payload_log {
+	uint8_t bt_address[6];
+	uint8_t extension_id;
+	uint8_t extension_class;
+	uint32_t log_time;
+	uint16_t time_intervall;
+	uint16_t values[24];
+};
+
+struct  uplink_payload_time {
+	uint32_t time;
+	uint8_t padding[58];
+};
+
+struct  uplink_payload_tunnel {
+	uint8_t bt_address[6];
+	uint8_t tunnel[4];
+	uint8_t padding[52];
+};
+
+union payload {
+	struct uplink_payload_list list;
+	struct uplink_payload_log log;
+	struct uplink_payload_time time;
+	struct uplink_payload_tunnel tunnel;
+} payload;
+
 struct uplink_packet {
 	uint8_t opcode;
 	uint8_t id;
-	uint8_t payload[UPLINK_PAYLOAD_LENGTH];
-} uplink_packet;
+	union payload payload;
+};
 
 
 #ifdef SQUIRREL
-const uint8_t uplink_packet_length = 255;
 void uplink_init(void);
 void uplink_send_configuration(uint8_t);
 void uplink_receive_configuration(uint8_t);
 void uplink_send_log(void);
-void uplink_handle_packet((struct uplink_packet) *);
+bool uplink_handle_packet(struct uplink_packet*);
 #endif
+#endif // ENDS UPLINK

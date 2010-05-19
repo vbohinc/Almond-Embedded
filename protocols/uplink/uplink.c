@@ -3,6 +3,8 @@
  *
  * Uplink protocol implementation
  */
+const int UPLINK_PACKET_LENGTH = 64;
+const int UPLINK_PAYLOAD_LENGTH = 62;
 
 #ifdef SQUIRREL
 
@@ -63,7 +65,7 @@ static inline bool uplink_handle_set_package (struct uplink_packet *p) {
 /**
  * Major package uplink handling function
  */
-bool uplink_handle_package (struct uplink_packet *p) {
+bool uplink_handle_packet (struct uplink_packet *p) {
 	switch (p->opcode & 0xF0) {
 		case GET:
 			return uplink_handle_get_package (p);
