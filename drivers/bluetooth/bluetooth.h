@@ -48,6 +48,11 @@
 #define BLUETOOTH_STOP_BYTE 255
 
 /**
+ * Default waiting for commands in milliseconds.
+ *
+ */
+#define BLUETOOTH_CMD_WAIT_TIME 42
+/**
  * Array to put data package to send into.
  * Also Callback is called with this array to return a received package.
  * This array is also used to return a response of a command.

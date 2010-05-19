@@ -89,6 +89,51 @@
 				printf("Invalid callback type: %d\n", callback_type);
 #endif
 		}
+	/**
+		 * Checks if it is already master (0).
+		 * If not it switches to master mode and disables autoconnect.
+		 * @return 1 on success, 0 on failure
+		 */
+		uint8_t setAsMaster(void)
+		{
+			uint8_t* currentMode = bluetooth_cmd_get_mode();
+			if (currentMode == NULL)
+				return 0;
+			if (currentMode[0] == '0') //already in master mode
+				return 1;
+			if (bluetooth_cmd_set_mode(0)==0)
+				return 0;
+			if (bluetooth_cmd_autoconnect(0)==0)
+				return 0;
+
+			else
+				return 1;
+
+		}
+
+		/**
+		 * Checks if it is already slave (1).
+		 * If not it switches to slave mode and disables autoconnect.
+		 * @return 1 on success, 0 on failure
+		 */
+		uint8_t setAsSlave(void)
+		{
+			uint8_t* currentMode = bluetooth_cmd_get_mode();
+			if (currentMode == NULL)
+				return 0;
+			if (currentMode[0] == '1') //already in slave mode
+				return 1;
+			if (bluetooth_cmd_set_remote_address(NULL)==0)
+				return 0;
+
+			if (bluetooth_cmd_autoconnect(1)==0)
+				return 0;
+			if (bluetooth_cmd_set_mode(1)==0)
+				return 0;
+			else
+				return 1;
+
+		}
 
 	void master_test(void)
 	{
@@ -106,6 +151,8 @@
 			int retval = bluetooth_cmd_set_remote_address((uint8_t*)NULL);
 			printf("\nATD ret=%d", retval);
 			*/
+
+			setAsMaster();
 
 			int retval = bluetooth_cmd_set_remote_address((uint8_t*)"701A041CDBF1");
 #ifdef SERIAL
@@ -156,20 +203,6 @@
 #endif
 			}
 
-			if (retval ==1)
-			{
-
-				retval = bluetooth_cmd_online_command();
-#ifdef SERIAL
-				printf("\n+++ ret=%d", retval);
-#endif
-				retval = bluetooth_cmd_close_connection();
-#ifdef SERIAL
-				printf("\nATH ret=%d", retval);
-#endif
-
-			}
-
 #ifdef SERIAL
 			printf("Gib daten ein:\n");
 			char buffer[255];
@@ -188,9 +221,9 @@
 				/*if (strncmp(buffer, "+\n", 2)==0)
 					count--;
 				else
-					cmd[count-1] = 13;*/
+					cmd[count-1] = 13;
 
-				//cmd[count] = 0;
+				cmd[count] = 0;*/
 
 				if (bluetooth_send_data_package(cmd, count-1)==0)
 					perror("Couldn't send cmd");
@@ -198,50 +231,6 @@
 #endif
 	}
 
-	/**
-	 * Checks if it is already master (0).
-	 * If not it switches to master mode and disables autoconnect.
-	 * @return 1 on success, 0 on failure
-	 */
-	uint8_t setAsMaster(void)
-	{
-		uint8_t* currentMode = bluetooth_cmd_get_mode();
-		if (currentMode == NULL)
-			return 0;
-		if (currentMode[0] == '0') //already in master mode
-			return 1;
-		if (bluetooth_cmd_set_mode(0)==0)
-			return 0;
-		if (bluetooth_cmd_autoconnect(0)==0)
-			return 0;
-		else
-			return 1;
-
-	}
-
-	/**
-	 * Checks if it is already slave (1).
-	 * If not it switches to slave mode and disables autoconnect.
-	 * @return 1 on success, 0 on failure
-	 */
-	uint8_t setAsSlave(void)
-	{
-		uint8_t* currentMode = bluetooth_cmd_get_mode();
-		if (currentMode == NULL)
-			return 0;
-		if (currentMode[0] == '1') //already in slave mode
-			return 1;
-		if (bluetooth_cmd_set_remote_address(NULL)==0)
-			return 0;
-
-		if (bluetooth_cmd_autoconnect(1)==0)
-			return 0;
-		if (bluetooth_cmd_set_mode(1)==0)
-			return 0;
-		else
-			return 1;
-
-	}
 
 	void slave_test(void)
 	{
@@ -293,6 +282,9 @@
 	}
 
 	void squirrel_main(void) {
+#ifdef SERIAL
+			printf("Squirrel Main");
+#endif
 
 	}
 
@@ -300,8 +292,13 @@
 		bluetooth_init(bluetooth_handle);
 		int ret = bluetooth_test_connection(4);
 		if (ret) {
-			//slave_test();
-			master_test();
+			//if (bluetooth_cmd_get_mode()[0] == '0') {
+			//	printf("Bluetooth in Master Mode - Switching to Slave");
+			//	slave_test();
+			//} else {
+			//	printf("Bluetooth in Slave Mode - Switching to Master");
+				master_test();
+			//}
 			squirrel_main();
 		} else {
 #ifdef SERIAL

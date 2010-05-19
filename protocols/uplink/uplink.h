@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "../packet_types.h"
+#include "./../packet_types.h"
 
 extern const int UPLINK_PACKET_LENGTH;
 extern const int UPLINK_PAYLOAD_LENGTH;
@@ -87,6 +87,6 @@ void uplink_init(void);
 void uplink_send_configuration(uint8_t);
 void uplink_receive_configuration(uint8_t);
 void uplink_send_log(void);
-bool uplink_handle_packet(struct uplink_packet*);
+bool uplink_handle_packet (struct uplink_packet *p);
 #endif
 #endif // ENDS UPLINK

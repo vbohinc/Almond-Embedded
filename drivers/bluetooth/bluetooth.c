@@ -550,7 +550,7 @@ uint8_t bluetooth_cmd_connect (const uint8_t dev_num)
 		bluetooth_cmd_buffer[3] = 13; //<CR>
 		bluetooth_cmd_buffer[4] = 0;
 	}
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()!=1)//OK
@@ -567,7 +567,7 @@ uint8_t bluetooth_cmd_test_connection (void)
 	bluetooth_cmd_buffer[1] = 'T';
 	bluetooth_cmd_buffer[2] = 13; //<CR>
 	bluetooth_cmd_buffer[3] = 0;
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
@@ -584,7 +584,7 @@ uint8_t* bluetooth_cmd_get_address (void)
 	bluetooth_cmd_buffer[5] = 0;
 
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()!=1) //OK
@@ -615,7 +615,7 @@ uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address)
 
 	}
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()==1) //OK
@@ -640,7 +640,7 @@ uint8_t* bluetooth_cmd_search_devices (void)
 	bluetooth_cmd_buffer[5] = 0;
 
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()!=1) //OK
@@ -656,7 +656,7 @@ uint8_t bluetooth_cmd_close_connection (void)
 	bluetooth_cmd_buffer[2] = 'H';
 	bluetooth_cmd_buffer[3] = 13; //<CR>
 	bluetooth_cmd_buffer[4] = 0;
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
@@ -670,7 +670,7 @@ uint8_t bluetooth_cmd_discoverable (const uint8_t discoverable)
 	bluetooth_cmd_buffer[3] = discoverable+48; //Convert number to number as char
 	bluetooth_cmd_buffer[4] = 13; //<CR>
 	bluetooth_cmd_buffer[5] = 0;
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
@@ -693,7 +693,7 @@ uint8_t bluetooth_cmd_set_name (const uint8_t *name)
 	bluetooth_cmd_buffer[i+4] = 13; //<CR>
 	bluetooth_cmd_buffer[i+5] = 0;
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 			return 0;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
@@ -710,7 +710,7 @@ uint8_t* bluetooth_cmd_get_name (void)
 	bluetooth_cmd_buffer[5] = 0;
 
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()!=1) //OK
@@ -732,7 +732,7 @@ uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect)
 
 	bluetooth_cmd_buffer[4] = 13; //<CR>
 	bluetooth_cmd_buffer[5] = 0;
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()==1) //OK
@@ -765,7 +765,7 @@ uint8_t bluetooth_cmd_set_pin (const uint8_t *pin)
 	bluetooth_cmd_buffer[i+4] = 13; //<CR>
 	bluetooth_cmd_buffer[i+5] = 0;
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 			return 0;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
@@ -782,7 +782,7 @@ uint8_t* bluetooth_cmd_get_pin (void)
 	bluetooth_cmd_buffer[5] = 0;
 
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()!=1) //OK
@@ -800,7 +800,7 @@ uint8_t bluetooth_cmd_set_mode (uint8_t mode)
 	bluetooth_cmd_buffer[3] = mode+48; //Convert number to number as char
 	bluetooth_cmd_buffer[4] = 13; //<CR>
 	bluetooth_cmd_buffer[5] = 0;
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()==1) //OK
@@ -826,7 +826,7 @@ uint8_t* bluetooth_cmd_get_mode (void)
 	bluetooth_cmd_buffer[5] = 0;
 
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return NULL;
 
 	if (bluetooth_cmd_wait_response()!=1) //OK
@@ -845,7 +845,7 @@ uint8_t bluetooth_cmd_restore_settings (void)
 	bluetooth_cmd_buffer[5] = 0;
 
 
-	return (bluetooth_cmd_send(bluetooth_cmd_buffer, 10) == 0);
+	return (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0);
 
 }
 

@@ -17,7 +17,7 @@ void downlink_discover () {
 static bool downlink_handle_ret_package (struct downlink_packet *p) {
 
 	// Utility functions
-	switch (p->opcode & 0x0F) {
+	/*switch (p->opcode & 0x0F) {
 		case INFO_NUT:
 		if (!find_nut_by_MAC(p)) {
 			// Issue new running number
@@ -28,7 +28,8 @@ static bool downlink_handle_ret_package (struct downlink_packet *p) {
 		// Determine running number
 		// Insert into relevant lookup table
 
-	}
+	}*/
+	return true;
 }
 
 uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_packet *p) {
@@ -36,7 +37,7 @@ uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_packet 
   p->id = id;
   p->value = 0;
   
-  bluetooth_handle_package (p);
+  //bluetooth_handle_package (p);
   
   if (p->opcode == 0xF0 && p->id == id) {
     return p->value;
@@ -138,3 +139,6 @@ bool downlink_handle_packet (struct downlink_packet *p) {
 }
 #endif
 
+bool downlink_handle_packet (struct downlink_packet *p) {
+	return true;
+}
