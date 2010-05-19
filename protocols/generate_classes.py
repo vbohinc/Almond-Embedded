@@ -91,7 +91,6 @@ class Generator(object):
 		
 
 if __name__ == '__main__':
-
     generator = Generator()
     generator.parse_class_id_nuts()
     generator.parse_class_id_extensions()
