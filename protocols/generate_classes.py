@@ -29,6 +29,12 @@ class Generator(object):
             s = s.encode('utf-8')
         self.__header += s
         self.__header += '\n'
+    
+    def hh(self, s):
+        if isinstance(s, unicode):
+            s = s.encode('utf-8')
+        self.__header += s
+        #self.__header += '\n'
 
 
     def parse_class_id_nuts(self):
@@ -39,29 +45,45 @@ class Generator(object):
         c.execute('select * from device_classes')
         for row in c:
         	if row[1] == 0:
-		        self.h("\t" + str(row[2].upper()) + " = " + str(row[1]) + ",")
+		        self.hh("\t" + str(row[2].upper()) + " = " + hex(row[1]))
 	        else:
-		        self.h("\t" + str(row[2].upper()) + " = " + str(row[1]))
+		        self.hh(",\n\t" + str(row[2].upper()) + " = " + hex(row[1]))
         c.close
     
-        self.h('};')
+        self.h('\n};')
         self.h('')
 		
     def parse_class_id_extensions(self):
-        self.h('enum class_id_extensions {')
+        self.h('enum class_id_sensors {')
         
         conn = sqlite3.connect('almond.db')
         c = conn.cursor()
-        c.execute('select * from device_properties') 
-        # FIXME
+        c.execute('select * from device_properties where property_type is 1') 
+        # FIXME SENSORS
         for row in c:
         	if row[1] == 0:
-		        self.h("\t" + str(row[2].upper()) + " = " + str(row[1]) + ",")
+		        self.hh("\t" + str(row[2].upper()) + " = " + hex(row[1]))
 	        else:
-		        self.h("\t" + str(row[2].upper()) + " = " + str(row[1]))
+		        self.hh(",\n\t" + str(row[2].upper()) + " = " + hex(row[1]))
         c.close
 
-        self.h('};')
+        self.h('\n};')
+        self.h('')
+        
+        self.h('enum class_id_actuators {')
+        c = conn.cursor()
+        c.execute('select * from device_properties where property_type is 2') 
+        # FIXME ACTUATORS
+	first = True
+        for row in c:
+        	if first:
+		        self.hh("\t" + str(row[2].upper()) + " = " + hex(row[1]))
+		        first = False
+	        else:
+		        self.hh(",\n\t" + str(row[2].upper()) + " = " + hex(row[1]))
+        c.close
+
+        self.h('\n};')
         self.h('')
 
     def print_header(self):
