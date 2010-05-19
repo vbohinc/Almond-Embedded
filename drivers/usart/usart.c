@@ -14,10 +14,10 @@
 
 #include "usart.h"
 
-#ifdef ATMEGA8535
+#ifdef __AVR_ATmega8535__
 
 
-#elif ATXMEGA
+#elif __AVR_ATxmega128A1__
 #	include "usart_driver.h"
 	/*! Input data buffer for interrupt on receive */
 	USART_data_t USART_data;
@@ -39,7 +39,7 @@ void usart_set_byte_handler(void (*byte_handling_function)(const uint8_t))
 void usart_init(void)
 {
 
-#ifdef ATMEGA8535
+#ifdef __AVR_ATmega8535__
 	/* Set baud rate */
 	UBRRH = (unsigned char)(USART_UBRR_BAUD>>8);
 	UBRRL = (unsigned char)USART_UBRR_BAUD;
@@ -52,7 +52,7 @@ void usart_init(void)
 
 
 
-#elif ATXMEGA
+#elif __AVR_ATxmega128A1__
 
 	/**
 	* @todo maxi fragen, wo btm-222 beim atxmega dranhaengt.
@@ -97,7 +97,7 @@ void usart_init(void)
 uint8_t usart_putc (const uint8_t byte, const uint8_t max_try_count)
 {
 
-#ifdef ATMEGA8535
+#ifdef __AVR_ATmega8535__
     // Wait until UDR is ready for new value
 	if (max_try_count>0)
 	{
@@ -112,7 +112,7 @@ uint8_t usart_putc (const uint8_t byte, const uint8_t max_try_count)
 
     // Writing UDR starts sending
     UDR = byte;
-#elif ATXMEGA
+#elif __AVR_ATxmega128A1__
 	// Wait until write buffer is ready for new value
 
     if (max_try_count > 0)
@@ -143,7 +143,7 @@ uint8_t usart_send_bytes(uint8_t *bytes, const uint8_t length , const uint8_t ma
 	return 1;
 }
 
-#ifdef ATMEGA8535
+#ifdef __AVR_ATmega8535__
 // Empfangene Zeichen werden in die Eingabgs-FIFO gespeichert und warten dort 
 ISR(USART_RX_vect)
 {
@@ -151,7 +151,7 @@ ISR(USART_RX_vect)
 
 }
 
-#elif ATXMEGA
+#elif __AVR_ATxmega128A1__
 
 /*! \brief Receive complete interrupt service routine.
  *

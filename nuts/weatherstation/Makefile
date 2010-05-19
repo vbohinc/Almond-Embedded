@@ -4,4 +4,5 @@ TARGET = main
 SRC = ../../drivers/twi/twi.c ../../drivers/bluetooth/bluetooth.c ../../shared/fifo.c ../../drivers/usart/usart.c ../sensors/bmp085.c ../../protocols/downlink/downlink.c
 EXTRAINCDIRS = ../../drivers/ ../../drivers/ ../sensors/ ../../protocols/
 TARGETTYPE = NUT
+include ../../make/base.makefile 
 
