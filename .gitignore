@@ -14,3 +14,4 @@
 *~
 .thumbsdb
 *.swp
+protocols/generate_classes.py.old

@@ -16,7 +16,7 @@ struct device_info {
 		uint8_t config_types[16];
 };
 
-struct device_info {
+struct device_info { // FIXME!
 	  device_list[16];
 }
 
@@ -39,6 +39,18 @@ int master_discover (void) {
 		  			printf("%c", found[1+i*(16+12)+16+j]);
 		  	}
 		}
+}
+
+
+int squirrel_find_nut_by_mac(uint8_t *bluetooth_data_package) {
+	const int DEVICE_COUNT = 16;
+	for (int i = 0; i < DEVICE_COUNT; i++) {
+		if (device_list[i]->mac == bluetooth_data_package[1+(16+12)+16]) // FIXME: This won't work because the address is not stored as an array of 6 chars, conversion needed!
+			return i;
+		else if (device_list[i]->mac == NULL){
+			return i;
+		}
+	}
 }
 
 int master_main (void) {
