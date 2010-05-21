@@ -39,14 +39,52 @@ uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_packet 
   
   bluetooth_handle_package (p);
   
-  if (p->opcode == 0xF0 && p->id == id) {
+  if (p->opcode == 0xF0 && p->id == id) { // ECHO
     return p->value;
   } else {
     return -1;
   }  
 }
 
+uint8_t downlink_get_class () {
+	struct downlink_packet *p;
+	
+	p->opcode = GET | INFO_NUT;
+	p->id = NULL;
+	p->value = NULL;
+	
+	bluetooth_handle_package (p);
+	
+	if (p->opcode == RET | INFO_NUT) {
+		return p-> value;
+	} else {
+		return -1;
+	}
+}
 
+uint8_t downlink_get_actuator_class (uint8_t id) {
+	return _get_extension_class(id);
+}
+
+uint8_t downlink_get_sensor_class (uint8_t id) {
+	return _get_extension_class(id);
+}
+
+uint8_t _get_extension_class (uint8_t id) {
+	struct downlink_packet *p;
+	
+	p->opcode = GET | INFO_EXTENSION;
+	p->id = id;
+	p->value = NULL;
+	
+	bluetooth_handle_package (p);
+	if (p->opcode == RET | INFO_EXTENSION) {
+		return p->value;
+	} else {
+		return -1;
+	}
+	}
+}
 
 #endif
 

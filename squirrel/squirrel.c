@@ -11,14 +11,13 @@ enum state {
 struct device_info {
 		uint8_t mac[6];
 		uint8_t class;
-		uint8_t actor_types[16];
+		uint8_t actuator_types[16];
 		uint8_t sensor_types[16];
 		uint8_t config_types[16];
 };
 
-struct device_info { // FIXME!
-	  device_list[16];
-}
+struct device_info *device_list[16];
+
 
 int master_discover (void) {
 		uint8_t *found = bluetooth_cmd_search_devices();
@@ -37,20 +36,31 @@ int master_discover (void) {
 				printf("' ");
 				for (int j=0; j<12; j++)
 		  			printf("%c", found[1+i*(16+12)+16+j]);
+				// Assuming the MAC address is stored as a uint8_t[6] in found_mac
+				bool device_already_exists = false;
+				int k;
+				for (k=0; k<16; k++) {
+					if (device_list[k] == NULL) { // We haven't found the MAC, time to create a new entry
+						break;
+					}
+					if (found_mac == device_list[k]->mac) { // Already there, nothing to do
+						device_already_exists = true;
+						break;
+					}
+				}
+				if (!device_already_exists) {
+					device_list[k]->mac = found_mac;
+					device_list[k]->class = downlink_get_class();
+					for (int j=0; j < 16; j++) {
+						device_list[k]->actuator_types[j] = downlink_get_actuator_class(j+0x80); // Actuators begin at ID 0x80
+					}
+					for (int j=0; j < 16; j++) {
+						device_list[k]->sensor_types[j] = downlink_get_sensor_class(j);
+					} // TODO config_types
+				} // And we're done creating a new device entry
+				
 		  	}
 		}
-}
-
-
-int squirrel_find_nut_by_mac(uint8_t *bluetooth_data_package) {
-	const int DEVICE_COUNT = 16;
-	for (int i = 0; i < DEVICE_COUNT; i++) {
-		if (device_list[i]->mac == bluetooth_data_package[1+(16+12)+16]) // FIXME: This won't work because the address is not stored as an array of 6 chars, conversion needed!
-			return i;
-		else if (device_list[i]->mac == NULL){
-			return i;
-		}
-	}
 }
 
 int master_main (void) {

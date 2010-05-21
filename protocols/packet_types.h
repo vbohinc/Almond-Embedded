@@ -21,7 +21,7 @@ enum packet_type_flags {
 	STANDARD = 0x00,	// Standard modifier
 
 	INFO_NUT = 0x01,	// Get the class of the Nut 
-	INFO_EXTENSION = 0x02,    // Get the class of the Sensor/Actor
+	INFO_EXTENSION = 0x02,    // Get the class of the Sensor/Actuator
 
 	// Squirrel specific
 	LOG		 = 0x0A, 	// Returns the latest log data in chronological order
