@@ -7,7 +7,7 @@
 * It's purpose is to test command handling. So don't compile this file for embedded system.
 *
 */
-#include "../drivers/bluetooth/bluetooth.h"
+#include "./drivers/bluetooth/bluetooth.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -69,6 +69,12 @@ void master_test()
 		int retval = bluetooth_cmd_set_remote_address((uint8_t*)NULL);
 		printf("\nATD ret=%d", retval);
 		*/
+
+		if (bluetooth_set_as_master() == 0)
+		{
+			printf("Couldn't set as master\n");
+			return;
+		}
 
 		int retval = bluetooth_cmd_set_remote_address((uint8_t*)"701A041CDBF1");
 
@@ -148,70 +154,9 @@ void master_test()
 		}
 }
 
-/**
- * Test if connection with bluetooth module is OK.
- * @param tries Number of tries
- * @return 1 on successful test, 0 otherwise
- */
-uint8_t testConnection(uint8_t tries)
-{
-	uint8_t i;
-	for (i=0; i<tries; i++)
-	{
-		if (bluetooth_cmd_test_connection()==1)
-			break;
-	}
-	return (i<tries);
-}
-
-/**
- * Checks if it is already master (0).
- * If not it switches to master mode and disables autoconnect.
- * @return 1 on success, 0 on failure
- */
-uint8_t setAsMaster()
-{
-	uint8_t* currentMode = bluetooth_cmd_get_mode();
-	if (currentMode == NULL)
-		return 0;
-	if (currentMode[0] == '0') //already in master mode
-		return 1;
-	if (bluetooth_cmd_set_mode(0)==0)
-		return 0;
-	if (bluetooth_cmd_autoconnect(0)==0)
-		return 0;
-	else
-		return 1;
-
-}
-
-/**
- * Checks if it is already slave (1).
- * If not it switches to slave mode and disables autoconnect.
- * @return 1 on success, 0 on failure
- */
-uint8_t setAsSlave()
-{
-	uint8_t* currentMode = bluetooth_cmd_get_mode();
-	if (currentMode == NULL)
-		return 0;
-	if (currentMode[0] == '1') //already in slave mode
-		return 1;
-	if (bluetooth_cmd_set_remote_address(NULL)==0)
-		return 0;
-
-	if (bluetooth_cmd_autoconnect(1)==0)
-		return 0;
-	if (bluetooth_cmd_set_mode(1)==0)
-		return 0;
-	else
-		return 1;
-
-}
-
 void slave_test()
 {
-	if (setAsSlave() == 0)
+	if (bluetooth_set_as_slave() == 0)
 	{
 		printf("Couldn't set as slave\n");
 		return;
@@ -257,7 +202,7 @@ int main()
 
 	bluetooth_init(bluetooth_callback_handler);
 
-	int ret = testConnection(4);
+	int ret = bluetooth_test_connection(4);
 	if (ret == 0)
 	{
 		printf("Couldn't test connection!\n");

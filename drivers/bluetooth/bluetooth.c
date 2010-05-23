@@ -32,7 +32,22 @@ uint8_t bluetooth_receiveArray_handling = 0;
  */
 uint8_t bluetooth_is_connected = 0;
 
-/* Change also in .h file the size!! */
+/**
+ * Array to put data package to send into.
+ * Also Callback is called with this array to return a received package.
+ * This array is also used to return a response of a command.
+ * The biggest response is of the ATF? command.
+ * The maximum number of found devices is: 8
+ * The maximum lenght of a name is: 16
+ * The length of an address is: 12 (without '-')
+ * The data is stored in the following format (where x is the index of found device: Device '1' is at index '0'):
+ * arr[0]: Number of found devices
+ * arr[1+x*(16+12)] to arr[1+x*(16+12)+15]: Name of found device.
+ * 		Ex: arr[1] to arr[15] contains first name terminated by null if shorter than 16 chars
+ * arr[1+x*(16+12)+16] to arr[1+x*(16+12)+25]: address of found device.
+ * In total there are 1+(16+12)*8=225 bytes needed.
+ * ATTENTION: change also in .c file the size!!
+ */
 uint8_t bluetooth_data_package[225];
 
 /**
@@ -464,7 +479,51 @@ uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 	return (error==0);
 }
 
+uint8_t bluetooth_set_as_master(void)
+{
+	uint8_t* currentMode = bluetooth_cmd_get_mode();
+	if (currentMode == NULL)
+		return 0;
+	if (currentMode[0] == '0') //already in master mode
+		return 1;
+	if (bluetooth_cmd_set_mode(0)==0)
+		return 0;
+	if (bluetooth_cmd_autoconnect(0)==0)
+		return 0;
+	else
+		return 1;
 
+}
+
+uint8_t bluetooth_set_as_slave(void)
+{
+	uint8_t* currentMode = bluetooth_cmd_get_mode();
+	if (currentMode == NULL)
+		return 0;
+	if (currentMode[0] == '1') //already in slave mode
+		return 1;
+	if (bluetooth_cmd_set_remote_address(NULL)==0)
+		return 0;
+
+	if (bluetooth_cmd_autoconnect(1)==0)
+		return 0;
+	if (bluetooth_cmd_set_mode(1)==0)
+		return 0;
+	else
+		return 1;
+
+}
+
+uint8_t bluetooth_test_connection(uint8_t tries)
+{
+	uint8_t i;
+	for (i=0; i<tries; i++)
+	{
+		if (bluetooth_cmd_test_connection()==1)
+			break;
+	}
+	return (i<tries);
+}
 
 //---------------------------------------------------------
 //

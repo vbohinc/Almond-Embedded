@@ -52,23 +52,8 @@
  *
  */
 #define BLUETOOTH_CMD_WAIT_TIME 42
-/**
- * Array to put data package to send into.
- * Also Callback is called with this array to return a received package.
- * This array is also used to return a response of a command.
- * The biggest response is of the ATF? command.
- * The maximum number of found devices is: 8
- * The maximum lenght of a name is: 16
- * The length of an address is: 12 (without '-')
- * The data is stored in the following format (where x is the index of found device: Device '1' is at index '0'):
- * arr[0]: Number of found devices
- * arr[1+x*(16+12)] to arr[1+x*(16+12)+15]: Name of found device.
- * 		Ex: arr[1] to arr[15] contains first name terminated by null if shorter than 16 chars
- * arr[1+x*(16+12)+16] to arr[1+x*(16+12)+25]: address of found device.
- * In total there are 1+(16+12)*8=225 bytes needed.
- * ATTENTION: change also in .c file the size!!
- */
-extern uint8_t bluetooth_data_package[225];
+
+//extern uint8_t bluetooth_data_package[225];
 
 /*
  * Contains the address of the connected device or [0]=0 if disconnected
@@ -99,7 +84,7 @@ extern void bluetooth_close(void);
 * @param byte the read byte.
 * @see bluetooth_process_data
 */
-extern void bluetooth_byte_received (uint8_t byte);
+void bluetooth_byte_received (uint8_t byte);
 
 /**
  * Callback handler for received bytes or connect/disconnet notification
@@ -112,7 +97,7 @@ void (*bluetooth_callback)(uint8_t *data_package, const uint8_t callback_type, c
 /**
  * Called by bluetooth_process_data if a stop byte was received or the data-package is complete-
  */
-extern void bluetooth_handle_array(void);
+void bluetooth_handle_array(void);
 
 /**
  * Sends the data to the connected client.
@@ -123,6 +108,27 @@ extern void bluetooth_handle_array(void);
  */
 extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
 
+
+/**
+ * Checks if it is already master (0).
+ * If not it switches to master mode and disables autoconnect.
+ * @return 1 on success, 0 on failure
+ */
+extern uint8_t bluetooth_set_as_master(void);
+
+/**
+ * Checks if it is already slave (1).
+ * If not it switches to slave mode and enables autoconnect.
+ * @return 1 on success, 0 on failure
+ */
+extern uint8_t bluetooth_set_as_slave(void);
+
+/**
+ * Test if connection with bluetooth module is OK.
+ * @param tries Number of tries
+ * @return 1 on successful test, 0 otherwise
+ */
+extern uint8_t bluetooth_test_connection(uint8_t tries);
 
 //---------------------------------------------------------
 //
@@ -136,7 +142,7 @@ extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
  * @param delay_ms milliseconds to wait between each byte
  * @return 1 on success, 0 on failure (timeout)
  */
-extern uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms);
+uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms);
 
 /**
  * Waits until the bluetooth device returns one of the following responses. For each response will be returned a number which is given in the brackets:
@@ -146,7 +152,7 @@ extern uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms);
  * @li ERROR (4)
  * @return The number of the response.
  */
-extern uint8_t bluetooth_cmd_wait_response (void);
+uint8_t bluetooth_cmd_wait_response (void);
 
 /**
  * Command: ATA
