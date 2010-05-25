@@ -10,4 +10,3 @@
 #include "../protocols/uplink/uplink.h"
 
 #endif
-

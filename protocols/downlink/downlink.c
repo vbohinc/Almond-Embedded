@@ -2,9 +2,8 @@
 #include <stdbool.h>
 #include "downlink.h"
 
-
 const int DOWNLINK_PACKET_LENGTH = 4;
-
+const int MAX_HISTORY = 255;
 #ifdef SQUIRREL
 
 void downlink_discover () {
@@ -18,7 +17,7 @@ void downlink_discover () {
 static bool downlink_handle_ret_package (struct downlink_packet *p) {
 
 	// Utility functions
-	switch (p->opcode & 0x0F) {
+	/*switch (p->opcode & 0x0F) {
 		case INFO_NUT:
 		if (!find_nut_by_MAC(p)) {
 			// Issue new running number
@@ -29,7 +28,8 @@ static bool downlink_handle_ret_package (struct downlink_packet *p) {
 		// Determine running number
 		// Insert into relevant lookup table
 
-	}
+	}*/
+	return true;
 }
 
 uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_packet *p) {
@@ -37,7 +37,7 @@ uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_packet 
   p->id = id;
   p->value = 0;
   
-  bluetooth_handle_package (p);
+  //bluetooth_handle_package (p);
   
   if (p->opcode == 0xF0 && p->id == id) { // ECHO
     return p->value;
@@ -101,7 +101,7 @@ static inline bool downlink_handle_get_package (struct downlink_packet *p) {
 				if (0 == p->value ) {
 					p->value = get_value (p->id);
 				} else if (0 < p->value && p->value <= MAX_HISTORY) {
-					p->value = get_cached_value (p->id, p->value);
+					//FIXME! p->value = get_cached_value (p->id, p->value);
 				} else {
 					return false;
 				}
@@ -156,7 +156,7 @@ static inline bool downlink_handle_set_package (struct downlink_packet *p) {
 /**
  * Major downlink package handling function
  */
-bool downlink_handle_package (struct downlink_packet *p) {
+bool downlink_handle_packet (struct downlink_packet *p) {
 	switch (p->opcode & 0xF0) {
 		case GET:
 			return downlink_handle_get_package (p);
@@ -164,7 +164,7 @@ bool downlink_handle_package (struct downlink_packet *p) {
 			return downlink_handle_set_package (p);
 		/* FIXME: Should we return something. Maybe a GLOBAL Bluetooth activated? */
 		case BYE:
-			bluetooth_disabled_for_s = p->value;
+			// FIXME! bluetooth_disabled_for_s = p->value;
 			p->opcode = RET;
 			p->id = 0;
 			p->value = 0;
@@ -177,3 +177,6 @@ bool downlink_handle_package (struct downlink_packet *p) {
 }
 #endif
 
+bool downlink_handle_packet (struct downlink_packet *p) {
+	return true;
+}
