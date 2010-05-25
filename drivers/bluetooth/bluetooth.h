@@ -130,6 +130,28 @@ extern uint8_t bluetooth_set_as_slave(void);
  */
 extern uint8_t bluetooth_test_connection(uint8_t tries);
 
+
+/**
+ * Converts the string representation of a bluetooth address into its compressed format
+ * where each byte contains 2 chars (hex values).
+ * @param full_address the full address in the format xxxxxxxxxxxx or xxxx-xx-xxxxxx where the address starts ad index full_start_idx
+ * @param compressed_address allocated array with min 6 bytes after compressed_start_idx to store compressed address
+ * @param full_start_idx index where the address starts in the full_address array. Use 0 if array contains only address
+ * @param compressed_start_idx index where the compressed address should start in the compressed_address array. Use 0 if array should only contain address
+ * @param address_with_hypen 1 if address is in the format xxxx-xx-xxxxxx or 0 if address is without hypen xxxxxxxxxxxx
+ */
+extern void bluetooth_address_to_array(uint8_t *full_address, uint8_t *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen);
+
+/**
+ * Converts the compressed address format into the string representation of a bluetooth address into.
+ * @param compressed_address Array with 6 bytes which contain the compressed address where the address starts at index compressed_start_idx
+ * @param full_address allocated array with min 12 bytes after full_start_idx  to store full address in the format xxxxxxxxxxxx
+ * @param compressed_start_idx index where the compressed address starts in the commressed_address array. Use 0 if array contains only address
+ * @param full_start_idx index where the full address should start in the full_address array. Use 0 if array should only contain address
+ * @param address_with_hypen 1 if address should be in the format xxxx-xx-xxxxxx or 0 if address should be without hypen xxxxxxxxxxxx
+ */
+extern void bluetooth_array_to_address(uint8_t *compressed_address, uint8_t *full_address, const uint8_t compressed_start_idx, const uint8_t full_start_idx, const uint8_t address_with_hyphen);
+
 //---------------------------------------------------------
 //
 //               Bluetooth Commands
@@ -175,7 +197,7 @@ extern uint8_t bluetooth_cmd_test_connection (void);
 /**
  * Command: ATB?
  * Get the local device BD address.
- * @return Returns the local BluetoothDevice Address as a char array. Length is normally 12 byte (char)
+ * @return Returns the local BluetoothDevice Address as a char array (in one byte are 2 char-values). Length is normally 6 byte (char)
  */
 extern uint8_t* bluetooth_cmd_get_address (void);
 
@@ -186,7 +208,9 @@ extern uint8_t* bluetooth_cmd_get_address (void);
  * master role, it automatically inquire and search the slave even the slave is undiscoverable.
  * In slave role, the command should be as a filter condition to accept the master's inquiry.
  * If address is NULL, the remote address will be cleared.
- * @param address The remote address in the format 'xxxxxxxxxxxx' (12 Characters) or NULL to clear.
+ * @param address The remote address with length 6 (each byte contains 2 char) in the format 'xx|xx|xx|xx|xx|xx'
+ * 				(12 Characters in 6 bytes) or NULL to clear. USe the function bluetooth_address_to_array to convert
+ * 				from xxxxxxxxxxxx to xx|xx|xx|xx|xx|xx.
  * @return Returns 1 on success otherwise 0.
  */
 extern uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address);
