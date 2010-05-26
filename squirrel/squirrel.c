@@ -8,67 +8,60 @@ enum state {
 	SLAVE, MASTER
 };
 
-struct device_info {
-		uint8_t mac[6];
-		uint8_t class;
-		uint8_t actuator_types[16];
-		uint8_t sensor_types[16];
-		uint8_t config_types[16];
-};
-
 struct device_info *device_list[16];
 
+void squirrel_create_device_info_entry (uint8_t *address[6]) {
 
-int master_discover (void) {
-		uint8_t *found = bluetooth_cmd_search_devices();
-		if (found == NULL)
-		    printf("SEARCH ERROR!");
-		else {
-		    int count = found[0];
-		    printf("\nCount=%d", count);
-		    for (int i=0; i<count; i++)
-		    {
-		    		printf("\n%d: '", i+1);
-		    		for (int j=0; j<16; j++)
-				{
-		  			printf("%c", found[1+i*(16+6)+j]);
-				}
-				printf("' ");
-				for (int j=0; j<6; j++)
-		  			printf("%c", found[1+i*(16+6)+16+j]);
-				uint8_t found_mac[6] = found[1+i*(16+6)+16]; // Assuming the MAC address is stored as a uint8_t[6] in found_mac
-				bool device_already_exists = false;
-				int k;
-				for (k=0; k<16; k++) {
-					if (device_list[k] == NULL) { // We haven't found the MAC, time to create a new entry
-						break;
-					}
-					if (found_mac == device_list[k]->mac) { // Already there, nothing to do
-						device_already_exists = true;
-						break;
-					}
-				}
-				if (!device_already_exists) {
-					device_list[k]->mac = found_mac;
-					device_list[k]->class = downlink_get_class();
-					for (int j=0; j < 16; j++) {
-						device_list[k]->actuator_types[j] = downlink_get_actuator_class(j+0x80); // Actuators begin at ID 0x80
-					}
-					for (int j=0; j < 16; j++) {
-						device_list[k]->sensor_types[j] = downlink_get_sensor_class(j);
-					} // TODO config_types
-				} // And we're done creating a new device entry
-				
-		  	}
+	for (int k = 0; k < 16; k++) {
+		if (device_list[k] == NULL) {
+			// We haven't found the MAC, time to create a new entry
+			device_list[k] = malloc (sizeof (device_info));
+			device_list[k]->mac = found_mac;
+			device_list[k]->class = downlink_get_class();
+
+			for (int j = 0; j < 16; j++) {
+				device_list[k]->sensor_types[j] = downlink_get_sensor_class(j);
+				device_list[k]->actuator_types[j] = downlink_get_actuator_class(j + 0x80); // Actuators begin at ID 0x80
+				// TODO config_types
+			}
+
+			return;
+		} else if (device_list[k]->mac == found_mac) {
+			// Already there, nothing to do
+			return;
 		}
+	}
+
 }
 
-int master_main (void) {
+void master_discover(void) {
+
+	int result = bluetooth_set_as_master();
+	assert (result == 1);
+
+
+
+	uint8_t *found = bluetooth_cmd_search_devices();
+
+	assert (found != NULL);
+
+	int count = found[0];
+
+	for (int i = 0; i < count; i++) {
+		// Data Structure COUNT (1) | NAME (16) | MAC (6) | ...
+		squirrel_create_device_info_entry (found[1 + i * (16 + 6) + 16]);
+	}
+
+}
+
+int master_main(void) {
 
 }
 
 int init(void) {
-  master_discover ();
+	int result = bluetooth_test_connection(4);
+	assert (result == 1);
+	master_discover();
 }
 
 /**
@@ -78,7 +71,7 @@ int init(void) {
  * @param mode Master = 0, Slave = 1
  * @return Returns 1 on success otherwise 0.
  */
-extern uint8_t bluetooth_cmd_set_mode (uint8_t mode);
+extern uint8_t bluetooth_cmd_set_mode(uint8_t mode);
 
 /**
  * Command: ATD
@@ -90,8 +83,7 @@ extern uint8_t bluetooth_cmd_set_mode (uint8_t mode);
  * @param address The remote address in the format 'xxxxxxxxxxxx' (12 Characters) or NULL to clear.
  * @return Returns 1 on success otherwise 0.
  */
-extern uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address);
-
+extern uint8_t bluetooth_cmd_set_remote_address(const uint8_t* address);
 
 /**
  * Command: ATF?
@@ -102,7 +94,7 @@ extern uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address);
  *
  * @see bluetooth_data_package
  */
-extern uint8_t* bluetooth_cmd_search_devices (void);
+extern uint8_t* bluetooth_cmd_search_devices(void);
 
 /**
  * Checks if it is already slave (1).
@@ -111,23 +103,19 @@ extern uint8_t* bluetooth_cmd_search_devices (void);
  */
 uint8_t setAsSlave()
 
-
 extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
 
-
 int main(void) {
-		init();
+	init();
 
-		while(true) {
-			if (mode == MASTER) {
-				master_main();
-			}
-
-			if (package != NULL) {
-				downlink_handle_package(package);
-			}
+	while (true) {
+		if (mode == MASTER) {
+			master_main();
 		}
+
+		if (package != NULL) {
+			downlink_handle_package(package);
+		}
+	}
 }
-
-
 
