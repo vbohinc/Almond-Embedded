@@ -31,7 +31,7 @@ void downlink_create_device_info_entry (uint8_t *address[6]) {
 void downlink_discover(void) {
 	uint8_t *found = bluetooth_cmd_search_devices();
 
-	assert (found != NULL);
+	assert (found != NULL, "Malformed search result");
 
 	int count = found[0];
 
@@ -61,9 +61,9 @@ void bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_t
 void init_bluetooth (void) {
 	bluetooth_init(bluetooth_callback_handler);
 	int result = bluetooth_test_connection(4);
-	assert (result == 1);
+	assert (result == 1, "Could not test the connection");
 	int result = bluetooth_set_as_master();
-	assert (result == 1);
+	assert (result == 1, "Could not set master mode");
 }
 
 void init_display (void) {

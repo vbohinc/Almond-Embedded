@@ -2,10 +2,10 @@
 * Core libraries for squirrel
 */
 
-#ifndef __SQUIRREL_H
-#define __SQUIRREL_H
+#ifndef __SQUIRREL__
+#define __SQUIRREL__
 
-#include <assert.h>
+#include <../shared/common.h>
 #include "../drivers/bluetooth/bluetooth.h"
 //#include "../drivers/storage/storage.h"
 //#include "../drivers/display/display.h"
