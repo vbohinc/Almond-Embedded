@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include "downlink.h"
 
-const int DOWNLINK_PACKET_LENGTH = 4;
+const int DOWNLINK_PACKAGE_LENGTH = 4;
 const int MAX_HISTORY = 255;
 #ifdef SQUIRREL
 
@@ -14,7 +14,7 @@ void downlink_discover () {
 /**
  * Handle RET package
  */
-static bool downlink_handle_ret_package (struct downlink_packet *p) {
+static bool downlink_handle_ret_package (struct downlink_package *p) {
 
 	// Utility functions
 	/*switch (p->opcode & 0x0F) {
@@ -32,7 +32,7 @@ static bool downlink_handle_ret_package (struct downlink_packet *p) {
 	return true;
 }
 
-uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_packet *p) {
+uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_package *p) {
   p->opcode = GET;
   p->id = id;
   p->value = 0;
@@ -47,7 +47,7 @@ uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_packet 
 }
 
 uint8_t downlink_get_class () {
-	struct downlink_packet *p;
+	struct downlink_package *p;
 	
 	p->opcode = GET | INFO_NUT;
 	p->id = NULL;
@@ -71,7 +71,7 @@ uint8_t downlink_get_sensor_class (uint8_t id) {
 }
 
 uint8_t _get_extension_class (uint8_t id) {
-	struct downlink_packet *p;
+	struct downlink_package *p;
 	
 	p->opcode = GET | INFO_EXTENSION;
 	p->id = id;
@@ -93,7 +93,7 @@ uint8_t _get_extension_class (uint8_t id) {
 /**
  * Handle GET package
  */
-static inline bool downlink_handle_get_package (struct downlink_packet *p) {
+static inline bool downlink_handle_get_package (struct downlink_package *p) {
 	switch (p->opcode & 0x0F) {
 		case STANDARD:
 			if (p->id < class_id_extensions_length && class_id_extensions[p->id] < GENERIC_ACTOR) {
@@ -133,7 +133,7 @@ static inline bool downlink_handle_get_package (struct downlink_packet *p) {
 /**
  * Handle SET packages
  */
-static inline bool downlink_handle_set_package (struct downlink_packet *p) {
+static inline bool downlink_handle_set_package (struct downlink_package *p) {
 	switch (p->opcode & 0x0F) {
 		case STANDARD:
 			if (p->id < class_id_extensions_length && class_id_extensions[p->id] >= GENERIC_ACTOR) {
@@ -156,7 +156,7 @@ static inline bool downlink_handle_set_package (struct downlink_packet *p) {
 /**
  * Major downlink package handling function
  */
-bool downlink_handle_packet (struct downlink_packet *p) {
+bool downlink_handle_package (struct downlink_package *p) {
 	switch (p->opcode & 0xF0) {
 		case GET:
 			return downlink_handle_get_package (p);
@@ -177,6 +177,6 @@ bool downlink_handle_packet (struct downlink_packet *p) {
 }
 #endif
 
-bool downlink_handle_packet (struct downlink_packet *p) {
+bool downlink_handle_package (struct downlink_package *p) {
 	return true;
 }

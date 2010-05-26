@@ -7,11 +7,12 @@
 
 #include <assert.h>
 #include "../drivers/bluetooth/bluetooth.h"
-#include "../drivers/storage/storage.h"
+//#include "../drivers/storage/storage.h"
 //#include "../drivers/display/display.h"
 //#include "../drivers/platform/platform.h"
 #include "../protocols/downlink/downlink.h"
 #include "../protocols/uplink/uplink.h"
+#include "../protocols/package_types.h"
 
 typedef struct _device_info device_info;
 struct _device_info {

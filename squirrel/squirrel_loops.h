@@ -6,6 +6,11 @@
  */
 #ifndef __SQUIRREL_LOOPS__
 #define __SQUIRREL_LOOPS__
+#include "squirrel.h"
+
+enum state {
+	SLAVE, MASTER
+};
 
 void slave_loop();
 void master_loop();
