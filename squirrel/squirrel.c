@@ -31,12 +31,12 @@ int master_discover (void) {
 		    		printf("\n%d: '", i+1);
 		    		for (int j=0; j<16; j++)
 				{
-		  			printf("%c", found[1+i*(16+12)+j]);
+		  			printf("%c", found[1+i*(16+6)+j]);
 				}
 				printf("' ");
-				for (int j=0; j<12; j++)
-		  			printf("%c", found[1+i*(16+12)+16+j]);
-				// Assuming the MAC address is stored as a uint8_t[6] in found_mac
+				for (int j=0; j<6; j++)
+		  			printf("%c", found[1+i*(16+6)+16+j]);
+				uint8_t found_mac[6] = found[1+i*(16+6)+16]; // Assuming the MAC address is stored as a uint8_t[6] in found_mac
 				bool device_already_exists = false;
 				int k;
 				for (k=0; k<16; k++) {
