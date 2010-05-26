@@ -7,6 +7,8 @@
 *
 */
 
+#include <stdbool.h>
+#include <stdint.h>
 /**
 * Writes a sensor value to the log-file.
 * @return True if successful.

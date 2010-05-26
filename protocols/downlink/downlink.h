@@ -16,10 +16,11 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "../packet_types.h"
-#include "../classes.h"
 
-extern const int DOWNLINK_PACKET_LENGTH;
+#include "../classes.h"
+#include "../package_types.h"
+
+extern const int DOWNLINK_PACKAGE_LENGTH;
 extern const int MAX_HISTORY; // FIXME!
 /**
  * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
@@ -28,7 +29,7 @@ extern const int MAX_HISTORY; // FIXME!
  * | OPCODE (1) | ID (1) | VALUE (2) |
  */
 
-struct downlink_packet {
+struct downlink_package {
 	uint8_t opcode;
 	uint8_t id;
 	uint16_t value;
@@ -65,10 +66,10 @@ extern void set_value(uint8_t id, uint16_t value);
 /**
  * Returns true if the package was handled successfully and the buffer can be returned, false otherwise
  */
-bool downlink_handle_packet ( struct downlink_packet* );
+bool downlink_handle_package ( struct downlink_package* );
 
 #endif
 #ifdef SERIAL
-bool downlink_handle_packet ( struct downlink_packet* );
+bool downlink_handle_package ( struct downlink_package* );
 #endif
 #endif
