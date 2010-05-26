@@ -4,14 +4,6 @@
  */
 #include "squirrel.h"
 
-uint8_t state;
-
-enum states {
-	SLAVE, MASTER
-};
-
-struct device_info *device_list[16];
-
 void downlink_create_device_info_entry (uint8_t *address[6]) {
 
 	for (int k = 0; k < 16; k++) {
@@ -50,7 +42,24 @@ void downlink_discover(void) {
 
 }
 
+void bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
+{
+	if (callback_type == 0) {
+		// Data package
+		if (data_length == DOWNLINK_PACKAGE_LENGTH) {
+			downlink_handle_package(data_package);
+		} else if (data_length == UPLINK_PACKAGE_LENGTH) {
+			uplink_handle_package(data_package);
+		}
+	} else if (callback_type == 1) {
+		// Connect
+	} else if (callback_type == 2) {
+		// Disconnect
+	}
+}
+
 void init_bluetooth (void) {
+	bluetooth_init(bluetooth_callback_handler);
 	int result = bluetooth_test_connection(4);
 	assert (result == 1);
 	int result = bluetooth_set_as_master();

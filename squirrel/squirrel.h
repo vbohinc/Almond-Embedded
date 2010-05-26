@@ -23,4 +23,12 @@ struct _device_info {
 		uint8_t config_types[16];
 };
 
+struct device_info *device_list[16];
+
+enum states {
+	SLAVE, MASTER
+};
+
+uint8_t state;
+
 #endif
