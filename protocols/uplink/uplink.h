@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "../package_types.h"
 
 extern const int UPLINK_PACKAGE_LENGTH;
 extern const int UPLINK_PAYLOAD_LENGTH;
