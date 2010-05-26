@@ -2,6 +2,9 @@
 #include <bluetooth/bluetooth.h>
 #include <downlink/downlink.h>
 #include <classes.h>
+#include <avr/sleep.h>
+#include <avr/.h>
+#include <avr/interrupt.h>
 
 const uint8_t class_id_nut = WEATHERSTATION;
 const uint8_t class_id_extensions[] = {TEMPERATURE, PRESSURE};
@@ -11,13 +14,21 @@ void bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_t
 
 int main (void)
 {
-  //TODO start bluetooth
+  const int sleeptime = 4;
+  set_sleep_mode(SLEEP_MODE_PWR_SAVE);
+  //start bluetooth
   bluetooth_init(bluetooth_callback_handler);
+  bluetooth_test_connection(4); //random number
+  bluetooth_set_as_slave();
   //TODO initialize sensors
-  //TODO implement mainloop
+  //mainloop
   while(1)
   {
-    //TODO use deep sleep
+    cli();
+    sleep_enable();
+    sei();
+    sleep_cpu();
+    sleep_disable();
     //activate bluetooth 
     //TODO check variable for bluetooth 
     //process data 
