@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "downlink.h"
+#include "downlink/downlink.h"
 
 const int DOWNLINK_PACKAGE_LENGTH = 4;
 const int MAX_HISTORY = 255;
@@ -174,8 +174,9 @@ bool downlink_handle_package (struct downlink_package *p) {
 			return false;
 	}
 }
-#endif
+#elif SQUIRREL
 
 bool downlink_handle_package (struct downlink_package *p) {
 	return true;
 }
+#endif
