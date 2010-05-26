@@ -23,11 +23,6 @@ fifo_t bluetooth_infifo;
 uint8_t bluetooth_inbuffer[BLUETOOTH_RECEIVE_BUFFER_SIZE];
 
 /**
- * 'Semaphore' to check, if callback-handler is currently processing array or not.
- */
-uint8_t bluetooth_receiveArray_handling = 0;
-
-/**
  * Is set to 1 if bluetooth module is currently connected to a client
  */
 uint8_t bluetooth_is_connected = 0;
@@ -276,10 +271,6 @@ void bluetooth_process_response(void)
 	}
 }
 
-/**
- * Processes received data stored in the FIFO. is called by bluetooth_byte_received.
- * @see bluetooth_byte_received
- */
 void bluetooth_process_data(void)
 {
 	while (bluetooth_infifo.count>0)
@@ -391,6 +382,7 @@ void bluetooth_byte_received (uint8_t byte)
 	//Put received byte into fifo
 	_inline_fifo_put (&bluetooth_infifo, byte);
 
+/*
 	//if array handling didn't finished jet, don't call again.
 	//After finished handling is another check, if data is available.
 	if (bluetooth_receiveArray_handling==1)
@@ -399,16 +391,41 @@ void bluetooth_byte_received (uint8_t byte)
 	bluetooth_receiveArray_handling=1;
 	bluetooth_process_data();
 	bluetooth_receiveArray_handling=0;
+*/
 }
 
 void bluetooth_handle_array(void)
 {
-	//Fill empty indexes with 0 (there shouldn't be any!!)
-	for (uint8_t i=bluetooth_data_package_index; i<BLUETOOTH_DATA_PACKAGE_SIZE;i++)
+	if (bluetooth_data_package_index<9)
+	{
+		printf("Package too small!!!\n");
+		return;
+	}
+	/*
+	 * Calculate and check if CRC32 checksum is ok.
+	 * The last 8 bytes of package should be the reversed crc value
+	 */
+	uint32_t checksum = 0xFFFFFFFF;
+	crc_32(&checksum, bluetooth_data_package, bluetooth_data_package_index-8);
+	checksum ^= 0xffffffff;
+
+	//Check checksum reversed
+	for (int8_t i=7; i>=0; i--)
+	{
+		if ((checksum&0xF) != bluetooth_data_package[bluetooth_data_package_index-1-i])
+		{
+			printf("CRC ERROR!!!\n");
+			return;
+		}
+		checksum = checksum >> 4;
+	}
+
+	//Overwrite checksum with 0
+	for (uint8_t i=bluetooth_data_package_index-8; i<bluetooth_data_package_index;i++)
 		bluetooth_data_package[i]=0;
 
 	//Call callback function
-	bluetooth_callback(bluetooth_data_package, 0, bluetooth_data_package_index);
+	bluetooth_callback(bluetooth_data_package, 0, bluetooth_data_package_index-8);
 }
 
 uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
@@ -422,17 +439,19 @@ uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 		{
 			error = (error || (bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE)==0));
 			//There must be a sleep otherwise the module returns always error
-			struct timespec s;
+			usleep(10000);
+		/*	struct timespec s;
 			s.tv_sec = 0;
 			s.tv_nsec = 10000000L;
-			nanosleep(&s, NULL);
+			nanosleep(&s, NULL);*/
 		}
 		error = (error || (bluetooth_serial_putc(data[i])==0));
 		//There must be a sleep otherwise the module returns always error
-		struct timespec s;
+		usleep(10000);
+		/*struct timespec s;
 		s.tv_sec = 0;
 		s.tv_nsec = 10000000L;
-		nanosleep(&s, NULL);
+		nanosleep(&s, NULL);*/
 #else
 		if (data[i]==BLUETOOTH_SPECIAL_BYTE)
 		{
@@ -448,14 +467,35 @@ uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 
 	}
 
+	/*
+	 * Calculate and send CRC32 checksum
+	 */
+	uint32_t checksum = 0xFFFFFFFF;
+	crc_32(&checksum, data, length);
+	checksum ^= 0xffffffff;
+
+	//Send checksum reversed
+	for (int8_t i=7; i>=0; i--)
+	{
+#ifdef SERIAL
+		//send crc byte
+		error = (error || (bluetooth_serial_putc(checksum&0xF)==0));
+
+		usleep(10000);
+#else
+		//send crc byte
+		error = (error || (usart_putc(checksum&0xF,  10)==0));
+		/*! @todo optimize delay */
+		_delay_ms(10);
+#endif
+		checksum = checksum >> 4;
+	}
+
 #ifdef SERIAL
 	//send stop byte
 	error = (error || (bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE)==0));
 
-	struct timespec s;
-	s.tv_sec = 0;
-	s.tv_nsec = 10000000L;
-	nanosleep(&s, NULL);
+	usleep(10000);
 	error = (error || (bluetooth_serial_putc(BLUETOOTH_STOP_BYTE)==0));
 
 #else
@@ -465,6 +505,7 @@ uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 	_delay_ms(10);
 	error = (error || (usart_putc(BLUETOOTH_STOP_BYTE,  10)==0));
 #endif
+
 	return (error==0);
 }
 
@@ -542,7 +583,7 @@ uint8_t hex_to_char(uint8_t hex)
 {
 	if (hex<=9)
 		return hex+'0';
-	else if (hex>9 && hex < 15)
+	else if (hex>9 && hex <= 15)
 		return hex+'A'-10;
 	else
 		return 0;
@@ -554,7 +595,7 @@ void bluetooth_address_to_array(uint8_t *full_address, uint8_t *compressed_addre
 	uint8_t addr_buffer = 0;
 	uint8_t buf_idx = full_start_idx;
 
-	for (uint8_t i=compressed_start_idx; i<6; i++)
+	for (uint8_t i=compressed_start_idx; i<compressed_start_idx+6; i++)
 	{
 		addr_buffer |= ((char_to_hex(full_address[buf_idx])<<4)& 0xF0);
 		buf_idx++;
@@ -575,7 +616,7 @@ void bluetooth_array_to_address(uint8_t *compressed_address, uint8_t *full_addre
 	uint8_t addr_buffer = 0;
 	uint8_t buf_idx = full_start_idx;
 
-	for (uint8_t i=compressed_start_idx; i<6; i++)
+	for (uint8_t i=compressed_start_idx; i<compressed_start_idx+6; i++)
 	{
 		addr_buffer = compressed_address[i]; //contains 2 hex values
 		full_address[buf_idx+1] = hex_to_char(addr_buffer & 0xF);
@@ -651,6 +692,7 @@ uint8_t bluetooth_cmd_wait_response (void)
 {
 	while (bluetooth_response_code == 0) //Wait until bluetooth devices has responsed (handled by interrupt)
 	{
+		bluetooth_process_data();
 #ifdef SERIAL
 		struct timespec s;
 		s.tv_sec = 0;
@@ -730,13 +772,11 @@ uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address)
 		bluetooth_cmd_buffer[5] = 0;
 	} else {
 		bluetooth_cmd_buffer[3]='=';
-		uint8_t i;
-		for (i=0; i<12; i++)
-		{
-			bluetooth_cmd_buffer[i+4] = address[i];
-		}
-		bluetooth_cmd_buffer[i+4] = 13; //<CR>
-		bluetooth_cmd_buffer[i+5] = 0;
+
+		bluetooth_array_to_address((uint8_t*)address,bluetooth_cmd_buffer,0,4,0);
+
+		bluetooth_cmd_buffer[16] = 13; //<CR>
+		bluetooth_cmd_buffer[17] = 0;
 
 	}
 
@@ -850,7 +890,7 @@ uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect)
 	bluetooth_cmd_buffer[0] = 'A';
 	bluetooth_cmd_buffer[1] = 'T';
 	bluetooth_cmd_buffer[2] = 'O';
-	if (autoconnect)
+	if (autoconnect == 1)
 		bluetooth_cmd_buffer[3] = '0';
 	else
 		bluetooth_cmd_buffer[3] = '1';

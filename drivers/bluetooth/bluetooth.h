@@ -17,6 +17,7 @@
 #include "./../usart/usart.h"
 #endif
 #include "./../../shared/fifo.h"
+#include "./../../shared/crc.h"
 
 
 /**
@@ -108,6 +109,10 @@ void bluetooth_handle_array(void);
  */
 extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
 
+/**
+ * Processes received data stored in the FIFO. Should be called in the while-loop of the main program
+ */
+extern void bluetooth_process_data(void);
 
 /**
  * Checks if it is already master (0).
