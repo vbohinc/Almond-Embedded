@@ -231,7 +231,6 @@ void slave_test()
 
 int main()
 {
-
 	bluetooth_init(bluetooth_callback_handler);
 
 	int ret = bluetooth_test_connection(4);
