@@ -12,6 +12,10 @@
 #include "bluetooth.h"
 #include <string.h>
 
+#ifdef SERIAL
+#include <unistd.h>
+#endif
+
 /**
  * FIFO to store received data. Uses bluetooth_inbuffer to store bytes
  */
@@ -85,6 +89,8 @@ uint8_t bluetooth_cmd_buffer_head = 0;
 uint8_t bluetooth_response_code = 0;
 
 uint8_t bluetooth_is_connected;
+
+uint8_t bluetooth_sent_length = 0;
 
 
 
@@ -271,6 +277,30 @@ void bluetooth_process_response(void)
 	}
 }
 
+/**
+ * Resents the byte from bluetooth_data_package because the remote end asked to do so (caused by a crc error)
+ */
+void bluetooth_resent_package(void)
+{
+	uint8_t error = 0;
+	for (uint8_t i=0; i<bluetooth_sent_length && error==0; i++)
+	{
+#ifdef SERIAL
+		error = (error || (bluetooth_serial_putc(bluetooth_data_package[i])==0));
+
+	    struct timespec s;
+	    s.tv_sec = 0;
+	    s.tv_nsec = 10000000L;
+	    nanosleep(&s, NULL);
+#else
+		error = (error || (usart_putc(bluetooth_data_package[i],  10)==0));
+		/*! @TODO optimize delay */
+		_delay_ms(10);
+#endif
+
+	}
+}
+
 void bluetooth_process_data(void)
 {
 	while (bluetooth_infifo.count>0)
@@ -344,34 +374,63 @@ void bluetooth_process_data(void)
 					bluetooth_data_package_index++;
 				}
 			}
-			else if (bluetooth_data_package_index < BLUETOOTH_DATA_PACKAGE_SIZE-1)
+			else
 			{
-
-				if ((byte == BLUETOOTH_SPECIAL_BYTE) && (bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE))
-				{ //Double special byte means that there is one byte in the data package with the value of special byte
-					//don't write byte to array
-					bluetooth_previous_byte = -1; //to make sure next time this if can't be called
-				} else if ((byte==BLUETOOTH_STOP_BYTE) && (bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE))
+				if (byte == BLUETOOTH_SPECIAL_BYTE && bluetooth_previous_byte!=BLUETOOTH_SPECIAL_BYTE)
+				{
+					//bluetooth was special byte. maybe it was a special command. check next byte.
+					bluetooth_previous_byte = BLUETOOTH_SPECIAL_BYTE;
+				}
+				else if (byte == BLUETOOTH_STOP_BYTE  && bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE)
 				{
 					//Handle array because last byte was stop byte
-					bluetooth_data_package_index--;//don't handle last special byte because is part of stop byte
-					bluetooth_handle_array();
+					if (bluetooth_handle_array() == -1)
+					{
+						//flush fifo
+						while (bluetooth_infifo.count>0)
+							fifo_get_nowait(&bluetooth_infifo);
+					}
 					bluetooth_data_package_index=0;
-				} else {
-					bluetooth_data_package[bluetooth_data_package_index] = (uint8_t)byte;
-					bluetooth_previous_byte = byte;
-					bluetooth_data_package_index++;
 				}
-				if (bluetooth_data_package_index >= BLUETOOTH_DATA_PACKAGE_SIZE)
+				else if (byte == BLUETOOTH_RESENT_BYTE  && bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE)
 				{
-					//array is full, handle it
-					bluetooth_handle_array();
+					bluetooth_resent_package();
+				}
+				else if (bluetooth_data_package_index < BLUETOOTH_DATA_PACKAGE_SIZE-1)
+				{
+
+					bluetooth_previous_byte = byte;
+
+					if ((byte == BLUETOOTH_SPECIAL_BYTE) && (bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE))
+					{ //Double special byte means that there is one byte in the data package with the value of special byte
+						bluetooth_previous_byte = -1; //to make sure next time this if can't be called and the previous STOP
+						//and RESENT if canno't be called
+					}
+
+					bluetooth_data_package[bluetooth_data_package_index] = (uint8_t)byte;
+					bluetooth_data_package_index++;
+
+					if (bluetooth_data_package_index >= BLUETOOTH_DATA_PACKAGE_SIZE)
+					{
+						//array is full, handle it
+						if (bluetooth_handle_array() == -1)
+						{
+							//flush fifo
+							while (bluetooth_infifo.count>0)
+								fifo_get_nowait(&bluetooth_infifo);
+						}
+						bluetooth_data_package_index=0;
+					}
+				} else {
+					//Handle array because it's full
+					if (bluetooth_handle_array() == -1)
+					{
+						//flush fifo
+						while (bluetooth_infifo.count>0)
+							fifo_get_nowait(&bluetooth_infifo);
+					}
 					bluetooth_data_package_index=0;
 				}
-			} else {
-				//Handle array because it's full
-				bluetooth_handle_array();
-				bluetooth_data_package_index=0;
 			}
 		}
 	}
@@ -394,13 +453,16 @@ void bluetooth_byte_received (uint8_t byte)
 */
 }
 
-void bluetooth_handle_array(void)
+uint8_t bluetooth_handle_array(void)
 {
 	if (bluetooth_data_package_index<9)
 	{
 		printf("Package too small!!!\n");
-		return;
+		return 0;
 	}
+
+
+
 	/*
 	 * Calculate and check if CRC32 checksum is ok.
 	 * The last 8 bytes of package should be the reversed crc value
@@ -415,7 +477,24 @@ void bluetooth_handle_array(void)
 		if ((checksum&0xF) != bluetooth_data_package[bluetooth_data_package_index-1-i])
 		{
 			printf("CRC ERROR!!!\n");
-			return;
+#ifdef SERIAL
+			//send stop byte
+			bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE);
+
+			struct timespec s;
+			s.tv_sec = 0;
+			s.tv_nsec = 10000000L;
+			nanosleep(&s, NULL);
+			bluetooth_serial_putc(BLUETOOTH_RESENT_BYTE);
+
+#else
+			//send stop byte
+			usart_putc(BLUETOOTH_SPECIAL_BYTE,  10);
+			/*! @todo optimize delay */
+			_delay_ms(10);
+			usart_putc(BLUETOOTH_RESENT_BYTE,  10);
+#endif
+			return -1;
 		}
 		checksum = checksum >> 4;
 	}
@@ -426,40 +505,52 @@ void bluetooth_handle_array(void)
 
 	//Call callback function
 	bluetooth_callback(bluetooth_data_package, 0, bluetooth_data_package_index-8);
+
+	return 0;
 }
 
 uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 {
 	bluetooth_cmd_buffer[0]=0;
 	uint8_t error = 0;
+
+	//send data and store send bytes to bluetooth_data_package to resent full package if requested
+	bluetooth_data_package_index = 0;
+
 	for (uint8_t i=0; i<length && error==0; i++)
 	{
 #ifdef SERIAL
 		if (data[i]==BLUETOOTH_SPECIAL_BYTE)
 		{
 			error = (error || (bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE)==0));
+			bluetooth_data_package[bluetooth_data_package_index] = BLUETOOTH_SPECIAL_BYTE;
+			bluetooth_data_package_index++;
 			//There must be a sleep otherwise the module returns always error
-			usleep(10000);
-		/*	struct timespec s;
-			s.tv_sec = 0;
-			s.tv_nsec = 10000000L;
-			nanosleep(&s, NULL);*/
+		    struct timespec s;
+		    s.tv_sec = 0;
+		    s.tv_nsec = 10000000L;
+		    nanosleep(&s, NULL);
 		}
 		error = (error || (bluetooth_serial_putc(data[i])==0));
+		bluetooth_data_package[bluetooth_data_package_index] = data[i];
+		bluetooth_data_package_index++;
 		//There must be a sleep otherwise the module returns always error
-		usleep(10000);
-		/*struct timespec s;
-		s.tv_sec = 0;
-		s.tv_nsec = 10000000L;
-		nanosleep(&s, NULL);*/
+	    struct timespec s;
+	    s.tv_sec = 0;
+	    s.tv_nsec = 10000000L;
+	    nanosleep(&s, NULL);
 #else
 		if (data[i]==BLUETOOTH_SPECIAL_BYTE)
 		{
 			error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  10)==0));
+			bluetooth_data_package[bluetooth_data_package_index] = BLUETOOTH_SPECIAL_BYTE;
+			bluetooth_data_package_index++;
 			/*! @TODO optimize delay */
 			_delay_ms(10);
 		}
 		error = (error || (usart_putc(data[i],  10)==0));
+		bluetooth_data_package[bluetooth_data_package_index] = data[i];
+		bluetooth_data_package_index++;
 
 		/*! @TODO optimize delay */
 		_delay_ms(10);
@@ -480,14 +571,18 @@ uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 #ifdef SERIAL
 		//send crc byte
 		error = (error || (bluetooth_serial_putc(checksum&0xF)==0));
-
-		usleep(10000);
+	    struct timespec s;
+	    s.tv_sec = 0;
+	    s.tv_nsec = 10000000L;
+	    nanosleep(&s, NULL);
 #else
 		//send crc byte
 		error = (error || (usart_putc(checksum&0xF,  10)==0));
 		/*! @todo optimize delay */
 		_delay_ms(10);
 #endif
+		bluetooth_data_package[bluetooth_data_package_index] = (checksum&0xF);
+		bluetooth_data_package_index++;
 		checksum = checksum >> 4;
 	}
 
@@ -495,7 +590,10 @@ uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 	//send stop byte
 	error = (error || (bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE)==0));
 
-	usleep(10000);
+    struct timespec s;
+    s.tv_sec = 0;
+    s.tv_nsec = 10000000L;
+    nanosleep(&s, NULL);
 	error = (error || (bluetooth_serial_putc(BLUETOOTH_STOP_BYTE)==0));
 
 #else
@@ -505,6 +603,14 @@ uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 	_delay_ms(10);
 	error = (error || (usart_putc(BLUETOOTH_STOP_BYTE,  10)==0));
 #endif
+
+
+	bluetooth_data_package[bluetooth_data_package_index] = BLUETOOTH_SPECIAL_BYTE;
+	bluetooth_data_package_index++;
+	bluetooth_data_package[bluetooth_data_package_index] = BLUETOOTH_STOP_BYTE;
+	bluetooth_data_package_index++;
+	bluetooth_sent_length = bluetooth_data_package_index;
+	bluetooth_data_package_index = 0;
 
 	return (error==0);
 }
@@ -659,12 +765,11 @@ uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms)
 			return 0;
 
 		//There must be a sleep otherwise the module returns always error
-		/*struct timespec s;
+		struct timespec s;
 		s.tv_sec = 0;
 		//don't make it tooo small otherwise the module dosen't return correct values
 		s.tv_nsec = delay_ms * 1000000L;
-		nanosleep(&s, NULL);*/
-		usleep(delay_ms * 1000);
+		nanosleep(&s, NULL);
 
 
 		command_length++;
@@ -680,7 +785,12 @@ uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms)
 #endif
 
 	#ifdef SERIAL
-		usleep(500000); //Wait until device has finished command
+
+	//Wait until device has finished command
+		struct timespec s;
+		s.tv_sec = 0;
+		s.tv_nsec = 500000000L;
+		nanosleep(&s, NULL);
 	#else
 		_delay_ms(500); //Wait until device has finished command
 	#endif
@@ -786,7 +896,12 @@ uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address)
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
 		#ifdef SERIAL
-			usleep(2000000); //Wait until device has finished command
+			//Wait until device has finished command
+			struct timespec s;
+			s.tv_sec = 2;
+			s.tv_nsec = 0L;
+			nanosleep(&s, NULL);
+
 		#else
 			_delay_ms(2000); //Wait until device has finished command
 		#endif
@@ -903,7 +1018,11 @@ uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect)
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
 		#ifdef SERIAL
-			usleep(3000000); //Wait until device has finished warm start
+			//Wait until device has finished warm start
+			struct timespec s;
+			s.tv_sec = 3;
+			s.tv_nsec = 0L;
+			nanosleep(&s, NULL);
 		#else
 			_delay_ms(3000); //Wait until device has finished warm start
 		#endif
@@ -971,7 +1090,11 @@ uint8_t bluetooth_cmd_set_mode (uint8_t mode)
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
 		#ifdef SERIAL
-			usleep(3500000); //Wait until device has finished warm start
+		//Wait until device has finished warm start
+			struct timespec s;
+			s.tv_sec = 3;
+			s.tv_nsec = 500000000L;
+			nanosleep(&s, NULL);
 		#else
 			_delay_ms(3500); //Wait until device has finished warm start
 		#endif

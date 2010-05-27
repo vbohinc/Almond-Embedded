@@ -38,15 +38,21 @@
 
 /**
  * The special-Byte to synchronize data stream.
+ * If in data package is used the value of special byte, another special byte will be inserted.
  */
-#define BLUETOOTH_SPECIAL_BYTE 254
+#define BLUETOOTH_SPECIAL_BYTE 255
 
 /**
  * The stop-Byte in combination with special byte to synchronize data stream.
  * First comes special byte, then stop byte.
- * If in data package is used the value of special byte, another special byte will be inserted.
  */
-#define BLUETOOTH_STOP_BYTE 255
+#define BLUETOOTH_STOP_BYTE 254
+
+/**
+ * The resent-Byte in combination with special byte to tell connected client to resent received data package due to CRC error.
+ * First comes special byte, then resent byte.
+ */
+#define BLUETOOTH_RESENT_BYTE 253
 
 /**
  * Default waiting for commands in milliseconds.
@@ -96,9 +102,10 @@ void bluetooth_byte_received (uint8_t byte);
 void (*bluetooth_callback)(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length);
 
 /**
- * Called by bluetooth_process_data if a stop byte was received or the data-package is complete-
+ * Called by bluetooth_process_data if a stop byte was received or the data-package is complete. Checks if CRC is ok.
+ * @return -1 means there was a CRC error and input buffer should be deleted
  */
-void bluetooth_handle_array(void);
+uint8_t bluetooth_handle_array(void);
 
 /**
  * Sends the data to the connected client.
