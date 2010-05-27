@@ -17,15 +17,20 @@
 #include "./../usart/usart.h"
 #endif
 #include "./../../shared/fifo.h"
-#include "./../../shared/crc.h"
 
+
+//#define ENABLE_CRC
+
+#ifdef ENABLE_CRC
+#include "./../../shared/crc.h"
+#endif
 
 /**
-* The size of a data package. If BLUETOOTH_DATA_PACKAGE_SIZE received, the callback function with
-* received bytes will be called.
-* Must be smaller than (uint8_t-2). Max value is 254.
-*/
-#define BLUETOOTH_DATA_PACKAGE_SIZE 30
+ * Maximum possible size of a data package in bytes. The formula for the maximum size is (SIZE is the normal size of a package)
+ * (SIZE * 2) +10;
+ * Ex. real package: 10 Byte. => PACKAGE_SIZE=30
+ */
+#define BLUETOOTH_DATA_PACKAGE_SIZE 138
 
 /**
 * The size of receive buffer in bytes. Each received byte will be stored in this buffer
@@ -110,11 +115,13 @@ uint8_t bluetooth_handle_array(void);
 /**
  * Sends the data to the connected client.
  * Adds the stop-byte at the end of the package
- * @param data The data to send
- * @param length the length (number of bytes) in the data array
- * @return 1 on success, 0 on error
+ * @param data The data to send. If wait_for_response_package enabled, contains the response package. Must be big enought.
+ * @param length the length (number of bytes) in the data array. If wait_for_response_package enabled, contains the lenght of the received package
+ * @param wait_for_response_package 1 to wait until remote sends back a package
+ * @timeout_ms timeout in ms to wait for response
+ * @return 0 on success, 1 on error, 2 on timeout
  */
-extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
+extern uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_t wait_for_response_package, const uint16_t timeout_ms);
 
 /**
  * Processes received data stored in the FIFO. Should be called in the while-loop of the main program

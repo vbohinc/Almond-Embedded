@@ -1,5 +1,7 @@
 #include "fifo.h"
 
+pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
+
 void fifo_init (fifo_t *f, uint8_t *buffer, const uint8_t size)
 {
 	f->count = 0;
