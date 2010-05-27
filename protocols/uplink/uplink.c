@@ -3,7 +3,7 @@
  *
  * Uplink protocol implementation
  */
-const int UPLINK_PACKET_LENGTH = 64;
+const int UPLINK_PACKAGE_LENGTH = 64;
 const int UPLINK_PAYLOAD_LENGTH = 62;
 #include <stdbool.h>
 #include "uplink.h"
@@ -12,7 +12,7 @@ const int UPLINK_PAYLOAD_LENGTH = 62;
 /**
  * Handle GET package
  */
-static inline bool uplink_handle_get_package  (struct uplink_packet *p) {
+static inline bool uplink_handle_get_package  (struct uplink_package *p) {
 	/*switch (p->opcode & 0x0F) {
 		case STANDARD:
 			if (p->id < class_id_extensions_length && class_id_extensions[p->id] < GENERIC_ACTOR) {
@@ -46,7 +46,7 @@ static inline bool uplink_handle_get_package  (struct uplink_packet *p) {
 /**
  * Handle SET packages
  */
-static inline bool uplink_handle_set_package (struct uplink_packet *p) {
+static inline bool uplink_handle_set_package (struct uplink_package *p) {
 /*	switch (p->opcode & 0x0F) {
 		case STANDARD:
 			if (p->id < class_id_extensions_length && class_id_extensions[p->id] >= GENERIC_ACTOR) {
@@ -68,7 +68,7 @@ static inline bool uplink_handle_set_package (struct uplink_packet *p) {
 /**
  * Major package uplink handling function
  */
-bool uplink_handle_packet (struct uplink_packet *p) {
+bool uplink_handle_package (struct uplink_package *p) {
 	switch (p->opcode & 0xF0) {
 		case GET:
 			return uplink_handle_get_package (p);

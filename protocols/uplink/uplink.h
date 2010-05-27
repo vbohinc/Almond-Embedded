@@ -9,9 +9,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "./../packet_types.h"
+#include "../package_types.h"
 
-extern const int UPLINK_PACKET_LENGTH;
+extern const int UPLINK_PACKAGE_LENGTH;
 extern const int UPLINK_PAYLOAD_LENGTH;
 /**
  * Package format:
@@ -75,7 +75,7 @@ union payload {
 	struct uplink_payload_tunnel tunnel;
 } payload;
 
-struct uplink_packet {
+struct uplink_package {
 	uint8_t opcode;
 	uint8_t id;
 	union payload payload;
@@ -87,6 +87,6 @@ void uplink_init(void);
 void uplink_send_configuration(uint8_t);
 void uplink_receive_configuration(uint8_t);
 void uplink_send_log(void);
-bool uplink_handle_packet (struct uplink_packet *p);
+bool uplink_handle_package (struct uplink_package *p);
 #endif
 #endif // ENDS UPLINK

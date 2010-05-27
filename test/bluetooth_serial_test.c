@@ -23,6 +23,8 @@ uint32_t send_count = 0;
 uint8_t int_received = 0;
 uint8_t int_to_send = 1;
 
+uint8_t pkg_received = 0;
+
 void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
 {
 	if (callback_type == 0) {//is data package
@@ -48,6 +50,7 @@ void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_ty
 			}
 			int_received = data_package[i];
 		}
+		pkg_received = 1;
 		//printf("]\n");
 	} else if (callback_type == 1) //connected
 	{
@@ -150,16 +153,25 @@ void master_test()
 
 		while(1)
 		{
-			bluetooth_process_data();
+			//bluetooth_process_data();
+			pkg_received = 0;
 			for (int i=0; i<10; i++)
 			{
+				bluetooth_process_data();
 				cmd[i] = int_to_send;
 				int_to_send++;
 				send_count++;
 			}
 			if (bluetooth_send_data_package(cmd, 10)==0)
 							perror("Couldn't send cmd");
-			bluetooth_process_data();
+			while (!pkg_received)
+			{
+				bluetooth_process_data();
+				struct timespec s;
+				s.tv_sec = 0;
+				s.tv_nsec = 5000L;
+				nanosleep(&s, NULL);
+			}
 
 			/*fgets(buffer, 255, stdin);
 			if (strncmp(buffer, "exit",4)==0)
@@ -258,6 +270,7 @@ int main()
 		printf("\nATP ret=%s",ret);
  */
 	master_test();
+
 	//slave_test();
 
 	bluetooth_close();
