@@ -19,7 +19,9 @@
 #include "./../../shared/fifo.h"
 #include "./../../shared/error.h"
 
-
+/**
+ * Enables CRC check for bluetooth packages
+ */
 #define ENABLE_CRC
 
 #ifdef ENABLE_CRC
@@ -119,7 +121,7 @@ uint8_t bluetooth_handle_array(void);
  * @param data The data to send. If wait_for_response_package enabled, contains the response package. Must be big enought.
  * @param length the length (number of bytes) in the data array. If wait_for_response_package enabled, contains the lenght of the received package
  * @param wait_for_response_package 1 to wait until remote sends back a package
- * @timeout_ms timeout in ms to wait for response
+ * @param timeout_ms timeout in ms to wait for response
  * @return 0 on success, 1 on error, 2 on timeout
  */
 extern uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_t wait_for_response_package, const uint16_t timeout_ms);
@@ -158,7 +160,7 @@ extern uint8_t bluetooth_test_connection(uint8_t tries);
  * @param compressed_address allocated array with min 6 bytes after compressed_start_idx to store compressed address
  * @param full_start_idx index where the address starts in the full_address array. Use 0 if array contains only address
  * @param compressed_start_idx index where the compressed address should start in the compressed_address array. Use 0 if array should only contain address
- * @param address_with_hypen 1 if address is in the format xxxx-xx-xxxxxx or 0 if address is without hypen xxxxxxxxxxxx
+ * @param address_with_hyphen 1 if address is in the format xxxx-xx-xxxxxx or 0 if address is without hypen xxxxxxxxxxxx
  */
 extern void bluetooth_address_to_array(uint8_t *full_address, uint8_t *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen);
 
@@ -168,7 +170,7 @@ extern void bluetooth_address_to_array(uint8_t *full_address, uint8_t *compresse
  * @param full_address allocated array with min 12 bytes after full_start_idx  to store full address in the format xxxxxxxxxxxx
  * @param compressed_start_idx index where the compressed address starts in the commressed_address array. Use 0 if array contains only address
  * @param full_start_idx index where the full address should start in the full_address array. Use 0 if array should only contain address
- * @param address_with_hypen 1 if address should be in the format xxxx-xx-xxxxxx or 0 if address should be without hypen xxxxxxxxxxxx
+ * @param address_with_hyphen 1 if address should be in the format xxxx-xx-xxxxxx or 0 if address should be without hypen xxxxxxxxxxxx
  */
 extern void bluetooth_array_to_address(uint8_t *compressed_address, uint8_t *full_address, const uint8_t compressed_start_idx, const uint8_t full_start_idx, const uint8_t address_with_hyphen);
 

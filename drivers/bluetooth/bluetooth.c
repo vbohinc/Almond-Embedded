@@ -90,10 +90,19 @@ uint8_t bluetooth_response_code = 0;
 
 uint8_t bluetooth_is_connected;
 
+/**
+ * Contains the length of the recently sent package. The data is stored in bluetooth_data_package
+ */
 uint8_t bluetooth_sent_length = 0;
 
-
+/**
+ * Array to copy response package into. If NULL, no response array expected
+ */
 uint8_t *bluetooth_wait_response_array = NULL;
+
+/**
+ * Pointer to copy response package length into. If NULL, no response array expected
+ */
 uint8_t *bluetooth_wait_response_length = NULL;
 
 /**
