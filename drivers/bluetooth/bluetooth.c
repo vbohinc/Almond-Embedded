@@ -302,7 +302,7 @@ void bluetooth_process_response(void)
  */
 void bluetooth_resent_package(void)
 {
-	printf("Resending data package!\n");
+	debug("Bluetooth: Resending data package!");
 	uint8_t error = 0;
 	for (uint8_t i=0; i<bluetooth_sent_length && error==0; i++)
 	{
@@ -383,7 +383,7 @@ void bluetooth_process_data(void)
 
 							bluetooth_data_package_index=0;
 
-							printf("TIMEOUT!! No stop byte received for package!! Reordering ... \n");
+							debug("Bluetooth: Timeout. No stop byte received. Reordering package ...");
 #ifdef SERIAL
 							//send stop byte
 							bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE);
@@ -460,7 +460,7 @@ void bluetooth_process_data(void)
 						}
 						else if (byte == BLUETOOTH_RESENT_BYTE  && bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE)
 						{
-							printf("Remote requested to resent package!\n");
+							debug("Bluetooth: Remote requested to resent package!");
 							bluetooth_ms_to_timeout = -1; //disable timeout
 							bluetooth_previous_byte = -1;
 
@@ -498,8 +498,7 @@ void bluetooth_process_data(void)
 								break;
 							}
 						} else {
-
-							printf("Package full!!\n");
+							debug("Bluetooth: Package full (maximum number of bytes received). There must be an error in the package. Reordering ...");
 							//flush fifo
 							while (bluetooth_infifo.count>0)
 								fifo_get_nowait(&bluetooth_infifo);
@@ -554,7 +553,19 @@ uint8_t bluetooth_handle_array(void)
 #ifdef ENABLE_CRC
 	if (bluetooth_data_package_index<9)
 	{
-		printf("Package too small!!!\n");
+		debug("Bluetooth: Package is too small. Must be minimum 8 Bytes to calculate CRC. Reordering ...");
+#ifdef SERIAL
+			//send stop byte
+			bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE);
+
+			bluetooth_serial_putc(BLUETOOTH_RESENT_BYTE);
+
+#else
+			//send stop byte
+			usart_putc(BLUETOOTH_SPECIAL_BYTE,  10);
+
+			usart_putc(BLUETOOTH_RESENT_BYTE,  10);
+#endif
 		return -1;
 	}
 
@@ -572,7 +583,8 @@ uint8_t bluetooth_handle_array(void)
 	{
 		if ((checksum&0xF) != bluetooth_data_package[bluetooth_data_package_index-1-i])
 		{
-			printf("CRC ERROR!!!\n");
+
+			debug("Bluetooth: CRC error. Reordering package!");
 #ifdef SERIAL
 			//send stop byte
 			bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE);

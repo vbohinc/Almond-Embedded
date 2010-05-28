@@ -17,6 +17,7 @@
 #include "./../usart/usart.h"
 #endif
 #include "./../../shared/fifo.h"
+#include "./../../shared/error.h"
 
 
 #define ENABLE_CRC

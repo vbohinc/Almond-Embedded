@@ -1,6 +1,8 @@
 #include "fifo.h"
 
+#ifdef SERIAL
 pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
 
 void fifo_init (fifo_t *f, uint8_t *buffer, const uint8_t size)
 {
