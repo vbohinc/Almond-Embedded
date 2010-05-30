@@ -13,19 +13,21 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
   
   downlink_package *package;
   
-  err = FALSE;
+  err = false;
   package->opcode = opcode | flag;
   package->id = id;
   package->value = value;
-  
-  switch (bluetooth_send_data_package (package, DOWNLINK_PACKAGE_LENGTH, TRUE, const uint16_t timeout_ms)) {
+  uint8_t return_package_length;
+  return_package_length = DOWNLINK_PACKAGE_LENGTH;
+  switch (bluetooth_send_data_package(package, &return_package_length, true, DOWNLINK_TIMEOUT_MS)) {
     case 0:
-      if (package->opcode == (RET | flag) && package->id == id) 
+      if ((package->opcode == RET | flag) && (package->id == id))
         return package->value;
-      else if (package->opcode == (RET | ERROR)
-        error ("Protocol error")
-      else 
+      else if (package->opcode == (RET | ERROR))
+        error ("Protocol error");
+       else
         error ("Downlink protocol mismatch");
+
       break;
     case 1:
       error ("Bluetooth error");
@@ -36,7 +38,7 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
     default:
       error ("Unkown return value");
   }
-  err = TRUE;
+  err = true;
   return 0;
 }
 
@@ -70,15 +72,13 @@ uint16_t downlink_bye (uint16_t time_ms, bool *err) {
 /**
  * Handle GET package
  */
-static inline bool downlink_handle_get_package (downlink_package *p) {
+bool downlink_handle_get_package (downlink_package *p) {
 	switch (p->opcode & 0x0F) {
 		case STANDARD:
 			if (p->id < class_id_extensions_length && class_id_extensions[p->id] < GENERIC_ACTOR) {
 				p->opcode = RET;
 				if (0 == p->value ) {
 					p->value = get_value (p->id);
-				} else if (0 < p->value && p->value <= MAX_HISTORY) {
-					//FIXME! p->value = get_cached_value (p->id, p->value);
 				} else {
 					return false;
 				}
@@ -158,8 +158,10 @@ void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t c
 	if (callback_type == 0) {
 		// Data package
 		if (data_length == DOWNLINK_PACKAGE_LENGTH) {
-			downlink_handle_package_really ((downlink_package) data_package);
-			bluetooth_send_data_package (data_package, DOWNLINK_PACKAGE_LENGTH, FALSE, const uint16_t timeout_ms)
+			downlink_handle_package_really ((downlink_package *) data_package);
+			uint8_t return_package_length;
+			return_package_length = DOWNLINK_PACKAGE_LENGTH;
+			bluetooth_send_data_package (data_package, &return_package_length, false, 100);
 		} 
 	} else if (callback_type == 1) {
 		// Connect
