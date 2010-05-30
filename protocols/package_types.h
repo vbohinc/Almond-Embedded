@@ -29,7 +29,8 @@ enum package_type_flags {
 	LIST	 = 0x0C, 	// Returns a list of known devices
 
 	// Shared
-	CONFIG	 = 0x0F    // Access the configuration
+	ERROR  = 0x0E,   // ERROR
+	CONFIG = 0x0F    // Access the configuration
 };
 
 #endif

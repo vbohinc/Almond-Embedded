@@ -2,79 +2,66 @@
 #include <stdbool.h>
 #include "downlink.h"
 
-const int DOWNLINK_PACKAGE_LENGTH = 4;
-const int MAX_HISTORY = 255;
+const uint8_t DOWNLINK_TIMEOUT_MS = 100;
+const uint8_t DOWNLINK_PACKAGE_LENGTH = 4;
+
+/* FIXME: const int MAX_HISTORY = 255; */
 #ifdef SQUIRREL
 
-bool downlink_handle_package (struct downlink_package *p) {
-	switch (p->opcode & 0xF0) {
-		case RET:
-			return downlink_handle_ret_package (p);
-		/* FIXME: Should we return something. Maybe a GLOBAL Bluetooth activated? */
-		case ECHO:
-			return true;
-		default:
-			return false;
-	}
-}
-#endif
-
-
-/**
- * Handle RET package
- */
-static bool downlink_handle_ret_package (struct downlink_package *p) {
-
-	return true;
-}
-
-uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_package *p) {
-  p->opcode = GET;
-  p->id = id;
-  p->value = 0;
+/* WARNING: Assuming layer above already connected */
+uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t value, bool *err) {
   
-  bluetooth_handle_package (p);
+  downlink_package *package;
   
-
+  err = FALSE;
+  package->opcode = opcode | flag;
+  package->id = id;
+  package->value = value;
+  
+  switch (bluetooth_send_data_package (package, DOWNLINK_PACKAGE_LENGTH, TRUE, const uint16_t timeout_ms)) {
+    case 0:
+      if (package->opcode == (RET | flag) && package->id == id) 
+        return package->value;
+      else if (package->opcode == (RET | ERROR)
+        error ("Protocol error")
+      else 
+        error ("Downlink protocol mismatch");
+      break;
+    case 1:
+      error ("Bluetooth error");
+      break;
+    case 2:
+      warn ("Timeout");
+      break;
+    default:
+      error ("Unkown return value");
+  }
+  err = TRUE;
+  return 0;
 }
 
-uint8_t downlink_get_class () {
-	struct downlink_package *p;
-	
-	p->opcode = GET | INFO_NUT;
-	p->id = NULL;
-	p->value = NULL;
-	
-	bluetooth_handle_package (p);
-	
-	if (p->opcode == RET | INFO_NUT) {
-		return p-> value;
-	} else {
-		return -1;
-	}
+uint16_t downlink_get_sensor_value (uint8_t id, bool *err) {
+  return downlink_request (GET, STANDARD, id, 0, err);
 }
 
-uint8_t downlink_get_actuator_class (uint8_t id) {
-	return _get_extension_class(id);
+uint16_t downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err) {
+  return downlink_request (SET, STANDARD, id, value, err);
 }
 
-uint8_t downlink_get_sensor_class (uint8_t id) {
-	return _get_extension_class(id);
+uint8_t downlink_get_nut_class (bool *err) {
+  return (uint8_t) downlink_request (GET, INFO_NUT, 0, 0, err);
 }
 
-uint8_t _get_extension_class (uint8_t id) {
-	struct downlink_package *p;
-	
-	p->opcode = GET | INFO_EXTENSION;
-	p->id = id;
-	p->value = NULL;
-	
-	bluetooth_handle_package (p);
-	if (p->opcode == RET | INFO_EXTENSION) {
-		return p->value;
-	} else {
-		return -1;
-	}
+uint8_t downlink_get_actuator_class (uint8_t id, bool *err) {
+  return (uint8_t) downlink_request (GET, INFO_EXTENSION, id + 0x80, 0, err);
+}
+
+uint8_t downlink_get_sensor_class (uint8_t id, bool *err) {
+  return (uint8_t) downlink_request (GET, INFO_EXTENSION, id, 0, err);
+}
+
+uint16_t downlink_bye (uint16_t time_ms, bool *err) {
+  return downlink_request (BYE, 0, 0, time_ms, err);
 }
 
 #endif
