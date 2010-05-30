@@ -38,17 +38,7 @@ struct downlink_package {
 // Switch functionality 
 
 #ifdef SQUIRREL
-
-/**
- * Discover nuts, returns ???
- */
-
-void downlink_discover (void);
-
-/**
- *
- */
-
+bool downlink_handle_package (struct downlink_package* );
 #endif
 
 #ifdef NUT
