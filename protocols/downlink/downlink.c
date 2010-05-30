@@ -6,9 +6,18 @@ const int DOWNLINK_PACKAGE_LENGTH = 4;
 const int MAX_HISTORY = 255;
 #ifdef SQUIRREL
 
-void downlink_discover () {
-	return;
+bool downlink_handle_package (struct downlink_package *p) {
+	switch (p->opcode & 0xF0) {
+		case RET:
+			return downlink_handle_ret_package (p);
+		/* FIXME: Should we return something. Maybe a GLOBAL Bluetooth activated? */
+		case ECHO:
+			return true;
+		default:
+			return false;
+	}
 }
+#endif
 
 
 /**
@@ -16,19 +25,6 @@ void downlink_discover () {
  */
 static bool downlink_handle_ret_package (struct downlink_package *p) {
 
-	// Utility functions
-	/*switch (p->opcode & 0x0F) {
-		case INFO_NUT:
-		if (!find_nut_by_MAC(p)) {
-			// Issue new running number
-			// Insert into mac_lookup
-			// Insert into class_lookup
-		}
-		case INFO_EXTENSION:
-		// Determine running number
-		// Insert into relevant lookup table
-
-	}*/
 	return true;
 }
 
@@ -37,13 +33,9 @@ uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_package
   p->id = id;
   p->value = 0;
   
-  //bluetooth_handle_package (p);
+  bluetooth_handle_package (p);
   
-  if (p->opcode == 0xF0 && p->id == id) { // ECHO
-    return p->value;
-  } else {
-    return -1;
-  }  
+
 }
 
 uint8_t downlink_get_class () {
@@ -84,8 +76,6 @@ uint8_t _get_extension_class (uint8_t id) {
 		return -1;
 	}
 	}
-}
-
 #endif
 
 #ifdef NUT
