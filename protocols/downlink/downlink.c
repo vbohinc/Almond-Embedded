@@ -63,7 +63,6 @@ uint8_t downlink_get_sensor_class (uint8_t id, bool *err) {
 uint16_t downlink_bye (uint16_t time_ms, bool *err) {
   return downlink_request (BYE, 0, 0, time_ms, err);
 }
-
 #endif
 
 #ifdef NUT
@@ -71,7 +70,7 @@ uint16_t downlink_bye (uint16_t time_ms, bool *err) {
 /**
  * Handle GET package
  */
-static inline bool downlink_handle_get_package (struct downlink_package *p) {
+static inline bool downlink_handle_get_package (downlink_package *p) {
 	switch (p->opcode & 0x0F) {
 		case STANDARD:
 			if (p->id < class_id_extensions_length && class_id_extensions[p->id] < GENERIC_ACTOR) {
@@ -111,7 +110,7 @@ static inline bool downlink_handle_get_package (struct downlink_package *p) {
 /**
  * Handle SET packages
  */
-static inline bool downlink_handle_set_package (struct downlink_package *p) {
+static inline bool downlink_handle_set_package (downlink_package *p) {
 	switch (p->opcode & 0x0F) {
 		case STANDARD:
 			if (p->id < class_id_extensions_length && class_id_extensions[p->id] >= GENERIC_ACTOR) {
@@ -130,11 +129,26 @@ static inline bool downlink_handle_set_package (struct downlink_package *p) {
 	}
 }
 
+/* FIXME: Change parameter list */
+void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
+{
+	if (callback_type == 0) {
+		// Data package
+		if (data_length == DOWNLINK_PACKAGE_LENGTH) {
+			downlink_handle_package_really ((downlink_package) data_package);
+		} 
+	} else if (callback_type == 1) {
+		// Connect
+	} else if (callback_type == 2) {
+		// Disconnect
+	}
+}
+
 
 /**
  * Major downlink package handling function
  */
-bool downlink_handle_package (struct downlink_package *p) {
+bool downlink_handle_package_really (downlink_package *p) {
 	switch (p->opcode & 0xF0) {
 		case GET:
 			return downlink_handle_get_package (p);
@@ -155,6 +169,6 @@ bool downlink_handle_package (struct downlink_package *p) {
 }
 #endif
 
-bool downlink_handle_package (struct downlink_package *p) {
+bool downlink_handle_package (downlink_package *p) {
 	return true;
 }

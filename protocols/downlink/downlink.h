@@ -62,10 +62,9 @@ extern void set_value(uint8_t id, uint16_t value);
 /**
  * Returns true if the package was handled successfully and the buffer can be returned, false otherwise
  */
-bool downlink_handle_package ( struct downlink_package* );
+bool downlink_handle_package (downlink_package p*);
+void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length);
 
 #endif
-#ifdef SERIAL
-bool downlink_handle_package ( struct downlink_package* );
-#endif
+
 #endif
