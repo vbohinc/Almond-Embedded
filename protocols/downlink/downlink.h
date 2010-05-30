@@ -18,6 +18,7 @@
 #include <stdbool.h>
 
 #include "../classes.h"
+#include "../package_types.h"
 
 extern const int DOWNLINK_PACKAGE_LENGTH;
 extern const int MAX_HISTORY; // FIXME!

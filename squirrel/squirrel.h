@@ -2,10 +2,10 @@
 * Core libraries for squirrel
 */
 
-#ifndef __SQUIRREL_H
-#define __SQUIRREL_H
+#ifndef __SQUIRREL__
+#define __SQUIRREL__
 
-#include <assert.h>
+#include <../shared/common.h>
 #include "../drivers/bluetooth/bluetooth.h"
 //#include "../drivers/storage/storage.h"
 //#include "../drivers/display/display.h"
@@ -22,5 +22,13 @@ struct _device_info {
 		uint8_t sensor_types[16];
 		uint8_t config_types[16];
 };
+
+struct device_info *device_list[16];
+
+enum states {
+	SLAVE, MASTER
+};
+
+uint8_t state;
 
 #endif

@@ -16,26 +16,29 @@
 
 int connected = 0;
 
+uint32_t error_count = 0;
+uint32_t send_count = 0;
+
+
+uint8_t int_received = 0;
+uint8_t int_to_send = 1;
+
+uint8_t pkg_received = 0;
+
 void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
 {
 	if (callback_type == 0) {//is data package
-		printf("Data Package received:\n");
-		printf("[");
 		for (int i=0; i<data_length; i++)
 		{
-			printf("%d:", i);
-			if ((data_package[i] >= 40 && data_package[i] <=62) ||  (data_package[i] >= 65 && data_package[i] <=90) ||  (data_package[i] >= 97 && data_package[i] <=122))
-				printf("%c", data_package[i]);
-			else if (data_package[i] == 13)
-				printf("<CR>\n");
-			else if (data_package[i] == 10)
-				printf("<LF>");
-			else
-				printf("[%d]",data_package[i]);
-			printf(",");
-			fflush(stdout);
+			if (data_package[i] > int_received+1)
+			{
+				printf("ERROR: Int: %d, ErrCnt: %d, SendCnt:%d, Rate:%f\n", int_received, error_count, send_count-data_length+i, (float)error_count/(float)send_count);
+				error_count++;
+			}
+			int_received = data_package[i];
 		}
-		printf("]\n");
+		pkg_received = 1;
+		//printf("]\n");
 	} else if (callback_type == 1) //connected
 	{
 		printf("Connected to: %s\n", data_package);
@@ -76,7 +79,11 @@ void master_test()
 			return;
 		}
 
-		int retval = bluetooth_cmd_set_remote_address((uint8_t*)"701A041CDBF1");
+		char addr[12] = "701A041CDBF1";
+		uint8_t compressed[6];
+		bluetooth_address_to_array((uint8_t*)addr, compressed, 0,0,0);
+
+		int retval = bluetooth_cmd_set_remote_address(compressed);
 
 		printf("\nATD ret=%d",retval);
 
@@ -114,10 +121,10 @@ void master_test()
 			bluetooth_data_package[i]=i+48;
 		}*/
 
-		if (bluetooth_send_data_package((uint8_t*)"Hallo", 5)==0)
-					perror("Couldn't send cmd");
+		//if (bluetooth_send_data_package((uint8_t*)"Hallo", 5)==0)
+		//			perror("Couldn't send cmd");
 
-		if (retval ==1)
+		/*if (retval ==1)
 		{
 
 			retval = bluetooth_cmd_online_command();
@@ -126,14 +133,51 @@ void master_test()
 			retval = bluetooth_cmd_close_connection();
 			printf("\nATH ret=%d", retval);
 
-		}
+		}*/
 
 
 		printf("Gib daten ein:\n");
 
+		uint32_t sentPackages = 0;
+
+		uint8_t package_length = 64;
+
+		for (int i=0; i<package_length; i++)
+		{
+			cmd[i] = int_to_send;
+			int_to_send++;
+			send_count++;
+		}
+
+		time_t start, finish;
+		start = time(NULL);
+		uint32_t sent_bytes = 0;
+
 		while(1)
 		{
-			fgets(buffer, 255, stdin);
+			//bluetooth_process_data();
+
+
+
+			int ret = bluetooth_send_data_package(cmd, &package_length, 1, 2000);
+			if (ret != 0)
+			{
+				printf("Send package returned: %d\n", ret);
+				return;
+			}
+			sentPackages++;
+			sent_bytes+=(package_length*2);
+			//bluetooth_process_data();
+
+			if (sentPackages%10== 0)
+			{
+
+				finish = time(NULL) - start;
+				double time = (double)(finish);
+				printf("SentPackages: %d, Bytes:%d, Time:%ds Speed:%d B/s\n", sentPackages, sent_bytes,finish,  (int)(((float)sent_bytes/time)+0.5));
+			}
+
+			/*fgets(buffer, 255, stdin);
 			if (strncmp(buffer, "exit",4)==0)
 				break;
 			int count = 0;
@@ -142,15 +186,16 @@ void master_test()
 				cmd[count] = buffer[count];
 				count++;
 			}
-			/*if (strncmp(buffer, "+\n", 2)==0)
+			if (strncmp(buffer, "+\n", 2)==0)
 				count--;
 			else
 				cmd[count-1] = 13;*/
 
 			//cmd[count] = 0;
 
-			if (bluetooth_send_data_package(cmd, count-1)==0)
+			/*if (bluetooth_send_data_package(cmd, count-1)==0)
 				perror("Couldn't send cmd");
+			bluetooth_process_data();*/
 		}
 }
 
@@ -167,6 +212,7 @@ void slave_test()
 
 	while (!connected)
 	{
+		bluetooth_process_data();
 		usleep(1000);
 	}
 
@@ -174,10 +220,11 @@ void slave_test()
 
 	while(connected)
 	{
+		bluetooth_process_data();
 		fgets(buffer, 255, stdin);
 		if (strncmp(buffer, "exit",4)==0)
 			break;
-		int count = 0;
+		uint8_t count = 0;
 		while(buffer[count]!=0)
 		{
 			cmd[count] = buffer[count];
@@ -190,8 +237,11 @@ void slave_test()
 
 		//cmd[count] = 0;
 
-		if (bluetooth_send_data_package(cmd, count-1)==0)
+		count--;
+
+		if (bluetooth_send_data_package(cmd, &count, 0, 0)!=0)
 			perror("Couldn't send cmd");
+		bluetooth_process_data();
 	}
 
 
@@ -199,7 +249,6 @@ void slave_test()
 
 int main()
 {
-
 	bluetooth_init(bluetooth_callback_handler);
 
 	int ret = bluetooth_test_connection(4);
@@ -225,9 +274,10 @@ int main()
 
 	uint8_t* ret = bluetooth_cmd_get_pin();
 		printf("\nATP ret=%s",ret);
+ */
+	master_test();
 
-	//master_test();*/
-	slave_test();
+	//slave_test();
 
 	bluetooth_close();
 }

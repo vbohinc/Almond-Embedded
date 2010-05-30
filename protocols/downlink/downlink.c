@@ -75,7 +75,8 @@ uint8_t _get_extension_class (uint8_t id) {
 	} else {
 		return -1;
 	}
-	}
+}
+
 #endif
 
 #ifdef NUT
