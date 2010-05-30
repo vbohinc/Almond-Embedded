@@ -129,22 +129,6 @@ static inline bool downlink_handle_set_package (downlink_package *p) {
 	}
 }
 
-/* FIXME: Change parameter list */
-void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
-{
-	if (callback_type == 0) {
-		// Data package
-		if (data_length == DOWNLINK_PACKAGE_LENGTH) {
-			downlink_handle_package_really ((downlink_package) data_package);
-		} 
-	} else if (callback_type == 1) {
-		// Connect
-	} else if (callback_type == 2) {
-		// Disconnect
-	}
-}
-
-
 /**
  * Major downlink package handling function
  */
@@ -165,6 +149,22 @@ bool downlink_handle_package_really (downlink_package *p) {
 			return true;
 		default:
 			return false;
+	}
+}
+
+/* FIXME: Change parameter list */
+void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
+{
+	if (callback_type == 0) {
+		// Data package
+		if (data_length == DOWNLINK_PACKAGE_LENGTH) {
+			downlink_handle_package_really ((downlink_package) data_package);
+			bluetooth_send_data_package (data_package, DOWNLINK_PACKAGE_LENGTH, FALSE, const uint16_t timeout_ms)
+		} 
+	} else if (callback_type == 1) {
+		// Connect
+	} else if (callback_type == 2) {
+		// Disconnect
 	}
 }
 #endif

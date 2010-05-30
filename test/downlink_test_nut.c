@@ -5,50 +5,16 @@
 #define SERIAL
 #define NUT
 
-void slave_test()
-{
-	if (bluetooth_set_as_slave() == 0)
-	{
-		printf("Couldn't set as slave\n");
-		return;
-	}
+const uint8_t class_id_nut = 	WEATHERSTATION;
+const uint8_t class_id_extensions[] = {TEMPERATURE, PRESSURE, HUMIDITY};
+const uint8_t class_id_extensions_length = 3;
 
-	printf("Waiting for connection ...\n");
+uint16_t get_value (uint8_t id) {
+  return 13;
+}
 
+void set_value (uint8_t id, uint16_t value) {
 
-	while (!connected)
-	{
-		bluetooth_process_data();
-		usleep(1000);
-	}
-
-	printf("Gib daten ein:\n");
-
-	while(connected)
-	{
-		bluetooth_process_data();
-		fgets(buffer, 255, stdin);
-		if (strncmp(buffer, "exit",4)==0)
-			break;
-		uint8_t count = 0;
-		while(buffer[count]!=0)
-		{
-			cmd[count] = buffer[count];
-			count++;
-		}
-		/*if (strncmp(buffer, "+\n", 2)==0)
-			count--;
-		else
-			cmd[count-1] = 13;*/
-
-		//cmd[count] = 0;
-
-		count--;
-
-		if (bluetooth_send_data_package(cmd, &count, 0, 0)!=0)
-			perror("Couldn't send cmd");
-		bluetooth_process_data();
-	}
 }
 
 int main()
@@ -58,7 +24,9 @@ int main()
 	assert (result == 1, "Could not test the connection");
 	int result = bluetooth_set_as_slave ();
 	assert (result == 1, "Could not set slave mode");
-
+  while (TRUE) {
+  
+  }
 	bluetooth_close();
 }
 
