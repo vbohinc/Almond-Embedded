@@ -9,4 +9,9 @@
 #include <stdbool.h>
 #include "error.h"
 
+// X = Port, Y = Bit
+
+#define set_bit(X, Y) (X |= (1<<(Y)))
+#define clear_bit(X, Y) (X &= ~(1<<(Y)))
+
 #endif

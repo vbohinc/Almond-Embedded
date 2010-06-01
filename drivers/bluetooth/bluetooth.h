@@ -17,14 +17,23 @@
 #include "./../usart/usart.h"
 #endif
 #include "./../../shared/fifo.h"
-
+#include "./../../shared/error.h"
 
 /**
-* The size of a data package. If BLUETOOTH_DATA_PACKAGE_SIZE received, the callback function with
-* received bytes will be called.
-* Must be smaller than (uint8_t-2). Max value is 254.
-*/
-#define BLUETOOTH_DATA_PACKAGE_SIZE 30
+ * Enables CRC check for bluetooth packages
+ */
+#define ENABLE_CRC
+
+#ifdef ENABLE_CRC
+#include "./../../shared/crc.h"
+#endif
+
+/**
+ * Maximum possible size of a data package in bytes. The formula for the maximum size is (SIZE is the normal size of a package)
+ * (SIZE * 2) +10;
+ * Ex. real package: 10 Byte. => PACKAGE_SIZE=30
+ */
+#define BLUETOOTH_DATA_PACKAGE_SIZE 138
 
 /**
 * The size of receive buffer in bytes. Each received byte will be stored in this buffer
@@ -37,15 +46,21 @@
 
 /**
  * The special-Byte to synchronize data stream.
+ * If in data package is used the value of special byte, another special byte will be inserted.
  */
-#define BLUETOOTH_SPECIAL_BYTE 254
+#define BLUETOOTH_SPECIAL_BYTE 255
 
 /**
  * The stop-Byte in combination with special byte to synchronize data stream.
  * First comes special byte, then stop byte.
- * If in data package is used the value of special byte, another special byte will be inserted.
  */
-#define BLUETOOTH_STOP_BYTE 255
+#define BLUETOOTH_STOP_BYTE 254
+
+/**
+ * The resent-Byte in combination with special byte to tell connected client to resent received data package due to CRC error.
+ * First comes special byte, then resent byte.
+ */
+#define BLUETOOTH_RESENT_BYTE 253
 
 /**
  * Default waiting for commands in milliseconds.
@@ -95,19 +110,26 @@ void bluetooth_byte_received (uint8_t byte);
 void (*bluetooth_callback)(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length);
 
 /**
- * Called by bluetooth_process_data if a stop byte was received or the data-package is complete-
+ * Called by bluetooth_process_data if a stop byte was received or the data-package is complete. Checks if CRC is ok.
+ * @return -1 means there was a CRC error and input buffer should be deleted
  */
-void bluetooth_handle_array(void);
+uint8_t bluetooth_handle_array(void);
 
 /**
  * Sends the data to the connected client.
  * Adds the stop-byte at the end of the package
- * @param data The data to send
- * @param length the length (number of bytes) in the data array
- * @return 1 on success, 0 on error
+ * @param data The data to send. If wait_for_response_package enabled, contains the response package. Must be big enought.
+ * @param length the length (number of bytes) in the data array. If wait_for_response_package enabled, contains the lenght of the received package
+ * @param wait_for_response_package 1 to wait until remote sends back a package
+ * @param timeout_ms timeout in ms to wait for response
+ * @return 0 on success, 1 on error, 2 on timeout
  */
-extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
+extern uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_t wait_for_response_package, const uint16_t timeout_ms);
 
+/**
+ * Processes received data stored in the FIFO. Should be called in the while-loop of the main program
+ */
+extern void bluetooth_process_data(void);
 
 /**
  * Checks if it is already master (0).
@@ -138,7 +160,7 @@ extern uint8_t bluetooth_test_connection(uint8_t tries);
  * @param compressed_address allocated array with min 6 bytes after compressed_start_idx to store compressed address
  * @param full_start_idx index where the address starts in the full_address array. Use 0 if array contains only address
  * @param compressed_start_idx index where the compressed address should start in the compressed_address array. Use 0 if array should only contain address
- * @param address_with_hypen 1 if address is in the format xxxx-xx-xxxxxx or 0 if address is without hypen xxxxxxxxxxxx
+ * @param address_with_hyphen 1 if address is in the format xxxx-xx-xxxxxx or 0 if address is without hypen xxxxxxxxxxxx
  */
 extern void bluetooth_address_to_array(uint8_t *full_address, uint8_t *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen);
 
@@ -148,7 +170,7 @@ extern void bluetooth_address_to_array(uint8_t *full_address, uint8_t *compresse
  * @param full_address allocated array with min 12 bytes after full_start_idx  to store full address in the format xxxxxxxxxxxx
  * @param compressed_start_idx index where the compressed address starts in the commressed_address array. Use 0 if array contains only address
  * @param full_start_idx index where the full address should start in the full_address array. Use 0 if array should only contain address
- * @param address_with_hypen 1 if address should be in the format xxxx-xx-xxxxxx or 0 if address should be without hypen xxxxxxxxxxxx
+ * @param address_with_hyphen 1 if address should be in the format xxxx-xx-xxxxxx or 0 if address should be without hypen xxxxxxxxxxxx
  */
 extern void bluetooth_array_to_address(uint8_t *compressed_address, uint8_t *full_address, const uint8_t compressed_start_idx, const uint8_t full_start_idx, const uint8_t address_with_hyphen);
 
