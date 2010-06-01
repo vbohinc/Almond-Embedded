@@ -30,13 +30,15 @@ int main (void)
     sleep_cpu();
     sleep_disable();
     //activate bluetooth 
+    //TODO make meassurements
     //TODO check variable for bluetooth 
+    //TODO sleep again if no connection is recieved
     //process data 
   }
 }
 
 //functions for downlink protocol
-//TODO implement this functon, make an container to save the data, and send the newest data.
+//TODO implement this functon, make an container and send the newest data.
 uint16_t get_value(uint8_t id)
 {
   switch(id) {
