@@ -56,7 +56,7 @@ EXTRAINCDIRS += $(BASE)/drivers/ $(BASE)/protocols/ $(BASE)/shared/
 #bluetooth
 ifeq (bluetooth, $(findstring bluetooth,$(ALMONDLIBS)))
 ALMONDLIBS += usart
-SRC += $(BASE)/shared/crc.c $(BASE)/shared/fifo.c $(BASE)/shared/error.c
+SRC += $(BASE)/drivers/bluetooth/bluetooth.c $(BASE)/shared/crc.c $(BASE)/shared/fifo.c $(BASE)/shared/error.c
 endif
 
 #usart

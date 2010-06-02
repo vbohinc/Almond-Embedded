@@ -19,16 +19,18 @@ int main (void)
   bluetooth_init(bluetooth_callback_handler);
   bluetooth_test_connection(4); //random number
   bluetooth_set_as_slave();
-  //TODO initialize sensors
+  //initialize sensors
+  init_bmp085_sensor();
   //mainloop
   while(1)
   {
-    start_sleep(4); //TODO use a variable, instead of random number 
     //activate bluetooth 
     //TODO make meassurements
     //TODO check variable for bluetooth 
     //TODO sleep again if no connection is recieved
-    //process data 
+    //process data
+
+    start_sleep(4); //TODO use a variable, instead of random number 
   }
 }
 

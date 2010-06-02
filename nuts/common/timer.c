@@ -16,8 +16,8 @@ void start_sleep(uint16_t sec)
   uint8_t remainwait = totalinc%256;
   OCR2 = 255;
   TCNT2 = 0;
-  while(ASSR&(1<<OCR2UB) != 0);
-  while(ASSR&(1<<TCR2UB) != 0);
+  while((ASSR&(1<<OCR2UB)) != 0);
+  while((ASSR&(1<<TCR2UB)) != 0);
   for(uint16_t tics = totalinc/256; tics > 0; tics--)
   {
     cli();
@@ -28,7 +28,7 @@ void start_sleep(uint16_t sec)
   }
   cli();
   OCR2 = remainwait;
-  while(ASSR&(1<<OCR2UB) != 0);
+  while((ASSR&(1<<OCR2UB)) != 0);
   sleep_enable();
   sei();
   sleep_cpu();
