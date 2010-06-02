@@ -13,5 +13,6 @@
 
 #define set_bit(X, Y) (X |= (1<<(Y)))
 #define clear_bit(X, Y) (X &= ~(1<<(Y)))
+#define check_bit(X, Y) ((X&(1<<Y)) != 0)
 
 #endif
