@@ -14,7 +14,7 @@ void bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_t
 int main (void)
 {
   //init sleeping
-  set_sleep_mode(SLEEP_MODE_PWR_SAVE);
+  init_timer();
   //start bluetooth
   bluetooth_init(bluetooth_callback_handler);
   bluetooth_test_connection(4); //random number
@@ -23,11 +23,7 @@ int main (void)
   //mainloop
   while(1)
   {
-    cli();
-    sleep_enable();
-    sei();
-    sleep_cpu();
-    sleep_disable();
+    start_sleep(4); //TODO use a variable, instead of random number 
     //activate bluetooth 
     //TODO make meassurements
     //TODO check variable for bluetooth 

@@ -1,4 +1,5 @@
 #include <common/timer.h>
+#include <avr/sleep.h>
 
 void init_timer()
 {
