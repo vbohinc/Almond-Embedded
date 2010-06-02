@@ -24,6 +24,14 @@ F_CPU = 1000000
 
 TARGET = main
 
+# ok to simplyfy things we define libs, makes adding dependencies easier
+# possible values:
+# bluetooth
+# twi
+# spi
+# and others
+ALMONDLIBS = bluetooth 
+
 SRC = #insert all extra src besides TARGET.c
 
 EXTRAINCDIRS = ../../drivers/ ../../drivers/ ../sensors/ ../../protocols/
