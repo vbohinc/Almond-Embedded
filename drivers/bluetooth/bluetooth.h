@@ -23,6 +23,7 @@
  * Enables CRC check for bluetooth packages
  */
 #define ENABLE_CRC
+#define BLUETOOTH_ENABLE_OK
 
 #ifdef ENABLE_CRC
 #include "./../../shared/crc.h"
@@ -61,6 +62,15 @@
  * First comes special byte, then resent byte.
  */
 #define BLUETOOTH_RESENT_BYTE 253
+
+
+#ifdef BLUETOOTH_ENABLE_OK
+/**
+ * The OK-Byte in combination with special byte to tell connected client that received package was ok.
+ * First comes special byte, then resent byte.
+ */
+#define BLUETOOTH_OK_BYTE 252
+#endif
 
 /**
  * Default waiting for commands in milliseconds.

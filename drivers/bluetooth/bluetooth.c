@@ -122,6 +122,14 @@ int32_t bluetooth_ms_to_timeout = -1; //disable timeout
  */
 uint8_t bluetooth_package_received = 0;
 
+#ifdef BLUETOOTH_ENABLE_OK
+/**
+ * Used for the bluetooth_send_datapackage to determine if remote end responsed with ok
+ */
+uint8_t bluetooth_ok_received = 0;
+#endif
+
+
 
 #ifndef SERIAL
 #include <util/delay.h>
@@ -312,6 +320,7 @@ void bluetooth_process_response(void)
 void bluetooth_resent_package(void)
 {
 	debug("Bluetooth: Resending data package!");
+	printf("length: %d", bluetooth_sent_length);
 	uint8_t error = 0;
 	for (uint8_t i=0; i<bluetooth_sent_length && error==0; i++)
 	{
@@ -477,6 +486,23 @@ void bluetooth_process_data(void)
 							bluetooth_resent_package();
 							break;
 						}
+#ifdef BLUETOOTH_ENABLE_OK
+						else if (byte == BLUETOOTH_OK_BYTE  && bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE)
+						{
+							bluetooth_previous_byte = -1;
+							bluetooth_ms_to_timeout = BLUETOOTH_STOP_BYTE_TIMEOUT; //reset timeout
+
+							bluetooth_data_package_index=0;
+							bluetooth_ok_received = 1;
+							if (bluetooth_wait_response_array == NULL)
+							{
+								//flush fifo
+								while (bluetooth_infifo.count>0)
+									fifo_get_nowait(&bluetooth_infifo);
+								break;
+							}
+						}
+#endif
 						else if (bluetooth_data_package_index < BLUETOOTH_DATA_PACKAGE_SIZE-1)
 						{
 
@@ -541,7 +567,7 @@ void bluetooth_byte_received (uint8_t byte)
 	//Put received byte into fifo
 	_inline_fifo_put (&bluetooth_infifo, byte);
 
-	//printf("Byte: %d\n", byte);
+	printf("Byte: %d\n", byte);
 	//fflush(stdout);
 
 /*
@@ -612,9 +638,30 @@ uint8_t bluetooth_handle_array(void)
 	}
 
 	//Overwrite checksum with 0
-	for (uint8_t i=bluetooth_data_package_index-8; i<bluetooth_data_package_index;i++)
-		bluetooth_data_package[i]=0;
+	//for (uint8_t i=bluetooth_data_package_index-8; i<bluetooth_data_package_index;i++)
+	//	bluetooth_data_package[i]=0;
+
 	bluetooth_data_package_index-=8;
+#endif
+
+
+#ifdef BLUETOOTH_ENABLE_OK
+
+	for (uint8_t i = 0; i<1; i++)
+	{
+#ifdef SERIAL
+		//send ok byte
+		bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE);
+
+		bluetooth_serial_putc(BLUETOOTH_OK_BYTE);
+
+#else
+		//send ok byte
+		usart_putc(BLUETOOTH_SPECIAL_BYTE,  10);
+
+		usart_putc(BLUETOOTH_OK_BYTE,  10);
+#endif
+	}
 #endif
 
 	if (bluetooth_wait_response_array != NULL)
@@ -646,7 +693,7 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 	//send data and store send bytes to bluetooth_data_package to resent full package if requested
 	bluetooth_data_package_index = 0;
 
-	for (uint8_t i=0; i<*length && error==0; i++)
+	for (uint8_t i=0; i<(*length) && error==0; i++)
 	{
 #ifdef SERIAL
 		if (data[i]==BLUETOOTH_SPECIAL_BYTE)
@@ -669,7 +716,6 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 		bluetooth_data_package[bluetooth_data_package_index] = data[i];
 		bluetooth_data_package_index++;
 #endif
-
 	}
 
 #ifdef ENABLE_CRC
@@ -696,6 +742,10 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 	}
 #endif
 
+	bluetooth_package_received = 0;
+
+#ifdef BLUETOOTH_ENABLE_OK
+	bluetooth_ok_received = 0;
 
 #ifdef SERIAL
 	//send stop byte
@@ -708,9 +758,8 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 	error = (error || (usart_putc(BLUETOOTH_STOP_BYTE,  10)==0));
 #endif
 
+#endif
 
-
-	bluetooth_package_received = 0;
 
 	if (wait_for_response_package)
 	{
@@ -732,6 +781,32 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 
 	if (error)
 		return 1;
+
+#ifdef BLUETOOTH_ENABLE_OK
+	int16_t ok_timeout = 10000;
+
+	while (!bluetooth_ok_received && ok_timeout>0)
+	{
+		//wait a millisecond
+		#ifdef SERIAL
+		//Wait until device has finished warm start
+			struct timespec s;
+			s.tv_sec = 0;
+			s.tv_nsec = 1000000L;
+			nanosleep(&s, NULL);
+		#else
+			_delay_ms(1); //Wait until device has finished warm start
+		#endif
+			ok_timeout--;
+		if (ok_timeout == 0)
+		{
+			//timeout!!
+			return 2;
+		}
+		//check if package is available
+		bluetooth_process_data();
+	}
+#endif
 
 	uint16_t ms_to_timeout = timeout_ms;
 
