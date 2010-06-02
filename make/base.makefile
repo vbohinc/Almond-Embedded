@@ -49,6 +49,32 @@ FORMAT = ihex
 #     this an empty or blank macro!
 OBJDIR = .
 
+EXTRAINCDIRS += $(BASE)/drivers/ $(BASE)/protocols/ $(BASE)/shared/
+
+##################### DEFINE ALMOND LIBS HERE ############################
+
+#bluetooth
+ifeq (bluetooth, $(findstring bluetooth,$(ALMONDLIBS)))
+ALMONDLIBS += usart
+SRC += $(BASE)/shared/crc.c $(BASE)/shared/fifo.c $(BASE)/shared/error.c
+endif
+
+#usart
+ifeq (usart, $(findstring usart,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/usart/usart.c 
+endif
+
+#downlink 
+ifeq (downlink, $(findstring downlink,$(ALMONDLIBS)))
+SRC += $(BASE)/protocols/downlink/downlink.c
+endif
+
+#twi
+ifeq (twi, $(findstring twi,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/twi/twi.c
+endif
+
+##################### END OF ALMOND LIBLIST ##############################
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC += $(TARGET).c
