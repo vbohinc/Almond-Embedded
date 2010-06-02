@@ -14,8 +14,8 @@
 #define __DOWNLINK__
 
 #include "../classes.h"
-#include "../../shared/common.h"
 #include "../package_types.h"
+#include "../../shared/common.h"
 #include "../../drivers/bluetooth/bluetooth.h"
 
 extern const uint8_t DOWNLINK_PACKAGE_LENGTH;
