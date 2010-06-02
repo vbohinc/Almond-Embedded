@@ -2,8 +2,7 @@
 #include <bluetooth/bluetooth.h>
 #include <downlink/downlink.h>
 #include <classes.h>
-#include <avr/sleep.h>
-#include <avr/.h>
+#include <common/timer.h>
 #include <avr/interrupt.h>
 
 const uint8_t class_id_nut = WEATHERSTATION;
@@ -14,7 +13,7 @@ void bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_t
 
 int main (void)
 {
-  const int sleeptime = 4;
+  //init sleeping
   set_sleep_mode(SLEEP_MODE_PWR_SAVE);
   //start bluetooth
   bluetooth_init(bluetooth_callback_handler);

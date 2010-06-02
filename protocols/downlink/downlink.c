@@ -35,7 +35,7 @@ uint16_t downlink_get_sensor (uint8_t class, uint8_t id, struct downlink_package
   
   bluetooth_handle_package (p);
   
-
+  return 0 //FIXME this code needs to be reviewed, added this because code wasn't compiling
 }
 
 uint8_t downlink_get_class () {
@@ -77,7 +77,7 @@ uint8_t _get_extension_class (uint8_t id) {
 	}
 }
 
-#endif
+//#endif
 
 #ifdef NUT
 
