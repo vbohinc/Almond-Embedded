@@ -13,15 +13,13 @@
 #ifndef __DOWNLINK__
 #define __DOWNLINK__
 
-
-#include <stdint.h>
-#include <stdbool.h>
-
 #include "../classes.h"
+#include "../../shared/common.h"
 #include "../package_types.h"
+#include "../../drivers/bluetooth/bluetooth.h"
 
-extern const int DOWNLINK_PACKAGE_LENGTH;
-extern const int MAX_HISTORY; // FIXME!
+extern const uint8_t DOWNLINK_PACKAGE_LENGTH;
+extern const uint8_t MAX_HISTORY; // FIXME!
 /**
  * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
  *
@@ -29,16 +27,23 @@ extern const int MAX_HISTORY; // FIXME!
  * | OPCODE (1) | ID (1) | VALUE (2) |
  */
 
-struct downlink_package {
+typedef struct _downlink_package downlink_package;
+struct _downlink_package {
 	uint8_t opcode;
 	uint8_t id;
 	uint16_t value;
 };
 
+
 // Switch functionality 
 
 #ifdef SQUIRREL
-bool downlink_handle_package (struct downlink_package* );
+extern uint16_t downlink_get_sensor_value (uint8_t id, bool *err);
+extern uint16_t downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err);
+extern uint8_t  downlink_get_nut_class (bool *err);
+extern uint8_t  downlink_get_actuator_class (uint8_t id, bool *err);
+extern uint8_t  downlink_get_sensor_class (uint8_t id, bool *err);
+extern uint16_t downlink_bye (uint16_t time_ms, bool *err);
 #endif
 
 #ifdef NUT
@@ -56,10 +61,9 @@ extern void set_value(uint8_t id, uint16_t value);
 /**
  * Returns true if the package was handled successfully and the buffer can be returned, false otherwise
  */
-bool downlink_handle_package ( struct downlink_package* );
+bool downlink_handle_package (downlink_package *p);
+void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length);
 
 #endif
-#ifdef SERIAL
-bool downlink_handle_package ( struct downlink_package* );
-#endif
+
 #endif

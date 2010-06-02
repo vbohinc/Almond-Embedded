@@ -76,8 +76,8 @@ bool uplink_handle_package (struct uplink_package *p) {
 			return uplink_handle_set_package (p);
 		case TUNNEL:
 			//return uplink_handle_tunnel_package (p);
-		case ECHO:
-			return true;
+		//case ECHO:
+			//return true;
 		default:
 			return false;
 	}

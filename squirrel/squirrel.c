@@ -3,14 +3,14 @@
  *
  */
 #include "squirrel.h"
-
-void downlink_create_device_info_entry (uint8_t *address[6]) {
+#include <stdlib.h>
+void downlink_create_device_info_entry (uint8_t *address) {
 
 	for (int k = 0; k < 16; k++) {
 		if (device_list[k] == NULL) {
 			// We haven't found the MAC, time to create a new entry
 			device_list[k] = malloc (sizeof (device_info));
-			device_list[k]->mac = found_mac;
+			device_list[k]->mac = *address;
 			device_list[k]->class = downlink_get_class();
 
 			for (int j = 0; j < 16; j++) {
