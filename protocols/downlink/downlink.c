@@ -64,7 +64,7 @@ uint8_t downlink_get_sensor_class (uint8_t id, bool *err) {
 uint16_t downlink_bye (uint16_t time_ms, bool *err) {
   return downlink_request (BYE, 0, 0, time_ms, err);
 }
-//#endif
+#endif
 
 #ifdef NUT
 
