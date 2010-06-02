@@ -23,6 +23,9 @@
 #endif
 
  #if !defined(null)
+/**
+ * Define NULL if not yet defined
+ */
  #define NULL 0
  #endif
 

@@ -1,63 +1,69 @@
 /**
- * 
  * downlink.h
- * Header for downlink - The Squirrel-Nuts Communication Protocol
+ * 
+ * Header files for downlink.c
  *
- * Everybody using this header must provide following:
+ * Everybody using this header for a nut must provide following:
  *
  * const uint8_t class_id_nut;
- * const uint8_t class_id_sensors[128];
- * const uint8_t class_id_actors[128];
+ * const uint8_t class_id_extensions[];
+ * const uint8_t class_id_extensions_length;
  */
-
 
 #ifndef __DOWNLINK__
 #define __DOWNLINK__
 
-#include <stdint.h>
-#include <stdbool.h>
-#include "../packet_types.h"
-const int DOWNLINK_PACKET_LENGTH = 4;
+#include "../classes.h"
+#include "../../shared/common.h"
+#include "../package_types.h"
+#include "../../drivers/bluetooth/bluetooth.h"
 
-
+extern const uint8_t DOWNLINK_PACKAGE_LENGTH;
+extern const uint8_t MAX_HISTORY; // FIXME!
 /**
  * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
  *
  * Package format:
  * | OPCODE (1) | ID (1) | VALUE (2) |
  */
- 
-typedef struct downlink_packet {
-	uint8_t 	opcode; 
-	uint8_t		id;
-	uint16_t	value;
-} downlink_packet;
+
+typedef struct _downlink_package downlink_package;
+struct _downlink_package {
+	uint8_t opcode;
+	uint8_t id;
+	uint16_t value;
+};
 
 
 // Switch functionality 
 
 #ifdef SQUIRREL
-
-	/**
-	 * Discover nuts, returns ???
-	 */
-	
-	void downlink_discover ();
-	
-	/**
-	 *
-	 */
-	 
+extern uint16_t downlink_get_sensor_value (uint8_t id, bool *err);
+extern uint16_t downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err);
+extern uint8_t  downlink_get_nut_class (bool *err);
+extern uint8_t  downlink_get_actuator_class (uint8_t id, bool *err);
+extern uint8_t  downlink_get_sensor_class (uint8_t id, bool *err);
+extern uint16_t downlink_bye (uint16_t time_ms, bool *err);
 #endif
 
 #ifdef NUT
 
-	/**
-	 * Returns true if the package was handled successfully and the buffer can be returned, false otherwise
-	 */
-	bool downlink_handle_package ( *(struct downlink_packet) );
-	
-#endif
+/**
+ * MUST BE IMPLEMENTED IN YOUR FILES 
+ */
+extern const uint8_t class_id_nut;
+extern const uint8_t class_id_extensions[];
+extern const uint8_t class_id_extensions_length;
 
+extern uint16_t get_value(uint8_t id);
+extern void set_value(uint8_t id, uint16_t value);
+
+/**
+ * Returns true if the package was handled successfully and the buffer can be returned, false otherwise
+ */
+bool downlink_handle_package (downlink_package *p);
+void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length);
+
+#endif
 
 #endif

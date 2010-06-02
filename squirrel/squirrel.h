@@ -1,17 +1,34 @@
 /*
 * Core libraries for squirrel
 */
-#ifndef SQUIRREL_H
-#define SQUIRREL_H
+
+#ifndef __SQUIRREL__
+#define __SQUIRREL__
+
+#include <../shared/common.h>
+#include "../drivers/bluetooth/bluetooth.h"
+//#include "../drivers/storage/storage.h"
+//#include "../drivers/display/display.h"
+//#include "../drivers/platform/platform.h"
 #include "../protocols/downlink/downlink.h"
-//#include "../protocols/uplink/uplink.h"
+#include "../protocols/uplink/uplink.h"
+#include "../protocols/package_types.h"
 
+typedef struct _device_info device_info;
+struct _device_info {
+		uint8_t mac[6];
+		uint8_t class;
+		uint8_t actuator_types[16];
+		uint8_t sensor_types[16];
+		uint8_t config_types[16];
+};
 
-#define SNCP_MASTER // We're on the Squirrel here, so we'll be operating SNCP in Master mode
+struct device_info *device_list[16];
 
+enum states {
+	SLAVE, MASTER
+};
 
-	extern void squirrel_init(); // Initialize, check for known devices, scan for new devices, start polling/accept pushed messages, output to display, respond to backend requests, log activity
-	//void __bluetooth_init();
-	
-#endif // end of SQUIRREL
+uint8_t state;
 
+#endif
