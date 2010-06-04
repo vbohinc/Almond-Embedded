@@ -41,7 +41,7 @@ void init_bmp085_sensor()
   if(data_availible == 0)
   {
     get_conversion_data();
-    eeprom_write_byte(1,&have_bmp_conversion_data);
+    eeprom_write_byte(&have_bmp_conversion_data,1);
   }
 }
 
