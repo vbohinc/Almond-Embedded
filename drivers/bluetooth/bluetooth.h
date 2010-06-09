@@ -14,7 +14,8 @@
 #ifdef SERIAL
 #include "bluetooth_serial.h"
 #else
-#include "./../usart/usart.h"
+#include <avr/io.h>
+#include "./../uart/uart.h"
 #endif
 #include "./../../shared/fifo.h"
 #include "./../../shared/error.h"
@@ -109,7 +110,7 @@ extern void bluetooth_close(void);
 * @param byte the read byte.
 * @see bluetooth_process_data
 */
-void bluetooth_byte_received (uint8_t byte);
+//void bluetooth_byte_received (uint8_t byte);
 
 /**
  * Callback handler for received bytes or connect/disconnet notification

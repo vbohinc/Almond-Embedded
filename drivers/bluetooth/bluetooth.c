@@ -129,6 +129,7 @@ uint8_t bluetooth_package_received = 0;
 uint8_t bluetooth_ok_received = 0;
 #endif
 
+#define UART_BAUD_RATE      38400
 
 
 #ifndef SERIAL
@@ -152,8 +153,7 @@ void bluetooth_init(void (*bluetooth_callback_handler)(uint8_t *data_package, co
 	bluetooth_serial_set_byte_handler(bluetooth_byte_received);
 	bluetooth_serial_init();
 #else
-	usart_set_byte_handler(bluetooth_byte_received);
-	usart_init();
+	uart_init(UART_BAUD_SELECT(UART_BAUD_RATE,F_CPU) );
 #endif
 }
 
@@ -320,7 +320,6 @@ void bluetooth_process_response(void)
 void bluetooth_resent_package(void)
 {
 	debug("Bluetooth: Resending data package!");
-	printf("length: %d", bluetooth_sent_length);
 	uint8_t error = 0;
 	for (uint8_t i=0; i<bluetooth_sent_length && error==0; i++)
 	{
@@ -328,7 +327,8 @@ void bluetooth_resent_package(void)
 		error = (error || (bluetooth_serial_putc(bluetooth_data_package[i])==0));
 
 #else
-		error = (error || (usart_putc(bluetooth_data_package[i],  10)==0));
+		uart_putc(bluetooth_data_package[i]);
+		//error = (error || (uart_putc(bluetooth_data_package[i])==0));
 #endif
 
 	}
@@ -336,6 +336,43 @@ void bluetooth_resent_package(void)
 
 void bluetooth_process_data(void)
 {
+#ifndef SERIAL
+	//Read bytes from UART input buffer
+	unsigned int c;
+
+	do
+	{
+		c =  uart_getc();
+		if ( c & UART_FRAME_ERROR )
+		{
+			/* Framing Error detected, i.e no stop bit detected */
+			warn("UART Frame Error: ");
+		}
+		if ( c & UART_OVERRUN_ERROR )
+		{
+			/*
+			 * Overrun, a character already present in the UART UDR register was
+			 * not read by the interrupt handler before the next character arrived,
+			 * one or more received characters have been dropped
+			 */
+			warn("UART Overrun Error: ");
+		}
+		if ( c & UART_BUFFER_OVERFLOW )
+		{
+			/*
+			 * We are not reading the receive buffer fast enough,
+			 * one or more received character have been dropped
+			 */
+			warn("Buffer overflow error: ");
+		}
+		else
+		{
+			_inline_fifo_put (&bluetooth_infifo, c);
+		}
+
+	} while (c!=UART_NO_DATA && c!= UART_FRAME_ERROR && c!= UART_OVERRUN_ERROR && c!=UART_BUFFER_OVERFLOW);
+
+#endif
 	while (bluetooth_infifo.count>0)
 	{ //read all bytes from fifo
 
@@ -410,8 +447,8 @@ void bluetooth_process_data(void)
 
 #else
 							//send stop byte
-							usart_putc(BLUETOOTH_SPECIAL_BYTE,  10);
-							usart_putc(BLUETOOTH_RESENT_BYTE,  10);
+							uart_putc(BLUETOOTH_SPECIAL_BYTE);
+							uart_putc(BLUETOOTH_RESENT_BYTE);
 #endif
 						}
 
@@ -549,8 +586,8 @@ void bluetooth_process_data(void)
 
 #else
 							//send stop byte
-							usart_putc(BLUETOOTH_SPECIAL_BYTE,  10);
-							usart_putc(BLUETOOTH_RESENT_BYTE,  10);
+							uart_putc(BLUETOOTH_SPECIAL_BYTE);
+							uart_putc(BLUETOOTH_RESENT_BYTE);
 #endif
 							break;
 						}
@@ -562,12 +599,13 @@ void bluetooth_process_data(void)
 	}
 }
 
+/*
 void bluetooth_byte_received (uint8_t byte)
-{
+{*/
 	//Put received byte into fifo
-	_inline_fifo_put (&bluetooth_infifo, byte);
+//	_inline_fifo_put (&bluetooth_infifo, byte);
 
-	printf("Byte: %d\n", byte);
+	//printf("Byte: %d\n", byte);
 	//fflush(stdout);
 
 /*
@@ -580,7 +618,7 @@ void bluetooth_byte_received (uint8_t byte)
 	bluetooth_process_data();
 	bluetooth_receiveArray_handling=0;
 */
-}
+//}
 
 uint8_t bluetooth_handle_array(void)
 {
@@ -597,9 +635,9 @@ uint8_t bluetooth_handle_array(void)
 
 #else
 			//send stop byte
-			usart_putc(BLUETOOTH_SPECIAL_BYTE,  10);
+			uart_putc(BLUETOOTH_SPECIAL_BYTE);
 
-			usart_putc(BLUETOOTH_RESENT_BYTE,  10);
+			uart_putc(BLUETOOTH_RESENT_BYTE);
 #endif
 		return -1;
 	}
@@ -628,9 +666,9 @@ uint8_t bluetooth_handle_array(void)
 
 #else
 			//send stop byte
-			usart_putc(BLUETOOTH_SPECIAL_BYTE,  10);
+			uart_putc(BLUETOOTH_SPECIAL_BYTE);
 
-			usart_putc(BLUETOOTH_RESENT_BYTE,  10);
+			uart_putc(BLUETOOTH_RESENT_BYTE);
 #endif
 			return -1;
 		}
@@ -657,9 +695,9 @@ uint8_t bluetooth_handle_array(void)
 
 #else
 		//send ok byte
-		usart_putc(BLUETOOTH_SPECIAL_BYTE,  10);
+		uart_putc(BLUETOOTH_SPECIAL_BYTE);
 
-		usart_putc(BLUETOOTH_OK_BYTE,  10);
+		uart_putc(BLUETOOTH_OK_BYTE);
 #endif
 	}
 #endif
@@ -708,11 +746,13 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 #else
 		if (data[i]==BLUETOOTH_SPECIAL_BYTE)
 		{
-			error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  10)==0));
+			uart_putc(BLUETOOTH_SPECIAL_BYTE);
+			//error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  10)==0));
 			bluetooth_data_package[bluetooth_data_package_index] = BLUETOOTH_SPECIAL_BYTE;
 			bluetooth_data_package_index++;
 		}
-		error = (error || (usart_putc(data[i],  10)==0));
+		uart_putc(data[i]);
+		//error = (error || (usart_putc(data[i],  10)==0));
 		bluetooth_data_package[bluetooth_data_package_index] = data[i];
 		bluetooth_data_package_index++;
 #endif
@@ -734,7 +774,8 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 		error = (error || (bluetooth_serial_putc(checksum&0xF)==0));
 #else
 		//send crc byte
-		error = (error || (usart_putc(checksum&0xF,  10)==0));
+		uart_putc(checksum&0xF);
+		//error = (error || (usart_putc(checksum&0xF,  10)==0));
 #endif
 		bluetooth_data_package[bluetooth_data_package_index] = (checksum&0xF);
 		bluetooth_data_package_index++;
@@ -754,8 +795,12 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 
 #else
 	//send stop byte
-	error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  10)==0));
-	error = (error || (usart_putc(BLUETOOTH_STOP_BYTE,  10)==0));
+
+	uart_putc(BLUETOOTH_SPECIAL_BYTE);
+	uart_putc(BLUETOOTH_STOP_BYTE);
+
+	//error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  10)==0));
+	//error = (error || (usart_putc(BLUETOOTH_STOP_BYTE,  10)==0));
 #endif
 
 #endif
@@ -1006,8 +1051,9 @@ uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms)
 #else
 	while (cmd[command_length]!=0)
 	{
-		if (usart_putc(cmd[command_length], 10) == 0)
-			return 0;
+		uart_putc(cmd[command_length]);
+		//if (usart_putc(cmd[command_length], 10) == 0)
+		//	return 0;
 		_delay_ms(delay_ms);
 		command_length++;
 	}
