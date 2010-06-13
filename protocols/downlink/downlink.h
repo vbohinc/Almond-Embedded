@@ -37,14 +37,13 @@ struct _downlink_package {
 
 // Switch functionality 
 
-#ifdef SQUIRREL
 extern uint16_t downlink_get_sensor_value (uint8_t id, bool *err);
 extern uint16_t downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err);
 extern uint8_t  downlink_get_nut_class (bool *err);
 extern uint8_t  downlink_get_actuator_class (uint8_t id, bool *err);
 extern uint8_t  downlink_get_sensor_class (uint8_t id, bool *err);
 extern uint16_t downlink_bye (uint16_t time_ms, bool *err);
-#endif
+
 
 #ifdef NUT
 

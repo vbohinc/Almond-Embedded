@@ -1,3 +1,9 @@
+/**
+ * downlink.c
+ *
+ * Downlink protocol implementation
+ */
+
 #include "downlink.h"
 
 const uint8_t DOWNLINK_TIMEOUT_MS = 100;
@@ -164,7 +170,7 @@ void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t c
 	
 	if (return_package) {
 	  p->opcode = RET;
-	  bluetooth_send_data_package (data_package, DOWNLINK_PACKAGE_LENGTH, false, 100);
+	  bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH, false, 100);
 	}
 }
 #endif
