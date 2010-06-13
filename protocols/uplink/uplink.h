@@ -7,12 +7,13 @@
 #ifndef __UPLINK__
 #define __UPLINK__
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "../classes.h"
 #include "../package_types.h"
+#include "../../shared/common.h"
+#include "../../drivers/bluetooth/bluetooth.h"
 
-extern const int UPLINK_PACKAGE_LENGTH;
-extern const int UPLINK_PAYLOAD_LENGTH;
+extern const uint8_t UPLINK_PACKAGE_LENGTH;
+extern const uint8_t UPLINK_PAYLOAD_LENGTH;
 /**
  * Package format:
  * | OPCODE (1) | ID (1) | PAYLOAD (62) |

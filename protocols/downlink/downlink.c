@@ -1,10 +1,15 @@
+/**
+ * downlink.c
+ *
+ * Downlink protocol implementation
+ */
+
 #include "downlink.h"
 
 const uint8_t DOWNLINK_TIMEOUT_MS = 100;
 const uint8_t DOWNLINK_PACKAGE_LENGTH = 4;
 
 #ifdef SQUIRREL
-
 
 /* WARNING: Assuming layer above already connected */
 uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t value, bool *err) {
@@ -165,7 +170,7 @@ void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t c
 	
 	if (return_package) {
 	  p->opcode = RET;
-	  bluetooth_send_data_package (data_package, DOWNLINK_PACKAGE_LENGTH, false, 100);
+	  bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH, false, 100);
 	}
 }
 #endif

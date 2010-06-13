@@ -17,8 +17,6 @@
 #include "../package_types.h"
 #include "../../shared/common.h"
 #include "../../drivers/bluetooth/bluetooth.h"
-//#include "../../bluetoothbackend/bluetooth_client.h"
-
 
 extern const uint8_t DOWNLINK_PACKAGE_LENGTH;
 extern const uint8_t MAX_HISTORY; // FIXME!
