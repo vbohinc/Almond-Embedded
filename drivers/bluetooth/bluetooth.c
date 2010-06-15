@@ -11,6 +11,7 @@
 
 #include "bluetooth.h"
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef SERIAL
 #include <unistd.h>
@@ -129,7 +130,7 @@ uint8_t bluetooth_package_received = 0;
 uint8_t bluetooth_ok_received = 0;
 #endif
 
-#define UART_BAUD_RATE      38400
+#define UART_BAUD_RATE      19200
 
 
 #ifndef SERIAL
@@ -315,22 +316,64 @@ void bluetooth_process_response(void)
 }
 
 /**
+ * Special delay function to distinguish between Microcontroller Mode or
+ * PC Mode
+ */
+void bluetooth_delay(uint16_t ms)
+{
+#ifdef SERIAL
+	int sec = ms/1000;
+	ms -= sec*1000;
+
+	struct timespec s;
+	s.tv_sec = sec;
+	s.tv_nsec = 1000000L * ms;
+	nanosleep(&s, NULL);
+#else
+	_delay_ms(ms);
+#endif
+}
+
+/**
+ * Writes the byte to the usart or the bluetooth serial connection
+ * On Serial connection returns 1 for success, 0 for error.
+ * On Uart mode returns always 1
+ */
+int inline bluetooth_putc(uint8_t byte)
+{
+	if (byte == 13)
+		debug("BTM: Putc: '<CR>' [13]");
+	else if (byte == 10)
+		debug("BTM: Putc: '<LF>' [10]");
+	else
+	{
+		debug("BTM: Putc: ");
+		error_builder[0] = byte;
+		error_builder[1] = 0;
+		debug(error_builder);
+		debug(itoa(byte, error_builder,10));
+	}
+
+	uint8_t error = 0;
+#ifdef SERIAL
+		error = (error || (bluetooth_serial_putc(byte)==0));
+
+#else
+		uart_putc(byte);
+#endif
+	return error;
+}
+
+/**
  * Resents the byte from bluetooth_data_package because the remote end asked to do so (caused by a crc error)
  */
 void bluetooth_resent_package(void)
 {
-	debug("Bluetooth: Resending data package!");
-	uint8_t error = 0;
-	for (uint8_t i=0; i<bluetooth_sent_length && error==0; i++)
+	debug("BTM: Resent data pkg!");
+	for (uint8_t i=0; i<bluetooth_sent_length; i++)
 	{
-#ifdef SERIAL
-		error = (error || (bluetooth_serial_putc(bluetooth_data_package[i])==0));
-
-#else
-		uart_putc(bluetooth_data_package[i]);
-		//error = (error || (uart_putc(bluetooth_data_package[i])==0));
-#endif
-
+		if (bluetooth_putc(bluetooth_data_package[i])==0)
+			break;
 	}
 }
 
@@ -386,17 +429,20 @@ void bluetooth_process_data(void)
 		{
 			//Data in FIFO is response to a sent command
 			int16_t byte = fifo_get_nowait(&bluetooth_infifo);
-#ifdef SERIAL
-			if ((byte >= 40 && byte <=62) ||  (byte >= 65 && byte <=90) ||  (byte >= 97 && byte <=122))
-				printf("%c", byte);
-			else if (byte == 13)
-				printf("<CR>\n");
+
+
+			if (byte == 13)
+				debug("BTM:fifo_get:'<CR>' [13]");
 			else if (byte == 10)
-				printf("<LF>");
+				debug("BTM: fifo_get:'<LF>' [10]");
 			else
-				printf("[%d]",byte);
-			fflush(stdout);
-#endif
+			{
+				debug("BTM: fifo_get:");
+				error_builder[0] = byte;
+				error_builder[1] = 0;
+				debug(error_builder);
+				debug(itoa(byte, error_builder,10));
+			}
 
 
 			if (byte == 10)
@@ -438,34 +484,22 @@ void bluetooth_process_data(void)
 
 							bluetooth_data_package_index=0;
 
-							debug("Bluetooth: Timeout. No stop byte received. Reordering package ...");
-#ifdef SERIAL
-							//send stop byte
-							bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE);
+							debug("BTM: Timeout (STOP). Reorder.");
 
-							bluetooth_serial_putc(BLUETOOTH_RESENT_BYTE);
-
-#else
-							//send stop byte
-							uart_putc(BLUETOOTH_SPECIAL_BYTE);
-							uart_putc(BLUETOOTH_RESENT_BYTE);
-#endif
+							//reorder package
+							bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
+							bluetooth_putc(BLUETOOTH_RESENT_BYTE);
 						}
 
-#ifdef SERIAL
-						struct timespec s;
-						s.tv_sec = 0;
-						s.tv_nsec = 1000000L;
-						nanosleep(&s, NULL);
-#else
-						_delay_ms(1);
-#endif
+						bluetooth_delay(1);
 					} else {
 						return;
 					}
 				}
 				else
 				{
+					debug("BTM: fifo_get:");
+					debug(itoa(byte, error_builder,10));
 					//printf("recByte=%d\n", byte);
 					//check if module sent disconnect message
 					if (bluetooth_data_package_index > 10 && strstr((char*)bluetooth_data_package, "\r\nDISCONNECT")!=NULL)
@@ -515,7 +549,7 @@ void bluetooth_process_data(void)
 						}
 						else if (byte == BLUETOOTH_RESENT_BYTE  && bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE)
 						{
-							debug("Bluetooth: Remote requested to resent package!");
+							debug("BTM: Resent request.");
 							bluetooth_ms_to_timeout = -1; //disable timeout
 							bluetooth_previous_byte = -1;
 
@@ -570,7 +604,7 @@ void bluetooth_process_data(void)
 								break;
 							}
 						} else {
-							debug("Bluetooth: Package full (maximum number of bytes received). There must be an error in the package. Reordering ...");
+							debug("BTM: Package full -> Error. Reorder.");
 							//flush fifo
 							while (bluetooth_infifo.count>0)
 								fifo_get_nowait(&bluetooth_infifo);
@@ -578,17 +612,10 @@ void bluetooth_process_data(void)
 							bluetooth_data_package_index=0;
 
 							//reorder package
-#ifdef SERIAL
-							//send stop byte
-							bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE);
 
-							bluetooth_serial_putc(BLUETOOTH_RESENT_BYTE);
+							bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
+							bluetooth_putc(BLUETOOTH_RESENT_BYTE);
 
-#else
-							//send stop byte
-							uart_putc(BLUETOOTH_SPECIAL_BYTE);
-							uart_putc(BLUETOOTH_RESENT_BYTE);
-#endif
 							break;
 						}
 					}
@@ -626,19 +653,9 @@ uint8_t bluetooth_handle_array(void)
 #ifdef ENABLE_CRC
 	if (bluetooth_data_package_index<9)
 	{
-		debug("Bluetooth: Package is too small. Must be minimum 8 Bytes to calculate CRC. Reordering ...");
-#ifdef SERIAL
-			//send stop byte
-			bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE);
-
-			bluetooth_serial_putc(BLUETOOTH_RESENT_BYTE);
-
-#else
-			//send stop byte
-			uart_putc(BLUETOOTH_SPECIAL_BYTE);
-
-			uart_putc(BLUETOOTH_RESENT_BYTE);
-#endif
+		debug("BTM: Package too small. Min 8 Bytes (CRC). Reorder.");
+		bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
+		bluetooth_putc(BLUETOOTH_RESENT_BYTE);
 		return -1;
 	}
 
@@ -657,19 +674,12 @@ uint8_t bluetooth_handle_array(void)
 		if ((checksum&0xF) != bluetooth_data_package[bluetooth_data_package_index-1-i])
 		{
 
-			debug("Bluetooth: CRC error. Reordering package!");
-#ifdef SERIAL
-			//send stop byte
-			bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE);
+			debug("BTM: CRC error. Reorder.");
 
-			bluetooth_serial_putc(BLUETOOTH_RESENT_BYTE);
+			//Reorder package
+			bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
+			bluetooth_putc(BLUETOOTH_RESENT_BYTE);
 
-#else
-			//send stop byte
-			uart_putc(BLUETOOTH_SPECIAL_BYTE);
-
-			uart_putc(BLUETOOTH_RESENT_BYTE);
-#endif
 			return -1;
 		}
 		checksum = checksum >> 4;
@@ -687,18 +697,9 @@ uint8_t bluetooth_handle_array(void)
 
 	for (uint8_t i = 0; i<1; i++)
 	{
-#ifdef SERIAL
 		//send ok byte
-		bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE);
-
-		bluetooth_serial_putc(BLUETOOTH_OK_BYTE);
-
-#else
-		//send ok byte
-		uart_putc(BLUETOOTH_SPECIAL_BYTE);
-
-		uart_putc(BLUETOOTH_OK_BYTE);
-#endif
+		bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
+		bluetooth_putc(BLUETOOTH_OK_BYTE);
 	}
 #endif
 
@@ -733,29 +734,15 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 
 	for (uint8_t i=0; i<(*length) && error==0; i++)
 	{
-#ifdef SERIAL
 		if (data[i]==BLUETOOTH_SPECIAL_BYTE)
 		{
-			error = (error || (bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE)==0));
+			error = (error || (bluetooth_putc(BLUETOOTH_SPECIAL_BYTE)==0));
 			bluetooth_data_package[bluetooth_data_package_index] = BLUETOOTH_SPECIAL_BYTE;
 			bluetooth_data_package_index++;
 		}
-		error = (error || (bluetooth_serial_putc(data[i])==0));
+		error = (error || (bluetooth_putc(data[i])==0));
 		bluetooth_data_package[bluetooth_data_package_index] = data[i];
 		bluetooth_data_package_index++;
-#else
-		if (data[i]==BLUETOOTH_SPECIAL_BYTE)
-		{
-			uart_putc(BLUETOOTH_SPECIAL_BYTE);
-			//error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  10)==0));
-			bluetooth_data_package[bluetooth_data_package_index] = BLUETOOTH_SPECIAL_BYTE;
-			bluetooth_data_package_index++;
-		}
-		uart_putc(data[i]);
-		//error = (error || (usart_putc(data[i],  10)==0));
-		bluetooth_data_package[bluetooth_data_package_index] = data[i];
-		bluetooth_data_package_index++;
-#endif
 	}
 
 #ifdef ENABLE_CRC
@@ -769,14 +756,9 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 	//Send checksum reversed
 	for (int8_t i=7; i>=0; i--)
 	{
-#ifdef SERIAL
 		//send crc byte
-		error = (error || (bluetooth_serial_putc(checksum&0xF)==0));
-#else
-		//send crc byte
-		uart_putc(checksum&0xF);
-		//error = (error || (usart_putc(checksum&0xF,  10)==0));
-#endif
+		error = (error || (bluetooth_putc(checksum&0xF)==0));
+
 		bluetooth_data_package[bluetooth_data_package_index] = (checksum&0xF);
 		bluetooth_data_package_index++;
 		checksum = checksum >> 4;
@@ -788,20 +770,10 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 #ifdef BLUETOOTH_ENABLE_OK
 	bluetooth_ok_received = 0;
 
-#ifdef SERIAL
-	//send stop byte
-	error = (error || (bluetooth_serial_putc(BLUETOOTH_SPECIAL_BYTE)==0));
-	error = (error || (bluetooth_serial_putc(BLUETOOTH_STOP_BYTE)==0));
-
-#else
 	//send stop byte
 
-	uart_putc(BLUETOOTH_SPECIAL_BYTE);
-	uart_putc(BLUETOOTH_STOP_BYTE);
-
-	//error = (error || (usart_putc(BLUETOOTH_SPECIAL_BYTE,  10)==0));
-	//error = (error || (usart_putc(BLUETOOTH_STOP_BYTE,  10)==0));
-#endif
+	bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
+	bluetooth_putc(BLUETOOTH_STOP_BYTE);
 
 #endif
 
@@ -833,15 +805,7 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 	while (!bluetooth_ok_received && ok_timeout>0)
 	{
 		//wait a millisecond
-		#ifdef SERIAL
-		//Wait until device has finished warm start
-			struct timespec s;
-			s.tv_sec = 0;
-			s.tv_nsec = 1000000L;
-			nanosleep(&s, NULL);
-		#else
-			_delay_ms(1); //Wait until device has finished warm start
-		#endif
+		bluetooth_delay(1);
 			ok_timeout--;
 		if (ok_timeout == 0)
 		{
@@ -860,15 +824,7 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 		while (!bluetooth_package_received && ms_to_timeout>0)
 		{
 			//wait a millisecond
-			#ifdef SERIAL
-			//Wait until device has finished warm start
-				struct timespec s;
-				s.tv_sec = 0;
-				s.tv_nsec = 1000000L;
-				nanosleep(&s, NULL);
-			#else
-				_delay_ms(1); //Wait until device has finished warm start
-			#endif
+			bluetooth_delay(1);
 			ms_to_timeout--;
 			if (ms_to_timeout == 0)
 			{
@@ -1030,45 +986,21 @@ uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms)
 	bluetooth_cmd_sent[0] = cmd[2];
 	bluetooth_cmd_sent[1] = cmd[3];
 
-#ifdef SERIAL
-	printf("\nCMD:'%s'\n", cmd);
+	debug("BTM: Cmd:");
+	debug((char*)cmd);
+
 
 	while (cmd[command_length]!=0)
 	{
-		if (bluetooth_serial_putc(cmd[command_length]) == 0)
+		if (bluetooth_putc(cmd[command_length]) == 0)
 			return 0;
 
-		//There must be a sleep otherwise the module returns always error
-		struct timespec s;
-		s.tv_sec = 0;
-		//don't make it tooo small otherwise the module dosen't return correct values
-		s.tv_nsec = delay_ms * 1000000L;
-		nanosleep(&s, NULL);
-
+		bluetooth_delay(delay_ms);
 
 		command_length++;
 	}
-#else
-	while (cmd[command_length]!=0)
-	{
-		uart_putc(cmd[command_length]);
-		//if (usart_putc(cmd[command_length], 10) == 0)
-		//	return 0;
-		_delay_ms(delay_ms);
-		command_length++;
-	}
-#endif
 
-	#ifdef SERIAL
-
-	//Wait until device has finished command
-		struct timespec s;
-		s.tv_sec = 0;
-		s.tv_nsec = 500000000L;
-		nanosleep(&s, NULL);
-	#else
-		_delay_ms(500); //Wait until device has finished command
-	#endif
+	bluetooth_delay(500);
 
 	return 1;
 }
@@ -1078,12 +1010,6 @@ uint8_t bluetooth_cmd_wait_response (void)
 	while (bluetooth_response_code == 0) //Wait until bluetooth devices has responsed (handled by interrupt)
 	{
 		bluetooth_process_data();
-#ifdef SERIAL
-		struct timespec s;
-		s.tv_sec = 0;
-		s.tv_nsec = 100000L;
-		nanosleep(&s, NULL);
-#endif
 	}
 	return bluetooth_response_code;
 }
@@ -1170,16 +1096,7 @@ uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address)
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
-		#ifdef SERIAL
-			//Wait until device has finished command
-			struct timespec s;
-			s.tv_sec = 2;
-			s.tv_nsec = 0L;
-			nanosleep(&s, NULL);
-
-		#else
-			_delay_ms(2000); //Wait until device has finished command
-		#endif
+		bluetooth_delay(2000);
 		return 1;
 	} else
 		return 0;
@@ -1292,15 +1209,7 @@ uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect)
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
-		#ifdef SERIAL
-			//Wait until device has finished warm start
-			struct timespec s;
-			s.tv_sec = 3;
-			s.tv_nsec = 0L;
-			nanosleep(&s, NULL);
-		#else
-			_delay_ms(3000); //Wait until device has finished warm start
-		#endif
+		bluetooth_delay(3000);
 		return 1;
 	} else
 		return 0;
@@ -1364,15 +1273,7 @@ uint8_t bluetooth_cmd_set_mode (uint8_t mode)
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
-		#ifdef SERIAL
-		//Wait until device has finished warm start
-			struct timespec s;
-			s.tv_sec = 3;
-			s.tv_nsec = 500000000L;
-			nanosleep(&s, NULL);
-		#else
-			_delay_ms(3500); //Wait until device has finished warm start
-		#endif
+		bluetooth_delay(3500);
 		return 1;
 	} else
 		return 0;

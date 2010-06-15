@@ -80,7 +80,7 @@ OBJDIR = .
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = ./test/$(TARGET).c ./drivers/bluetooth/bluetooth.c ./drivers/uart/uart.c ./shared/error.c ./shared/crc.c ./shared/fifo.c
+SRC = ./test/$(TARGET).c ./drivers/bluetooth/bluetooth.c ./drivers/uart/uart.c ./shared/error.c ./shared/crc.c ./shared/fifo.c ./shared/ftdi.c
 
 
 

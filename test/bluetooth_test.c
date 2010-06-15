@@ -8,74 +8,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include "drivers/bluetooth/bluetooth.h"
-
-#define nop() \
-   asm volatile ("nop");
-
-#define P_RD  PB2
-#define P_WR  PB3
-#define P_TXE PB0
-#define P_RXF PB1
-#define P_SI  PB4
-
-#define DD_RD  DDB2 // 1
-#define DD_WR  DDB3 // 1
-#define DD_TXE DDB0 // 0
-#define DD_RXF DDB1 // 0
-#define DD_SI  DDB4 // 1
-
-#define TXE (PINB & (1<<P_TXE))
-#define RXF (PINB & (1<<P_RXF))
-
-#define FTDI_DD ( (1 << DD_RD) | (1 << DD_WR) | (1 << DD_SI) )
-
-void FTDIInit(void)
-{
-	// initialize data direction
-	DDRB |= FTDI_DD;
-	DDRA = 0xFF;
-
-	PORTB |= (1<<P_SI);
-}
-
-void FTDISend( uint8_t out_buf)
-{
-	while( TXE !=0 ) {};
-
-	PORTA = out_buf;
-	PORTB |= (1<<P_WR);
-	nop(); nop();
-	PORTB &= ~(1<<P_WR);
-}
-
-void FTDISendImmediate()
-{
-	// strobe low
-	PORTB &= ~(1<<P_SI);
-	PORTB |= (1<<P_SI);
-}
-
-uint8_t FTDIRead( uint8_t *out_buf)
-{
-	// no data avaiable
-	if( RXF)
-		return 0;
-
-	// set direction
-	DDRA = 0x00;
-
-	PORTB &= ~(1<<P_RD);
-	PORTB |= (1<<P_RD);
-
-	// read byte out
-	(*out_buf) = PINA;
-
-	// set direction
-	DDRA = 0xFF;
-
-	return 1;
-}
-
+#include "shared/ftdi.h"
 
 void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
 {
@@ -88,6 +21,14 @@ int main(void)
 	DDRD |= 0xFF;
 
 	DDRC |= 0xFF;
+
+	FTDISend('H');
+	FTDISend('a');
+	FTDISend('l');
+	FTDISend('l');
+	FTDISend('o');
+	FTDISend('1');
+
 
 	while (1)
 	{
