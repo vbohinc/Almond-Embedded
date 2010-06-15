@@ -1,8 +1,8 @@
 #include "display.h"
 
 const uint8_t charray[53][6] = {
-
-//0
+//Array start
+		//0
 		{ 0x0, 0x7f, 0x41, 0x41, 0x41, 0x7f },
 		//1
 		{ 0x0, 0x0, 0x10, 0x20, 0x7f, 0x0 },
@@ -80,7 +80,7 @@ const uint8_t charray[53][6] = {
 		{ 0x0, 0x0, 0xff, 0x0, 0x0, 0xff },
 		//boarder: horizontal top
 		{ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 },
-		//boarder: horizontal unten
+		//boarder: horizontal bottom
 		{ 0x9, 0x9, 0x9, 0x9, 0x9, 0x9 },
 		//40:boarder: top left
 		{ 0xff, 0x80, 0x80, 0x9f, 0x90, 0x90 },
@@ -90,15 +90,15 @@ const uint8_t charray[53][6] = {
 		{ 0xff, 0x1, 0x1, 0xf9, 0x9, 0x1 },
 		//boarder: bottom right
 		{ 0x9, 0x9, 0xf9, 0x1, 0x1, 0xff },
-		//Grad (Celsius)
+		//centicrade
 		{ 0x0, 0x0, 0x0, 0x70, 0x50, 0x70 },
-		//45:. point
+		//45:. dot
 		{ 0x0, 0x0, 0x0, 0x3, 0x3, 0x0 },
 		//: double dot
 		{ 0x0, 0x0, 0x0, 0x33, 0x33, 0x0 },
 		//, semicolon
 		{ 0x0, 0x4, 0x7, 0x0, 0x0, 0x0 },
-		//_ Unterstrich
+		//_ underline
 		{ 0x0, 0x1, 0x1, 0x1, 0x1, 0x1 },
 		//- minus
 		{ 0x0, 0x8, 0x8, 0x8, 0x8, 0x8 },
@@ -238,9 +238,16 @@ void display_write_char(uint8_t *character) {
 			display_write_char_help(*character - 55); // A-Z
 		} else if (*character >= 'a' && *character <= 'z') {
 			display_write_char_help(*character - 87); //A-Z
-		} else if (*character == ' ') {
+		} else if (*character >= '0' && *character <= '9'){
+			display_write_char_help(*character - 48); //0-9
+		}
+		else if (*character == ' ') {
 			display_write_char_help(52); //blank
-		} else if (*character == ':') {
+		}
+		else if (*character == '.') {
+					display_write_char_help(45); //dot
+				}
+		else if (*character == ':') {
 			display_write_char_help(46); //double dot
 		}
 
@@ -251,10 +258,42 @@ void display_write_char(uint8_t *character) {
 }
 
 void display_write_blank_text(uint8_t *text) {
+
+	uint8_t *pointer = text;
+	static uint8_t col = 0;
+	static uint8_t row = 0;
+
+
+	//prepare display
+	display_clean();
+	display_set_col(DISPLAY_COL_INIT+1);
+
+	//start to write
+	while (*pointer != '\0') {
+
+		display_write_char(pointer);
+		pointer++;
+		col++;
+
+		if (col >= 21) {
+			col = 0;
+			display_set_col(DISPLAY_COL_INIT+1);
+			row++;
+			display_set_page(DISPLAY_PAGE_INIT-row);
+		}
+
+		if (row >= 7) {
+			row = 0;
+			display_clean();
+			display_set_col(DISPLAY_COL_INIT+1);
+		}
+	}
+
 }
 ;
 
 void display_write_text(uint8_t *text) {
+	display_write_blank_text(text);
 }
 ;
 
