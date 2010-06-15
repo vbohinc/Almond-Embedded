@@ -2,13 +2,16 @@
 #include <util/delay.h>
 #include "../../shared/common.h"
 
+#ifndef DISPLAY
+#define DISPLAY
+
 /**
-* @file display_api.c
-* @author parsch
-* @date 2010/06/2
-*
-* The display API
-*/
+ * @file display_api.c
+ * @author parsch
+ * @date 2010/06/2
+ *
+ * The display API
+ */
 
 #define DISPLAY_PAGE_INIT 7
 
@@ -54,10 +57,10 @@ void display_set_col(uint8_t col);
 void display_set_page(uint8_t page);
 
 /**
-*
-* Initialization of the display
-*
-*/
+ *
+ * Initialization of the display
+ *
+ */
 void display_init(void);
 
 /**
@@ -65,6 +68,24 @@ void display_init(void);
  */
 void display_clean(void);
 
+/**
+ * helpfunction in order to write a char
+ */
+void display_write_char_help(uint8_t number);
 
+/**
+ * Writes a single char on the display
+ * @param *character
+ */
+void display_write_char(uint8_t *character);
 
+void display_write_blank_text(uint8_t *text);
+
+void display_write_text(uint8_t *text);
+
+// Array to store the symbols
+
+const uint8_t charray[53][6];
+
+#endif
 
