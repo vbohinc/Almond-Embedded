@@ -33,7 +33,7 @@ void FTDIInit(void)
 {
 	// initialize data direction
 	DDRB |= FTDI_DD;
-	DDRD = 0xFF;
+	DDRA = 0xFF;
 
 	PORTB |= (1<<P_SI);
 }
@@ -42,7 +42,7 @@ void FTDISend( uint8_t out_buf)
 {
 	while( TXE !=0 ) {};
 
-	PORTD = out_buf;
+	PORTA = out_buf;
 	PORTB |= (1<<P_WR);
 	nop(); nop();
 	PORTB &= ~(1<<P_WR);
@@ -62,16 +62,16 @@ uint8_t FTDIRead( uint8_t *out_buf)
 		return 0;
 
 	// set direction
-	DDRD = 0x00;
+	DDRA = 0x00;
 
 	PORTB &= ~(1<<P_RD);
 	PORTB |= (1<<P_RD);
 
 	// read byte out
-	(*out_buf) = PIND;
+	(*out_buf) = PINA;
 
 	// set direction
-	DDRD = 0xFF;
+	DDRA = 0xFF;
 
 	return 1;
 }
