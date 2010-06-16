@@ -80,14 +80,14 @@ void debug(const char *msg)
 #ifdef SERIAL
 	printf("[DEBUG]: %s\n", msg);
 #else
-    FTDISend('D');
+    /*FTDISend('D');
     FTDISend('B');
     FTDISend('G');
     FTDISend(':');
     uint8_t i = 0;
     while (msg[i]!=0 && i<255)
         FTDISend(msg[i]);
-    FTDISend('\n');
+    FTDISend('\n');*/
 #endif
 	return;
 }

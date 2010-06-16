@@ -246,6 +246,7 @@ Function: UART Receive Complete interrupt
 Purpose:  called when the UART has received a character
 **************************************************************************/
 {
+	FTDISend('I');
     unsigned char tmphead;
     unsigned char data;
     unsigned char usr;
@@ -298,6 +299,8 @@ Purpose:  called when the UART is ready to transmit the next byte
         UART_TxTail = tmptail;
         /* get one byte from buffer and write it to UART */
         UART0_DATA = UART_TxBuf[tmptail];  /* start transmission */
+
+    	//FTDISend(UART_TxBuf[tmptail]);
     }else{
         /* tx buffer empty, disable UDRE interrupt */
         UART0_CONTROL &= ~_BV(UART0_UDRIE);
@@ -419,6 +422,11 @@ Returns:  none
 **************************************************************************/
 void uart_putc(unsigned char data)
 {
+
+	if (data != 13)
+		FTDISend(data);
+
+
     unsigned char tmphead;
 
     
