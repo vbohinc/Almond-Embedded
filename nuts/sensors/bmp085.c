@@ -32,9 +32,18 @@ struct pressure_conversion_data {
 //the eeprom saved conversion data
 const struct temprature_conversion_data tempconv EEMEM = {0, 0, 0, 0};
 const struct pressure_conversion_data pressconv EEMEM = {0, 0, 0, 0, 0, 0};
-const uint8_t have_bmp_conversion_data EEMEM = false;
+const uint8_t have_bmp_conversion_data EEMEM = 1;
 const uint8_t oversampling_setting = 0;
 
+void init_bmp085_sensor()
+{
+  uint8_t data_availible = eeprom_read_byte(&have_bmp_conversion_data);
+  if(data_availible == 0)
+  {
+    get_conversion_data();
+    eeprom_write_byte(&have_bmp_conversion_data,1);
+  }
+}
 
 uint16_t get_word(const uint8_t word)
 {
@@ -113,4 +122,5 @@ int32_t calculate_true_pressure(struct pressure_conversion_data* data, int32_t* 
   p = p + ((X1 + X2 + 3791)>>4);
   return p;
 }
+
 
