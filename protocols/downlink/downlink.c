@@ -140,7 +140,7 @@ void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t c
 	  return;
 	}
 	
-	p = (downlink_package) data_package; 
+	p = (downlink_package *) data_package; 
 	
 	switch (p->opcode & 0xF0) {
 	
