@@ -40,7 +40,13 @@ void downlink_discover(void) {
 
 
 void init_downlink (void) {
-	downlink_discover();
+	//downlink_discover();
+	uint8_t *address = malloc(12*sizeof(uint8_t));
+	uint8_t address_bytes[6] = 0x00126f037095;
+	bluetooth_address_to_array(address, address_bytes, 0, 0, 0);
+	bluetooth_cmd_set_remote_address(address);
+	bluetooth_cmd_connect(0);
+	uint8_t class = downlink_get_nut_class();
 }
 
 
@@ -49,16 +55,4 @@ int main (void) {
 	//init_display ();
 	//init_storage ();
 	init_downlink ();
-
-	state = MASTER;
-
-	while (true) {
-		if (state == MASTER) {
-			master_loop ();
-		}
-
-		if (state == SLAVE) {
-			slave_loop ();
-		}
-	}
 }
