@@ -9,6 +9,7 @@
 
 #include "../classes.h"
 #include "../package_types.h"
+#include "../../shared/common.h"
 
 #define UPLINK_PACKAGE_LENGTH = 64;
 #define UPLINK_PAYLOAD_LENGTH = 62;
@@ -42,13 +43,19 @@
  * | DATA   (4) | -- (52) |
  */
 
-struct uplink_payload_list {
+typedef struct _uplink_payload_list   uplink_payload_list;
+typedef struct _uplink_payload_log    uplink_payload_log;
+typedef struct _uplink_payload_time   uplink_payload_time;
+typedef struct _uplink_payload_tunnel uplink_payload_tunnel;
+typedef struct _uplink_package        uplink_package;
+
+struct _uplink_payload_list {
 	uint8_t bt_address[6];
 	uint8_t nut_class;
 	uint8_t extension_class[55];
 };
 
-struct  uplink_payload_log {
+struct _uplink_payload_log {
 	uint8_t bt_address[6];
 	uint8_t extension_id;
 	uint8_t extension_class;
@@ -57,25 +64,25 @@ struct  uplink_payload_log {
 	uint16_t values[24];
 };
 
-struct  uplink_payload_time {
+struct _uplink_payload_time {
 	uint32_t time;
 	uint8_t padding[58];
 };
 
-struct  uplink_payload_tunnel {
+struct _uplink_payload_tunnel {
 	uint8_t bt_address[6];
 	uint8_t tunnel[4];
 	uint8_t padding[52];
 };
 
 union payload {
-	struct uplink_payload_list list;
-	struct uplink_payload_log log;
-	struct uplink_payload_time time;
-	struct uplink_payload_tunnel tunnel;
+	uplink_payload_list list;
+	uplink_payload_log log;
+	uplink_payload_time time;
+	uplink_payload_tunnel tunnel;
 } payload;
 
-struct uplink_package {
+struct _uplink_package {
 	uint8_t opcode;
 	uint8_t id;
 	union payload payload;
@@ -87,6 +94,6 @@ void uplink_init(void);
 void uplink_send_configuration(uint8_t);
 void uplink_receive_configuration(uint8_t);
 void uplink_send_log(void);
-bool uplink_handle_package (struct uplink_package *p);
+bool uplink_handle_package (uplink_package *p);
 #endif
 #endif // ENDS UPLINK
