@@ -1,8 +1,10 @@
 MCU = atxmega128a1
 F_CPU = 32000000
 TARGET = bluetooth_test
-SRC = ../drivers/bluetooth/bluetooth.c ../shared/fifo.c ../drivers/usart/usart.c ../drivers/usart/usart_driver.c ../shared/error.c ../shared/crc.c
+BASE = ..
+ALMONDLIBS = bluetooth downlink uplink
+SRC = ../shared/error.c
 EXTRAINCDIRS = ../drivers/ ../shared/
-TARGETTYPE = NUT
+TARGETTYPE = SQUIRREL
 include ../make/base.makefile 
 

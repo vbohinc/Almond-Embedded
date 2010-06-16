@@ -14,7 +14,7 @@ const uint8_t DOWNLINK_PACKAGE_LENGTH = 4;
 /* WARNING: Assuming layer above already connected */
 uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t value, bool *err) {
   
-  downlink_package *package;
+  downlink_package *package = malloc(sizeof(downlink_package));
   
   err = false;
   package->opcode = opcode | flag;
