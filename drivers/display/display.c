@@ -1,9 +1,10 @@
 #include "display.h"
+#include "display_low.h"
 
-const uint8_t charray[53][6] = {
-//Array start
+const uint8_t charray[][6] =
+{
 		//0
-		{ 0x0, 0x7f, 0x41, 0x41, 0x41, 0x7f },
+		{ 0x0, 0x3e, 0x45, 0x49, 0x51, 0x3e },
 		//1
 		{ 0x0, 0x0, 0x10, 0x20, 0x7f, 0x0 },
 		//2
@@ -24,7 +25,7 @@ const uint8_t charray[53][6] = {
 		{ 0x0, 0x79, 0x49, 0x49, 0x49, 0x7f },
 		//10:A
 		{ 0x0, 0x7f, 0x48, 0x48, 0x48, 0x7f },
-		//11:B  improve
+		//11:B
 		{ 0x0, 0x7f, 0x49, 0x49, 0x49, 0x3e },
 		//12:C
 		{ 0x0, 0x7f, 0x41, 0x41, 0x41, 0x41 },
@@ -38,25 +39,25 @@ const uint8_t charray[53][6] = {
 		{ 0x0, 0x7f, 0x41, 0x4d, 0x49, 0x4f },
 		//17:H
 		{ 0x0, 0x7f, 0x8, 0x8, 0x8, 0x7f },
-		//18:I improve
+		//18:I
 		{ 0x0, 0x0, 0x41, 0x7f, 0x41, 0x0 },
-		//19:J improve
+		//19:J
 		{ 0x0, 0x42, 0x41, 0x41, 0x7e, 0x0 },
 		//20:K
 		{ 0x0, 0x7f, 0x8, 0x14, 0x22, 0x41 },
 		//L
 		{ 0x0, 0x7f, 0x1, 0x1, 0x1, 0x1 },
-		//M improve
+		//M
 		{ 0x0, 0x7f, 0x20, 0x10, 0x20, 0x7f },
-		//N improve
+		//N
 		{ 0x0, 0x7f, 0x10, 0x8, 0x4, 0x7f },
 		//O
 		{ 0x0, 0x3e, 0x41, 0x41, 0x41, 0x3e },
 		//25:P
 		{ 0x0, 0x7f, 0x48, 0x48, 0x48, 0x78 },
-		//Q massive improve
+		//Q improve
 		{ 0x0, 0x3c, 0x42, 0x46, 0x42, 0x3d },
-		//R  improve
+		//R  improve?
 		{ 0x0, 0x7f, 0x4c, 0x4c, 0x4a, 0x31 },
 		//S
 		{ 0x0, 0x79, 0x49, 0x49, 0x49, 0x4f },
@@ -90,7 +91,7 @@ const uint8_t charray[53][6] = {
 		{ 0xff, 0x1, 0x1, 0xf9, 0x9, 0x1 },
 		//boarder: bottom right
 		{ 0x9, 0x9, 0xf9, 0x1, 0x1, 0xff },
-		//centicrade
+		//centigrade
 		{ 0x0, 0x0, 0x0, 0x70, 0x50, 0x70 },
 		//45:. dot
 		{ 0x0, 0x0, 0x0, 0x3, 0x3, 0x0 },
@@ -108,41 +109,13 @@ const uint8_t charray[53][6] = {
 		{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
 		// 52:blank
 		{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
-//Array end
+
 		};
 
-void display_command(uint8_t command) {
-	clear_bit(PORTB, DISPLAY_RS);
-	clear_bit(PORTE, DISPLAY_CS);
-	clear_bit(PORTE, DISPLAY_WR);
-	set_bit(PORTB, DISPLAY_RD);
-	PORTA = command;
-	set_bit(PORTE, DISPLAY_WR);
-	set_bit(PORTE, DISPLAY_CS);
-}
 
-void display_write(uint8_t value) {
-	set_bit(PORTB, DISPLAY_RS);
-	clear_bit(PORTE, DISPLAY_CS);
-	clear_bit(PORTE, DISPLAY_WR);
-	set_bit(PORTB, DISPLAY_RD);
-	PORTA = value;
-	set_bit(PORTE, DISPLAY_WR);
-	set_bit(PORTE, DISPLAY_CS);
-}
 
-void display_set_col(uint8_t col) {
-	// MSB
-	display_command(0x10 + (col >> 4));
-	// LSB
-	display_command(0x00 + (col & 0x0F));
-}
-
-void display_set_page(uint8_t page) {
-	display_command(0xB0 + page);
-}
-
-void display_init(void) {
+void display_init(void)
+{
 	//According to the init routine in the manual
 
 	//User system setup by external pins
@@ -207,16 +180,21 @@ void display_init(void) {
 	display_set_col(DISPLAY_COL_INIT);
 	display_set_page(DISPLAY_PAGE_INIT);
 
+	//Clean Display
+	display_clean();
 }
 
-void display_clean(void) {
+void display_clean(void)
+{
 	uint8_t i;
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < 8; i++)
+	{
 		display_set_page(i);
 		display_set_col(0);
 		uint8_t j;
 		// only 128 visible
-		for (j = 0; j < 132; j++) {
+		for (j = 0; j < 132; j++)
+		{
 			display_write(0x00);
 		}
 
@@ -225,75 +203,92 @@ void display_clean(void) {
 	display_set_page(DISPLAY_PAGE_INIT);
 }
 
-void display_write_char_help(uint8_t number) {
+static void display_write_char_util(uint8_t number)
+{
 	int i;
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < 6; i++)
+	{
 		display_write(charray[number][i]);
 	}
 }
 
-void display_write_char(uint8_t *character) {
-	if (*character != '\0') {
-		if (*character >= 'A' && *character <= 'Z') {
-			display_write_char_help(*character - 55); // A-Z
-		} else if (*character >= 'a' && *character <= 'z') {
-			display_write_char_help(*character - 87); //A-Z
-		} else if (*character >= '0' && *character <= '9'){
-			display_write_char_help(*character - 48); //0-9
+void display_write_char(uint8_t *character)
+{
+	if (*character != '\0')
+	{
+		if (*character >= 'A' && *character <= 'Z')
+		{
+			display_write_char_util(*character - 55); // A-Z
 		}
-		else if (*character == ' ') {
-			display_write_char_help(52); //blank
+		else if (*character >= 'a' && *character <= 'z')
+		{
+			display_write_char_util(*character - 87); //A-Z
 		}
-		else if (*character == '.') {
-					display_write_char_help(45); //dot
-				}
-		else if (*character == ':') {
-			display_write_char_help(46); //double dot
+		else if (*character >= '0' && *character <= '9')
+		{
+			display_write_char_util(*character - 48); //0-9
 		}
-
-		else {
-			display_write_char_help(51); //unknown
+		else if (*character == ' ')
+		{
+			display_write_char_util(52); //blank
+		}
+		else if (*character == '.')
+		{
+			display_write_char_util(45); //dot
+		}
+		else if (*character == ':')
+		{
+			display_write_char_util(46); //double dot
+		}
+		else
+		{
+			display_write_char_util(51); //unknown
 		}
 	}
 }
 
-void display_write_blank_text(uint8_t *text) {
+void display_write_blank_text(uint8_t *text)
+{
 
 	uint8_t *pointer = text;
 	static uint8_t col = 0;
 	static uint8_t row = 0;
 
-
 	//prepare display
 	display_clean();
-	display_set_col(DISPLAY_COL_INIT+1);
+	display_set_col(DISPLAY_COL_INIT + 1);
 
 	//start to write
-	while (*pointer != '\0') {
+	while (*pointer != '\0')
+	{
 
 		display_write_char(pointer);
 		pointer++;
 		col++;
 
-		if (col >= 21) {
+		if (col >= 21)
+		{
 			col = 0;
-			display_set_col(DISPLAY_COL_INIT+1);
+			display_set_col(DISPLAY_COL_INIT + 1);
 			row++;
-			display_set_page(DISPLAY_PAGE_INIT-row);
+			display_set_page(DISPLAY_PAGE_INIT - row);
 		}
 
-		if (row >= 7) {
+		if (row >= 8)
+		{
 			row = 0;
 			display_clean();
-			display_set_col(DISPLAY_COL_INIT+1);
+			display_set_col(DISPLAY_COL_INIT + 1);
 		}
 	}
 
 }
 ;
 
-void display_write_text(uint8_t *text) {
-	display_write_blank_text(text);
+void display_write_text(char *text)
+{
+
+	display_write_blank_text((uint8_t *) text);
 }
 ;
 
