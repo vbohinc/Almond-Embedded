@@ -5,7 +5,7 @@
 #ifndef __SQUIRREL__
 #define __SQUIRREL__
 
-#include <../shared/common.h>
+#include "../shared/common.h"
 #include "../drivers/bluetooth/bluetooth.h"
 //#include "../drivers/storage/storage.h"
 //#include "../drivers/display/display.h"
