@@ -5,9 +5,9 @@
  */
 
 #include "uplink.h"
- 
-const int UPLINK_PACKAGE_LENGTH = 64;
-const int UPLINK_PAYLOAD_LENGTH = 62;
+#include "../../shared/common.h"
+#include "../../drivers/bluetooth/bluetooth.h"
+
 
 #ifdef SQUIRREL
 

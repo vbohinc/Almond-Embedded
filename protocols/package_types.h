@@ -4,8 +4,8 @@
  * Define package Types
  */
 
-#ifndef __PACKAGE_TYPES__
-#define __PACKAGE_TYPES__
+#ifndef __PACKAGE_TYPES_H__
+#define __PACKAGE_TYPES_H__
 
 enum package_type {
 	GET		 = 0x10,	// Used by: Squirrel/Backend
