@@ -174,7 +174,6 @@ void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t c
 	
 	if (return_package) {
 	  p->opcode = RET;
-	  bluetooth_send_data_package
 	  bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH, false, 100);
 	}
 }
