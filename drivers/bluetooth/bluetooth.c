@@ -12,6 +12,7 @@
 #include "bluetooth.h"
 #include <string.h>
 #include <stdlib.h>
+#include "./shared/ftdi.h"
 
 #ifdef SERIAL
 #include <unistd.h>
@@ -180,7 +181,7 @@ void bluetooth_copy_address(uint8_t* dest, uint8_t* src, const uint8_t startIdxD
 	dest[startIdxDest+6] =  0;
 }
 
-uint8_t my_strncmp(uint8_t *str1, uint8_t *str2, uint8_t count)
+uint8_t my_strncmp(const uint8_t *str1, const uint8_t *str2, const uint8_t count)
 {
 	uint8_t i;
 	for (i=0; i<count && str1[i]!='\0' && str2[i]!='\0'; i++)
@@ -188,10 +189,7 @@ uint8_t my_strncmp(uint8_t *str1, uint8_t *str2, uint8_t count)
 		if (str1[i] != str2[i])
 			return 1;
 	}
-	if (i==count)
-		return 0;
-	else
-		return 1;
+	return 0;
 }
 
 /**
@@ -205,7 +203,6 @@ void bluetooth_process_response(void)
 
 	if (my_strncmp(bluetooth_cmd_buffer, (uint8_t*)"OK", 2)==0)
 	{
-		FTDISend('#');
 		//Special handling for ATF, because OK is only, when Inquiry-End message received
 		if (bluetooth_cmd_sent[0]!='F')
 			bluetooth_response_code = 1;
@@ -220,7 +217,7 @@ void bluetooth_process_response(void)
 
 	if (my_strncmp(bluetooth_cmd_buffer, (uint8_t*)"CONNECT", 7)==0)
 	{
-		bluetooth_address_to_array(bluetooth_data_package,bluetooth_cmd_buffer, 0, 10, 1);
+		bluetooth_address_to_array(bluetooth_cmd_buffer, bluetooth_data_package, 0, 10, 1);
 		bluetooth_is_connected = 1;
 		bluetooth_response_code = 2;
 		//Call callback function
@@ -245,8 +242,6 @@ void bluetooth_process_response(void)
 		break;
 	case 'B':
 		//copy received address into return array without '-'
-
-		FTDISend('%');
 		bluetooth_address_to_array(bluetooth_cmd_buffer,bluetooth_data_package , 0,0, 1);
 		break;
 	case 'C':
@@ -426,7 +421,6 @@ void bluetooth_process_data(void)
 		}
 		else if (c!=UART_NO_DATA)
 		{
-			FTDISend(c);
 			_inline_fifo_put (&bluetooth_infifo, c);
 		}
 
@@ -438,7 +432,6 @@ void bluetooth_process_data(void)
 
 	while (bluetooth_infifo.count>0)
 	{ //read all bytes from fifo
-		FTDISend(bluetooth_infifo.count);
 		//Check if received data is a datapackage or a response to a sent command.
 		//ATH, ATO, and ATI2 are also available when connection is open.
 		if ((bluetooth_is_connected==0) ||
@@ -466,8 +459,6 @@ void bluetooth_process_data(void)
 
 			if (byte == 10)
 			{
-
-				FTDISend('%');
 				//handle received command
 				bluetooth_cmd_buffer[bluetooth_cmd_buffer_head]=0;
 				bluetooth_process_response();
@@ -947,15 +938,17 @@ uint8_t hex_to_char(uint8_t hex)
 }
 
 
-void bluetooth_address_to_array(uint8_t *full_address, uint8_t *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen)
+void bluetooth_address_to_array(const uint8_t *full_address, uint8_t *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen)
 {
 	uint8_t addr_buffer = 0;
 	uint8_t buf_idx = full_start_idx;
 
 	for (uint8_t i=compressed_start_idx; i<compressed_start_idx+6; i++)
 	{
+		FTDISend(full_address[buf_idx]);
 		addr_buffer |= ((char_to_hex(full_address[buf_idx])<<4)& 0xF0);
 		buf_idx++;
+		FTDISend(full_address[buf_idx]);
 		addr_buffer |= (char_to_hex(full_address[buf_idx])& 0xF);
 		buf_idx++;
 		compressed_address[i] = addr_buffer;
@@ -967,7 +960,7 @@ void bluetooth_address_to_array(uint8_t *full_address, uint8_t *compressed_addre
 	}
 }
 
-void bluetooth_array_to_address(uint8_t *compressed_address, uint8_t *full_address, const uint8_t compressed_start_idx, const uint8_t full_start_idx, const uint8_t address_with_hyphen)
+void bluetooth_array_to_address(const uint8_t *compressed_address, uint8_t *full_address, const uint8_t compressed_start_idx, const uint8_t full_start_idx, const uint8_t address_with_hyphen)
 {
 
 	uint8_t addr_buffer = 0;

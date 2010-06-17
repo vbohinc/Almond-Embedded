@@ -40,13 +40,19 @@ LICENSE:
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include "uart.h"
+#include "../../shared/ftdi.h"
 
 
 /*
  *  constants and macros
  */
+
+#define UART_ENABLE_FLOW_CONTROL
+#define UART_RTS_PORT_CTRL DDRC
 #define UART_RTS_PORT PORTC
+#define UART_RTS_PPIN PINC
 #define UART_RTS_PIN 1
+#define UART_CTS_PORT_CTRL DDRC
 #define UART_CTS_PORT PORTC
 #define UART_CTS_PIN 2
 
@@ -280,10 +286,13 @@ Purpose:  called when the UART has received a character
         /* error: receive buffer overflow */
         lastRxError = UART_BUFFER_OVERFLOW >> 8;
 
+        UART_CTS_PORT |= (1<<UART_CTS_PIN); //not ready for data = high
+
     }else{
         /* store new index */
         UART_RxHead = tmphead;
         /* store received data in buffer */
+
         UART_RxBuf[tmphead] = data;
     }
     UART_LastRxError = lastRxError;   
@@ -327,7 +336,16 @@ void uart_init(unsigned int baudrate)
     UART_RxHead = 0;
     UART_RxTail = 0;
     
-    UART_CTS_PORT |= (1<<UART_CTS_PIN);
+#ifdef UART_ENABLE_FLOW_CONTROL
+	UART_CTS_PORT_CTRL &= ~(1<<UART_CTS_PIN); //set as output
+	UART_RTS_PORT_CTRL |= (1<<UART_RTS_PIN); //set as input
+	UART_RTS_PPIN |= ( 1 << UART_RTS_PIN ); // activate pullup
+
+
+    UART_CTS_PORT &= ~(1<<UART_CTS_PIN); //ready for data = low
+
+
+#endif
 
 #if defined( AT90_UART )
     /* set baud rate */
@@ -410,6 +428,9 @@ unsigned int uart_getc(void)
         return UART_NO_DATA;   /* no data available */
     }
     
+
+    UART_CTS_PORT &= ~(1<<UART_CTS_PIN); //ready for data = low
+
     /* calculate /store buffer index */
     tmptail = (UART_RxTail + 1) & UART_RX_BUFFER_MASK;
     UART_RxTail = tmptail; 
@@ -426,13 +447,20 @@ unsigned int uart_getc(void)
 Function: uart_putc()
 Purpose:  write byte to ringbuffer for transmitting via UART
 Input:    byte to be transmitted
-Returns:  none          
+Returns:  1 on succes, 0 if remote not ready
 **************************************************************************/
-void uart_putc(unsigned char data)
+int uart_putc(unsigned char data)
 {
 
     unsigned char tmphead;
 
+    if (UART_RTS_PPIN & (1<<UART_RTS_PIN))
+    {
+    	FTDISend('!');
+    	return 0;
+    }
+
+	FTDISend(data);
     
     tmphead  = (UART_TxHead + 1) & UART_TX_BUFFER_MASK;
     
@@ -445,6 +473,8 @@ void uart_putc(unsigned char data)
 
     /* enable UDRE interrupt */
     UART0_CONTROL    |= _BV(UART0_UDRIE);
+
+    return 1;
 
 }/* uart_putc */
 

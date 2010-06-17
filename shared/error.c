@@ -33,8 +33,7 @@ void info (const char *msg)
     FTDISend('N');
     FTDISend('F');
     FTDISend(':');
-    uint8_t i = 0;
-    while (msg[i]!=0 && i<255)
+    for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
         FTDISend(msg[i]);
     FTDISend('\n');
 #endif
@@ -50,8 +49,7 @@ void warn(const char *msg)
     FTDISend('R');
     FTDISend('N');
     FTDISend(':');
-    uint8_t i = 0;
-    while (msg[i]!=0 && i<255)
+    for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
         FTDISend(msg[i]);
     FTDISend('\n');
 #endif
@@ -67,8 +65,7 @@ void error(const char *msg)
     FTDISend('R');
     FTDISend('R');
     FTDISend(':');
-    uint8_t i = 0;
-    while (msg[i]!=0 && i<255)
+    for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
         FTDISend(msg[i]);
     FTDISend('\n');
 #endif
@@ -80,14 +77,13 @@ void debug(const char *msg)
 #ifdef SERIAL
 	printf("[DEBUG]: %s\n", msg);
 #else
-    /*FTDISend('D');
+    FTDISend('D');
     FTDISend('B');
     FTDISend('G');
     FTDISend(':');
-    uint8_t i = 0;
-    while (msg[i]!=0 && i<255)
+    for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
         FTDISend(msg[i]);
-    FTDISend('\n');*/
+    FTDISend('\n');
 #endif
 	return;
 }

@@ -72,11 +72,11 @@ LICENSE:
 
 /** Size of the circular receive buffer, must be power of 2 */
 #ifndef UART_RX_BUFFER_SIZE
-#define UART_RX_BUFFER_SIZE 32
+#define UART_RX_BUFFER_SIZE 4
 #endif
 /** Size of the circular transmit buffer, must be power of 2 */
 #ifndef UART_TX_BUFFER_SIZE
-#define UART_TX_BUFFER_SIZE 32
+#define UART_TX_BUFFER_SIZE 4
 #endif
 
 /* test if the size of the circular buffers fits into SRAM */
@@ -138,7 +138,7 @@ extern unsigned int uart_getc(void);
  *  @param   data byte to be transmitted
  *  @return  none
  */
-extern void uart_putc(unsigned char data);
+extern int uart_putc(unsigned char data);
 
 
 /**

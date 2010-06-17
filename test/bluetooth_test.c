@@ -9,6 +9,16 @@
 #include <util/delay.h>
 #include "drivers/bluetooth/bluetooth.h"
 #include "shared/ftdi.h"
+#include <string.h>
+#include <avr/eeprom.h>
+
+// EEMEM wird bei aktuellen Versionen der avr-lib in eeprom.h definiert
+// hier: definiere falls noch nicht bekannt ("alte" avr-libc)
+#ifndef EEMEM
+// alle Textstellen EEMEM im Quellcode durch __attribute__ ... ersetzen
+#define EEMEM  __attribute__ ((section (".eeprom")))
+#endif
+
 
 void print(char * arr){
 	for (uint8_t i=0; arr[i]!='\0'; i++)
@@ -19,8 +29,8 @@ void print(char * arr){
 
 int connected = 0;
 
-char buffer[50];
-uint8_t cmd[50];
+//char buffer[10];
+uint8_t cmd[20];
 uint32_t error_count = 0;
 uint32_t send_count = 0;
 
@@ -57,7 +67,6 @@ void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_ty
 	}
 }
 
-
 void master_test(void)
 {
 	/*
@@ -83,9 +92,28 @@ void master_test(void)
 			return;
 		}
 
-		char addr[12] = "701A041CDBF1";
+		cmd[0] = '7';
+		cmd[1] = '0';
+		cmd[2] = '1';
+		cmd[3] = 'A';
+		cmd[4] = '0';
+		cmd[5] = '4';
+		cmd[6] = '1';
+		cmd[7] = 'C';
+		cmd[8] = 'D';
+		cmd[9] = 'B';
+		cmd[10] = 'F';
+		cmd[11] = '1';
+
+		//strcpy(addr, "701A041CDBF1");
+		FTDISend('A');
+		for (int i=0; i<12; i++)
+			FTDISend(cmd[i]);
 		uint8_t compressed[6];
-		bluetooth_address_to_array((uint8_t*)addr, compressed, 0,0,0);
+		bluetooth_address_to_array((uint8_t*)cmd, compressed, 0,0,0);
+		FTDISend('C');
+		for (int i=0; i<6; i++)
+			FTDISend(compressed[i]);
 
 		int retval = bluetooth_cmd_set_remote_address(compressed);
 
@@ -166,6 +194,9 @@ void slave_test(void)
 
 }
 
+uint8_t arr[200] EEMEM = " asdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljf";
+
+
 int main(void)
 {
 	FTDIInit();
@@ -189,8 +220,21 @@ int main(void)
 			FTDISend(10);
 			FTDISend(13);
 
-	//for (uint8_t i=0; i<10 && hallo[i]!=0; i++)
-	//	FTDISend(hallo[i]);
+
+
+			FTDISend(10);
+
+			uint8_t  myByte;
+
+	for (uint8_t i=0; i<10; i++)
+	{
+		 myByte = eeprom_read_byte(arr+i);
+		FTDISend(myByte);
+	}
+
+	FTDISend(10);
+
+
 	PORTD |= (1<<7);
 			PORTC |= (1<<0);
 			_delay_ms(500);
