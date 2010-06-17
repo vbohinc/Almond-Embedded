@@ -45,6 +45,12 @@ LICENSE:
 /*
  *  constants and macros
  */
+#define UART_RTS_PORT PORTC
+#define UART_RTS_PIN 1
+#define UART_CTS_PORT PORTC
+#define UART_CTS_PIN 2
+
+
 
 /* size of RX/TX buffers */
 #define UART_RX_BUFFER_MASK ( UART_RX_BUFFER_SIZE - 1)
@@ -246,7 +252,6 @@ Function: UART Receive Complete interrupt
 Purpose:  called when the UART has received a character
 **************************************************************************/
 {
-	FTDISend('I');
     unsigned char tmphead;
     unsigned char data;
     unsigned char usr;
@@ -274,6 +279,7 @@ Purpose:  called when the UART has received a character
     if ( tmphead == UART_RxTail ) {
         /* error: receive buffer overflow */
         lastRxError = UART_BUFFER_OVERFLOW >> 8;
+
     }else{
         /* store new index */
         UART_RxHead = tmphead;
@@ -321,6 +327,8 @@ void uart_init(unsigned int baudrate)
     UART_RxHead = 0;
     UART_RxTail = 0;
     
+    UART_CTS_PORT |= (1<<UART_CTS_PIN);
+
 #if defined( AT90_UART )
     /* set baud rate */
     UBRR = (unsigned char)baudrate; 
@@ -422,10 +430,6 @@ Returns:  none
 **************************************************************************/
 void uart_putc(unsigned char data)
 {
-
-	if (data != 13)
-		FTDISend(data);
-
 
     unsigned char tmphead;
 

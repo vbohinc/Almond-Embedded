@@ -205,6 +205,7 @@ void bluetooth_process_response(void)
 
 	if (my_strncmp(bluetooth_cmd_buffer, (uint8_t*)"OK", 2)==0)
 	{
+		FTDISend('#');
 		//Special handling for ATF, because OK is only, when Inquiry-End message received
 		if (bluetooth_cmd_sent[0]!='F')
 			bluetooth_response_code = 1;
@@ -228,7 +229,7 @@ void bluetooth_process_response(void)
 	}
 	if (my_strncmp(bluetooth_cmd_buffer, (uint8_t*)"DISCONNECT", 10)==0)
 	{
-		bluetooth_address_to_array(bluetooth_data_package,bluetooth_cmd_buffer, 0, 13, 1);
+		bluetooth_address_to_array(bluetooth_cmd_buffer,bluetooth_data_package, 0, 13, 1);
 		bluetooth_is_connected =  0;
 		bluetooth_response_code = 3;
 		//Call callback function
@@ -244,14 +245,16 @@ void bluetooth_process_response(void)
 		break;
 	case 'B':
 		//copy received address into return array without '-'
-		bluetooth_address_to_array(bluetooth_data_package, bluetooth_cmd_buffer, 0,0, 1);
+
+		FTDISend('%');
+		bluetooth_address_to_array(bluetooth_cmd_buffer,bluetooth_data_package , 0,0, 1);
 		break;
 	case 'C':
 		strcpy((char*)bluetooth_data_package,(char*)bluetooth_cmd_buffer); //copy received value into return array
 		break;
 	case 'D':
 		//copy received address into return array without '-'
-		bluetooth_address_to_array(bluetooth_data_package, bluetooth_cmd_buffer, 0,0, 1);
+		bluetooth_address_to_array(bluetooth_cmd_buffer,bluetooth_data_package,  0,0, 1);
 		break;
 	case 'E':
 		strcpy((char*)bluetooth_data_package,(char*)bluetooth_cmd_buffer); //copy received value into return array
@@ -277,7 +280,7 @@ void bluetooth_process_response(void)
 			bluetooth_data_package[1+index*(16+6)+i] = bluetooth_cmd_buffer[i+3];
 
 		//Copy address
-		bluetooth_address_to_array(bluetooth_data_package,bluetooth_cmd_buffer, 1+index*(16+6)+16, 21 , 1);
+		bluetooth_address_to_array(bluetooth_cmd_buffer, bluetooth_data_package,1+index*(16+6)+16, 21 , 1);
 
 		break;
 	case 'H':
@@ -430,9 +433,12 @@ void bluetooth_process_data(void)
 	} while (c!=UART_NO_DATA && c!= UART_FRAME_ERROR && c!= UART_OVERRUN_ERROR && c!=UART_BUFFER_OVERFLOW);
 
 #endif
+
+
+
 	while (bluetooth_infifo.count>0)
 	{ //read all bytes from fifo
-
+		FTDISend(bluetooth_infifo.count);
 		//Check if received data is a datapackage or a response to a sent command.
 		//ATH, ATO, and ATI2 are also available when connection is open.
 		if ((bluetooth_is_connected==0) ||
@@ -443,6 +449,7 @@ void bluetooth_process_data(void)
 		{
 			//Data in FIFO is response to a sent command
 			int16_t byte = fifo_get_nowait(&bluetooth_infifo);
+			FTDISend(byte);
 
 		/*	if (byte == 13)
 				debug("BTM:fifo_get:'<CR>' [13]");
@@ -459,6 +466,8 @@ void bluetooth_process_data(void)
 
 			if (byte == 10)
 			{
+
+				FTDISend('%');
 				//handle received command
 				bluetooth_cmd_buffer[bluetooth_cmd_buffer_head]=0;
 				bluetooth_process_response();
@@ -970,6 +979,7 @@ void bluetooth_array_to_address(uint8_t *compressed_address, uint8_t *full_addre
 		full_address[buf_idx+1] = hex_to_char(addr_buffer & 0xF);
 		addr_buffer = (addr_buffer >> 4);
 		full_address[buf_idx] = hex_to_char(addr_buffer & 0xF);
+
 		buf_idx+=2;
 		if (address_with_hyphen==1 && (i==1 || i==2))
 		{
@@ -1000,7 +1010,7 @@ uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms)
 	//debug((char*)cmd);
 
 
-	for (uint8_t i =0; cmd[i]!='\0'&& i<4; i++)
+	for (uint8_t i =0; cmd[i]!='\0'; i++)
 	{
 
 		if (bluetooth_putc(cmd[i]) == 0)
@@ -1018,14 +1028,11 @@ uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms)
 
 uint8_t bluetooth_cmd_wait_response (void)
 {
-
-	FTDISend('+');
 	while (bluetooth_response_code == 0) //Wait until bluetooth devices has responsed (handled by interrupt)
 	{
 
 		bluetooth_process_data();
 	}
-	FTDISend('=');
 	return bluetooth_response_code;
 }
 
@@ -1062,7 +1069,6 @@ uint8_t bluetooth_cmd_test_connection (void)
 	bluetooth_cmd_buffer[3] = 0;
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
-
 	return (bluetooth_cmd_wait_response()==1); //OK
 
 }
@@ -1079,8 +1085,6 @@ uint8_t* bluetooth_cmd_get_address (void)
 
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 		return 0;
-
-	FTDISend('%');
 
 	if (bluetooth_cmd_wait_response()!=1) //OK
 		return NULL;
