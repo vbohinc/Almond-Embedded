@@ -4,10 +4,19 @@
 #ifndef __DISPLAY_LOW_H__
 #define __DISPLAY_LOW_H__
 
-#define DISPLAY_PAGE_INIT 7
+//PAGE
+#define DISPLAY_PAGE_NUMBER 7  //Starts with Page 0, here: 8 pages overall
+#define DISPLAY_PAGE_INIT 0
 
-#define DISPLAY_COL_INIT 4
+//COLUMN
+#define DISPLAY_COL_NUMBER 131  //Starts with column 0, here: 132 colums overall
+#define DISPLAY_COL_NUMBER_VISIBLE 127
+#define DISPLAY_COL_HEIGHT 8
+#define DISPLAY_COL_INIT 0 //normal: 0, reverse: 4
+//CHARACTER
+#define DISPLAY_CHAR_WIDTH 6
 
+// DISPLAY PORTS
 // chip select
 #define DISPLAY_CS  PE0
 
@@ -33,7 +42,7 @@ void display_command(uint8_t command);
  * Writes a value to the lcd-display
  * @param value value to be written
  */
-void display_write(uint8_t value);
+void display_write(uint8_t value, uint8_t inverse);
 
 /**
  *  Sets Column

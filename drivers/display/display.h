@@ -14,6 +14,31 @@
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 
+/*
+ *Status Titlebar
+ *|Left|X|X|X|X|X|X|Right|
+ */
+enum
+{
+	DISPLAY_TITLE_NONE = 0x00,
+	DISPLAY_TITLE_LEFT = 0x80,
+	DISPLAY_TITLE_RIGHT = 0x01,
+	DISPLAY_TITLE_BOTH = 0x81
+};
+
+/*
+ *
+ *Status TextArea
+ *|Top|X|X|X|X|X|X|Bottom|
+ */
+enum
+{
+	DISPLAY_TEXT_NONE = 0x00,
+	DISPLAY_TEXT_TOP = 0x80,
+	DIPSLAY_TEXT_BOTTOM = 0x01,
+	DISPLAY_TEXT_BOTH = 0x81
+
+};
 
 /**
  *
@@ -28,19 +53,13 @@ void display_init(void);
 void display_clean(void);
 
 /**
- * helpfunction in order to write a char
- */
-void display_write_char_help(uint8_t number);
-
-/**
  * Writes a single char on the display
  * @param *character
  */
-void display_write_char(uint8_t *character);
+void display_write_char(uint8_t *character, uint8_t inverse);
 
-void display_write_blank_text(uint8_t *text);
+void display_write_title(char *text, uint8_t status);
 
-void display_write_text(char *text);
-
+void display_write_text(char *text, uint8_t status);
 
 #endif //__DISPLAY_H__

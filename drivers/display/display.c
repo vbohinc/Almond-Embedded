@@ -3,7 +3,7 @@
 
 const uint8_t charray[][6] =
 {
-		//0
+//0
 		{ 0x0, 0x3e, 0x45, 0x49, 0x51, 0x3e },
 		//1
 		{ 0x0, 0x0, 0x10, 0x20, 0x7f, 0x0 },
@@ -110,9 +110,7 @@ const uint8_t charray[][6] =
 		// 52:blank
 		{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
 
-		};
-
-
+};
 
 void display_init(void)
 {
@@ -141,10 +139,13 @@ void display_init(void)
 	//RST high
 	set_bit(PORTC, DISPLAY_RST);
 
-	//ADC SELECT REVERSE
-	display_command(0xA1);
-	//SHL Select REVERSE
-	display_command(0xC8);
+	//ADC SELECT
+	//normal: 0xA0, reverse: 0xA1
+	display_command(0xA0);
+
+	//SHL Select
+	//normal: 0xC0, reverse: 0xC8
+	display_command(0xC0);
 
 	//LCD Bias Select
 	display_command(0xA2);
@@ -176,9 +177,12 @@ void display_init(void)
 	// Display ON
 	display_command(0xAF);
 
-	//Set initial column and page
-	display_set_col(DISPLAY_COL_INIT);
-	display_set_page(DISPLAY_PAGE_INIT);
+	/*
+	 Not needed because display_clean()
+	 //Set initial column and page
+	 display_set_col(DISPLAY_COL_INIT);
+	 display_set_page(DISPLAY_PAGE_INIT);
+	 */
 
 	//Clean Display
 	display_clean();
@@ -187,15 +191,15 @@ void display_init(void)
 void display_clean(void)
 {
 	uint8_t i;
-	for (i = 0; i < 8; i++)
+	for (i = 0; i <= DISPLAY_PAGE_NUMBER; i++)
 	{
 		display_set_page(i);
 		display_set_col(0);
 		uint8_t j;
 		// only 128 visible
-		for (j = 0; j < 132; j++)
+		for (j = 0; j <= DISPLAY_COL_NUMBER; j++)
 		{
-			display_write(0x00);
+			display_write(0x00, 0);
 		}
 
 	}
@@ -203,92 +207,101 @@ void display_clean(void)
 	display_set_page(DISPLAY_PAGE_INIT);
 }
 
-static void display_write_char_util(uint8_t number)
+/**
+ * help function in order to write a char
+ */
+
+static void display_write_char_util(uint8_t number, uint8_t inverse)
 {
 	int i;
 	for (i = 0; i < 6; i++)
 	{
-		display_write(charray[number][i]);
+		display_write(charray[number][i], inverse);
 	}
 }
 
-void display_write_char(uint8_t *character)
+void display_write_char(uint8_t *character, uint8_t inverse)
 {
 	if (*character != '\0')
 	{
 		if (*character >= 'A' && *character <= 'Z')
 		{
-			display_write_char_util(*character - 55); // A-Z
+			display_write_char_util(*character - 55, inverse); // A-Z
 		}
 		else if (*character >= 'a' && *character <= 'z')
 		{
-			display_write_char_util(*character - 87); //A-Z
+			display_write_char_util(*character - 87, inverse); //A-Z
 		}
 		else if (*character >= '0' && *character <= '9')
 		{
-			display_write_char_util(*character - 48); //0-9
+			display_write_char_util(*character - 48, inverse); //0-9
 		}
 		else if (*character == ' ')
 		{
-			display_write_char_util(52); //blank
+			display_write_char_util(52, inverse); //blank
 		}
 		else if (*character == '.')
 		{
-			display_write_char_util(45); //dot
+			display_write_char_util(45, inverse); //dot
 		}
 		else if (*character == ':')
 		{
-			display_write_char_util(46); //double dot
+			display_write_char_util(46, inverse); //double dot
 		}
 		else
 		{
-			display_write_char_util(51); //unknown
+			display_write_char_util(51, inverse); //unknown
 		}
 	}
 }
 
-void display_write_blank_text(uint8_t *text)
+void display_write_text(char *text, uint8_t status)
 {
 
-	uint8_t *pointer = text;
+	uint8_t *pointer = (uint8_t *) text;
 	static uint8_t col = 0;
-	static uint8_t row = 0;
+	static uint8_t row = 1;
+	static uint8_t max_row = DISPLAY_COL_NUMBER_VISIBLE / DISPLAY_CHAR_WIDTH;
 
 	//prepare display
 	display_clean();
 	display_set_col(DISPLAY_COL_INIT + 1);
+	display_set_page(DISPLAY_PAGE_INIT + 1);
 
 	//start to write
 	while (*pointer != '\0')
 	{
 
-		display_write_char(pointer);
+		//pagination
+		if (row > DISPLAY_PAGE_NUMBER)
+		{
+			row = 1;
+			//TODO remove clean in order to save the titlebar
+			display_clean();
+			display_set_col(DISPLAY_COL_INIT + 1);
+		}
+
+		//Let the last space free for GUI Element
+		if ((row == DISPLAY_PAGE_NUMBER) && col == max_row - 2
+				&& (check_bit(status,7) || (check_bit(status,0))))
+		{
+			col = max_row - 1;
+		}
+
+		display_write_char(pointer, 0);
 		pointer++;
 		col++;
 
-		if (col >= 21)
+		if (col >= max_row)
 		{
 			col = 0;
 			display_set_col(DISPLAY_COL_INIT + 1);
 			row++;
-			display_set_page(DISPLAY_PAGE_INIT - row);
+			display_set_page(DISPLAY_PAGE_INIT + row);
 		}
 
-		if (row >= 8)
-		{
-			row = 0;
-			display_clean();
-			display_set_col(DISPLAY_COL_INIT + 1);
-		}
 	}
+	//TODO Painting the top/bottom symbols
 
 }
-;
-
-void display_write_text(char *text)
-{
-
-	display_write_blank_text((uint8_t *) text);
-}
-;
 

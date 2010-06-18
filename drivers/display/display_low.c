@@ -1,6 +1,5 @@
 #include "display_low.h"
 
-
 void display_command(uint8_t command)
 {
 	clear_bit(PORTB, DISPLAY_RS);
@@ -12,12 +11,16 @@ void display_command(uint8_t command)
 	set_bit(PORTE, DISPLAY_CS);
 }
 
-void display_write(uint8_t value)
+void display_write(uint8_t value, uint8_t inverse)
 {
 	set_bit(PORTB, DISPLAY_RS);
 	clear_bit(PORTE, DISPLAY_CS);
 	clear_bit(PORTE, DISPLAY_WR);
 	set_bit(PORTB, DISPLAY_RD);
+	if (inverse)
+	{
+		value = ~value;
+	}
 	PORTA = value;
 	set_bit(PORTE, DISPLAY_WR);
 	set_bit(PORTE, DISPLAY_CS);
@@ -33,5 +36,7 @@ void display_set_col(uint8_t col)
 
 void display_set_page(uint8_t page)
 {
-	display_command(0xB0 + page);
+	//Top down instead of bottom up
+	uint8_t inverted_page = DISPLAY_PAGE_NUMBER - page;
+	display_command(0xB0 + inverted_page);
 }
