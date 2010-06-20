@@ -10,16 +10,24 @@
  * const uint8_t class_id_extensions_length;
  */
 
-#ifndef __DOWNLINK__
-#define __DOWNLINK__
+#ifndef __DOWNLINK_H__
+#define __DOWNLINK_H__
 
 #include "../classes.h"
-#include "../../shared/common.h"
 #include "../package_types.h"
-#include "../../drivers/bluetooth/bluetooth.h"
+#include "../../shared/common.h"
+
+/**
+ * MUST BE IMPLEMENTED IN YOUR FILES 
+ */
+extern const uint8_t class_id_nut;
+extern const uint8_t class_id_extensions[];
+extern const uint8_t class_id_extensions_length;
+
+/* Protocol Details */
 
 extern const uint8_t DOWNLINK_PACKAGE_LENGTH;
-extern const uint8_t MAX_HISTORY; // FIXME!
+
 /**
  * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
  *
@@ -28,6 +36,7 @@ extern const uint8_t MAX_HISTORY; // FIXME!
  */
 
 typedef struct _downlink_package downlink_package;
+
 struct _downlink_package {
 	uint8_t opcode;
 	uint8_t id;
@@ -37,23 +46,14 @@ struct _downlink_package {
 
 // Switch functionality 
 
-#ifdef SQUIRREL
 extern uint16_t downlink_get_sensor_value (uint8_t id, bool *err);
 extern uint16_t downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err);
 extern uint8_t  downlink_get_nut_class (bool *err);
 extern uint8_t  downlink_get_actuator_class (uint8_t id, bool *err);
 extern uint8_t  downlink_get_sensor_class (uint8_t id, bool *err);
 extern uint16_t downlink_bye (uint16_t time_ms, bool *err);
-#endif
 
 #ifdef NUT
-
-/**
- * MUST BE IMPLEMENTED IN YOUR FILES 
- */
-extern const uint8_t class_id_nut;
-extern const uint8_t class_id_extensions[];
-extern const uint8_t class_id_extensions_length;
 
 extern uint16_t get_value(uint8_t id);
 extern void set_value(uint8_t id, uint16_t value);
