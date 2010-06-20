@@ -11,8 +11,8 @@
 #include "../package_types.h"
 #include "../../shared/common.h"
 
-#define UPLINK_PACKAGE_LENGTH = 64;
-#define UPLINK_PAYLOAD_LENGTH = 62;
+#define UPLINK_PACKAGE_LENGTH 64
+#define UPLINK_PAYLOAD_LENGTH 62
 
 /**
  * Package format:

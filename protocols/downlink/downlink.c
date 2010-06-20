@@ -5,7 +5,7 @@
  */
 
 #include "downlink.h"
-#include "../../drivers/bluetooth/bluetooth.h"
+//#include "../../drivers/bluetooth/bluetooth.h"
 
 
 const uint8_t DOWNLINK_TIMEOUT_MS = 100;
