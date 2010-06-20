@@ -1,10 +1,10 @@
 MCU = atxmega128a1
 F_CPU = 32000000
-TARGET = bluetooth_test
+TARGET = squirrel
+SRC =
 BASE = ..
 ALMONDLIBS = downlink uplink
-SRC = ../shared/error.c
-EXTRAINCDIRS = ../drivers/ ../shared/
+EXTRAINCDIRS = ../drivers/ ../protocols/ ../shared/
 TARGETTYPE = SQUIRREL
 include ../make/base.makefile 
 

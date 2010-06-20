@@ -11,6 +11,10 @@
 
 #ifdef SERIAL
 #include <stdint.h>
+#include <pthread.h>
+
+extern pthread_mutex_t mymutex;
+
 
 #else
 #include <avr/io.h>
@@ -23,11 +27,15 @@
  */
 typedef struct
 {
+	/**
+	 * Member of the struct
+	 */
 	uint8_t volatile count;       /*! Number of bytes in fifo */
 	uint8_t size;                 /*! Size of fifo (buffer) */
 	uint8_t *pread;               /*! read pointer */
 	uint8_t *pwrite;              /*! write pointer */
-	uint8_t read2end, write2end;  /*! number of bytes to overflow of read/write pointer */
+	uint8_t read2end;             /*! number of bytes to overflow of read pointer */
+	uint8_t write2end;  		  /*! number of bytes to overflow of write pointer */
 } fifo_t;
 
 /**
@@ -68,7 +76,13 @@ static inline uint8_t _inline_fifo_put (fifo_t *fifo, const uint8_t data)
 {
 	if (fifo->count >= fifo->size)
 		return 0;
-		
+
+#ifndef SERIAL
+	uint8_t sreg = SREG;
+	cli();
+#else
+	pthread_mutex_lock(&mymutex);
+#endif
 	uint8_t * pwrite = fifo->pwrite;
 	
 	*(pwrite++) = data;
@@ -84,13 +98,11 @@ static inline uint8_t _inline_fifo_put (fifo_t *fifo, const uint8_t data)
 	fifo->write2end = write2end;
 	fifo->pwrite = pwrite;
 
-#ifndef SERIAL
-	uint8_t sreg = SREG;
-	cli();
-#endif
 	fifo->count++;
 #ifndef SERIAL
 	SREG = sreg;
+#else
+	pthread_mutex_unlock(&mymutex);
 #endif
 	
 	return 1;
@@ -102,6 +114,12 @@ static inline uint8_t _inline_fifo_put (fifo_t *fifo, const uint8_t data)
  */
 static inline uint8_t _inline_fifo_get (fifo_t *f)
 {
+#ifndef SERIAL
+	uint8_t sreg = SREG;
+	cli();
+#else
+	pthread_mutex_lock(&mymutex);
+#endif
 	uint8_t *pread = f->pread;
 	uint8_t data = *(pread++);
 	uint8_t read2end = f->read2end;
@@ -115,14 +133,13 @@ static inline uint8_t _inline_fifo_get (fifo_t *f)
 	f->pread = pread;
 	f->read2end = read2end;
 	
-#ifndef SERIAL
-	uint8_t sreg = SREG;
-	cli();
-#endif
+
 
 	f->count--;
 #ifndef SERIAL
 	SREG = sreg;
+#else
+	pthread_mutex_unlock(&mymutex);
 #endif
 	
 	return data;

@@ -1,14 +1,12 @@
 # this will build all nuts
 # author Linus Lotz
 
-subdirs = nuts test
+subdirs = squirrel nuts test
 
-all: $(subdirs)
+.PHONY: all
+all:
+	$(foreach dirs,$(subdirs),$(MAKE) -C $(dirs);)
 
-.PHONY: $(subdirs)
-$(subdirs):
-	$(MAKE) -C $@ clean
-	$(MAKE) -C $@
 .PHONY: clean
 clean:
 	$(foreach dirs,$(subdirs),$(MAKE) -C $(dirs) clean;)

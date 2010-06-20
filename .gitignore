@@ -1,3 +1,4 @@
+*.mk
 .cproject
 .project
 *.lst
@@ -12,3 +13,11 @@
 .dep
 *~
 .thumbsdb
+*.swp
+protocols/generate_classes.py.old
+/Almond-Embedded.anjuta
+/.anjuta/default.profile
+/.anjuta/session/anjuta.session
+/.anjuta/session/dock-layout.xml
+/.anjuta_sym_db.db
+/Almond-Embedded.anjuta
