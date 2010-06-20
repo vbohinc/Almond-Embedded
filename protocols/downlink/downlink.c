@@ -5,29 +5,33 @@
  */
 
 #include "downlink.h"
+//#include "../../drivers/bluetooth/bluetooth.h"
+
 
 const uint8_t DOWNLINK_TIMEOUT_MS = 100;
 const uint8_t DOWNLINK_PACKAGE_LENGTH = 4;
 
 #ifdef SQUIRREL
 
+static downlink_package package;
+
 /* WARNING: Assuming layer above already connected */
 uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t value, bool *err) {
   
-  downlink_package *package;
+  //downlink_package *package = malloc(sizeof(downlink_package));
   
   err = false;
-  package->opcode = opcode | flag;
-  package->id = id;
-  package->value = value;
+  package.opcode = opcode | flag;
+  package.id = id;
+  package.value = value;
   uint8_t return_package_length;
   return_package_length = DOWNLINK_PACKAGE_LENGTH;
   
-  switch (bluetooth_send_data_package(package, &return_package_length, true, DOWNLINK_TIMEOUT_MS)) {
+  switch (bluetooth_send_data_package(&package, &return_package_length, true, DOWNLINK_TIMEOUT_MS)) {
     case 0:
-      if ((package->opcode == RET | flag) && (package->id == id))
-        return package->value;
-      else if (package->opcode == (RET | ERROR))
+      if ((package.opcode == RET | flag) && (package.id == id))
+        return package.value;
+      else if (package.opcode == (RET | ERROR))
         error ("Protocol error");
       else
         error ("Downlink protocol mismatch");
@@ -140,7 +144,7 @@ void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t c
 	  return;
 	}
 	
-	p = (downlink_package) data_package; 
+	p = (downlink_package *) data_package; 
 	
 	switch (p->opcode & 0xF0) {
 	

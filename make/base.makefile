@@ -54,15 +54,24 @@ EXTRAINCDIRS += $(BASE)/drivers/ $(BASE)/protocols/ $(BASE)/shared/
 ##################### DEFINE ALMOND LIBS HERE ############################
 
 #downlink 
-ALMONDLIBS += bluetooth
 ifeq (downlink, $(findstring downlink,$(ALMONDLIBS)))
+ALMONDLIBS += bluetooth
 SRC += $(BASE)/protocols/downlink/downlink.c
+endif
+
+#uplink 
+ifeq (uplink, $(findstring uplink,$(ALMONDLIBS)))
+ALMONDLIBS += bluetooth
+SRC += $(BASE)/protocols/uplink/uplink.c
 endif
 
 #bluetooth
 ifeq (bluetooth, $(findstring bluetooth,$(ALMONDLIBS)))
 ALMONDLIBS += usart
-SRC += $(BASE)/shared/crc.c $(BASE)/shared/fifo.c $(BASE)/shared/error.c
+SRC += $(BASE)/drivers/bluetooth/bluetooth.c $(BASE)/shared/crc.c $(BASE)/shared/fifo.c $(BASE)/shared/error.c
+ifeq ($(MCU), atxmega128a1)
+  SRC += $(BASE)/drivers/usart/usart_driver.c
+endif
 endif
 
 #usart

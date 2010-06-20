@@ -24,6 +24,9 @@ F_CPU = 1000000
 
 TARGET = main
 
+#path to root
+BASE = ../.. 
+
 # ok to simplyfy things we define libs, makes adding dependencies easier
 # possible values:
 # bluetooth
@@ -32,9 +35,9 @@ TARGET = main
 # and others
 ALMONDLIBS = bluetooth 
 
-SRC = #insert all extra src besides TARGET.c
+SRC = #insert all extra src besides TARGET.c and those defined by the libs
 
-EXTRAINCDIRS = ../../drivers/ ../../drivers/ ../sensors/ ../../protocols/
+EXTRAINCDIRS = ../sensors/
 
 TARGETTYPE = NUT # or SQUIRREL 
 

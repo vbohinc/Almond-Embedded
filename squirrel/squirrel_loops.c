@@ -5,11 +5,11 @@
  *      Author: seanlabastille
  */
 
+#include "squirrel_loops.h"
+
 void slave_loop() {
 	while (state == SLAVE) {
-		if (bluetooth_package != NULL) {
 
-		}
 	}
 }
 
