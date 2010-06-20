@@ -6,23 +6,34 @@ void sd_init() {
 	spi_init();
 	
 	sd_send_command(CMD0, NULL); // Place SD Card into Idle State
+	sd_get_response(R1);
 	clear_bit(SPID_CTRL, 3); // Chip Select Low
 	sd_send_command(CMD0, NULL); // Place SD Card into Idle State (again). Transition to SPI mode
+	sd_get_response(R1);
 	sd_send_command(CMD8, NULL); // Check supply voltage
 	sd_get_response(R1);
 	if (sd_response_buffer[0] == 0x04) { // CMD8 is illegal, Version 1 card
+		do {
 		sd_send_command(CMD55, NULL); // Prepare 'A'-Command transmission
+		sd_get_response(R1);
 		sd_send_command(ACMD41, NULL); // Card initialization. Doesn't know about High Capacity cards.
-		do {sd_get_response(R1);} while (!(sd_response_buffer[0] == 0x00));
+		sd_get_response(R1);
+		} while (!(sd_response_buffer[0] == 0x00));
 		return;
 		
 	} else { // Version 2
+		do {
 		sd_send_command(CMD55, NULL); // Prepare 'A'-Command transmission
+		sd_get_response(R1);
 		sd_send_command(ACMD41, NULL); // Card initialization. Inform it we don't like High Capacity cards.
+		sd_get_response(R1);
+		} while (!(sd_response_buffer[0] == 0x00));
 		sd_send_command(CMD58, NULL); // Gets the OCR [Operating Conditions Register] (including Card Capacity)
-		do {sd_get_response(R1);} while (!(sd_response_buffer[0] == 0x00));
+		sd_get_response(R1);
 		return;
 	}
+	sd_send_command(CMD16, NULL); // Set block size to 32 bytes
+	sd_get_response(R1);
 }
 boolean sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 	switch (command_nr) {
@@ -31,6 +42,14 @@ boolean sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 		break;
 		case: CMD8
 		sd_buffer = 0x480000010001; // Static CMD8. Ask the card if it likes tasty 2.7-3.6V
+		break;
+		case: CMD16
+		sd_buffer = 0x500000002001; // Static CMD16. Sets the block size to 32 bytes.
+		break;
+		case: CMD17
+		sd_buffer[0] = 0x51;
+		for (int i = 0; i < 4; i++) sd_buffer[i+1] = arguments[i];
+		sd_buffer[5] = 0x01; 
 		break;
 		case: CMD55
 		sd_buffer = 0x770000000001; // Static CMD55. Informs the card the next command will be an 'A'-Command (Application Specific)
@@ -52,10 +71,16 @@ void sd_read_block(uint8_t *addr, uint8_t *read_buffer) {
 		sd_get_response(R1);
 		if (sd_response_buffer[0] == 0x00) {
 			for (int i = 0; i < 35; i++) {
-				
+				spi_receive_byte(sd_token_buffer[i]);
+				if ((i == 0) && (sd_token_buffer[i] != 0xFE)) {
+					return;
+				}
 			}
 		}
-	
+	}
+	for (int i = 0; i < 32; i++) {
+		read_buffer[i] = sd_token_buffer[i+2];
+	}
 }
 
 
