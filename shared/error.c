@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include "ftdi.h"
 
+#include <avr/eeprom.h>
+#include "string_pool.h"
+
 char error_builder[255];
  
 void assert (bool condition, const char *msg) {
@@ -86,4 +89,53 @@ void debug(const char *msg)
     FTDISend('\n');
 #endif
 	return;
+}
+
+void send_eeprom(const uint8_t *msg)
+{
+	uint8_t  myByte = 1;
+
+	for (uint8_t i=0; myByte != '\0'; i++)
+	{
+		 myByte = eeprom_read_byte(msg+i);
+		 if (myByte != '\0')
+			 FTDISend(myByte);
+	}
+}
+
+
+void assert_eeprom(bool condition, const uint8_t *msg) {
+	if (condition) {
+		send_eeprom(str_error_assert);
+		send_eeprom(msg);
+		FTDISend('\n');
+	}
+}
+
+void info_eeprom(const uint8_t *msg)
+{
+	send_eeprom(str_error_info);
+	send_eeprom(msg);
+	FTDISend('\n');
+}
+
+void warn_eeprom(const uint8_t *msg)
+{
+	send_eeprom(str_error_warn);
+	send_eeprom(msg);
+	FTDISend('\n');
+}
+
+void error_eeprom(const uint8_t *msg)
+{
+	send_eeprom(str_error_error);
+	send_eeprom(msg);
+	FTDISend('\n');
+}
+
+void debug_eeprom(const uint8_t *msg)
+{
+	send_eeprom(str_error_debug);
+	send_eeprom(msg);
+	FTDISend('\n');
 }

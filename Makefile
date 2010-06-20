@@ -80,7 +80,7 @@ OBJDIR = .
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = ./test/$(TARGET).c ./drivers/bluetooth/bluetooth.c ./drivers/uart/uart.c ./shared/error.c ./shared/crc.c ./shared/fifo.c ./shared/ftdi.c
+SRC = ./test/$(TARGET).c ./drivers/bluetooth/bluetooth.c ./drivers/uart/uart.c ./shared/error.c ./shared/crc.c ./shared/fifo.c ./shared/ftdi.c  ./shared/string_pool.c
 
 
 
@@ -101,7 +101,7 @@ ASRC =
 # Optimization level, can be [0, 1, 2, 3, s]. 
 #     0 = turn off optimization. s = optimize for size.
 #     (Note: 3 is not always the best optimization level. See avr-libc FAQ.)
-OPT = 2
+OPT = s
 
 
 # Debugging format.
@@ -431,7 +431,7 @@ end:
 
 # Display size of file.
 HEXSIZE = $(SIZE) --target=$(FORMAT) $(TARGET).hex
-ELFSIZE = $(SIZE) $(TARGET).elf
+ELFSIZE = $(SIZE) -A $(TARGET).elf
 
 sizebefore:
 	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_BEFORE); $(ELFSIZE); \

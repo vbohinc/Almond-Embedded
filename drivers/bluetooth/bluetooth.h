@@ -32,6 +32,7 @@
 
 /**
  * Maximum possible size of a data package in bytes. The formula for the maximum size is (SIZE is the normal size of a package)
+ * all bytes in package may be Special Byte, so before every byte must be another special byte
  * (SIZE * 2) +10;
  * Ex. real package: 10 Byte. => PACKAGE_SIZE=30
  */
@@ -41,9 +42,8 @@
 * The size of receive buffer in bytes. Each received byte will be stored in this buffer
 * until the callback returned and data can be deleted.
 * Must be smaller than (uint8_t-2). Max value is 254.
-* Should be BLUETOOTH_DATA_PACKAGE_SIZE*3
 */
-#define BLUETOOTH_RECEIVE_BUFFER_SIZE 90
+#define BLUETOOTH_RECEIVE_BUFFER_SIZE 16
 
 
 /**
@@ -248,6 +248,7 @@ extern uint8_t* bluetooth_cmd_get_address (void);
  */
 extern uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address);
 
+#ifdef SQUIRREL
 /**
  * Command: ATF?
  * Search bluetooth devices.
@@ -258,6 +259,7 @@ extern uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address);
  * @see bluetooth_data_package
  */
 extern uint8_t* bluetooth_cmd_search_devices (void);
+#endif
 
 /**
  * Command: ATH (only in online command mode)

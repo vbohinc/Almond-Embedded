@@ -5,7 +5,7 @@
 #include "../protocols/downlink/downlink.h"
 
 #define NUT
-#define SQUIRREL
+//#define SQUIRREL
 
 int main (void) {
 	struct downlink_packet packet;

@@ -11,6 +11,12 @@ void FTDIInit(void)
 
 void FTDISend( uint8_t out_buf)
 {
+	if (out_buf == '\0')
+	{
+		FTDISendImmediate();
+		return;
+	}
+
 	while( TXE !=0 ) {};
 
 	PORTA = out_buf;

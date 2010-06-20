@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include "./shared/ftdi.h"
 
+#include <avr/eeprom.h>
+
 #ifdef SERIAL
 #include <unistd.h>
 #endif
@@ -47,8 +49,15 @@ uint8_t bluetooth_is_connected = 0;
  * 		Ex: arr[1] to arr[15] contains first name terminated by null if shorter than 16 chars
  * arr[1+x*(16+6)+16] to arr[1+x*(16+6)+21]: address of found device.
  * In total there are 1+(16+6)*8=177 bytes needed.
+ *
+ * The ATF? command is only available on Squirrel to save memory.
+ * On Nut the maximum size is approx. the DISCONNECT response
  */
+#ifdef SQUIRREL
 uint8_t bluetooth_data_package[177];
+#else
+uint8_t bluetooth_data_package[35];
+#endif
 
 /**
  * Index in the bluetooth_data_package array to store new received byte
@@ -181,14 +190,23 @@ void bluetooth_copy_address(uint8_t* dest, uint8_t* src, const uint8_t startIdxD
 	dest[startIdxDest+6] =  0;
 }
 
-uint8_t my_strncmp(const uint8_t *str1, const uint8_t *str2, const uint8_t count)
+uint8_t my_strncmp_eeprom(const uint8_t *str1, const uint8_t *str2, const uint8_t count)
 {
-	uint8_t i;
-	for (i=0; i<count && str1[i]!='\0' && str2[i]!='\0'; i++)
+	uint8_t  myByte;
+
+	uint8_t i = 0;
+	do
 	{
-		if (str1[i] != str2[i])
-			return 1;
-	}
+		myByte = eeprom_read_byte(str2+i);
+		if (myByte != '\0')
+		{
+			if (str1[i] != myByte)
+				return 1;
+		}
+		else //myByte is '\0'
+			break;
+		i++;
+	} while (i<count && str1[i]!='\0' && myByte!='\0');
 	return 0;
 }
 
@@ -201,7 +219,7 @@ void bluetooth_process_response(void)
 	if (bluetooth_cmd_buffer_head == 0)
 		return;
 
-	if (my_strncmp(bluetooth_cmd_buffer, (uint8_t*)"OK", 2)==0)
+	if (my_strncmp_eeprom(bluetooth_cmd_buffer, str_ok, 2)==0)
 	{
 		//Special handling for ATF, because OK is only, when Inquiry-End message received
 		if (bluetooth_cmd_sent[0]!='F')
@@ -209,13 +227,13 @@ void bluetooth_process_response(void)
 		return;
 	}
 	bluetooth_data_package[0]=0; //Empty return array
-	if (my_strncmp(bluetooth_cmd_buffer, (uint8_t*)"ERROR", 5)==0)
+	if (my_strncmp_eeprom(bluetooth_cmd_buffer, str_error, 5)==0)
 	{
 		bluetooth_response_code = 4;
 		return;
 	}
 
-	if (my_strncmp(bluetooth_cmd_buffer, (uint8_t*)"CONNECT", 7)==0)
+	if (my_strncmp_eeprom(bluetooth_cmd_buffer, str_connect, 7)==0)
 	{
 		bluetooth_address_to_array(bluetooth_cmd_buffer, bluetooth_data_package, 0, 10, 1);
 		bluetooth_is_connected = 1;
@@ -224,7 +242,7 @@ void bluetooth_process_response(void)
 		bluetooth_callback(bluetooth_data_package, 1, 6);
 		return;
 	}
-	if (my_strncmp(bluetooth_cmd_buffer, (uint8_t*)"DISCONNECT", 10)==0)
+	if (my_strncmp_eeprom(bluetooth_cmd_buffer, str_disconnect, 10)==0)
 	{
 		bluetooth_address_to_array(bluetooth_cmd_buffer,bluetooth_data_package, 0, 13, 1);
 		bluetooth_is_connected =  0;
@@ -255,13 +273,13 @@ void bluetooth_process_response(void)
 		strcpy((char*)bluetooth_data_package,(char*)bluetooth_cmd_buffer); //copy received value into return array
 		break;
 	case 'F':
-		if (my_strncmp(bluetooth_cmd_buffer, (uint8_t*)"Inquiry End", 11)==0)
+		if (my_strncmp_eeprom(bluetooth_cmd_buffer, str_inquiry_end, 11)==0)
 		{
 			bluetooth_data_package[0] =  bluetooth_cmd_buffer[13]-48; //Get char of count found devices and convert to number
 			bluetooth_response_code = 1;
 			return;
 		}
-		if (my_strncmp(bluetooth_cmd_buffer, (uint8_t*)"Inquiry Results", 15)==0)
+		if (my_strncmp_eeprom(bluetooth_cmd_buffer, str_inquiry_results, 15)==0)
 		{
 			return;
 		}
@@ -380,7 +398,7 @@ int inline bluetooth_putc(const uint8_t byte)
  */
 void bluetooth_resent_package(void)
 {
-	debug("BTM: Resent data pkg!");
+	debug_eeprom(str_bt_resent_pkg);
 	for (uint8_t i=0; i<bluetooth_sent_length; i++)
 	{
 		if (bluetooth_putc(bluetooth_data_package[i])==0)
@@ -400,7 +418,7 @@ void bluetooth_process_data(void)
 		if ( c & UART_FRAME_ERROR )
 		{
 			/* Framing Error detected, i.e no stop bit detected */
-			warn("UART Frame Error: ");
+			warn_eeprom(str_uart_frame_error);
 		}
 		if ( c & UART_OVERRUN_ERROR )
 		{
@@ -409,7 +427,7 @@ void bluetooth_process_data(void)
 			 * not read by the interrupt handler before the next character arrived,
 			 * one or more received characters have been dropped
 			 */
-			warn("UART Overrun Error: ");
+			warn_eeprom(str_uart_overrun_error);
 		}
 		if ( c & UART_BUFFER_OVERFLOW )
 		{
@@ -417,7 +435,7 @@ void bluetooth_process_data(void)
 			 * We are not reading the receive buffer fast enough,
 			 * one or more received character have been dropped
 			 */
-			warn("Buffer overflow error: ");
+			warn_eeprom(str_uart_buffer_overflow);
 		}
 		else if (c!=UART_NO_DATA)
 		{
@@ -945,10 +963,8 @@ void bluetooth_address_to_array(const uint8_t *full_address, uint8_t *compressed
 
 	for (uint8_t i=compressed_start_idx; i<compressed_start_idx+6; i++)
 	{
-		FTDISend(full_address[buf_idx]);
 		addr_buffer |= ((char_to_hex(full_address[buf_idx])<<4)& 0xF0);
 		buf_idx++;
-		FTDISend(full_address[buf_idx]);
 		addr_buffer |= (char_to_hex(full_address[buf_idx])& 0xF);
 		buf_idx++;
 		compressed_address[i] = addr_buffer;
@@ -1116,6 +1132,7 @@ uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address)
 		return 0;
 }
 
+#ifdef SQUIRREL
 uint8_t* bluetooth_cmd_search_devices (void)
 {
 	bluetooth_cmd_buffer[0] = 'A';
@@ -1134,6 +1151,7 @@ uint8_t* bluetooth_cmd_search_devices (void)
 	else
 		return bluetooth_data_package;
 }
+#endif
 
 uint8_t bluetooth_cmd_close_connection (void)
 {

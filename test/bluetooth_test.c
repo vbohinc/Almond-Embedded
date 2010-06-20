@@ -10,14 +10,6 @@
 #include "drivers/bluetooth/bluetooth.h"
 #include "shared/ftdi.h"
 #include <string.h>
-#include <avr/eeprom.h>
-
-// EEMEM wird bei aktuellen Versionen der avr-lib in eeprom.h definiert
-// hier: definiere falls noch nicht bekannt ("alte" avr-libc)
-#ifndef EEMEM
-// alle Textstellen EEMEM im Quellcode durch __attribute__ ... ersetzen
-#define EEMEM  __attribute__ ((section (".eeprom")))
-#endif
 
 
 void print(char * arr){
@@ -57,12 +49,10 @@ void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_ty
 	} else if (callback_type == 1) //connected
 	{
 		bluetooth_array_to_address(data_package, cmd, 0,0,0);
-		FTDISend('C'); //Connected
 		connected = 1;
 	} else if (callback_type == 2) //disconnected
 	{
 		bluetooth_array_to_address(data_package, cmd, 0,0,0);
-		FTDISend('D'); //Disconnected
 		connected = 0;
 	}
 }
@@ -105,20 +95,9 @@ void master_test(void)
 		cmd[10] = 'F';
 		cmd[11] = '1';
 
-		//strcpy(addr, "701A041CDBF1");
-		FTDISend('A');
-		for (int i=0; i<12; i++)
-			FTDISend(cmd[i]);
 		uint8_t compressed[6];
 		bluetooth_address_to_array((uint8_t*)cmd, compressed, 0,0,0);
-		FTDISend('C');
-		for (int i=0; i<6; i++)
-			FTDISend(compressed[i]);
 
-		int retval = bluetooth_cmd_set_remote_address(compressed);
-
-		FTDISend('D');
-		FTDISend(retval);
 		//printf("\nATD ret=%d",retval);
 
 		/*uint8_t *found = bluetooth_cmd_search_devices();
@@ -140,9 +119,7 @@ void master_test(void)
 			}
 		}*/
 
-		retval = bluetooth_cmd_connect(0);
-		FTDISend('A');
-		FTDISend(retval);
+		bluetooth_cmd_connect(0);
 }
 
 void slave_test(void)
@@ -194,7 +171,7 @@ void slave_test(void)
 
 }
 
-uint8_t arr[200] EEMEM = " asdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljf";
+//uint8_t arr[200] EEMEM = " asdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljf";
 
 
 int main(void)
@@ -220,21 +197,6 @@ int main(void)
 			FTDISend(10);
 			FTDISend(13);
 
-
-
-			FTDISend(10);
-
-			uint8_t  myByte;
-
-	for (uint8_t i=0; i<10; i++)
-	{
-		 myByte = eeprom_read_byte(arr+i);
-		FTDISend(myByte);
-	}
-
-	FTDISend(10);
-
-
 	PORTD |= (1<<7);
 			PORTC |= (1<<0);
 			_delay_ms(500);
@@ -242,7 +204,9 @@ int main(void)
 			PORTC &= ~(1<<0);
 			_delay_ms(500);
 
+
 	bluetooth_init(bluetooth_callback_handler);
+	debug_eeprom(str_bt_init);
 
 	sei();
 
@@ -253,27 +217,22 @@ int main(void)
 	PORTC &= ~(1<<0);
 	_delay_ms(500);
 
-
-	FTDISend('#');
 	int ret = bluetooth_test_connection(4);
 
-	FTDISend('#');
 	if (ret == 0)
 	{
-		FTDISend('N');
-		FTDISend('O');
+
+		error_eeprom(str_bt_test_error);
+		PORTD |= (1<<7);
 
 		FTDISend(13);
 		FTDISend(10);
 	}
 	else
 	{
-
-		FTDISend('O');
-		FTDISend('K');
-
-		FTDISend(13);
+		debug_eeprom(str_bt_test_ok);
 		FTDISend(10);
+		PORTC |= (1<<0);
 		master_test();
 		//slave_test();
 	}
