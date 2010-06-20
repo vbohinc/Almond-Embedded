@@ -4,7 +4,6 @@ static uint8_t[35] sd_token_buffer; */
 
 void sd_init() {
 	spi_init();
-	
 	sd_send_command(CMD0, NULL); // Place SD Card into Idle State
 	sd_get_response(R1);
 	clear_bit(SPID_CTRL, 3); // Chip Select Low
@@ -46,7 +45,7 @@ boolean sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 		case: CMD16
 		sd_buffer = 0x500000002001; // Static CMD16. Sets the block size to 32 bytes.
 		break;
-		case: CMD17
+		case: CMD17 // Requests a single block beginning at the address passed (4 Bytes)
 		sd_buffer[0] = 0x51;
 		for (int i = 0; i < 4; i++) sd_buffer[i+1] = arguments[i];
 		sd_buffer[5] = 0x01; 

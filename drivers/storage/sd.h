@@ -1,6 +1,19 @@
 #include "../drivers/spi/spi.h"
 #include "../shared/common.h"
 
+#define CMD0 0
+#define CMD8 1
+#define CMD16 2
+#define CMD17 3
+#define CMD55 4
+#define ACMD41 5
+#define CMD58 6
+#define R1 1
+#define R1b 2
+#define R2 3
+#define R3 4
+#define R7 5
+
 static uint8_t[6] sd_buffer;
 static uint8_t[5] sd_response_buffer;
 static uint8_t[35] sd_token_buffer;
