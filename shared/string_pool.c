@@ -15,8 +15,13 @@ uint8_t str_disconnect[11] EEMEM 			= "DISCONNECT\0";
 uint8_t str_inquiry_end[12] EEMEM 			= "Inquiry End\0";
 uint8_t str_inquiry_results[16] EEMEM 		= "Inquiry Results\0";
 uint8_t str_bt_resent_pkg[22] EEMEM 		= "BTM: resent data pkg!\0";
-extern uint8_t str_bt_init[17] EEMEM 		= "BTM: Initialized\0";
-extern uint8_t str_bt_test_ok[18] EEMEM 	= "BTM: Test Conn=OK\0";
-extern uint8_t str_bt_test_error[21] EEMEM 	= "BTM: Test Conn=ERROR\0";
+uint8_t str_bt_init[17] EEMEM 				= "BTM: Initialized\0";
+uint8_t str_bt_test_ok[18] EEMEM 			= "BTM: Test Conn=OK\0";
+uint8_t str_bt_test_error[21] EEMEM 		= "BTM: Test Conn=ERROR\0";
+uint8_t str_bt_timeout_stop[30] EEMEM 		= "BTM: Timeout (STOP). Reorder.\0";
+uint8_t str_bt_req_resent[21] EEMEM 		= "BTM: Resent request.\0";
+uint8_t str_bt_pck_full[28] EEMEM 			= "BTM: Package full. Reorder.\0";
+uint8_t str_bt_pck_small[29] EEMEM 			= "BTM: Pkg too small. Reorder.\0";
+uint8_t str_bt_crc_error[25] EEMEM 			= "BTM: CRC error. Reorder.\0";
 
 

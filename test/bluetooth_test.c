@@ -12,7 +12,7 @@
 #include <string.h>
 
 
-void print(char * arr){
+void print(uint8_t * arr){
 	for (uint8_t i=0; arr[i]!='\0'; i++)
 		FTDISend(arr[i]);
 	FTDISend(0);
@@ -26,8 +26,6 @@ uint8_t cmd[20];
 uint32_t error_count = 0;
 uint32_t send_count = 0;
 
-
-uint8_t int_received = 0;
 uint8_t int_to_send = 1;
 
 uint8_t pkg_received = 0;
@@ -35,6 +33,7 @@ uint8_t pkg_received = 0;
 void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
 {
 	if (callback_type == 0) {//is data package
+		print((uint8_t*)"Package:");
 		for (int i=0; i<data_length; i++)
 		{
 			/*if (data_package[i] > int_received+1)
@@ -42,17 +41,26 @@ void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_ty
 				printf("ERROR: Int: %d, ErrCnt: %d, SendCnt:%d, Rate:%f\n", int_received, error_count, send_count-data_length+i, (float)error_count/(float)send_count);
 				error_count++;
 			}*/
-			int_received = data_package[i];
+			FTDISend(data_package[i]);
+
 		}
+		FTDISend(data_length+48);
 		pkg_received = 1;
 		//printf("]\n");
 	} else if (callback_type == 1) //connected
 	{
 		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+
+		print((uint8_t*)"Con\0");
+		print(cmd);
+		FTDISend('\n');
 		connected = 1;
 	} else if (callback_type == 2) //disconnected
 	{
 		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+		print((uint8_t*)"DCon\0");
+		print(cmd);
+		FTDISend('\n');
 		connected = 0;
 	}
 }
@@ -120,6 +128,17 @@ void master_test(void)
 		}*/
 
 		bluetooth_cmd_connect(0);
+
+		uint8_t pkg[52];
+		for (uint8_t i=0; i<52; i++)
+			pkg[i] = i;
+		uint8_t len = 52;
+
+		while (1)
+		{
+			bluetooth_process_data();
+			bluetooth_send_data_package(pkg, &len, 1, 2000);
+		}
 }
 
 void slave_test(void)

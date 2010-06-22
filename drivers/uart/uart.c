@@ -258,10 +258,11 @@ Function: UART Receive Complete interrupt
 Purpose:  called when the UART has received a character
 **************************************************************************/
 {
+	UART_CTS_PORT |= (1<<UART_CTS_PIN); //not ready for data = high
     unsigned char tmphead;
     unsigned char data;
     unsigned char usr;
-    unsigned char lastRxError;
+    unsigned char lastRxError = 0;
  
  
     /* read UART status register and UART data register */ 
@@ -278,22 +279,31 @@ Purpose:  called when the UART has received a character
 #elif defined ( ATMEGA_UART )
     lastRxError = (usr & (_BV(FE)|_BV(DOR)) );
 #endif
-        
+
+
     /* calculate buffer index */ 
     tmphead = ( UART_RxHead + 1) & UART_RX_BUFFER_MASK;
     
     if ( tmphead == UART_RxTail ) {
         /* error: receive buffer overflow */
         lastRxError = UART_BUFFER_OVERFLOW >> 8;
-
         UART_CTS_PORT |= (1<<UART_CTS_PIN); //not ready for data = high
 
     }else{
         /* store new index */
         UART_RxHead = tmphead;
+
         /* store received data in buffer */
 
         UART_RxBuf[tmphead] = data;
+
+        //Check if buffer is full
+        tmphead = ( UART_RxHead + 16) & UART_RX_BUFFER_MASK;
+        if ( tmphead == UART_RxTail ) {
+            UART_CTS_PORT |= (1<<UART_CTS_PIN); //not ready for data = high
+        }
+
+
     }
     UART_LastRxError = lastRxError;   
 }
@@ -459,8 +469,6 @@ int uart_putc(unsigned char data)
     	FTDISend('!');
     	return 0;
     }
-
-	FTDISend(data);
     
     tmphead  = (UART_TxHead + 1) & UART_TX_BUFFER_MASK;
     

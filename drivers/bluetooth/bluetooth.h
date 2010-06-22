@@ -23,8 +23,8 @@
 /**
  * Enables CRC check for bluetooth packages
  */
-#define ENABLE_CRC
-#define BLUETOOTH_ENABLE_OK
+//#define ENABLE_CRC
+//#define BLUETOOTH_ENABLE_OK
 
 #ifdef ENABLE_CRC
 #include "./../../shared/crc.h"

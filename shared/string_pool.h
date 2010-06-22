@@ -28,6 +28,11 @@ extern uint8_t str_bt_resent_pkg[] EEMEM;
 extern uint8_t str_bt_init[] EEMEM;
 extern uint8_t str_bt_test_ok[] EEMEM;
 extern uint8_t str_bt_test_error[] EEMEM;
+extern uint8_t str_bt_timeout_stop[] EEMEM;
+extern uint8_t str_bt_req_resent[] EEMEM;
+extern uint8_t str_bt_pck_full[] EEMEM;
+extern uint8_t str_bt_pck_small[] EEMEM;
+extern uint8_t str_bt_crc_error[] EEMEM;
 
 
 #endif //_STRING_POOL_H_
