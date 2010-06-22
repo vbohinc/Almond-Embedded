@@ -125,6 +125,9 @@ const uint8_t charray[][6] =
 
 };
 
+static uint8_t max_symbols = ((DISPLAY_COL_NUMBER_VISIBLE + 1)
+		/ DISPLAY_CHAR_WIDTH); //0: no space at all
+
 void display_init(void)
 {
 	//According to the init routine in the manual
@@ -220,16 +223,44 @@ void display_clean(void)
 	display_set_page(DISPLAY_PAGE_INIT);
 }
 
+void display_clean_char(uint8_t line, uint8_t symbol, uint8_t inverse_modus)
+{
+	uint8_t *blank = (uint8_t *) " ";
+	if (line <= DISPLAY_PAGE_NUMBER && symbol <= max_symbols)
+	{
+		display_set_col(DISPLAY_COL_INIT + 1 + DISPLAY_CHAR_WIDTH * symbol);
+		display_set_page(DISPLAY_PAGE_INIT + line);
+		display_write_char(blank, inverse_modus);
+	}
+}
+
+void display_clean_line(uint8_t line, uint8_t inverse_modus)
+{
+	uint8_t *blank = (uint8_t *) " ";
+	uint8_t i;
+	if (line <= DISPLAY_PAGE_NUMBER)
+	{
+		display_set_col(DISPLAY_COL_INIT + 1);
+		display_set_page(DISPLAY_PAGE_INIT + line);
+		for (i = 0; i < max_symbols; i++)
+		{
+			display_write_char(blank, inverse_modus);
+		}
+
+	}
+
+}
+
 /**
  * help function in order to write a char
  */
 
-static void display_write_char_util(uint8_t number, uint8_t inverse)
+static void display_write_char_util(uint8_t number, uint8_t inverse_modus)
 {
 	int i;
 	for (i = 0; i < 6; i++)
 	{
-		display_write(charray[number][i], inverse);
+		display_write(charray[number][i], inverse_modus);
 	}
 }
 
@@ -282,9 +313,6 @@ void display_write_title(char *text, uint8_t status)
 	//text
 	uint8_t *pointer = (uint8_t *) text;
 	uint8_t *pointer_store = (uint8_t *) text;
-
-	static uint8_t max_symbols = (DISPLAY_COL_NUMBER_VISIBLE + 1)
-			/ DISPLAY_CHAR_WIDTH;
 
 	uint8_t *blank = (uint8_t *) " ";
 	uint8_t *error = (uint8_t *) "Error";
@@ -341,7 +369,7 @@ void display_write_title(char *text, uint8_t status)
 	else
 	{
 		pointer_store = error;
-		c=0;
+		c = 0;
 		while (*pointer_store != '\0')
 		{
 			c++;
@@ -381,14 +409,15 @@ void display_write_text(char *text, uint8_t status)
 {
 	//TODO fix line break bug
 	uint8_t *pointer = (uint8_t *) text;
+	static uint8_t i;
 	static uint8_t symbol = 0;
-	static uint8_t max_symbols = (DISPLAY_COL_NUMBER_VISIBLE + 1)
-			/ DISPLAY_CHAR_WIDTH;
 	static uint8_t row = 1;
 
 	//prepare display
-	//TODO remove this clean too
-	display_clean();
+	for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
+	{
+		display_clean_line(i, 0);
+	}
 	display_set_col(DISPLAY_COL_INIT + 1);
 	display_set_page(DISPLAY_PAGE_INIT + row);
 
@@ -418,8 +447,10 @@ void display_write_text(char *text, uint8_t status)
 			if (row > DISPLAY_PAGE_NUMBER)
 			{
 				row = 1;
-				//TODO remove clean in order to save the titlebar
-				display_clean();
+				for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
+				{
+					display_clean_line(i, 0);
+				}
 			}
 
 			display_set_col(DISPLAY_COL_INIT + 1);
@@ -429,7 +460,7 @@ void display_write_text(char *text, uint8_t status)
 
 	}
 	//TODO add blanks
-	/*
+
 	 //Paint navigation arrows if needed
 	 if (check_bit(status,7) && check_bit(status,0))
 	 {
@@ -447,5 +478,4 @@ void display_write_text(char *text, uint8_t status)
 	 {
 	 display_write_char_util(DISPLAY_CHAR_ARROW_BOTTOM_SMALL, 0);
 	 }
-	 */
 }

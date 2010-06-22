@@ -42,7 +42,7 @@ void display_command(uint8_t command);
  * Writes a value to the lcd-display
  * @param value value to be written
  */
-void display_write(uint8_t value, uint8_t inverse);
+void display_write(uint8_t value, uint8_t inverse_modus);
 
 /**
  *  Sets Column

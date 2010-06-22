@@ -65,11 +65,24 @@ void display_init(void);
 void display_clean(void);
 
 /**
+ * Deletes a certain char (does not effect the boarder pixels)
+ * @param row line of the char (starts with 0)
+ * @param symbol number of the symbol in the line (starts with 0)
+ *  */
+void display_clean_char(uint8_t line, uint8_t symbol, uint8_t inverse_modus);
+
+/**
+ * Deletes a certain row (does not effect the boarder pixels)
+ * @param line line to delete (starts with 0)
+ */
+void display_clean_line(uint8_t line, uint8_t inverse_modus);
+
+/**
  * Writes a single char on the display
  * @param *character
  * @param inverse 0 normal, 1 (not 0) inverse
  */
-void display_write_char(uint8_t *character, uint8_t inverse);
+void display_write_char(uint8_t *character, uint8_t inverse_modus);
 
 /**
  * Write the title (inverted)
