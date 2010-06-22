@@ -98,4 +98,8 @@ void display_write_title(char *text, uint8_t status);
  */
 void display_write_text(char *text, uint8_t status);
 
+//TODO delte this function again
+void display_write_blank_text(uint8_t *text);
+
+
 #endif //__DISPLAY_H__

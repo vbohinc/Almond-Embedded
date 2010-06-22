@@ -479,3 +479,41 @@ void display_write_text(char *text, uint8_t status)
 	 display_write_char_util(DISPLAY_CHAR_ARROW_BOTTOM_SMALL, 0);
 	 }
 }
+
+
+//TODO delte this function again but it is much simpler to find the bug
+void display_write_blank_text(uint8_t *text) {
+
+	uint8_t *pointer = text;
+	static uint8_t col = 0;
+	static uint8_t row = 0;
+
+
+	//prepare display
+	display_clean();
+	display_set_col(DISPLAY_COL_INIT+1);
+
+	//start to write
+	while (*pointer != '\0') {
+
+		display_write_char(pointer,0);
+		pointer++;
+		col++;
+
+		if (col >= 21) {
+			col = 0;
+			display_set_col(DISPLAY_COL_INIT+1);
+			row++;
+			display_set_page(DISPLAY_PAGE_INIT+row);
+		}
+
+		if (row >= 7) {
+			row = 0;
+			display_clean();
+			display_set_col(DISPLAY_COL_INIT+1);
+		}
+	}
+
+}
+;
+
