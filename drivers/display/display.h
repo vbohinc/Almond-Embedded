@@ -41,6 +41,18 @@ enum
 };
 
 /**
+ * Special Chars
+ */
+enum
+{
+	DISPLAY_CHAR_ARROW_LEFT = 54,
+	DISPLAY_CHAR_ARROW_RIGHT = 55,
+	DISPLAY_CHAR_ARROW_TOP_SMALL = 56,
+	DISPLAY_CHAR_ARROW_BOTTOM_SMALL = 57,
+	DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL = 58
+};
+
+/**
  *
  * Initialization of the display
  *
@@ -55,11 +67,22 @@ void display_clean(void);
 /**
  * Writes a single char on the display
  * @param *character
+ * @param inverse 0 normal, 1 (not 0) inverse
  */
 void display_write_char(uint8_t *character, uint8_t inverse);
 
+/**
+ * Write the title (inverted)
+ * @param *text Array of chars to be written
+ * @param status Controls the left and the right arrow
+ */
 void display_write_title(char *text, uint8_t status);
 
+/**
+ * Writes a text on the display
+ * @param *character arry of chars to be written
+ * @param status of the bottom/top arrows
+ */
 void display_write_text(char *text, uint8_t status);
 
 #endif //__DISPLAY_H__
