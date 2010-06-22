@@ -4,16 +4,16 @@
  * Define package Types
  */
 
-#ifndef __PACKAGE_TYPES__
-#define __PACKAGE_TYPES__
+#ifndef __PACKAGE_TYPES_H__
+#define __PACKAGE_TYPES_H__
 
 enum package_type {
 	GET		 = 0x10,	// Used by: Squirrel/Backend
 	SET		 = 0x20,	// Used by: Squirrel/Backend
 	RET		 = 0x30, 	// Used by: Nut/Squirrel
 	BYE		 = 0xA0, 	// Sends the receiving unit offline for p->value milli/seconds. (Power Saving)
-	TUNNEL = 0xE0,	// To tunnel things through the squirrel
-	ECHO	 = 0xF0	  // Used for debug, returns the package
+	ECHO   = 0xF0,	// To tunnel things through the squirrel
+	TUNNEL	 = 0xE0	  // Used for debug, returns the package
 };
 
 enum package_type_flags {
@@ -29,7 +29,8 @@ enum package_type_flags {
 	LIST	 = 0x0C, 	// Returns a list of known devices
 
 	// Shared
-	CONFIG	 = 0x0F    // Access the configuration
+	ERROR  = 0x0E,   // ERROR
+	CONFIG = 0x0F    // Access the configuration
 };
 
 #endif

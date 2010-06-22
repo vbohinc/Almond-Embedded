@@ -49,6 +49,42 @@ FORMAT = ihex
 #     this an empty or blank macro!
 OBJDIR = .
 
+EXTRAINCDIRS += $(BASE)/drivers/ $(BASE)/protocols/ $(BASE)/shared/
+
+##################### DEFINE ALMOND LIBS HERE ############################
+
+#downlink 
+ifeq (downlink, $(findstring downlink,$(ALMONDLIBS)))
+ALMONDLIBS += bluetooth
+SRC += $(BASE)/protocols/downlink/downlink.c
+endif
+
+#uplink 
+ifeq (uplink, $(findstring uplink,$(ALMONDLIBS)))
+ALMONDLIBS += bluetooth
+SRC += $(BASE)/protocols/uplink/uplink.c
+endif
+
+#bluetooth
+ifeq (bluetooth, $(findstring bluetooth,$(ALMONDLIBS)))
+ALMONDLIBS += usart
+SRC += $(BASE)/drivers/bluetooth/bluetooth.c $(BASE)/shared/crc.c $(BASE)/shared/fifo.c $(BASE)/shared/error.c
+ifeq ($(MCU), atxmega128a1)
+  SRC += $(BASE)/drivers/usart/usart_driver.c
+endif
+endif
+
+#usart
+ifeq (usart, $(findstring usart,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/usart/usart.c 
+endif
+
+#twi
+ifeq (twi, $(findstring twi,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/twi/twi.c
+endif
+
+##################### END OF ALMOND LIBLIST ##############################
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC += $(TARGET).c

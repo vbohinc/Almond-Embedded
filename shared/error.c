@@ -43,7 +43,7 @@ void info (const char *msg)
 	return;
 }
 
-void warn(const char *msg)
+void warn (const char *msg)
 {
 #ifdef SERIAL
 	printf("[WARN]: %s\n", msg);
@@ -59,7 +59,7 @@ void warn(const char *msg)
 	return;
 }
 
-void error(const char *msg)
+void error (const char *msg)
 {
 #ifdef SERIAL
 	printf("[ERROR]: %s\n", msg);
@@ -75,7 +75,7 @@ void error(const char *msg)
 	return;
 }
 
-void debug(const char *msg)
+void debug (const char *msg)
 {
 #ifdef SERIAL
 	printf("[DEBUG]: %s\n", msg);

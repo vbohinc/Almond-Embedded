@@ -1,4 +1,4 @@
-/**
+ /**
 * @file bluetooth.c
 * @author Stefan Profanter
 * @date 26.04.2010

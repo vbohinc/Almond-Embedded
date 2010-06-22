@@ -10,38 +10,12 @@
  * const uint8_t class_id_extensions_length;
  */
 
-#ifndef __DOWNLINK__
-#define __DOWNLINK__
-
-
-#include <stdint.h>
-#include <stdbool.h>
+#ifndef __DOWNLINK_H__
+#define __DOWNLINK_H__
 
 #include "../classes.h"
 #include "../package_types.h"
-
-extern const int DOWNLINK_PACKAGE_LENGTH;
-extern const int MAX_HISTORY; // FIXME!
-/**
- * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
- *
- * Package format:
- * | OPCODE (1) | ID (1) | VALUE (2) |
- */
-
-struct downlink_package {
-	uint8_t opcode;
-	uint8_t id;
-	uint16_t value;
-};
-
-// Switch functionality 
-
-#ifdef SQUIRREL
-bool downlink_handle_package (struct downlink_package* );
-#endif
-
-#ifdef NUT
+#include "../../shared/common.h"
 
 /**
  * MUST BE IMPLEMENTED IN YOUR FILES 
@@ -50,16 +24,46 @@ extern const uint8_t class_id_nut;
 extern const uint8_t class_id_extensions[];
 extern const uint8_t class_id_extensions_length;
 
+/* Protocol Details */
+
+extern const uint8_t DOWNLINK_PACKAGE_LENGTH;
+
+/**
+ * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
+ *
+ * Package format:
+ * | OPCODE (1) | ID (1) | VALUE (2) |
+ */
+
+typedef struct _downlink_package downlink_package;
+
+struct _downlink_package {
+	uint8_t opcode;
+	uint8_t id;
+	uint16_t value;
+};
+
+
+// Switch functionality 
+
+extern uint16_t downlink_get_sensor_value (uint8_t id, bool *err);
+extern uint16_t downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err);
+extern uint8_t  downlink_get_nut_class (bool *err);
+extern uint8_t  downlink_get_actuator_class (uint8_t id, bool *err);
+extern uint8_t  downlink_get_sensor_class (uint8_t id, bool *err);
+extern uint16_t downlink_bye (uint16_t time_ms, bool *err);
+
+#ifdef NUT
+
 extern uint16_t get_value(uint8_t id);
 extern void set_value(uint8_t id, uint16_t value);
 
 /**
  * Returns true if the package was handled successfully and the buffer can be returned, false otherwise
  */
-bool downlink_handle_package ( struct downlink_package* );
+bool downlink_handle_package (downlink_package *p);
+void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length);
 
 #endif
-#ifdef SERIAL
-bool downlink_handle_package ( struct downlink_package* );
-#endif
+
 #endif
