@@ -365,11 +365,6 @@ void bluetooth_delay(uint16_t ms)
 #endif
 }
 
-/**
- * Writes the byte to the usart or the bluetooth serial connection
- * On Serial connection returns 1 for success, 0 for error.
- * On Uart mode returns always 1
- */
 int inline bluetooth_putc(const uint8_t byte)
 {
 	/*if (byte == 13)
@@ -384,8 +379,6 @@ int inline bluetooth_putc(const uint8_t byte)
 		debug(error_builder);
 		debug(itoa(byte, error_builder,10));
 	}*/
-	//FTDISend('P');
-	//FTDISend(put_count+48);
 
 	uint8_t error = 0;
 #ifdef SERIAL
@@ -410,7 +403,7 @@ void bluetooth_resent_package(void)
 	}
 }
 
-void bluetooth_input_to_array()
+void bluetooth_input_to_array(void)
 {
 #ifndef SERIAL
 	//Read bytes from UART input buffer
@@ -454,6 +447,7 @@ void bluetooth_input_to_array()
 void bluetooth_process_data(void)
 {
 	bluetooth_input_to_array();
+
 
 
 
@@ -875,9 +869,10 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 			bluetooth_process_data();
 		}
 
+
+		//data already copied in handle_array fkt
 		bluetooth_wait_response_array = NULL;
 		bluetooth_wait_response_length = NULL;
-		//data already copied in handle_array fkt
 		return 0;
 	}
 

@@ -121,6 +121,13 @@ extern void bluetooth_close(void);
 void (*bluetooth_callback)(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length);
 
 /**
+ * Writes the byte to the usart or the bluetooth serial connection
+ * On Serial connection returns 1 for success, 0 for error.
+ * On Uart mode returns always 1
+ */
+extern int bluetooth_putc(const uint8_t byte);
+
+/**
  * Called by bluetooth_process_data if a stop byte was received or the data-package is complete. Checks if CRC is ok.
  * @return -1 means there was a CRC error and input buffer should be deleted
  */

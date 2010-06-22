@@ -129,15 +129,45 @@ void master_test(void)
 
 		bluetooth_cmd_connect(0);
 
-		uint8_t pkg[52];
-		for (uint8_t i=0; i<52; i++)
-			pkg[i] = i;
-		uint8_t len = 52;
+	//	bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
+	//	bluetooth_putc(BLUETOOTH_STOP_BYTE);
+
+		uint8_t pkg[128];
+		for (uint8_t x=0; x<64; x++)
+					pkg[x] = x;
+		uint8_t len;
+
 
 		while (1)
 		{
-			bluetooth_process_data();
-			bluetooth_send_data_package(pkg, &len, 1, 2000);
+			len = 64;
+			uint8_t ret = bluetooth_send_data_package(pkg, &len, 1, 2000);
+			if (ret == 1)
+				print((uint8_t*)"UE\n");
+			else if (ret == 2)
+				print((uint8_t*)"TO\n");
+
+			//print((uint8_t*)"RLn:");
+			//FTDISend(len+48);
+			//FTDISend(10);
+			if (len != 64)
+			{
+				print((uint8_t*)"ERL:");
+				FTDISend(len+48);
+				continue;
+			}
+			uint8_t x;
+			for (x=0; x<64; x++)
+			{
+				if (pkg[x] != x)
+				{
+					print((uint8_t*)"ER:");
+					FTDISend(x+48);
+					break;
+				}
+			}
+			//if (x>=i)
+				//print((uint8_t*)"K");
 		}
 }
 
