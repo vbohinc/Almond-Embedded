@@ -7,13 +7,12 @@ void spi_init() {
 	set_bit(SPID_CTRL, 6); // Enable SPI
 	set_bit(SPID_CTRL, 4); // Set to Master
 }
-void spi_send_byte(uint8_t *send_buffer) {
-	SPID_DATA = *send_buffer;
+void spi_send_byte(uint8_t byte_to_send) {
+	SPID_DATA = send_buffer;
 	while (!check_bit(SPID_STATUS,7)); // Wait until IF is set to signal end of Tx
 	return;
 }
-void spi_receive_byte(uint8_t *receive_buffer) {
+uint8_t spi_receive_byte() {
 	while (!check_bit(SPID_STATUS,7)); // Wait until IF is set to signal end of Rx
-	*receive_buffer = SPID_DATA;
-	return;
+	return *SPID_DATA;
 }
