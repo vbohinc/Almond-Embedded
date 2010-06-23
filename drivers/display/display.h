@@ -22,8 +22,7 @@ enum
 {
 	DISPLAY_TITLE_NONE = 0x00,
 	DISPLAY_TITLE_LEFT = 0x80,
-	DISPLAY_TITLE_RIGHT = 0x01,
-	DISPLAY_TITLE_BOTH = 0x81
+	DISPLAY_TITLE_RIGHT = 0x01
 };
 
 /*
@@ -82,24 +81,21 @@ void display_clean_line(uint8_t line, uint8_t inverse_modus);
  * @param *character
  * @param inverse 0 normal, 1 (not 0) inverse
  */
-void display_write_char(uint8_t *character, uint8_t inverse_modus);
+void display_write_char(uint8_t character, uint8_t inverse_modus);
 
 /**
  * Write the title (inverted)
  * @param *text Array of chars to be written
  * @param status Controls the left and the right arrow
  */
-void display_write_title(char *text, uint8_t status);
+void display_write_title(const char *text, uint8_t status);
 
 /**
  * Writes a text on the display
  * @param *character arry of chars to be written
  * @param status of the bottom/top arrows
  */
-void display_write_text(char *text, uint8_t status);
-
-//TODO delte this function again
-void display_write_blank_text(uint8_t *text);
+void display_write_text(const char *text, uint8_t status);
 
 
 #endif //__DISPLAY_H__

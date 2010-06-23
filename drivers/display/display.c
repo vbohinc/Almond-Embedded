@@ -1,5 +1,6 @@
 #include "display.h"
 #include "display_low.h"
+#include <util/delay.h>
 
 //Special Char enum in display.h defined
 const uint8_t charray[][6] =
@@ -168,12 +169,16 @@ void display_init(void)
 
 	//Regulator resistor select
 	display_command(0x25);
-	//-----------------------------------------
+
+	//------------
+
 	//Set reference voltage mode
 	display_command(0x81);
 	//Set reference voltage register
 	display_command(0x30);
-	//------------------------------------
+
+	//------------
+
 	//PowerControl
 	display_command(0x2F);
 
@@ -225,7 +230,7 @@ void display_clean(void)
 
 void display_clean_char(uint8_t line, uint8_t symbol, uint8_t inverse_modus)
 {
-	uint8_t *blank = (uint8_t *) " ";
+	uint8_t blank = (uint8_t) ' ';
 	if (line <= DISPLAY_PAGE_NUMBER && symbol <= max_symbols)
 	{
 		display_set_col(DISPLAY_COL_INIT + 1 + DISPLAY_CHAR_WIDTH * symbol);
@@ -236,7 +241,7 @@ void display_clean_char(uint8_t line, uint8_t symbol, uint8_t inverse_modus)
 
 void display_clean_line(uint8_t line, uint8_t inverse_modus)
 {
-	uint8_t *blank = (uint8_t *) " ";
+	uint8_t blank = (uint8_t)' ';
 	uint8_t i;
 	if (line <= DISPLAY_PAGE_NUMBER)
 	{
@@ -264,41 +269,41 @@ static void display_write_char_util(uint8_t number, uint8_t inverse_modus)
 	}
 }
 
-void display_write_char(uint8_t *character, uint8_t inverse_modus)
+void display_write_char(uint8_t character, uint8_t inverse_modus)
 {
-	if (*character != '\0')
+	if (character != '\0')
 	{
-		if (*character >= 'A' && *character <= 'Z')
+		if (character >= 'A' && character <= 'Z')
 		{
-			display_write_char_util(*character - 55, inverse_modus); // A-Z
+			display_write_char_util(character - 55, inverse_modus); // A-Z
 		}
-		else if (*character >= 'a' && *character <= 'z')
+		else if (character >= 'a' && character <= 'z')
 		{
-			display_write_char_util(*character - 87, inverse_modus); //A-Z
+			display_write_char_util(character - 87, inverse_modus); //A-Z
 		}
-		else if (*character >= '0' && *character <= '9')
+		else if (character >= '0' && character <= '9')
 		{
-			display_write_char_util(*character - 48, inverse_modus); //0-9
+			display_write_char_util(character - 48, inverse_modus); //0-9
 		}
-		else if (*character == ' ')
+		else if (character == ' ')
 		{
 			display_write_char_util(52, inverse_modus); //blank
 		}
-		else if (*character == '.')
+		else if (character == '.')
 		{
 			display_write_char_util(45, inverse_modus); //dot
 		}
-		else if (*character == ':')
+		else if (character == ':')
 		{
 			display_write_char_util(46, inverse_modus); //double dot
 		}
-		else if (*character == '%')
+		else if (character == '%')
 		{
 			display_write_char_util(46, inverse_modus); //double dot
 		}
-		else if (*character >= 14 && *character <= 19)
+		else if (character >= 14 && character <= 19)
 		{
-			display_write_char_util(*character - 40, inverse_modus); //double dot
+			display_write_char_util(character - 40, inverse_modus); //double dot
 		}
 		else
 		{
@@ -307,14 +312,14 @@ void display_write_char(uint8_t *character, uint8_t inverse_modus)
 	}
 }
 
-void display_write_title(char *text, uint8_t status)
+void display_write_title(const char *text, uint8_t status)
 {
 
 	//text
 	uint8_t *pointer = (uint8_t *) text;
 	uint8_t *pointer_store = (uint8_t *) text;
 
-	uint8_t *blank = (uint8_t *) " ";
+	uint8_t blank = (uint8_t) ' ';
 	uint8_t *error = (uint8_t *) "Error";
 
 	//counter and numbers
@@ -328,7 +333,7 @@ void display_write_title(char *text, uint8_t status)
 	display_set_page(DISPLAY_PAGE_INIT);
 
 	//Print left arrow if needed
-	if (check_bit(status,7))
+	if (status & DISPLAY_CHAR_ARROW_LEFT)
 	{
 		display_write_char_util(DISPLAY_CHAR_ARROW_LEFT, 1);
 	}
@@ -356,7 +361,7 @@ void display_write_title(char *text, uint8_t status)
 		}
 		while (*pointer != '\0')
 		{
-			display_write_char(pointer, 1);
+			display_write_char(*pointer, 1);
 			pointer++;
 		}
 		for (i = 0; i < ((blank_number / 2) + (blank_number % 2)); i++)
@@ -383,7 +388,7 @@ void display_write_title(char *text, uint8_t status)
 		}
 		while (*error != '\0')
 		{
-			display_write_char(error, 1);
+			display_write_char(*error, 1);
 			error++;
 		}
 		for (i = 0; i < ((blank_number / 2) + (blank_number % 2)); i++)
@@ -394,7 +399,7 @@ void display_write_title(char *text, uint8_t status)
 	}
 
 	//print right arrow if needed
-	if (check_bit(status,0))
+	if (status & DISPLAY_CHAR_ARROW_RIGHT)
 	{
 		display_write_char_util(DISPLAY_CHAR_ARROW_RIGHT, 1);
 	}
@@ -405,13 +410,12 @@ void display_write_title(char *text, uint8_t status)
 
 }
 
-void display_write_text(char *text, uint8_t status)
+void display_write_text(const char *text, uint8_t status)
 {
-	//TODO fix line break bug
 	uint8_t *pointer = (uint8_t *) text;
-	static uint8_t i;
-	static uint8_t symbol = 0;
-	static uint8_t row = 1;
+	uint8_t i;
+	uint8_t symbol = 0;
+	uint8_t row = 1;
 
 	//prepare display
 	for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
@@ -433,7 +437,7 @@ void display_write_text(char *text, uint8_t status)
 		 }
 		 */
 
-		display_write_char(pointer, 0);
+		display_write_char(*pointer, 0);
 		pointer++;
 		symbol++;
 
@@ -461,59 +465,22 @@ void display_write_text(char *text, uint8_t status)
 	}
 	//TODO add blanks
 
-	 //Paint navigation arrows if needed
-	 if (check_bit(status,7) && check_bit(status,0))
+	 //Paint navigation arrow if set
+	 if (status & DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL)
 	 {
 	 display_write_char_util(DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL, 0);
 	 }
 
-	 // Paint left arrow
-	 else if (check_bit(status,7))
+	 // Paint top arrow if set
+	 else if (status & DISPLAY_CHAR_ARROW_TOP_SMALL)
 	 {
 	 display_write_char_util(DISPLAY_CHAR_ARROW_TOP_SMALL, 0);
 	 }
 
-	 // Paint right arrow
-	 else if (check_bit(status,0))
+	 // Paint bottom arrow if set
+	 else if (status & DISPLAY_CHAR_ARROW_BOTTOM_SMALL)
 	 {
 	 display_write_char_util(DISPLAY_CHAR_ARROW_BOTTOM_SMALL, 0);
 	 }
 }
-
-
-//TODO delte this function again but it is much simpler to find the bug
-void display_write_blank_text(uint8_t *text) {
-
-	uint8_t *pointer = text;
-	static uint8_t col = 0;
-	static uint8_t row = 0;
-
-
-	//prepare display
-	display_clean();
-	display_set_col(DISPLAY_COL_INIT+1);
-
-	//start to write
-	while (*pointer != '\0') {
-
-		display_write_char(pointer,0);
-		pointer++;
-		col++;
-
-		if (col >= 21) {
-			col = 0;
-			display_set_col(DISPLAY_COL_INIT+1);
-			row++;
-			display_set_page(DISPLAY_PAGE_INIT+row);
-		}
-
-		if (row >= 7) {
-			row = 0;
-			display_clean();
-			display_set_col(DISPLAY_COL_INIT+1);
-		}
-	}
-
-}
-;
 
