@@ -21,17 +21,17 @@ eepromlimit=512 #eeprom max size
 #eepromlimit=2048 #eeprom max size
 
 
-if [ $# -gt 1 ]; then
-	codelimit="$2"
-fi
 if [ $# -gt 2 ]; then
-	datalimit="$3"
+	codelimit="$3"
 fi
 if [ $# -gt 3 ]; then
-	eepromlimit="$4"
+	datalimit="$4"
+fi
+if [ $# -gt 4 ]; then
+	eepromlimit="$5"
 fi
 
-set -- `avr-size -A -d "$1" | awk -f size.awk`
+set -- `avr-size -A -d "$1" | awk -f $2`
 if [ $1 -gt $codelimit ]; then
 	echo "*** code size $1 exceeds limit of $codelimit"
 	error=1

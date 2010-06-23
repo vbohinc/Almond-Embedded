@@ -444,7 +444,7 @@ sizebefore:
 	2>/dev/null; echo; fi
 
 sizeafter:
-	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE);  echo; echo "---------"; echo; $(BASE)/make/checksize $(TARGET).elf \
+	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE);  echo; echo "---------"; echo; $(BASE)/make/checksize "$(TARGET).elf" "$(BASE)/make/size.awk" \
 	2>/dev/null; echo; fi
 
 
