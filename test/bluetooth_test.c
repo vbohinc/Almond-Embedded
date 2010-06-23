@@ -7,8 +7,8 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
-#include "drivers/bluetooth/bluetooth.h"
-#include "shared/ftdi.h"
+#include "bluetooth/bluetooth.h"
+#include "ftdi.h"
 #include <string.h>
 
 

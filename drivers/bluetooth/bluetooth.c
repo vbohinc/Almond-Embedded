@@ -12,7 +12,7 @@
 #include "bluetooth.h"
 #include <string.h>
 #include <stdlib.h>
-#include "./shared/ftdi.h"
+#include "ftdi.h"
 
 #include <avr/eeprom.h>
 

@@ -67,22 +67,26 @@ endif
 
 #bluetooth
 ifeq (bluetooth, $(findstring bluetooth,$(ALMONDLIBS)))
-ALMONDLIBS += usart
-SRC += $(BASE)/drivers/bluetooth/bluetooth.c $(BASE)/shared/crc.c $(BASE)/shared/fifo.c $(BASE)/shared/error.c
-ifeq ($(MCU), atxmega128a1)
-  SRC += $(BASE)/drivers/usart/usart_driver.c
-endif
+ALMONDLIBS += uart error
+SRC += $(BASE)/drivers/bluetooth/bluetooth.c $(BASE)/shared/fifo.c
 endif
 
-#usart
-ifeq (usart, $(findstring usart,$(ALMONDLIBS)))
-SRC += $(BASE)/drivers/usart/usart.c 
+#uart
+ifeq (uart, $(findstring uart,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/uart/uart.c 
 endif
 
 #twi
 ifeq (twi, $(findstring twi,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/twi/twi.c
 endif
+
+#error 
+ifeq (error, $(findstring error,$(ALMONDLIBS)))
+SRC += $(BASE)/shared/error.c $(BASE)/shared/ftdi.c $(BASE)/shared/string_pool.c 
+endif
+
+
 
 ##################### END OF ALMOND LIBLIST ##############################
 
@@ -132,7 +136,6 @@ CDEFS = -DF_CPU=$(F_CPU)UL
 
 #For nuts only:
 CDEFS += -D$(TARGETTYPE)
-
 # Place -D or -U options here for ASM sources
 ADEFS = -DF_CPU=$(F_CPU)
 
@@ -287,7 +290,7 @@ AVRDUDE_PROGRAMMER = stk500
 AVRDUDE_PORT = usb
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
-#AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
+AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
 
 
 # Uncomment the following if you want avrdude's erase cycle counter.
@@ -434,14 +437,14 @@ end:
 
 # Display size of file.
 HEXSIZE = $(SIZE) --target=$(FORMAT) $(TARGET).hex
-ELFSIZE = $(SIZE) $(TARGET).elf
+ELFSIZE = $(SIZE) -A $(TARGET).elf
 
 sizebefore:
 	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_BEFORE); $(ELFSIZE); \
 	2>/dev/null; echo; fi
 
 sizeafter:
-	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE); \
+	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE);  echo; echo "---------"; echo; $(BASE)/make/checksize $(TARGET).elf \
 	2>/dev/null; echo; fi
 
 
@@ -623,6 +626,5 @@ $(shell mkdir $(OBJDIR) 2>/dev/null)
 .PHONY : all begin finish end sizebefore sizeafter gccversion \
 build elf hex eep lss sym coff extcoff \
 clean clean_list program debug gdb-config
-
 
 
