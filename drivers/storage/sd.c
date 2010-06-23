@@ -21,7 +21,7 @@ void sd_init() {
 		sd_send_command(ACMD41, NULL); 
 		sd_get_response(R1);
 		} while (!(sd_response_buffer[0] == 0x00));
-		return;
+		break;
 		
 	} else { // Version 2
 		do {
@@ -35,7 +35,7 @@ void sd_init() {
 		// Gets the OCR [Operating Conditions Register] (including Card Capacity)
 		sd_send_command(CMD58, NULL); 
 		sd_get_response(R1);
-		return;
+		break;
 	}
 	// Set block size to 32 bytes
 	sd_send_command(CMD16, NULL); 
@@ -61,6 +61,12 @@ boolean sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 		for (int i = 0; i < 4; i++) sd_buffer[i+1] = arguments[i];
 		sd_buffer[5] = 0x01; 
 		break;
+		case: CMD24
+		// Writes a single block at the address passed
+		sd_buffer[0] = 0x58;
+		for (int i = 0; i < 4; i++) sd_buffer[i+1] = arguments[i];
+		sd_buffer[5] = 0x01;
+		break;
 		case: CMD55
 		// Static CMD55. Informs the card the next command will be an 'A'-Command (Application Specific)
 		sd_buffer = 0x770000000001; 
@@ -85,7 +91,7 @@ void sd_read_block(uint8_t *addr, uint8_t *read_buffer) {
 		if (sd_response_buffer[0] == 0x00) {
 			for (int i = 0; i < 35; i++) {
 				spi_receive_byte(sd_token_buffer[i]);
-				if ((i == 0) && (sd_token_buffer[i] != 0xFE)) {
+				if ((i == 0) && (sd_token_buffer[i] != 0xFE)) { // If the first token is not a valid token bail out.
 					return;
 				}
 			}
@@ -98,7 +104,21 @@ void sd_read_block(uint8_t *addr, uint8_t *read_buffer) {
 
 
 void sd_write_block(uint8_t *addr, uint8_t *write_buffer) {
-	
+	if (sd_send_command(CMD24, addr)) {
+		sd_get_response(R1);
+		if (sd_response_buffer[0] == 0x00) {
+			uint8_t start_token = 0xFE;
+			spi_send_byte(&start_token);
+			for (int i = 0; i < 32; i++) {
+				spi_send_byte(write_buffer[i]);
+			}
+			uint8_t[2] crc = 0xFFFF;
+			spi_send_byte(crc[0]);
+			spi_send_byte(crc[1]);
+		}
+		spi_receive_byte(sd_token_buffer[0]); // Receive data response token. TODO: Check status bits
+		// Busy tokens?
+			
 }
 
 
