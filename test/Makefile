@@ -5,6 +5,6 @@ BASE = ..
 ALMONDLIBS = bluetooth
 SRC = ../shared/error.c
 EXTRAINCDIRS =
-TARGETTYPE = 
+TARGETTYPE = NUT
 include ../make/base.makefile 
 
