@@ -255,7 +255,7 @@ int main(void)
 
 
 	bluetooth_init(bluetooth_callback_handler);
-	debug_pgm(str_bt_init);
+	debug_pgm(PSTR("BTM: Initialized"));
 
 	sei();
 
@@ -271,7 +271,7 @@ int main(void)
 	if (ret == 0)
 	{
 
-		error_pgm(str_bt_test_error);
+		error_pgm(PSTR("BTM: Test Conn=ERROR"));
 		PORTD |= (1<<7);
 
 		FTDISend(13);
@@ -279,7 +279,7 @@ int main(void)
 	}
 	else
 	{
-		debug_pgm(str_bt_test_ok);
+		debug_pgm(PSTR("BTM: Test Conn=OK"));
 		FTDISend(10);
 		PORTC |= (1<<0);
 		master_test();

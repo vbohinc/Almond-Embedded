@@ -83,7 +83,7 @@ endif
 
 #error 
 ifeq (error, $(findstring error,$(ALMONDLIBS)))
-SRC += $(BASE)/shared/error.c $(BASE)/shared/ftdi.c $(BASE)/shared/string_pool.c 
+SRC += $(BASE)/shared/error.c $(BASE)/shared/ftdi.c 
 endif
 
 

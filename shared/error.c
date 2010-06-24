@@ -6,7 +6,6 @@
 #include "ftdi.h"
 
 #include <avr/pgmspace.h>
-#include "string_pool.h"
 
 inline void _send_msg(const char *msg)
 {
@@ -82,7 +81,7 @@ void send_pgm(const prog_char *msg)
 
 void assert_pgm(bool condition, const prog_char *msg) {
 	if (condition) {
-		send_pgm(str_error_assert);
+		send_pgm(PSTR("ASS:"));
 		send_pgm(msg);
 		FTDISend('\n');
 	}
@@ -90,28 +89,28 @@ void assert_pgm(bool condition, const prog_char *msg) {
 
 void info_pgm(const prog_char *msg)
 {
-	send_pgm(str_error_info);
+	send_pgm(PSTR("INF:"));
 	send_pgm(msg);
 	FTDISend('\n');
 }
 
 void warn_pgm(const prog_char *msg)
 {
-	send_pgm(str_error_warn);
+	send_pgm(PSTR("WARN:"));
 	send_pgm(msg);
 	FTDISend('\n');
 }
 
 void error_pgm(const prog_char *msg)
 {
-	send_pgm(str_error_error);
+	send_pgm(PSTR("ERR:"));
 	send_pgm(msg);
 	FTDISend('\n');
 }
 
 void debug_pgm(const prog_char *msg)
 {
-	send_pgm(str_error_debug);
+	send_pgm(PSTR("DBG:"));
 	send_pgm(msg);
 	FTDISend('\n');
 }
