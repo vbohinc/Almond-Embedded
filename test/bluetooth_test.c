@@ -84,8 +84,7 @@ void master_test(void)
 
 		if (bluetooth_set_as_master() == 0)
 		{
-			FTDISend('E');
-			FTDISend('1');
+			error_pgm(PSTR("BTM:Couldn't set as master\n"));
 			//printf("Couldn't set as master\n");
 			return;
 		}
@@ -173,15 +172,20 @@ void master_test(void)
 
 void slave_test(void)
 {
-	if (bluetooth_set_as_slave() == 0)
+	if (bluetooth_cmd_discoverable(1) == 0)
 	{
-		FTDISend('E');
-		FTDISend('1');
-		//printf("Couldn't set as slave\n");
+		error_pgm(PSTR("BTM:Couldn't set discoverable\n"));
 		return;
 	}
 
-	//printf("Waiting for connection ...\n");
+
+	if (bluetooth_set_as_slave() == 0)
+	{
+		error_pgm(PSTR("BTM:Couldn't set as slave\n"));
+		return;
+	}
+
+	debug_pgm(PSTR("Waiting for connection ...\n"));
 
 
 	while (!connected)
@@ -282,8 +286,8 @@ int main(void)
 		debug_pgm(PSTR("BTM: Test Conn=OK"));
 		FTDISend(10);
 		PORTC |= (1<<0);
-		master_test();
-		//slave_test();
+		//master_test();
+		slave_test();
 	}
 }
 

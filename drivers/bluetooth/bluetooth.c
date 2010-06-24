@@ -443,8 +443,12 @@ void bluetooth_process_data(void)
 		{
 			//Data in FIFO is response to a sent command
 			int16_t byte = fifo_get_nowait(&bluetooth_infifo);
-			//FTDISend(byte);
+			FTDISend(byte);
 
+			/*if (byte == 13)
+				debug_pgm(PSTR("<CR>"));
+			else if (byte == 10)
+				debug_pgm(PSTR("<LF>"));*/
 		/*	if (byte == 13)
 				debug("BTM:fifo_get:'<CR>' [13]");
 			else if (byte == 10)
@@ -459,6 +463,7 @@ void bluetooth_process_data(void)
 			}*/
 			if (byte == 10)
 			{
+				//FTDISend('%');
 				bluetooth_input_to_array();
 				while (bluetooth_infifo.count>0)
 				{
@@ -886,8 +891,10 @@ uint8_t bluetooth_set_as_slave(void)
 	if (bluetooth_cmd_set_remote_address(NULL)==0)
 		return 0;
 
+	FTDISend('X');
 	if (bluetooth_cmd_autoconnect(1)==0)
 		return 0;
+	FTDISend('Y');
 	if (bluetooth_cmd_set_mode(1)==0)
 		return 0;
 	else
@@ -1016,7 +1023,7 @@ uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms)
 		bluetooth_delay(delay_ms);
 	}
 
-	bluetooth_delay(500);
+	//bluetooth_delay(500);
 
 	return 1;
 }

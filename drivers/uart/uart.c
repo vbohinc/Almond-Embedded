@@ -325,7 +325,7 @@ Purpose:  called when the UART is ready to transmit the next byte
         /* get one byte from buffer and write it to UART */
         UART0_DATA = UART_TxBuf[tmptail];  /* start transmission */
 
-    	//FTDISend(UART_TxBuf[tmptail]);
+    	FTDISend(UART_TxBuf[tmptail]);
     }else{
         /* tx buffer empty, disable UDRE interrupt */
         UART0_CONTROL &= ~_BV(UART0_UDRIE);

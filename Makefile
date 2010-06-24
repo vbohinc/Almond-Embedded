@@ -13,3 +13,8 @@ all:
 clean:
 	$(foreach dirs,$(subdirs),$(MAKE) -C $(dirs) clean;)
 
+.PHONY: program
+program:
+	$(foreach dirs,$(subdirs),$(MAKE) -C $(dirs) program;)
+
+
