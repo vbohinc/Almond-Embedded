@@ -172,6 +172,9 @@ void master_test(void)
 
 void slave_test(void)
 {
+
+
+
 	if (bluetooth_cmd_discoverable(1) == 0)
 	{
 		error_pgm(PSTR("BTM:Couldn't set discoverable\n"));
@@ -270,6 +273,18 @@ int main(void)
 	PORTC &= ~(1<<0);
 	_delay_ms(500);
 
+
+/*	uint8_t buf[10];
+	buf[0] = 'A';
+	buf[1] = 'T';
+	buf[2] = 'L';
+	buf[3]='2';
+	buf[4] = 13; //<CR>
+	buf[5] = 0;
+	bluetooth_cmd_send(buf,BLUETOOTH_CMD_WAIT_TIME);*/
+
+
+
 	int ret = bluetooth_test_connection(4);
 
 	if (ret == 0)
@@ -286,8 +301,8 @@ int main(void)
 		debug_pgm(PSTR("BTM: Test Conn=OK"));
 		FTDISend(10);
 		PORTC |= (1<<0);
-		//master_test();
-		slave_test();
+		master_test();
+		//slave_test();
 	}
 }
 
