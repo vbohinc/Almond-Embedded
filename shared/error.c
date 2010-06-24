@@ -21,7 +21,7 @@ void assert (bool condition, const char *msg) {
 #ifdef SERIAL
     exit(1);
 #else
-    _send_msg("ASS:");
+    send_pgm(PSTR("ASS:"));
     _send_msg(msg);
 #endif
   }
@@ -32,7 +32,7 @@ void info (const char *msg)
 #ifdef SERIAL
 	printf("[INFO]: %s\n", msg);
 #else
-    _send_msg("INF:");
+    send_pgm(PSTR("INF:"));
     _send_msg(msg);
 #endif
 }
@@ -42,7 +42,7 @@ void warn (const char *msg)
 #ifdef SERIAL
 	printf("[WARN]: %s\n", msg);
 #else
-    _send_msg("WARN:");
+    send_pgm(PSTR("WARN:"));
     _send_msg(msg);
 #endif
 }
@@ -52,7 +52,7 @@ void error (const char *msg)
 #ifdef SERIAL
 	printf("[ERROR]: %s\n", msg);
 #else
-    _send_msg("ERR:");
+    send_pgm(PSTR("ERR:"));
     _send_msg(msg);
 #endif
 }
@@ -62,7 +62,7 @@ void debug (const char *msg)
 #ifdef SERIAL
 	printf("[DEBUG]: %s\n", msg);
 #else
-    _send_msg("DBG:");
+    send_pgm(PSTR("DBG:"));
     _send_msg(msg);
 #endif
 }
