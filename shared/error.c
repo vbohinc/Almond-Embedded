@@ -5,24 +5,25 @@
 #include <stdbool.h>
 #include "ftdi.h"
 
-#include <avr/progmem.h>
+#include <avr/pgmspace.h>
 #include "string_pool.h"
 
-char error_builder[255];
- 
+inline void _send_msg(const char *msg)
+{
+  for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
+  {
+    FTDISend(msg[i]);
+  }
+  FTDISend('\n');
+}
+
 void assert (bool condition, const char *msg) {
   if (condition) {
 #ifdef SERIAL
     exit(1);
 #else
-    FTDISend('A');
-    FTDISend('S');
-    FTDISend('S');
-    FTDISend(':');
-    uint8_t i = 0;
-    while (msg[i]!=0 && i<255)
-        FTDISend(msg[i]);
-    FTDISend('\n');
+    _send_msg("ASS:");
+    _send_msg(msg);
 #endif
   }
 }
@@ -32,15 +33,9 @@ void info (const char *msg)
 #ifdef SERIAL
 	printf("[INFO]: %s\n", msg);
 #else
-    FTDISend('I');
-    FTDISend('N');
-    FTDISend('F');
-    FTDISend(':');
-    for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
-        FTDISend(msg[i]);
-    FTDISend('\n');
+    _send_msg("INF:");
+    _send_msg(msg);
 #endif
-	return;
 }
 
 void warn (const char *msg)
@@ -48,15 +43,9 @@ void warn (const char *msg)
 #ifdef SERIAL
 	printf("[WARN]: %s\n", msg);
 #else
-    FTDISend('W');
-    FTDISend('R');
-    FTDISend('N');
-    FTDISend(':');
-    for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
-        FTDISend(msg[i]);
-    FTDISend('\n');
+    _send_msg("WARN:");
+    _send_msg(msg);
 #endif
-	return;
 }
 
 void error (const char *msg)
@@ -64,15 +53,9 @@ void error (const char *msg)
 #ifdef SERIAL
 	printf("[ERROR]: %s\n", msg);
 #else
-    FTDISend('E');
-    FTDISend('R');
-    FTDISend('R');
-    FTDISend(':');
-    for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
-        FTDISend(msg[i]);
-    FTDISend('\n');
+    _send_msg("ERR:");
+    _send_msg(msg);
 #endif
-	return;
 }
 
 void debug (const char *msg)
@@ -80,63 +63,56 @@ void debug (const char *msg)
 #ifdef SERIAL
 	printf("[DEBUG]: %s\n", msg);
 #else
-    FTDISend('D');
-    FTDISend('B');
-    FTDISend('G');
-    FTDISend(':');
-    for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
-        FTDISend(msg[i]);
-    FTDISend('\n');
+    _send_msg("DBG:");
+    _send_msg(msg);
 #endif
-	return;
 }
 
-void send_eeprom(const uint8_t *msg)
+void send_pgm(const prog_char *msg)
 {
-	uint8_t  myByte = 1;
-
-        //TODO use strcpy_P 
-	for (uint8_t i=0; myByte != '\0'; i++)
+	uint8_t  myByte;
+        myByte = pgm_read_byte(msg);
+	for(int i = 1; myByte != '\0'; i++)
 	{
-		 myByte = eeprom_read_byte(msg+i);
-		 if (myByte != '\0')
-			 FTDISend(myByte);
+		 FTDISend(myByte);
+                 myByte = pgm_read_byte(msg+i);
 	}
 }
 
 
-void assert_eeprom(bool condition, const uint8_t *msg) {
+void assert_pgm(bool condition, const prog_char *msg) {
 	if (condition) {
-		send_eeprom(str_error_assert);
-		send_eeprom(msg);
+		send_pgm(str_error_assert);
+		send_pgm(msg);
 		FTDISend('\n');
 	}
 }
 
-void info_eeprom(const uint8_t *msg)
+void info_pgm(const prog_char *msg)
 {
-	send_eeprom(str_error_info);
-	send_eeprom(msg);
+	send_pgm(str_error_info);
+	send_pgm(msg);
 	FTDISend('\n');
 }
 
-void warn_eeprom(const uint8_t *msg)
+void warn_pgm(const prog_char *msg)
 {
-	send_eeprom(str_error_warn);
-	send_eeprom(msg);
+	send_pgm(str_error_warn);
+	send_pgm(msg);
 	FTDISend('\n');
 }
 
-void error_eeprom(const uint8_t *msg)
+void error_pgm(const prog_char *msg)
 {
-	send_eeprom(str_error_error);
-	send_eeprom(msg);
+	send_pgm(str_error_error);
+	send_pgm(msg);
 	FTDISend('\n');
 }
 
-void debug_eeprom(const uint8_t *msg)
+void debug_pgm(const prog_char *msg)
 {
-	send_eeprom(str_error_debug);
-	send_eeprom(msg);
+	send_pgm(str_error_debug);
+	send_pgm(msg);
 	FTDISend('\n');
 }
+

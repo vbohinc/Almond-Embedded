@@ -395,7 +395,7 @@ int inline bluetooth_putc(const uint8_t byte)
  */
 void bluetooth_resent_package(void)
 {
-	debug_eeprom(str_bt_resent_pkg);
+	debug_pgm(str_bt_resent_pkg);
 	for (uint8_t i=0; i<bluetooth_sent_length; i++)
 	{
 		if (bluetooth_putc(bluetooth_data_package[i])==0)
@@ -415,7 +415,7 @@ void bluetooth_input_to_array(void)
 		if ( c & UART_FRAME_ERROR )
 		{
 			/* Framing Error detected, i.e no stop bit detected */
-			warn_eeprom(str_uart_frame_error);
+			warn_pgm(str_uart_frame_error);
 		}
 		if ( c & UART_OVERRUN_ERROR )
 		{
@@ -424,7 +424,7 @@ void bluetooth_input_to_array(void)
 			 * not read by the interrupt handler before the next character arrived,
 			 * one or more received characters have been dropped
 			 */
-			warn_eeprom(str_uart_overrun_error);
+			warn_pgm(str_uart_overrun_error);
 		}
 		if ( c & UART_BUFFER_OVERFLOW )
 		{
@@ -432,7 +432,7 @@ void bluetooth_input_to_array(void)
 			 * We are not reading the receive buffer fast enough,
 			 * one or more received character have been dropped
 			 */
-			warn_eeprom(str_uart_buffer_overflow);
+			warn_pgm(str_uart_buffer_overflow);
 		}
 		else if (c!=UART_NO_DATA)
 		{
@@ -520,7 +520,7 @@ void bluetooth_process_data(void)
 
 							bluetooth_data_package_index=0;
 
-							debug_eeprom(str_bt_timeout_stop);
+							debug_pgm(str_bt_timeout_stop);
 
 							//reorder package
 							bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
@@ -585,7 +585,7 @@ void bluetooth_process_data(void)
 						}
 						else if (byte == BLUETOOTH_RESENT_BYTE  && bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE)
 						{
-							debug_eeprom(str_bt_req_resent);
+							debug_pgm(str_bt_req_resent);
 							bluetooth_ms_to_timeout = -1; //disable timeout
 							bluetooth_previous_byte = -1;
 
@@ -640,7 +640,7 @@ void bluetooth_process_data(void)
 								break;
 							}
 						} else {
-							debug_eeprom(str_bt_pck_full);
+							debug_pgm(str_bt_pck_full);
 							//flush fifo
 							while (bluetooth_infifo.count>0)
 								fifo_get_nowait(&bluetooth_infifo);
@@ -689,7 +689,7 @@ uint8_t bluetooth_handle_array(void)
 #ifdef ENABLE_CRC
 	if (bluetooth_data_package_index<9)
 	{
-		debug_eeprom(str_bt_pck_small);
+		debug_pgm(str_bt_pck_small);
 		bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
 		bluetooth_putc(BLUETOOTH_RESENT_BYTE);
 		return -1;
@@ -710,7 +710,7 @@ uint8_t bluetooth_handle_array(void)
 		if ((checksum&0xF) != bluetooth_data_package[bluetooth_data_package_index-1-i])
 		{
 
-			debug_eeprom(str_bt_crc_error);
+			debug_pgm(str_bt_crc_error);
 
 			//Reorder package
 			bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
