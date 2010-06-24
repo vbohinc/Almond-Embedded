@@ -1,8 +1,8 @@
 # this will build all nuts
 # author Linus Lotz
 
-#subdirs += squirrel
-#subdirs += nuts
+subdirs += squirrel
+subdirs += nuts
 subdirs += test
 
 .PHONY: all
