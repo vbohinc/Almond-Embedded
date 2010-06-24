@@ -16,6 +16,17 @@ inline void _send_msg(const char *msg)
   FTDISend('\n');
 }
 
+void send_pgm(const prog_char *msg)
+{
+	uint8_t  myByte;
+        myByte = pgm_read_byte(msg);
+	for(int i = 1; myByte != '\0'; i++)
+	{
+		 FTDISend(myByte);
+                 myByte = pgm_read_byte(msg+i);
+	}
+}
+
 void assert (bool condition, const char *msg) {
   if (condition) {
 #ifdef SERIAL
@@ -66,18 +77,6 @@ void debug (const char *msg)
     _send_msg(msg);
 #endif
 }
-
-void send_pgm(const prog_char *msg)
-{
-	uint8_t  myByte;
-        myByte = pgm_read_byte(msg);
-	for(int i = 1; myByte != '\0'; i++)
-	{
-		 FTDISend(myByte);
-                 myByte = pgm_read_byte(msg+i);
-	}
-}
-
 
 void assert_pgm(bool condition, const prog_char *msg) {
 	if (condition) {

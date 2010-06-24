@@ -202,7 +202,7 @@ void bluetooth_process_response(void)
 	//received response is empty
 	if (bluetooth_cmd_buffer_head == 0)
 		return;
-	if (strncmp_P(bluetooth_cmd_buffer, PSTR("OK"), 2)==0)
+	if (strncmp_P((char*)bluetooth_cmd_buffer, PSTR("OK"), 2)==0)
 	{
 		//Special handling for ATF, because OK is only, when Inquiry-End message received
 		if (bluetooth_cmd_sent[0]!='F')
@@ -210,12 +210,12 @@ void bluetooth_process_response(void)
 		return;
 	}
 	bluetooth_data_package[0]=0; //Empty return array
-	if (strncmp_P(bluetooth_cmd_buffer, PSTR("ERROR"), 5)==0)
+	if (strncmp_P((char*)bluetooth_cmd_buffer, PSTR("ERROR"), 5)==0)
 	{
 		bluetooth_response_code = 4;
 		return;
 	}
-	if (strncmp_P(bluetooth_cmd_buffer, PSTR("CONNECT"), 7)==0)
+	if (strncmp_P((char*)bluetooth_cmd_buffer, PSTR("CONNECT"), 7)==0)
 	{
 		bluetooth_address_to_array(bluetooth_cmd_buffer, bluetooth_data_package, 10, 0, 1);
 		bluetooth_is_connected = 1;
@@ -224,7 +224,7 @@ void bluetooth_process_response(void)
 		bluetooth_callback(bluetooth_data_package, 1, 6);
 		return;
 	}
-	if (strncmp_P(bluetooth_cmd_buffer, PSTR("DISCONNECT"), 10)==0)
+	if (strncmp_P((char*)bluetooth_cmd_buffer, PSTR("DISCONNECT"), 10)==0)
 	{
 		bluetooth_address_to_array(bluetooth_cmd_buffer,bluetooth_data_package, 13, 0, 1);
 		bluetooth_is_connected =  0;
@@ -255,13 +255,13 @@ void bluetooth_process_response(void)
 		strcpy((char*)bluetooth_data_package,(char*)bluetooth_cmd_buffer); //copy received value into return array
 		break;
 	case 'F':
-		if (strncmp_P(bluetooth_cmd_buffer, PSTR("Inquiry End"), 11)==0)
+		if (strncmp_P((char*)bluetooth_cmd_buffer, PSTR("Inquiry End"), 11)==0)
 		{
 			bluetooth_data_package[0] =  bluetooth_cmd_buffer[13]-48; //Get char of count found devices and convert to number
 			bluetooth_response_code = 1;
 			return;
 		}
-		if (strncmp_P(bluetooth_cmd_buffer, PSTR("Inquiry Results"), 15)==0)
+		if (strncmp_P((char*)bluetooth_cmd_buffer, PSTR("Inquiry Results"), 15)==0)
 		{
 			return;
 		}

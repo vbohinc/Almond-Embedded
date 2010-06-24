@@ -15,8 +15,6 @@ void warn(const char *msg);
 void error(const char *msg);
 void debug(const char *msg);
 
-void send_progmem(uint8_t *msg);
-
 void assert_pgm (bool condition, const prog_char *msg);
 void info_pgm (const prog_char *msg);
 void warn_pgm(const prog_char *msg);
