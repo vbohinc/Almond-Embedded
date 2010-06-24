@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "ftdi.h"
 
-#include <avr/eeprom.h>
+#include <avr/progmem.h>
 #include "string_pool.h"
 
 char error_builder[255];
@@ -95,6 +95,7 @@ void send_eeprom(const uint8_t *msg)
 {
 	uint8_t  myByte = 1;
 
+        //TODO use strcpy_P 
 	for (uint8_t i=0; myByte != '\0'; i++)
 	{
 		 myByte = eeprom_read_byte(msg+i);
