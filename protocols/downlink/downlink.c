@@ -5,11 +5,7 @@
  */
 
 #include "downlink.h"
-//#include "../../drivers/bluetooth/bluetooth.h"
-
-
-const uint8_t DOWNLINK_TIMEOUT_MS = 100;
-const uint8_t DOWNLINK_PACKAGE_LENGTH = 4;
+#include "../../drivers/bluetooth/bluetooth.h"
 
 #ifdef SQUIRREL
 
