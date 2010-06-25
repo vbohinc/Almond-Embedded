@@ -35,10 +35,6 @@ uint8_t bluetooth_inbuffer[BLUETOOTH_RECEIVE_BUFFER_SIZE];
  */
 uint8_t bluetooth_is_connected = 0;
 
-
-
-uint8_t put_count = 0;
-
 /**
  * Array to put data package to send into.
  * Also Callback is called with this array to return a received package.
@@ -747,7 +743,6 @@ uint8_t bluetooth_handle_array(void)
 
 uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_t wait_for_response_package, const uint16_t timeout_ms)
 {
-	put_count = 0;
 	bluetooth_cmd_buffer[0]=0;
 	uint8_t error = 0;
 
@@ -765,7 +760,6 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 		error = (error || (bluetooth_putc(data[i])==0));
 		bluetooth_data_package[bluetooth_data_package_index] = data[i];
 		bluetooth_data_package_index++;
-		put_count++;
 	}
 
 #ifdef ENABLE_CRC
@@ -803,9 +797,7 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 	}
 
 	bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
-	put_count++;
 	bluetooth_putc(BLUETOOTH_STOP_BYTE);
-	put_count++;
 
 
 	bluetooth_data_package[bluetooth_data_package_index] = BLUETOOTH_SPECIAL_BYTE;
