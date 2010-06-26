@@ -58,9 +58,9 @@ uint8_t put_count = 0;
  * On Nut the maximum size is approx. the DISCONNECT response
  */
 #ifdef SQUIRREL
-uint8_t bluetooth_data_package[177];
+char bluetooth_data_package[177];
 #else
-uint8_t bluetooth_data_package[35];
+char bluetooth_data_package[35];
 #endif
 
 /**
@@ -90,7 +90,7 @@ char bluetooth_cmd_buffer[BLUETOOTH_CMD_BUFFER_SIZE];
  * Contains 3rd and 4th byte of the send command. Ex. for ATF? contains 'F?'.
  * Used to check if received data in online mode is a response of the module to a sent command.
  */
-uint8_t bluetooth_cmd_sent[2];
+char bluetooth_cmd_sent[2];
 
 /**
  * Current index to write received byte.
@@ -160,7 +160,7 @@ uint8_t bluetooth_ok_received = 0;
 #endif
 
 
-void bluetooth_init(void (*bluetooth_callback_handler)(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length))
+void bluetooth_init(void (*bluetooth_callback_handler)(char *data_package, const uint8_t callback_type, const uint8_t data_length))
 {
 	bluetooth_callback = bluetooth_callback_handler;
 	fifo_init (&bluetooth_infifo,   bluetooth_inbuffer, BLUETOOTH_RECEIVE_BUFFER_SIZE);
@@ -867,7 +867,7 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 
 uint8_t bluetooth_set_as_master(void)
 {
-	uint8_t* currentMode = bluetooth_cmd_get_mode();
+	char* currentMode = bluetooth_cmd_get_mode();
 	if (currentMode == NULL)
 		return 0;
 	if (currentMode[0] == '0') //already in master mode
@@ -883,7 +883,7 @@ uint8_t bluetooth_set_as_master(void)
 
 uint8_t bluetooth_set_as_slave(void)
 {
-	uint8_t* currentMode = bluetooth_cmd_get_mode();
+	char* currentMode = bluetooth_cmd_get_mode();
 	if (currentMode == NULL)
 		return 0;
 	if (currentMode[0] == '1') //already in slave mode
@@ -949,7 +949,7 @@ uint8_t hex_to_char(uint8_t hex)
 }
 
 
-void bluetooth_address_to_array(const uint8_t *full_address, uint8_t *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen)
+void bluetooth_address_to_array(const char *full_address, char *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen)
 {
 	uint8_t addr_buffer = 0;
 	uint8_t buf_idx = full_start_idx;
@@ -969,7 +969,7 @@ void bluetooth_address_to_array(const uint8_t *full_address, uint8_t *compressed
 	}
 }
 
-void bluetooth_array_to_address(const uint8_t *compressed_address, uint8_t *full_address, const uint8_t address_with_hyphen)
+void bluetooth_array_to_address(const char *compressed_address, char *full_address, const uint8_t address_with_hyphen)
 {
 
 	uint8_t addr_buffer = 0;
@@ -1067,7 +1067,7 @@ uint8_t bluetooth_cmd_test_connection (void)
 
 }
 
-uint8_t* bluetooth_cmd_get_address (void)
+char* bluetooth_cmd_get_address (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATB?\r"));
 
@@ -1080,7 +1080,7 @@ uint8_t* bluetooth_cmd_get_address (void)
 		return bluetooth_data_package;
 }
 
-uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address)
+uint8_t bluetooth_cmd_set_remote_address (const char* address)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATD0\r"));
 	if(address != NULL)
@@ -1106,7 +1106,7 @@ uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address)
 }
 
 #ifdef SQUIRREL
-uint8_t* bluetooth_cmd_search_devices (void)
+char* bluetooth_cmd_search_devices (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATF?\r"));
 
@@ -1140,13 +1140,14 @@ uint8_t bluetooth_cmd_discoverable (const uint8_t discoverable)
 	return (bluetooth_cmd_wait_response()==1); //OK
 }
 
-uint8_t bluetooth_cmd_set_name (const uint8_t *name)
+uint8_t bluetooth_cmd_set_name (const char *name)
 {
 	if (name == NULL)
 		return 0;
 
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATN=\r"));
-	strcpy(bluetooth_cmd_buffer+4,strcat_P(name,"\r"));
+	strcpy(bluetooth_cmd_buffer+4,name);
+        strcat_P(bluetooth_cmd_buffer,PSTR("\r"));
 
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
 			return 0;
@@ -1155,7 +1156,7 @@ uint8_t bluetooth_cmd_set_name (const uint8_t *name)
 
 }
 
-uint8_t* bluetooth_cmd_get_name (void)
+char* bluetooth_cmd_get_name (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATN?\r"));
 
@@ -1186,7 +1187,7 @@ uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect)
 		return 0;
 }
 
-uint8_t bluetooth_cmd_set_pin (const uint8_t *pin)
+uint8_t bluetooth_cmd_set_pin (const char *pin)
 {
 	if (pin == NULL)
 		return 0;
@@ -1194,7 +1195,8 @@ uint8_t bluetooth_cmd_set_pin (const uint8_t *pin)
         if(pin[0] != 0)
         {
             bluetooth_cmd_buffer[3] = '=';
-            strcpy(bluetooth_cmd_buffer+4,strcat_P(pin,PSTR("\r")));
+            strcpy(bluetooth_cmd_buffer+4,pin);
+            strcat_P(bluetooth_cmd_buffer,PSTR("\r"));
         }
 
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
@@ -1204,7 +1206,7 @@ uint8_t bluetooth_cmd_set_pin (const uint8_t *pin)
 
 }
 
-uint8_t* bluetooth_cmd_get_pin (void)
+char* bluetooth_cmd_get_pin (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATP?\r"));
 
@@ -1234,7 +1236,7 @@ uint8_t bluetooth_cmd_set_mode (uint8_t mode)
 
 }
 
-uint8_t* bluetooth_cmd_get_mode (void)
+char* bluetooth_cmd_get_mode (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATR?\r"));
 
