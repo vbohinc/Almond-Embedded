@@ -186,11 +186,9 @@ extern void bluetooth_address_to_array(const uint8_t *full_address, uint8_t *com
  * Converts the compressed address format into the string representation of a bluetooth address into.
  * @param compressed_address Array with 6 bytes which contain the compressed address where the address starts at index compressed_start_idx
  * @param full_address allocated array with min 12 bytes after full_start_idx  to store full address in the format xxxxxxxxxxxx
- * @param compressed_start_idx index where the compressed address starts in the commressed_address array. Use 0 if array contains only address
- * @param full_start_idx index where the full address should start in the full_address array. Use 0 if array should only contain address
  * @param address_with_hyphen 1 if address should be in the format xxxx-xx-xxxxxx or 0 if address should be without hypen xxxxxxxxxxxx
  */
-extern void bluetooth_array_to_address(const uint8_t *compressed_address, uint8_t *full_address, const uint8_t compressed_start_idx, const uint8_t full_start_idx, const uint8_t address_with_hyphen);
+extern void bluetooth_array_to_address(const uint8_t *compressed_address, uint8_t *full_address, const uint8_t address_with_hyphen);
 
 //---------------------------------------------------------
 //
@@ -204,7 +202,7 @@ extern void bluetooth_array_to_address(const uint8_t *compressed_address, uint8_
  * @param delay_ms milliseconds to wait between each byte
  * @return 1 on success, 0 on failure (timeout)
  */
-uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms);
+uint8_t bluetooth_cmd_send (const char* cmd, const uint16_t delay_ms);
 
 /**
  * Waits until the bluetooth device returns one of the following responses. For each response will be returned a number which is given in the brackets:
