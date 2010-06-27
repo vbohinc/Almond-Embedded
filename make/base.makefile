@@ -84,6 +84,20 @@ ifeq (twi, $(findstring twi,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/twi/twi.c
 endif
 
+#sd
+ifeq (storage, $(findstring storage,$(ALMONDLIBS)))
+ALMONDLIBS += spi
+SRC += $(BASE)/drivers/storage/sd.c $(BASE)/drivers/storage/fat16.c
+endif
+
+#spi
+ifeq (spi, $(findstring spi,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/spi/spi.c
+endif
+
+
+
+
 ##################### END OF ALMOND LIBLIST ##############################
 
 # List C source files here. (C dependencies are automatically generated.)
