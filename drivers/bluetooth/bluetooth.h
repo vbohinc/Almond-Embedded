@@ -94,7 +94,7 @@ extern uint8_t bluetooth_is_connected;
 * @li callback_type 0 for data package, 1 for connect, 2 for disconnect
 * @li data_length Length of the received data or the address
 */
-extern void bluetooth_init(void (*bluetooth_callback_handler)(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length));
+extern void bluetooth_init(void (*bluetooth_callback_handler)(char *data_package, const uint8_t callback_type, const uint8_t data_length));
 
 
 /**
@@ -118,7 +118,7 @@ extern void bluetooth_close(void);
  * @li callback_type 0 for data package, 1 for connect, 2 for disconnect
  * @li data_length Length of the received data or the address
  */
-void (*bluetooth_callback)(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length);
+void (*bluetooth_callback)(char *data_package, const uint8_t callback_type, const uint8_t data_length);
 
 /**
  * Writes the byte to the usart or the bluetooth serial connection
@@ -180,17 +180,15 @@ extern uint8_t bluetooth_test_connection(uint8_t tries);
  * @param compressed_start_idx index where the compressed address should start in the compressed_address array. Use 0 if array should only contain address
  * @param address_with_hyphen 1 if address is in the format xxxx-xx-xxxxxx or 0 if address is without hypen xxxxxxxxxxxx
  */
-extern void bluetooth_address_to_array(const uint8_t *full_address, uint8_t *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen);
+extern void bluetooth_address_to_array(const char *full_address, char *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen);
 
 /**
  * Converts the compressed address format into the string representation of a bluetooth address into.
  * @param compressed_address Array with 6 bytes which contain the compressed address where the address starts at index compressed_start_idx
  * @param full_address allocated array with min 12 bytes after full_start_idx  to store full address in the format xxxxxxxxxxxx
- * @param compressed_start_idx index where the compressed address starts in the commressed_address array. Use 0 if array contains only address
- * @param full_start_idx index where the full address should start in the full_address array. Use 0 if array should only contain address
  * @param address_with_hyphen 1 if address should be in the format xxxx-xx-xxxxxx or 0 if address should be without hypen xxxxxxxxxxxx
  */
-extern void bluetooth_array_to_address(const uint8_t *compressed_address, uint8_t *full_address, const uint8_t compressed_start_idx, const uint8_t full_start_idx, const uint8_t address_with_hyphen);
+extern void bluetooth_array_to_address(const char *compressed_address, char *full_address, const uint8_t address_with_hyphen);
 
 //---------------------------------------------------------
 //
@@ -204,7 +202,7 @@ extern void bluetooth_array_to_address(const uint8_t *compressed_address, uint8_
  * @param delay_ms milliseconds to wait between each byte
  * @return 1 on success, 0 on failure (timeout)
  */
-uint8_t bluetooth_cmd_send (const uint8_t* cmd, const uint16_t delay_ms);
+uint8_t bluetooth_cmd_send (const char* cmd, const uint16_t delay_ms);
 
 /**
  * Waits until the bluetooth device returns one of the following responses. For each response will be returned a number which is given in the brackets:
@@ -239,7 +237,7 @@ extern uint8_t bluetooth_cmd_test_connection (void);
  * Get the local device BD address.
  * @return Returns the local BluetoothDevice Address as a char array (in one byte are 2 char-values). Length is normally 6 byte (char)
  */
-extern uint8_t* bluetooth_cmd_get_address (void);
+extern char* bluetooth_cmd_get_address (void);
 
 /**
  * Command: ATD
@@ -253,7 +251,7 @@ extern uint8_t* bluetooth_cmd_get_address (void);
  * 				from xxxxxxxxxxxx to xx|xx|xx|xx|xx|xx.
  * @return Returns 1 on success otherwise 0.
  */
-extern uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address);
+extern uint8_t bluetooth_cmd_set_remote_address (const char* address);
 
 #ifdef SQUIRREL
 /**
@@ -265,7 +263,7 @@ extern uint8_t bluetooth_cmd_set_remote_address (const uint8_t* address);
  *
  * @see bluetooth_data_package
  */
-extern uint8_t* bluetooth_cmd_search_devices (void);
+extern char* bluetooth_cmd_search_devices (void);
 #endif
 
 /**
@@ -291,7 +289,7 @@ extern uint8_t bluetooth_cmd_discoverable (const uint8_t discoverable);
  * @param name New name of the device. Max length is 16.
  * @return Returns 1 on success otherwise 0.
  */
-extern uint8_t bluetooth_cmd_set_name (const uint8_t *name);
+extern uint8_t bluetooth_cmd_set_name (const char *name);
 
 /**
  * Command: ATN?
@@ -299,7 +297,7 @@ extern uint8_t bluetooth_cmd_set_name (const uint8_t *name);
  * Gets the friendly name of the device. Maximum 16 bytes long.
  * @return Returns array with name on success otherwise NULL.
  */
-extern uint8_t* bluetooth_cmd_get_name (void);
+extern char* bluetooth_cmd_get_name (void);
 
 
 /**
@@ -318,7 +316,7 @@ extern uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect);
  * @param pin New pin for the device or NULL to turn it off. Max length is 4.
  * @return Returns 1 on success otherwise 0.
  */
-extern uint8_t bluetooth_cmd_set_pin (const uint8_t *pin);
+extern uint8_t bluetooth_cmd_set_pin (const char *pin);
 
 /**
  * Command: ATP?
@@ -326,7 +324,7 @@ extern uint8_t bluetooth_cmd_set_pin (const uint8_t *pin);
  * Gets the connection pin of the device
  * @return Returns array with pin on success otherwise NULL.
  */
-extern uint8_t* bluetooth_cmd_get_pin (void);
+extern char* bluetooth_cmd_get_pin (void);
 
 /**
  * Command: ATR
@@ -342,7 +340,7 @@ extern uint8_t bluetooth_cmd_set_mode (uint8_t mode);
  * Get mode of the device: master(0) or slave(1).
  * @return Returns array with mode at index 0 or NULL if error.
  */
-extern uint8_t *bluetooth_cmd_get_mode (void);
+extern char *bluetooth_cmd_get_mode (void);
 
 /**
  * Command: ATZ

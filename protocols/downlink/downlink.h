@@ -62,7 +62,7 @@ extern uint16_t get_value(uint8_t id);
 extern void set_value(uint8_t id, uint16_t value);
 
 /* Callback handler */
-extern void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length);
+extern void downlink_bluetooth_callback_handler (char *data_package, const uint8_t callback_type, const uint8_t data_length);
 
 #endif
 
