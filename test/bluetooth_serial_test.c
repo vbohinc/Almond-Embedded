@@ -25,35 +25,38 @@ uint8_t int_to_send = 1;
 
 uint8_t pkg_received = 0;
 
+
+
+char buffer[255];
+uint8_t cmd[255];
+
 void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
 {
 	if (callback_type == 0) {//is data package
 		for (int i=0; i<data_length; i++)
 		{
-			if (data_package[i] > int_received+1)
+			/*if (data_package[i] > int_received+1)
 			{
 				printf("ERROR: Int: %d, ErrCnt: %d, SendCnt:%d, Rate:%f\n", int_received, error_count, send_count-data_length+i, (float)error_count/(float)send_count);
 				error_count++;
-			}
+			}*/
 			int_received = data_package[i];
 		}
 		pkg_received = 1;
 		//printf("]\n");
 	} else if (callback_type == 1) //connected
 	{
-		printf("Connected to: %s\n", data_package);
+		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+		printf("Connected to: %s\n", buffer);
 		connected = 1;
 	} else if (callback_type == 2) //disconnected
 	{
-		printf("Disconnected from: %s\n", data_package);
+		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+		printf("Disconnected from: %s\n", buffer);
 		connected = 0;
 	} else
 		printf("Invalid callback type: %d\n", callback_type);
 }
-
-
-char buffer[255];
-uint8_t cmd[255];
 
 
 void master_test()
@@ -159,17 +162,17 @@ void master_test()
 
 
 
-			int ret = bluetooth_send_data_package(cmd, &package_length, 1, 2000);
+			int ret = bluetooth_send_data_package(cmd, &package_length, 0, 2000);
 			if (ret != 0)
 			{
 				printf("Send package returned: %d\n", ret);
 				return;
 			}
 			sentPackages++;
-			sent_bytes+=(package_length*2);
+			sent_bytes+=(package_length);
 			//bluetooth_process_data();
 
-			if (sentPackages%10== 0)
+			//if (sentPackages%10== 0)
 			{
 
 				finish = time(NULL) - start;

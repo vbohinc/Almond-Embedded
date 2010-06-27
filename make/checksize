@@ -1,0 +1,54 @@
+#!/bin/sh
+# Name: checksize
+# Project: 
+# Author: Christian Starkjohann
+# Extended with eeprom: Stefan Profanter
+# Creation Date: 2004-12-29
+# Extension Date: 2010-06-18
+# Tabsize: 4
+# Copyright: (c) 2005 OBJECTIVE DEVELOPMENT Software GmbH.
+# Revision: $Id: checksize 83 2006-01-05 22:20:53Z cs $
+
+error=0
+
+#ATMEGA8535
+codelimit=8192  # default value
+datalimit=480 #96    # default value; leave 32 bytes for stack
+eepromlimit=512 #eeprom max size
+#ATXMEGA128A1
+#codelimit=131072  # default value
+#datalimit=8192 #96    # default value; leave 32 bytes for stack
+#eepromlimit=2048 #eeprom max size
+
+
+if [ $# -gt 2 ]; then
+	codelimit="$3"
+fi
+if [ $# -gt 3 ]; then
+	datalimit="$4"
+fi
+if [ $# -gt 4 ]; then
+	eepromlimit="$5"
+fi
+
+set -- `avr-size -A -d "$1" | awk -f $2`
+if [ $1 -gt $codelimit ]; then
+	echo "*** code size $1 exceeds limit of $codelimit"
+	error=1
+else
+	echo "ROM: $1 bytes (data=$3)"
+fi
+if [ $2 -gt $datalimit ]; then
+	echo "*** data size $2 exceeds limit of $datalimit"
+	error=1
+else
+	echo "RAM: $2 bytes"
+fi
+if [ $4 -gt $eepromlimit ]; then
+	echo "*** eeprom size $4 exceeds limit of $eepromlimit"
+	error=1
+else
+	echo "EEPROM: $4 bytes"
+fi
+
+exit $error

@@ -5,11 +5,7 @@
  */
 
 #include "downlink.h"
-//#include "../../drivers/bluetooth/bluetooth.h"
-
-
-const uint8_t DOWNLINK_TIMEOUT_MS = 100;
-const uint8_t DOWNLINK_PACKAGE_LENGTH = 4;
+#include "../../drivers/bluetooth/bluetooth.h"
 
 #ifdef SQUIRREL
 
@@ -134,7 +130,7 @@ static inline bool downlink_handle_set_package (downlink_package *p) {
 }
 
 /* FIXME: Change parameter list */
-void downlink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
+void downlink_bluetooth_callback_handler (char *data_package, const uint8_t callback_type, const uint8_t data_length)
 {
   bool return_package;
   downlink_package *p;
