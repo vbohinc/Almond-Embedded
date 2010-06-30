@@ -222,6 +222,7 @@ void sd_write_bytes(uint32_t addr, uint8_t *write_buffer, uint16_t size) {
 		block_addr += SD_BLOCK_SIZE;
 	}
 	debug_pgm(PSTR("SD: Write Succeeded"));
+	}
 }
 
 void sd_send_buffer() {
