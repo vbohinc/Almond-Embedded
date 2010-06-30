@@ -379,7 +379,7 @@ void bluetooth_resent_package(void)
 	}
 }
 
-void bluetooth_input_to_array(void)
+void bluetooth_input_to_array()
 {
 #ifndef SERIAL
 	//Read bytes from UART input buffer
@@ -439,7 +439,7 @@ void bluetooth_process_data(void)
 		{
 			//Data in FIFO is response to a sent command
 			int16_t byte = fifo_get_nowait(&bluetooth_infifo);
-			FTDISend(byte);
+			//FTDISend(byte);
 
 			/*if (byte == 13)
 				debug_pgm(PSTR("<CR>"));
@@ -460,11 +460,6 @@ void bluetooth_process_data(void)
 			if (byte == 10)
 			{
 				//FTDISend('%');
-				bluetooth_input_to_array();
-				while (bluetooth_infifo.count>0)
-				{
-					fifo_get_nowait(&bluetooth_infifo);
-				}
 				//handle received command
 				bluetooth_cmd_buffer[bluetooth_cmd_buffer_head]=0;
 				bluetooth_process_response();
@@ -479,6 +474,7 @@ void bluetooth_process_data(void)
 					bluetooth_response_code = 5; //No valid response
 				}
 			}
+			bluetooth_input_to_array();
 
 		} else {
 
@@ -488,6 +484,7 @@ void bluetooth_process_data(void)
 				bluetooth_input_to_array();
 				//Data in FIFO is a data package for the callback function
 				int16_t byte = fifo_get_nowait(&bluetooth_infifo);
+				//FTDISend(byte);
 
 				if (byte == -1)
 				{
@@ -883,10 +880,8 @@ uint8_t bluetooth_set_as_slave(void)
 	if (bluetooth_cmd_set_remote_address(NULL)==0)
 		return 0;
 
-	FTDISend('X');
 	if (bluetooth_cmd_autoconnect(1)==0)
 		return 0;
-	FTDISend('Y');
 	if (bluetooth_cmd_set_mode(1)==0)
 		return 0;
 	else
