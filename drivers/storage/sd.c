@@ -193,8 +193,12 @@ void sd_write_bytes(uint32_t addr, uint8_t *write_buffer, uint16_t size) {
 	uint32_t block_addr = addr - (addr % SD_BLOCK_SIZE);
 	uint8_t bytes_written = 0;
 	while (bytes_written < size) {
-	sd_read_bytes(block_addr, NULL, SD_BLOCK_SIZE); 
-	if (sd_send_command(CMD24, addr)) {
+	sd_read_bytes(block_addr, NULL, SD_BLOCK_SIZE);
+	addr_bytes[0] = block_addr;
+	addr_bytes[1] = block_addr>>8;
+	addr_bytes[2] = block_addr>>16;
+	addr_bytes[3] = block_addr>>24;
+	if (sd_send_command(CMD24, addr_bytes)) {
 		debug_pgm(PSTR("SD: CMD24 Succeeded"));
 		sd_get_response(R1);
 		if (sd_response_buffer[0] == 0x00) {
