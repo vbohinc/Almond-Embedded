@@ -25,6 +25,10 @@ sd.c - SD lives here
 */
 
 #include "sd.h"
+void sd_read_block(uint8_t *addr, uint8_t *read_buffer);
+void sd_write_block(uint8_t *addr, uint8_t *write_buffer);
+void sd_send_buffer(void);
+void sd_get_response(uint8_t response_type);
 
 void sd_init() {
 	spi_init();
@@ -66,7 +70,7 @@ void sd_init() {
 	//sd_get_response(R1);
 }
 
-boolean sd_send_command(uint8_t command_nr, uint8_t *arguments) {
+bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 	switch (command_nr) {
 		case CMD0:
 			// Static CMD0. As the card is still in SD mode a valid CRC is required
