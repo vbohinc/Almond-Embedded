@@ -30,6 +30,7 @@
 #define FAT16_ATTRIB_VOLUME 		(1 << 3)	// The file is empty and has the volume label as its name.
 #define FAT16_ATTRIB_DIR 			(1 << 4)	// The file is a directory.
 #define FAT16_ATTRIB_ARCHIVE 		(1 << 5)	// The file has to be archived.
+
 struct fat16_partition {
 	uint8_t type; // one of PARTITION_TYPE_*
 	uint32_t offset; // offset in bytes from beginning of the disk
@@ -47,7 +48,7 @@ struct fat16_header {
 };
 
 struct fat16_filesystem {
-	struct fat16_partition* partition;
+	struct fat16_partition partition;
 	struct fat16_header header;
 };
 
@@ -67,55 +68,36 @@ struct fat16_dir_entry {
 };
 
 struct fat16_file {
-	struct fat16_filesystem* fs;
 	struct fat16_dir_entry dir_entry;
 	uint32_t pos;
 };
 
 struct fat16_dir {
-	struct fat16_filesystem* fs;
 	struct fat16_dir_entry dir_entry;
 	uint16_t entry_next;
 };
 
-struct fat16_partition* partition_open(uint8_t index);
-uint8_t partition_close(struct fat16_partition* partition);
+uint8_t partition_open(uint8_t index);
+uint8_t fat16_read_header();
 
-struct fat16_filesystem *fat16_open(struct fat16_partition *partition);
-void fat16_close(struct fat16_filesystem *fs);
-uint8_t fat16_read_header(struct fat16_filesystem* fs);
-uint8_t fat16_read_root_dir_entry(const struct fat16_filesystem* fs,
-		uint16_t entry_num, struct fat16_dir_entry* dir_entry);
-uint8_t
-		fat16_dir_entry_seek_callback(uint8_t* buffer, uint32_t offset, void* p);
-uint8_t
-		fat16_dir_entry_read_callback(uint8_t* buffer, uint32_t offset, void* p);
-uint8_t fat16_interpret_dir_entry(struct fat16_dir_entry* dir_entry,
-		const uint8_t* raw_entry);
-uint8_t fat16_get_dir_entry_of_path(struct fat16_filesystem* fs,
-		const char* path, struct fat16_dir_entry* dir_entry);
-uint16_t fat16_get_next_cluster(const struct fat16_filesystem* fs,
-		uint16_t cluster_num);
-uint16_t fat16_append_cluster(const struct fat16_filesystem* fs,
-		uint16_t cluster_num);
-uint8_t fat16_free_cluster(struct fat16_filesystem* fs, uint16_t cluster_num);
-struct fat16_file* fat16_open_file(struct fat16_filesystem* fs,
-		const struct fat16_dir_entry* dir_entry);
-void fat16_close_file(struct fat16_file* fd);
-int16_t fat16_read_file(struct fat16_file* fd, uint8_t* buffer,
-		uint16_t buffer_len);
-int16_t fat16_write_file(struct fat16_file* fd, const uint8_t* buffer,
-		uint16_t buffer_len);
+uint8_t fat16_init();
+
+uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* dir_entry);
+uint8_t fat16_dir_entry_seek_callback(uint8_t* buffer, uint32_t offset, void* p);
+uint8_t fat16_dir_entry_read_callback(uint8_t* buffer, uint32_t offset, void* p);
+uint8_t fat16_interpret_dir_entry(struct fat16_dir_entry* dir_entry, const uint8_t* raw_entry);
+uint8_t fat16_get_dir_entry_of_path(const char* path, struct fat16_dir_entry* dir_entry);
+uint16_t fat16_get_next_cluster(uint16_t cluster_num);
+uint16_t fat16_append_cluster(uint16_t cluster_num);
+uint8_t fat16_free_cluster(uint16_t cluster_num);
+uint8_t fat16_open_file(struct fat16_file* file, const struct fat16_dir_entry* dir_entry);
+int16_t fat16_read_file(struct fat16_file* fd, uint8_t* buffer,  uint16_t buffer_len);
+int16_t fat16_write_file(struct fat16_file* fd, const uint8_t* buffer, uint16_t buffer_len);
 uint8_t fat16_seek_file(struct fat16_file* fd, int32_t* offset, uint8_t whence);
 uint8_t fat16_resize_file(struct fat16_file* fd, uint32_t size);
-struct fat16_dir* fat16_open_dir(struct fat16_filesystem* fs,
-		const struct fat16_dir_entry* dir_entry);
-void fat16_close_dir(struct fat16_dir* dd);
+uint8_t fat16_open_dir(struct fat16_dir* dir, const struct fat16_dir_entry* dir_entry);
 uint8_t fat16_read_dir(struct fat16_dir* dd, struct fat16_dir_entry* dir_entry);
 uint8_t fat16_reset_dir(struct fat16_dir* dd);
-uint8_t fat16_write_dir_entry(struct fat16_filesystem* fs,
-		const struct fat16_dir_entry* dir_entry);
-uint8_t fat16_create_file(struct fat16_dir* parent, const char* file,
-		struct fat16_dir_entry* dir_entry);
-uint8_t fat16_delete_file(struct fat16_filesystem* fs,
-		struct fat16_dir_entry* dir_entry);
+uint8_t fat16_write_dir_entry(const struct fat16_dir_entry* dir_entry);
+uint8_t fat16_create_file(struct fat16_dir* parent, const char* file, struct fat16_dir_entry* dir_entry);
+uint8_t fat16_delete_file(struct fat16_dir_entry* dir_entry);

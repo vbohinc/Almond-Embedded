@@ -86,6 +86,18 @@ ifeq (error, $(findstring error,$(ALMONDLIBS)))
 SRC += $(BASE)/shared/error.c $(BASE)/shared/ftdi.c 
 endif
 
+#sd
+ifeq (storage, $(findstring storage,$(ALMONDLIBS)))
+ALMONDLIBS += spi
+SRC += $(BASE)/drivers/storage/sd.c $(BASE)/drivers/storage/fat16.c
+endif
+
+#spi
+ifeq (spi, $(findstring spi,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/spi/spi.c
+endif
+
+
 
 
 ##################### END OF ALMOND LIBLIST ##############################
