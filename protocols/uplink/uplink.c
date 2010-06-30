@@ -22,7 +22,7 @@
     \  \::/       \  \:\       \__\/         \__\/      \  \:\        \  \:\    
      \__\/         \__\/                                 \__\/         \__\/    
      
-/**
+ *
  * uplink.c
  *
  * Uplink protocol implementation
