@@ -25,8 +25,8 @@ sd.c - SD lives here
 */
 
 #include "sd.h"
-void sd_read_block(uint8_t *addr, uint8_t *read_buffer);
-void sd_write_block(uint8_t *addr, uint8_t *write_buffer);
+//void sd_read_block(uint8_t *addr, uint8_t *read_buffer);
+//void sd_write_block(uint8_t *addr, uint8_t *write_buffer);
 void sd_send_buffer(void);
 void sd_get_response(uint8_t response_type);
 
@@ -149,32 +149,46 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 	return true;
 }
 
-void sd_read_block(uint8_t *addr, uint8_t *read_buffer) {
-	if(sd_send_command(CMD17, addr))
+void sd_read_block(uint32_t addr, uint8_t *read_buffer, uint16_t size) {
+	uint32_t block_addr = addr - (addr % SD_BLOCK_SIZE);
+	uint8_t bytes_read = 0;
+	while (bytes_read < size) {
+	uint8_t addr_bytes[4];
+	 
+	addr_bytes[0] = block_addr;
+	addr_bytes[1] = block_addr>>8;
+	addr_bytes[2] = block_addr>>16;
+	addr_bytes[3] = block_addr>>24;
+	if(sd_send_command(CMD17, addr_bytes))
 	{
 		debug_pgm(PSTR("SD: CMD17 Succeeded"));
 		sd_get_response(R1);
 		if (sd_response_buffer[0] == 0x00)
 		{
-			for (int i = 0; i < 515; i++)
+			for (int i = 0; i < 3+SD_BLOCK_SIZE; i++)
 			{
 				sd_token_buffer[i] = spi_receive_byte();
 				if ((i == 0) && (sd_token_buffer[i] != 0xFE))
 				{ // If the first token is not a valid token bail out.
 					return;
 				}
+				if (i-1+block_addr >= addr && bytes_read < size) 
+					{
+					read_buffer[bytes_read++] = sd_token_buffer[i];
+					}
 			}
 		}
+	} else { debug_pgm(PSTR("SD: Read Failed")); return;}
+	block_addr += SD_BLOCK_SIZE;
 	}
-
-	for (int i = 0; i < 32; i++) {
+	/*for (int i = 0; i < size; i++) {
 		read_buffer[i] = sd_token_buffer[i+2];
-	}
+	}*/
 	debug_pgm(PSTR("SD: Read Succeeded"));
 }
 
 
-void sd_write_block(uint8_t *addr, uint8_t *write_buffer) {
+void sd_write_block(uint32_t addr, uint8_t *write_buffer, uint16_t size) {
 	if (sd_send_command(CMD24, addr)) {
 		debug_pgm(PSTR("SD: CMD24 Succeeded"));
 		sd_get_response(R1);
