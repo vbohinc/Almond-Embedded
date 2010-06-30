@@ -229,19 +229,30 @@ void slave_test(void)
 
 //uint8_t arr[200] EEMEM = " asdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljf";
 
+#ifdef __AVR_ATxmega128A1__
+#define LED1_DDR PORTD.DIR
+#define LED1_PORT PORTD.OUT
+#define LED2_DDR PORTC.DIR
+#define LED2_PORT PORTC.OUT
+#else
+#define LED1_DDR DDRD
+#define LED1_PORT PORTD
+#define LED2_DDR DDRC
+#define LED2_PORT PORTC
+#endif
 
 int main(void)
 {
 	FTDIInit();
-	DDRD |= 0xFF;
+	LED1_DDR |= 0xFF;
 
-	DDRC |= 0xFF;
+	LED2_DDR |= 0xFF;
 
-	PORTD |= (1<<7);
-			PORTC |= (1<<0);
+	LED1_PORT |= (1<<7);
+	LED2_PORT |= (1<<0);
 			_delay_ms(500);
-			PORTD &= ~(1<<7);
-			PORTC &= ~(1<<0);
+			LED1_PORT &= ~(1<<7);
+			LED2_PORT &= ~(1<<0);
 			_delay_ms(500);
 
 
@@ -253,11 +264,11 @@ int main(void)
 			FTDISend(10);
 			FTDISend(13);
 
-	PORTD |= (1<<7);
-			PORTC |= (1<<0);
+			LED1_PORT |= (1<<7);
+			LED2_PORT |= (1<<0);
 			_delay_ms(500);
-			PORTD &= ~(1<<7);
-			PORTC &= ~(1<<0);
+			LED1_PORT &= ~(1<<7);
+			LED2_PORT &= ~(1<<0);
 			_delay_ms(500);
 
 
@@ -266,11 +277,11 @@ int main(void)
 
 	sei();
 
-	PORTD |= (1<<7);
-	PORTC |= (1<<0);
+	LED1_PORT |= (1<<7);
+	LED2_PORT |= (1<<0);
 	_delay_ms(500);
-	PORTD &= ~(1<<7);
-	PORTC &= ~(1<<0);
+	LED1_PORT &= ~(1<<7);
+	LED2_PORT &= ~(1<<0);
 	_delay_ms(500);
 
 
@@ -291,7 +302,7 @@ int main(void)
 	{
 
 		error_pgm(PSTR("BTM: Test Conn=ERROR"));
-		PORTD |= (1<<7);
+		LED1_PORT |= (1<<7);
 
 		FTDISend(13);
 		FTDISend(10);
@@ -300,7 +311,7 @@ int main(void)
 	{
 		debug_pgm(PSTR("BTM: Test Conn=OK"));
 		FTDISend(10);
-		PORTC |= (1<<0);
+		LED2_PORT |= (1<<0);
 		master_test();
 		//slave_test();
 	}

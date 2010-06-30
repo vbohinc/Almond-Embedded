@@ -76,6 +76,13 @@ ifeq (uart, $(findstring uart,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/uart/uart.c 
 endif
 
+#uart atxmega
+ifeq (uart, $(findstring uart,$(ALMONDLIBS)))
+	ifeq ($(MCU), atxmega128a1)
+		SRC += $(BASE)/drivers/uart/usart_driver.c 
+	endif
+endif
+
 #twi
 ifeq (twi, $(findstring twi,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/twi/twi.c
