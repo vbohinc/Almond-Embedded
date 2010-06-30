@@ -5,7 +5,8 @@
 //Special Char enum in display.h defined
 const uint8_t charray[][6] =
 {
-//0
+//TODO remove symbols which are not in use
+		//0
 		{ 0x0, 0x3e, 0x45, 0x49, 0x51, 0x3e },
 		//1
 		{ 0x0, 0x0, 0x10, 0x20, 0x7f, 0x0 },
@@ -122,7 +123,9 @@ const uint8_t charray[][6] =
 		//arrow down
 		{ 0x0, 0x4, 0x6, 0x7, 0x6, 0x4 },
 		//arrows bottom/top
-		{ 0x0, 0x14, 0x36, 0x77, 0x36, 0x14 }
+		{ 0x0, 0x14, 0x36, 0x77, 0x36, 0x14 },
+		//59: exclamation mark
+		{ 0x0, 0x0, 0x7b, 0x7b, 0x0, 0x0 }
 
 };
 
@@ -241,7 +244,7 @@ void display_clean_char(uint8_t line, uint8_t symbol, uint8_t inverse_modus)
 
 void display_clean_line(uint8_t line, uint8_t inverse_modus)
 {
-	uint8_t blank = (uint8_t)' ';
+	uint8_t blank = (uint8_t) ' ';
 	uint8_t i;
 	if (line <= DISPLAY_PAGE_NUMBER)
 	{
@@ -273,6 +276,8 @@ void display_write_char(uint8_t character, uint8_t inverse_modus)
 {
 	if (character != '\0')
 	{
+
+		//TODO remove unused symbols
 		if (character >= 'A' && character <= 'Z')
 		{
 			display_write_char_util(character - 55, inverse_modus); // A-Z
@@ -305,6 +310,10 @@ void display_write_char(uint8_t character, uint8_t inverse_modus)
 		{
 			display_write_char_util(character - 40, inverse_modus); //double dot
 		}
+		else if (character == '!')
+		{
+			display_write_char_util(59, inverse_modus); //exclamationmark
+		}
 		else
 		{
 			display_write_char_util(51, inverse_modus); //unknown
@@ -320,7 +329,6 @@ void display_write_title(const char *text, uint8_t status)
 	uint8_t *pointer_store = (uint8_t *) text;
 
 	uint8_t blank = (uint8_t) ' ';
-	uint8_t *error = (uint8_t *) "Error";
 
 	//counter and numbers
 	uint8_t i = 0;
@@ -333,7 +341,7 @@ void display_write_title(const char *text, uint8_t status)
 	display_set_page(DISPLAY_PAGE_INIT);
 
 	//Print left arrow if needed
-	if (status & DISPLAY_CHAR_ARROW_LEFT)
+	if (status & DISPLAY_TITLE_LEFT)
 	{
 		display_write_char_util(DISPLAY_CHAR_ARROW_LEFT, 1);
 	}
@@ -373,33 +381,12 @@ void display_write_title(const char *text, uint8_t status)
 	//error if title is too long
 	else
 	{
-		pointer_store = error;
-		c = 0;
-		while (*pointer_store != '\0')
-		{
-			c++;
-			pointer_store++;
-		}
-
-		blank_number = max_symbols - c - 2;
-		for (i = 0; i < blank_number / 2; i++)
-		{
-			display_write_char(blank, 1);
-		}
-		while (*error != '\0')
-		{
-			display_write_char(*error, 1);
-			error++;
-		}
-		for (i = 0; i < ((blank_number / 2) + (blank_number % 2)); i++)
-		{
-			display_write_char(blank, 1);
-		}
-
+		display_write_title("Error", DISPLAY_TITLE_NONE);
+		return;
 	}
 
 	//print right arrow if needed
-	if (status & DISPLAY_CHAR_ARROW_RIGHT)
+	if (status & DISPLAY_TITLE_RIGHT)
 	{
 		display_write_char_util(DISPLAY_CHAR_ARROW_RIGHT, 1);
 	}
@@ -428,14 +415,13 @@ void display_write_text(const char *text, uint8_t status)
 	//start to write
 	while (*pointer != '\0')
 	{
-		/*
-		 //Let the last space free for GUI Element
-		 if (row == DISPLAY_PAGE_NUMBER && col == max_row - 2
-		 && (check_bit(status,7) || check_bit(status,0)))
-		 {
-		 col = max_row - 1;
-		 }
-		 */
+		//Let the last space free for GUI Element
+		if (row == DISPLAY_PAGE_NUMBER && symbol == max_symbols - 2 && ((status
+				& DISPLAY_TEXT_TOP) || (status & DIPSLAY_TEXT_BOTTOM))
+				)
+		{
+			symbol = max_symbols - 1;
+		}
 
 		display_write_char(*pointer, 0);
 		pointer++;
@@ -465,22 +451,22 @@ void display_write_text(const char *text, uint8_t status)
 	}
 	//TODO add blanks
 
-	 //Paint navigation arrow if set
-	 if (status & DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL)
-	 {
-	 display_write_char_util(DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL, 0);
-	 }
+	//Paint navigation arrow if set
+	if ((status & DISPLAY_TEXT_TOP) || (status & DIPSLAY_TEXT_BOTTOM))
+	{
+		display_write_char_util(DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL, 0);
+	}
 
-	 // Paint top arrow if set
-	 else if (status & DISPLAY_CHAR_ARROW_TOP_SMALL)
-	 {
-	 display_write_char_util(DISPLAY_CHAR_ARROW_TOP_SMALL, 0);
-	 }
+	// Paint top arrow if set
+	else if (status & DISPLAY_TEXT_TOP)
+	{
+		display_write_char_util(DISPLAY_CHAR_ARROW_TOP_SMALL, 0);
+	}
 
-	 // Paint bottom arrow if set
-	 else if (status & DISPLAY_CHAR_ARROW_BOTTOM_SMALL)
-	 {
-	 display_write_char_util(DISPLAY_CHAR_ARROW_BOTTOM_SMALL, 0);
-	 }
+	// Paint bottom arrow if set
+	else if (status & DIPSLAY_TEXT_BOTTOM)
+	{
+		display_write_char_util(DISPLAY_CHAR_ARROW_BOTTOM_SMALL, 0);
+	}
 }
 
