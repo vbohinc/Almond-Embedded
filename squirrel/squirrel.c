@@ -7,8 +7,28 @@
 #include <stdlib.h>
 #include <string.h>
 #include "squirrel.h"
+#include "../drivers/bluetooth/bluetooth.h"
+//#include "../drivers/storage/storage.h"
+//#include "../drivers/display/display.h"
+//#include "../drivers/platform/platform.h"
+#include "../protocols/downlink/downlink.h"
+#include "../protocols/uplink/uplink.h"
+#include "../protocols/package_types.h"
+
 
 #define NUTS_LIST 16
+
+typedef struct _device_info device_info;
+
+struct _device_info
+{
+  uint8_t mac[6];
+  uint8_t class;
+  uint8_t actuator_types[16];
+  uint8_t sensor_types[16];
+  uint8_t config_types[16];
+};
+
 
 const uint8_t poll_time EEMEM = 15;
 
