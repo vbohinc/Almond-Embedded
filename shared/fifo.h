@@ -23,7 +23,7 @@
      \__\/         \__\/         \__\/         \__\/         \__\/         \__\/    
 
 
-/**
+*
 * @file fifo.h
 * @author Stefan Profanter
 * @date 01.05.2010

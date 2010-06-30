@@ -23,7 +23,7 @@
      \__\/       \__\/         \__\/                     \__\/         \__\/         \__\/                       \__\/    
 
 
-/**
+ *
  * package_types.h
  *
  * Define package Types

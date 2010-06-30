@@ -23,7 +23,7 @@
      \__\/       \__\/         \__\/                     \__\/         \__\/         \__\/                       \__\/    
 
 
-/**
+ *
  *
  * classes.h
  * Common classes definition 
