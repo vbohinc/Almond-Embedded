@@ -49,7 +49,7 @@ void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_ty
 		//printf("]\n");
 	} else if (callback_type == 1) //connected
 	{
-		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+		bluetooth_array_to_address(data_package, cmd, 0);
 
 		print((uint8_t*)"Con\0");
 		print(cmd);
@@ -57,7 +57,7 @@ void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_ty
 		connected = 1;
 	} else if (callback_type == 2) //disconnected
 	{
-		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+		bluetooth_array_to_address(data_package, cmd,0);
 		print((uint8_t*)"DCon\0");
 		print(cmd);
 		FTDISend('\n');
