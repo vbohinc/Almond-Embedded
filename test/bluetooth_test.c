@@ -30,7 +30,7 @@ uint8_t int_to_send = 1;
 
 uint8_t pkg_received = 0;
 
-void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
+void bluetooth_callback_handler(char *data_package, const uint8_t callback_type, const uint8_t data_length)
 {
 	if (callback_type == 0) {//is data package
 		print((uint8_t*)"Package:");
@@ -49,7 +49,7 @@ void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_ty
 		//printf("]\n");
 	} else if (callback_type == 1) //connected
 	{
-		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+		bluetooth_array_to_address((char*)data_package, (char*)cmd, 0);
 
 		print((uint8_t*)"Con\0");
 		print(cmd);
@@ -57,7 +57,7 @@ void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_ty
 		connected = 1;
 	} else if (callback_type == 2) //disconnected
 	{
-		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+		bluetooth_array_to_address((char*)data_package, (char*)cmd, 0);
 		print((uint8_t*)"DCon\0");
 		print(cmd);
 		FTDISend('\n');
@@ -103,7 +103,7 @@ void master_test(void)
 		cmd[11] = '1';
 
 		uint8_t compressed[6];
-		bluetooth_address_to_array((uint8_t*)cmd, compressed, 0,0,0);
+		bluetooth_address_to_array((char*)cmd, (char*)compressed, 0);
 
 		//printf("\nATD ret=%d",retval);
 
@@ -172,6 +172,9 @@ void master_test(void)
 
 void slave_test(void)
 {
+
+
+
 	if (bluetooth_cmd_discoverable(1) == 0)
 	{
 		error_pgm(PSTR("BTM:Couldn't set discoverable\n"));
@@ -226,19 +229,30 @@ void slave_test(void)
 
 //uint8_t arr[200] EEMEM = " asdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljf";
 
+#ifdef __AVR_ATxmega128A1__
+#define LED1_DDR PORTD.DIR
+#define LED1_PORT PORTD.OUT
+#define LED2_DDR PORTC.DIR
+#define LED2_PORT PORTC.OUT
+#else
+#define LED1_DDR DDRD
+#define LED1_PORT PORTD
+#define LED2_DDR DDRC
+#define LED2_PORT PORTC
+#endif
 
 int main(void)
 {
 	FTDIInit();
-	DDRD |= 0xFF;
+	LED1_DDR |= 0xFF;
 
-	DDRC |= 0xFF;
+	LED2_DDR |= 0xFF;
 
-	PORTD |= (1<<7);
-			PORTC |= (1<<0);
+	LED1_PORT |= (1<<7);
+	LED2_PORT |= (1<<0);
 			_delay_ms(500);
-			PORTD &= ~(1<<7);
-			PORTC &= ~(1<<0);
+			LED1_PORT &= ~(1<<7);
+			LED2_PORT &= ~(1<<0);
 			_delay_ms(500);
 
 
@@ -250,11 +264,11 @@ int main(void)
 			FTDISend(10);
 			FTDISend(13);
 
-	PORTD |= (1<<7);
-			PORTC |= (1<<0);
+			LED1_PORT |= (1<<7);
+			LED2_PORT |= (1<<0);
 			_delay_ms(500);
-			PORTD &= ~(1<<7);
-			PORTC &= ~(1<<0);
+			LED1_PORT &= ~(1<<7);
+			LED2_PORT &= ~(1<<0);
 			_delay_ms(500);
 
 
@@ -263,12 +277,24 @@ int main(void)
 
 	sei();
 
-	PORTD |= (1<<7);
-	PORTC |= (1<<0);
+	LED1_PORT |= (1<<7);
+	LED2_PORT |= (1<<0);
 	_delay_ms(500);
-	PORTD &= ~(1<<7);
-	PORTC &= ~(1<<0);
+	LED1_PORT &= ~(1<<7);
+	LED2_PORT &= ~(1<<0);
 	_delay_ms(500);
+
+
+/*	uint8_t buf[10];
+	buf[0] = 'A';
+	buf[1] = 'T';
+	buf[2] = 'L';
+	buf[3]='2';
+	buf[4] = 13; //<CR>
+	buf[5] = 0;
+	bluetooth_cmd_send(buf,BLUETOOTH_CMD_WAIT_TIME);*/
+
+
 
 	int ret = bluetooth_test_connection(4);
 
@@ -276,7 +302,7 @@ int main(void)
 	{
 
 		error_pgm(PSTR("BTM: Test Conn=ERROR"));
-		PORTD |= (1<<7);
+		LED1_PORT |= (1<<7);
 
 		FTDISend(13);
 		FTDISend(10);
@@ -285,9 +311,9 @@ int main(void)
 	{
 		debug_pgm(PSTR("BTM: Test Conn=OK"));
 		FTDISend(10);
-		PORTC |= (1<<0);
-		//master_test();
-		slave_test();
+		LED2_PORT |= (1<<0);
+		master_test();
+		//slave_test();
 	}
 }
 

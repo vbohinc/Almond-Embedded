@@ -76,6 +76,13 @@ ifeq (uart, $(findstring uart,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/uart/uart.c 
 endif
 
+#uart atxmega
+ifeq (uart, $(findstring uart,$(ALMONDLIBS)))
+	ifeq ($(MCU), atxmega128a1)
+		SRC += $(BASE)/drivers/uart/usart_driver.c 
+	endif
+endif
+
 #twi
 ifeq (twi, $(findstring twi,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/twi/twi.c
@@ -101,6 +108,21 @@ endif
 
 
 ##################### END OF ALMOND LIBLIST ##############################
+
+
+# Set Size Limits of Memory
+ifeq ($(MCU),atmega8535)
+	CODELIMIT=8192
+	DATALIMIT=480  #leave 32 bytes for stack
+	EEPROMLIMIT=512
+endif
+ifeq ($(MCU),atxmega128a1)
+	CODELIMIT=131072
+	DATALIMIT=8160  #leave 32 bytes for stack
+	EEPROMLIMIT=2048
+endif
+
+
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC += $(TARGET).c
@@ -456,7 +478,7 @@ sizebefore:
 	2>/dev/null; echo; fi
 
 sizeafter:
-	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE);  echo; echo "---------"; echo; $(BASE)/make/checksize "$(TARGET).elf" "$(BASE)/make/size.awk" \
+	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE);  echo; echo "---------"; echo; $(BASE)/make/checksize "$(TARGET).elf" "$(BASE)/make/size.awk" $(CODELIMIT) $(DATALIMIT) $(EEPROMLIMIT) \
 	2>/dev/null; echo; fi
 
 
