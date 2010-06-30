@@ -16,18 +16,21 @@
 
 typedef struct _device_info device_info;
 
-struct _device_info {
-		uint8_t mac[6];
-		uint8_t class;
-		uint8_t actuator_types[16];
-		uint8_t sensor_types[16];
-		uint8_t config_types[16];
+struct _device_info
+{
+  uint8_t mac[6];
+  uint8_t class;
+  uint8_t actuator_types[16];
+  uint8_t sensor_types[16];
+  uint8_t config_types[16];
 };
 
-enum states {
-	SLAVE, MASTER
+enum STATES
+{
+  SLAVE, SLAVE_BUSY, MASTER
 };
 
-uint8_t state;
+extern uint8_t squirrel_state_get (void);
+extern void    squirrel_state_set (uint8_t state);
 
 #endif
