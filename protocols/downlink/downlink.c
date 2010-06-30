@@ -170,7 +170,6 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
 	
 	if (return_package) {
 	  p->opcode = RET;
-          //FIXME won't work length needs to be a pointer, which to my viewpoint is the worst possible idea ever..... - Linus
 	  bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH, false, 100);
 	}
 }
