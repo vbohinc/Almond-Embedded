@@ -74,6 +74,9 @@ endif
 #uart
 ifeq (uart, $(findstring uart,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/uart/uart.c 
+ifeq ($(MCU), atxmega128a1)
+SRC += $(BASE)/drivers/uart/usart_driver.c 
+endif
 endif
 
 #twi
@@ -104,12 +107,12 @@ endif
 
 
 # Set Size Limits of Memory
-ifeq ($MCU,atmega8535)
+ifeq ($(MCU),atmega8535)
 	CODELIMIT=8192
 	DATALIMIT=480  #leave 32 bytes for stack
 	EEPROMLIMIT=512
 endif
-ifeq ($MCU,atxmega128a1)
+ifeq ($(MCU),atxmega128a1)
 	CODELIMIT=131072
 	DATALIMIT=8160  #leave 32 bytes for stack
 	EEPROMLIMIT=2048
