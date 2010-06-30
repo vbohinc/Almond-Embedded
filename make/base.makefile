@@ -95,8 +95,12 @@ endif
 
 #sd
 ifeq (storage, $(findstring storage,$(ALMONDLIBS)))
-ALMONDLIBS += spi
-SRC += $(BASE)/drivers/storage/sd.c $(BASE)/drivers/storage/fat16.c
+ALMONDLIBS += spi fat16
+SRC += $(BASE)/drivers/storage/sd.c
+endif
+
+ifeq (fat16, $(findstring fat16,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/fat16/fat16.c
 endif
 
 #spi
