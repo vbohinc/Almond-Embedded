@@ -23,7 +23,9 @@
 /*
 sd.c - SD lives here
 */
-#include ../spi/spi.h
+#include "../spi/spi.h"
+#include "sd.h"
+
 void sd_init() {
 	spi_init();
 	// Place SD Card into Idle State
