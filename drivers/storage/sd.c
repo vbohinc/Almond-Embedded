@@ -23,7 +23,7 @@
 /*
 sd.c - SD lives here
 */
-#include "../spi/spi.h"
+
 #include "sd.h"
 
 void sd_init() {

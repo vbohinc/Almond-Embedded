@@ -1,4 +1,4 @@
-#include "../drivers/spi/spi.h"
+#include "../spi/spi.h"
 #include "../shared/common.h"
 
 #define CMD0 0
