@@ -2,15 +2,18 @@
 
 void FTDIInit(void)
 {
+#ifndef __AVR_ATxmega128A1__
 	// initialize data direction
 	DDRB |= FTDI_DD;
 	DDRA = 0xFF;
 
 	PORTB |= (1<<P_SI);
+#endif
 }
 
 void FTDISend( uint8_t out_buf)
 {
+#ifndef __AVR_ATxmega128A1__
 	if (out_buf == '\0')
 	{
 		FTDISendImmediate();
@@ -23,17 +26,21 @@ void FTDISend( uint8_t out_buf)
 	PORTB |= (1<<P_WR);
 	nop(); nop();
 	PORTB &= ~(1<<P_WR);
+#endif
 }
 
 void FTDISendImmediate(void)
 {
+#ifndef __AVR_ATxmega128A1__
 	// strobe low
 	PORTB &= ~(1<<P_SI);
 	PORTB |= (1<<P_SI);
+#endif
 }
 
 uint8_t FTDIRead( uint8_t *out_buf)
 {
+#ifndef __AVR_ATxmega128A1__
 	// no data avaiable
 	if( RXF)
 		return 0;
@@ -50,5 +57,7 @@ uint8_t FTDIRead( uint8_t *out_buf)
 	// set direction
 	DDRA = 0xFF;
 
+
+#endif
 	return 1;
 }

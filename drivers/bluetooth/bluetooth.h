@@ -180,7 +180,7 @@ extern uint8_t bluetooth_test_connection(uint8_t tries);
  * @param compressed_start_idx index where the compressed address should start in the compressed_address array. Use 0 if array should only contain address
  * @param address_with_hyphen 1 if address is in the format xxxx-xx-xxxxxx or 0 if address is without hypen xxxxxxxxxxxx
  */
-extern void bluetooth_address_to_array(const char *full_address, char *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen);
+extern void bluetooth_address_to_array(const char *full_address, char *compressed_address, const uint8_t address_with_hyphen);
 
 /**
  * Converts the compressed address format into the string representation of a bluetooth address into.

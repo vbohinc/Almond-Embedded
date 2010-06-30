@@ -1,4 +1,4 @@
-#include "../drivers/spi/spi.h"
+#include "../spi/spi.h"
 #include "../shared/common.h"
 
 #define CMD0 0
@@ -19,7 +19,7 @@ static uint8_t sd_buffer[6];
 static uint8_t sd_response_buffer[5];
 static uint8_t sd_token_buffer[515];
 
-void sd_init();
-boolean sd_send_command(uint8_t command_nr, uint8_t *arguments);
+void sd_init(void);
+bool sd_send_command(uint8_t command_nr, uint8_t *arguments);
 void sd_read_block(uint8_t *addr, uint8_t *read_buffer);
 void sd_write_block(uint8_t *addr, uint8_t *write_buffer);
