@@ -176,6 +176,7 @@ void sd_write_block(uint8_t *addr, uint8_t *write_buffer) {
 		sd_token_buffer[0] = spi_receive_byte(); // Receive data response token. TODO: Check status bits
 		// Busy tokens?
 			
+	}
 }
 
 void sd_send_buffer() {
