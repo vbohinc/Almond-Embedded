@@ -1,3 +1,5 @@
+#include <avr/io.h>
+
 #ifndef __DISPLAY_WIDGET_H__
 #define __DISPLAY_WIDGET_H__
 /**

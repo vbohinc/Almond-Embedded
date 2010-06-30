@@ -9,7 +9,7 @@ void display_widget_wind(uint8_t direction, uint8_t force, uint8_t status) {
 }
 
 //TODO write
-void display_widget_weather(uint8_t temperature, uint8_t humidiy, uint8_t status) {
+void display_widget_weather(uint8_t temperature, uint8_t humidiy, uint8_t pressure, uint8_t status) {
 	const char *text;
 	text = "weather widget";
 	display_write_text(text, 0);

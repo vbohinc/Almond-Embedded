@@ -201,6 +201,7 @@ void display_init(void)
 	// Display ON
 	display_command(0xAF);
 
+	//TODO remove?
 	/*
 	 Not needed because display_clean()
 	 //Set initial column and page
@@ -263,7 +264,7 @@ void display_clean_line(uint8_t line, uint8_t inverse_modus)
  * help function in order to write a char
  */
 
-static void display_write_char_util(uint8_t number, uint8_t inverse_modus)
+static void display_util_write_char(uint8_t number, uint8_t inverse_modus)
 {
 	int i;
 	for (i = 0; i < 6; i++)
@@ -280,43 +281,43 @@ void display_write_char(uint8_t character, uint8_t inverse_modus)
 		//TODO remove unused symbols
 		if (character >= 'A' && character <= 'Z')
 		{
-			display_write_char_util(character - 55, inverse_modus); // A-Z
+			display_util_write_char(character - 55, inverse_modus); // A-Z
 		}
 		else if (character >= 'a' && character <= 'z')
 		{
-			display_write_char_util(character - 87, inverse_modus); //A-Z
+			display_util_write_char(character - 87, inverse_modus); //A-Z
 		}
 		else if (character >= '0' && character <= '9')
 		{
-			display_write_char_util(character - 48, inverse_modus); //0-9
+			display_util_write_char(character - 48, inverse_modus); //0-9
 		}
 		else if (character == ' ')
 		{
-			display_write_char_util(52, inverse_modus); //blank
+			display_util_write_char(52, inverse_modus); //blank
 		}
 		else if (character == '.')
 		{
-			display_write_char_util(45, inverse_modus); //dot
+			display_util_write_char(45, inverse_modus); //dot
 		}
 		else if (character == ':')
 		{
-			display_write_char_util(46, inverse_modus); //double dot
+			display_util_write_char(46, inverse_modus); //double dot
 		}
 		else if (character == '%')
 		{
-			display_write_char_util(46, inverse_modus); //double dot
+			display_util_write_char(46, inverse_modus); //double dot
 		}
 		else if (character >= 14 && character <= 19)
 		{
-			display_write_char_util(character - 40, inverse_modus); //double dot
+			display_util_write_char(character - 40, inverse_modus); //double dot
 		}
 		else if (character == '!')
 		{
-			display_write_char_util(59, inverse_modus); //exclamationmark
+			display_util_write_char(59, inverse_modus); //exclamationmark
 		}
 		else
 		{
-			display_write_char_util(51, inverse_modus); //unknown
+			display_util_write_char(51, inverse_modus); //unknown
 		}
 	}
 }
@@ -343,7 +344,7 @@ void display_write_title(const char *text, uint8_t status)
 	//Print left arrow if needed
 	if (status & DISPLAY_TITLE_LEFT)
 	{
-		display_write_char_util(DISPLAY_CHAR_ARROW_LEFT, 1);
+		display_util_write_char(DISPLAY_CHAR_ARROW_LEFT, 1);
 	}
 	else
 	{
@@ -388,7 +389,7 @@ void display_write_title(const char *text, uint8_t status)
 	//print right arrow if needed
 	if (status & DISPLAY_TITLE_RIGHT)
 	{
-		display_write_char_util(DISPLAY_CHAR_ARROW_RIGHT, 1);
+		display_util_write_char(DISPLAY_CHAR_ARROW_RIGHT, 1);
 	}
 	else
 	{
@@ -397,32 +398,37 @@ void display_write_title(const char *text, uint8_t status)
 
 }
 
+
 void display_write_text(const char *text, uint8_t status)
 {
 	uint8_t *pointer = (uint8_t *) text;
 	uint8_t i;
 	uint8_t symbol = 0;
-	uint8_t row = 1;
+	static 	uint8_t row = 1;
 	uint8_t blank = (uint8_t) ' ';
-
+//TODO remove comment
+	/*
 	//prepare display
 	for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
 	{
 		display_clean_line(i, 0);
 	}
+	*/
+	//TODO 1 in offset
 	display_set_col(DISPLAY_COL_INIT + 1);
 	display_set_page(DISPLAY_PAGE_INIT + row);
 
 	//start to write
 	while (*pointer != '\0')
 	{
-		//Let the last space free for GUI Element
+/*
+		//Let the last field free for GUI Element
 		if (row == DISPLAY_PAGE_NUMBER && symbol == max_symbols - 2 && ((status
-				& DISPLAY_TEXT_TOP) || (status & DIPSLAY_TEXT_BOTTOM))
-				)
+				& DISPLAY_TEXT_TOP) || (status & DISPLAY_TEXT_BOTTOM)))
 		{
-			symbol = max_symbols - 1;
+			symbol++;
 		}
+		*/
 
 		display_write_char(*pointer, 0);
 		pointer++;
@@ -440,7 +446,8 @@ void display_write_text(const char *text, uint8_t status)
 				row = 1;
 				for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
 				{
-					display_clean_line(i, 0);
+					//TODO remove comment
+				//	display_clean_line(i, 0);
 				}
 			}
 
@@ -448,38 +455,41 @@ void display_write_text(const char *text, uint8_t status)
 
 			display_set_page(DISPLAY_PAGE_INIT + row);
 		}
-
-	}
-	//TODO add blanks and testing
-	for (row = row;row < DISPLAY_PAGE_NUMBER; row++) {
-		for(symbol=symbol; symbol<max_symbols; symbol++){display_write_char(blank, 1); symbol =0;}
-	}
-	if (row==DISPLAY_PAGE_NUMBER) {
-		for(symbol=symbol; symbol<max_symbols-1; symbol++){display_write_char(blank, 1); symbol =0;}
 	}
 
-
+	//Write the last display field
+	//broken
+	//TODO 1 in offset
+	display_set_page(DISPLAY_PAGE_INIT + DISPLAY_PAGE_NUMBER);
+	display_set_col(DISPLAY_COL_NUMBER_VISIBLE-DISPLAY_CHAR_WIDTH);
 
 	//Paint navigation arrow if set
-	if ((status & DISPLAY_TEXT_TOP) && (status & DIPSLAY_TEXT_BOTTOM))
+	if ((status & DISPLAY_TEXT_TOP) && (status & DISPLAY_TEXT_BOTTOM))
 	{
-		display_write_char_util(DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL, 0);
+		display_util_write_char(DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL, 0);
 	}
 
 	// Paint top arrow if set
 	else if (status & DISPLAY_TEXT_TOP)
 	{
-		display_write_char_util(DISPLAY_CHAR_ARROW_TOP_SMALL, 0);
+		display_util_write_char(DISPLAY_CHAR_ARROW_TOP_SMALL, 0);
 	}
 
 	// Paint bottom arrow if set
-	else if (status & DIPSLAY_TEXT_BOTTOM)
+	else if (status & DISPLAY_TEXT_BOTTOM)
 	{
-		display_write_char_util(DISPLAY_CHAR_ARROW_BOTTOM_SMALL, 0);
+		display_util_write_char(DISPLAY_CHAR_ARROW_BOTTOM_SMALL, 0);
 	}
 
-	else {
-		display_write_char(blank, 1);
+	else
+	{
+//do nothing
 	}
+	//TODO remove
+	row++;
+	if (row > DISPLAY_PAGE_NUMBER)
+				{
+					row = 1;
+				}
 }
 

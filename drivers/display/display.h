@@ -28,14 +28,14 @@ enum
 /*
  *
  *Status TextArea
- *|Top|X|X|X|X|X|X|Bottom|
+ *|Top|X|X|DEBUG|X|X|X|Bottom|
  */
 enum
 {
 	DISPLAY_TEXT_NONE = 0x00,
 	DISPLAY_TEXT_TOP = 0x80,
-	DIPSLAY_TEXT_BOTTOM = 0x01
-
+	DISPLAY_TEXT_BOTTOM = 0x01,
+	DISPLAY_TEXT_DEBUG = 0x10
 };
 
 /**
