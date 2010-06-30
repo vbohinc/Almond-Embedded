@@ -208,7 +208,7 @@ void sd_write_bytes(uint32_t addr, uint8_t *write_buffer, uint16_t size) {
 			for (int i = 0; i < 512; i++) {
 			if (block_addr + i < addr || block_addr + i > addr+size)
 				spi_send_byte(sd_token_buffer[i+1]);
-			} else {
+			else {
 				spi_send_byte(write_buffer[bytes_written++]);
 			}
 			uint8_t crc[2] = {0xFF, 0xFF}; //0xFFFF;
