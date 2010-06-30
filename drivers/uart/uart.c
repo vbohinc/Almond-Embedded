@@ -457,8 +457,8 @@ Purpose:  called when the UART has received a character
         /* store received data in buffer */
         UART_RxBuf[tmphead] = data;
 
-       // FTDISend('I');
-       // FTDISend(data);
+       FTDISend('I');
+       FTDISend(data);
 
 #ifdef UART0_ENABLE_FLOW_CONTROL
         //Check if buffer is full

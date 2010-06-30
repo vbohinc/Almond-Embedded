@@ -379,7 +379,7 @@ void bluetooth_resent_package(void)
 	}
 }
 
-void bluetooth_input_to_array()
+void bluetooth_input_to_array(void)
 {
 #ifndef SERIAL
 	//Read bytes from UART input buffer
@@ -738,15 +738,19 @@ uint8_t bluetooth_handle_array(void)
 	return 0;
 }
 
-uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_t wait_for_response_package, const uint16_t timeout_ms)
+uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 {
+
+	bluetooth_wait_response_array = NULL;
+	bluetooth_wait_response_length = NULL;
+
 	bluetooth_cmd_buffer[0]=0;
 	uint8_t error = 0;
 
 	//send data and store send bytes to bluetooth_data_package to resent full package if requested
 	bluetooth_data_package_index = 0;
 
-	for (uint8_t i=0; i<(*length) && error==0; i++)
+	for (uint8_t i=0; i<length && error==0; i++)
 	{
 		if (data[i]==BLUETOOTH_SPECIAL_BYTE)
 		{
@@ -783,19 +787,8 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 	bluetooth_package_received = 0;
 
 
-	if (wait_for_response_package)
-	{
-		bluetooth_wait_response_array = data;
-		bluetooth_wait_response_length = length;
-
-	} else {
-		bluetooth_wait_response_array = NULL;
-		bluetooth_wait_response_length = NULL;
-	}
-
 	bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
 	bluetooth_putc(BLUETOOTH_STOP_BYTE);
-
 
 	bluetooth_data_package[bluetooth_data_package_index] = BLUETOOTH_SPECIAL_BYTE;
 	bluetooth_data_package_index++;
@@ -803,9 +796,6 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 	bluetooth_data_package_index++;
 	bluetooth_sent_length = bluetooth_data_package_index;
 	bluetooth_data_package_index = 0;
-
-	if (error)
-		return 1;
 
 #ifdef BLUETOOTH_ENABLE_OK
 	int16_t ok_timeout = 10000;
@@ -825,30 +815,47 @@ uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_
 	}
 #endif
 
+	if (error)
+			return 1;
+	else
+		return 0;
+}
+
+uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length, const uint16_t timeout_ms)
+{
+
+	if (bluetooth_send_data_package(data, *length)==1)
+		return 1;
+
+
+	bluetooth_wait_response_array = data;
+	bluetooth_wait_response_length = length;
+
+
+
+
 	uint16_t ms_to_timeout = timeout_ms;
 
-	if (wait_for_response_package)
+
+	while (!bluetooth_package_received && ms_to_timeout>0)
 	{
-		while (!bluetooth_package_received && ms_to_timeout>0)
+		//wait a millisecond
+		bluetooth_delay(1);
+		ms_to_timeout--;
+		if (ms_to_timeout == 0)
 		{
-			//wait a millisecond
-			bluetooth_delay(1);
-			ms_to_timeout--;
-			if (ms_to_timeout == 0)
-			{
-				//timeout!!
-				return 2;
-			}
-			//check if package is available
-			bluetooth_process_data();
+			//timeout!!
+			return 2;
 		}
-
-
-		//data already copied in handle_array fkt
-		bluetooth_wait_response_array = NULL;
-		bluetooth_wait_response_length = NULL;
-		return 0;
+		//check if package is available
+		bluetooth_process_data();
 	}
+
+
+	//data already copied in handle_array fkt
+	bluetooth_wait_response_array = NULL;
+	bluetooth_wait_response_length = NULL;
+	return 0;
 
 
 	return 0;
