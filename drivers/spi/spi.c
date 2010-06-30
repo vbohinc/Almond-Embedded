@@ -3,7 +3,7 @@
 void spi_init() {
 	// Assert low on SS - SPI connected to PORTD
 	//clear_bit(PORTD_OUT, 4);
-	set_bit(DDRD, 4); // Sets Slave Select (SS) as Output
+	set_bit(PORTD.OUT, 4); // Sets Slave Select (SS) as Output
 	set_bit(SPID_CTRL, 6); // Enable SPI
 	set_bit(SPID_CTRL, 4); // Set to Master
 }

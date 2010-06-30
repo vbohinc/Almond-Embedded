@@ -37,7 +37,7 @@ void sd_init() {
 	sd_send_command(CMD0, NULL); 
 	sd_get_response(R1);
 	// Chip Select Low
-	clear_bit(SPID_CTRL, 3);
+	clear_bit(PORTD.OUT, 3);
 	// Place SD Card into Idle State (again). Transition to SPI mode 
 	sd_send_command(CMD0, NULL);
 	sd_get_response(R1);
