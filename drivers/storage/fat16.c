@@ -103,11 +103,11 @@ uint8_t partition_open(uint8_t index)
 	return 1;
 }
 
-uint8_t fat16_init()
+uint8_t fat16_init(uint8_t partition_index)
 {
 	memset(g_filesystem, 0, sizeof(*filesystem));
 
-	if(!partition_open())
+	if(!partition_open(partition_index))
 		return 0;
 
 	if (!fat16_read_header())

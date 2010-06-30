@@ -80,7 +80,7 @@ struct fat16_dir {
 uint8_t partition_open(uint8_t index);
 uint8_t fat16_read_header();
 
-uint8_t fat16_init();
+uint8_t fat16_init(uint8_t partition_index);
 
 uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* dir_entry);
 uint8_t fat16_dir_entry_seek_callback(uint8_t* buffer, uint32_t offset, void* p);
