@@ -5,17 +5,85 @@
 #include <stdlib.h>
 
 // Globals:
-fat16_filesystem g_filesystem;
+static struct fat16_filesystem g_filesystem;
 
+// TEMP:
 char *g_filename = "fat16.img";
 typedef uint8_t (*interval_handler)(uint8_t* buffer, uint32_t offset, void* p);
+/////////
 
-uint8_t storage_write_bytes(uint32_t offset, uint8_t* buffer, uint16_t size);
+#define PARTITION_TYPE_NONE         0x00	// table entry is not used.
+#define PARTITION_TYPE_FAT12        0x01	// contains a FAT12 file system.
+#define PARTITION_TYPE_FAT16_32MB   0x04	// contains a FAT16 file system with 32MB maximum.
+#define PARTITION_TYPE_EXTENDED     0x05	// is an extended partition with its own partition table.
+#define PARTITION_TYPE_FAT16        0x06	// contains a FAT16 file system.
+#define PARTITION_TYPE_FAT32        0x0b	// contains a FAT32 file system.
+#define PARTITION_TYPE_FAT32_LBA    0x0c	// contains a FAT32 file system with LBA.
+#define PARTITION_TYPE_FAT16_LBA    0x0e	// contains a FAT16 file system with LBA.
+#define PARTITION_TYPE_EXTENDED_LBA 0x0f	// is an extended partition with LBA.
+#define FAT16_CLUSTER_FREE 			0x0000
+#define FAT16_CLUSTER_RESERVED_MIN 	0xfff0
+#define FAT16_CLUSTER_RESERVED_MAX 	0xfff6
+#define FAT16_CLUSTER_BAD 			0xfff7
+#define FAT16_CLUSTER_LAST_MIN 		0xfff8
+#define FAT16_CLUSTER_LAST_MAX 		0xffff
+
+#define FAT16_DIRENTRY_DELETED 		0xe5
+#define FAT16_DIRENTRY_LFNLAST 		(1 << 6)
+#define FAT16_DIRENTRY_LFNSEQMASK 	((1 << 6) - 1)
+
+
+
+
+struct fat16_partition {
+	uint8_t type; // one of PARTITION_TYPE_*
+	uint32_t offset; // offset in bytes from beginning of the disk
+	uint32_t length; // length of the partition
+};
+
+struct fat16_header {
+	uint32_t size;
+	uint32_t fat_offset;
+	uint32_t fat_size;
+	uint16_t sector_size;
+	uint16_t cluster_size;
+	uint32_t root_dir_offset;
+	uint32_t cluster_zero_offset;
+};
+
+struct fat16_filesystem {
+	struct fat16_partition partition;
+	struct fat16_header header;
+};
+
+struct fat16_read_callback_arg {
+	uint16_t entry_cur;
+	uint16_t entry_num;
+	uint32_t entry_offset;
+	uint8_t byte_count;
+};
+
+// Internal functions
+static uint8_t partition_open(uint8_t index);
+static uint8_t fat16_read_header();
+
+static uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* dir_entry);
+static uint8_t fat16_dir_entry_seek_callback(uint8_t* buffer, uint32_t offset, void* p);
+static uint8_t fat16_dir_entry_read_callback(uint8_t* buffer, uint32_t offset, void* p);
+static uint8_t fat16_interpret_dir_entry(struct fat16_dir_entry* dir_entry, const uint8_t* raw_entry);
+
+static uint16_t fat16_get_next_cluster(uint16_t cluster_num);
+static uint16_t fat16_append_cluster(uint16_t cluster_num);
+static uint8_t fat16_free_cluster(uint16_t cluster_num);
+
+
+uint8_t sd_write_bytes(uint32_t offset, uint8_t* buffer, uint16_t size);
+uint8_t sd_read_bytes(uint32_t offset, uint8_t* buffer, uint16_t size);
+
 uint8_t storage_read_interval(uint32_t offset, uint8_t* buffer, uint16_t interval, uint16_t length, interval_handler callback, void* p);
-uint8_t storage_read_bytes(uint32_t offset, uint8_t* buffer, uint16_t size);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-uint8_t storage_read_bytes(uint32_t offset, uint8_t* buffer, uint16_t size)
+uint8_t sd_read_bytes(uint32_t offset, uint8_t* buffer, uint16_t size)
 {
 	FILE *file;
 	if ((file = fopen(g_filename, "r+b")) == NULL)
@@ -36,22 +104,7 @@ uint8_t storage_read_bytes(uint32_t offset, uint8_t* buffer, uint16_t size)
 	return 1;
 }
 
-uint8_t storage_read_interval(uint32_t offset, uint8_t* buffer,
-		uint16_t interval, uint16_t length, interval_handler callback, void* p)
-{
-	while (length >= interval)
-	{
-		if (!storage_read_bytes(offset, buffer, interval))
-			return 0;
-		if (!callback(buffer, offset, p))
-			break;
-		offset += interval;
-		length -= interval;
-	}
-	return 1;
-}
-
-uint8_t storage_write_bytes(uint32_t offset, uint8_t* buffer, uint16_t size)
+uint8_t sd_write_bytes(uint32_t offset, uint8_t* buffer, uint16_t size)
 {
 	FILE *file;
 	if ((file = fopen(g_filename, "r+b")) == NULL)
@@ -71,14 +124,28 @@ uint8_t storage_write_bytes(uint32_t offset, uint8_t* buffer, uint16_t size)
 
 	return 1;
 }
+
+uint8_t storage_read_interval(uint32_t offset, uint8_t* buffer, uint16_t interval, uint16_t length, interval_handler callback, void* p)
+{
+	while (length >= interval)
+	{
+		if (!sd_read_bytes(offset, buffer, interval))
+			return 0;
+		if (!callback(buffer, offset, p))
+			break;
+		offset += interval;
+		length -= interval;
+	}
+	return 1;
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-uint8_t partition_open(uint8_t index)
+static uint8_t partition_open(uint8_t index)
 {
 	uint8_t buffer[0x10];
 
 	// read specified partition table index
-	if (!storage_read_bytes(0x01be + index * 0x10, buffer, sizeof(buffer)))
+	if (!sd_read_bytes(0x01be + index * 0x10, buffer, sizeof(buffer)))
 		return 0;
 
 	// abort on empty partition entry
@@ -90,12 +157,12 @@ uint8_t partition_open(uint8_t index)
 
 	// fill partition descriptor
 	g_filesystem.partition.type = buffer[4];
-	g_filesystem.g_partition.offset = ((uint32_t) buffer[8])
+	g_filesystem.partition.offset = ((uint32_t) buffer[8])
 			| ((uint32_t) buffer[9] << 8)
 			| ((uint32_t) buffer[10] << 16)
 			| ((uint32_t) buffer[11] << 24);
 
-	g_filesystem.g_partition.length = ((uint32_t) buffer[12])
+	g_filesystem.partition.length = ((uint32_t) buffer[12])
 			| ((uint32_t) buffer[13] << 8)
 			| ((uint32_t) buffer[14] << 16)
 			| ((uint32_t) buffer[15] << 24);
@@ -103,11 +170,11 @@ uint8_t partition_open(uint8_t index)
 	return 1;
 }
 
-uint8_t fat16_init()
+extern uint8_t fat16_init(uint8_t partition_index)
 {
-	memset(g_filesystem, 0, sizeof(*filesystem));
+	//memset(g_filesystem, 0, sizeof(g_filesystem));
 
-	if(!partition_open())
+	if(!partition_open(partition_index))
 		return 0;
 
 	if (!fat16_read_header())
@@ -116,7 +183,7 @@ uint8_t fat16_init()
 	return 1;
 }
 
-uint8_t fat16_read_header()
+static uint8_t fat16_read_header()
 {
 	uint8_t buffer[25];
 
@@ -126,7 +193,7 @@ uint8_t fat16_read_header()
 		return 0;
 
 	uint32_t partition_offset = g_filesystem.partition.offset * 512;
-	if (!storage_read_bytes(partition_offset + 0x0b, buffer, sizeof(buffer)))
+	if (!sd_read_bytes(partition_offset + 0x0b, buffer, sizeof(buffer)))
 		return 0;
 
 //	memset(header, 0, sizeof(*header));
@@ -143,7 +210,7 @@ uint8_t fat16_read_header()
 			| ((uint16_t) buffer[0x0c] << 8);
 	uint32_t sector_count = ((uint32_t) buffer[0x15])
 			| ((uint32_t) buffer[0x16] << 8) | ((uint32_t) buffer[0x17] << 16)
-			| ((uint32_t) buffer[0x18] << 24);
+			| ( (uint32_t) buffer[0x18] << 24);
 
 	g_filesystem.header.size                = sector_count * bytes_per_sector;
 	g_filesystem.header.fat_offset          = partition_offset + (uint32_t)reserved_sectors * bytes_per_sector;
@@ -156,7 +223,7 @@ uint8_t fat16_read_header()
 	return 1;
 }
 
-uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* dir_entry)
+static uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* dir_entry)
 {
 	if (!dir_entry)
 		return 0;
@@ -186,7 +253,7 @@ uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* di
 	return dir_entry->long_name[0] != '\0' ? 1 : 0;
 }
 
-uint8_t fat16_dir_entry_seek_callback(uint8_t* buffer, uint32_t offset, void* p)
+static uint8_t fat16_dir_entry_seek_callback(uint8_t* buffer, uint32_t offset, void* p)
 {
 	struct fat16_read_callback_arg* arg = p;
 
@@ -209,7 +276,7 @@ uint8_t fat16_dir_entry_seek_callback(uint8_t* buffer, uint32_t offset, void* p)
 	return 1;
 }
 
-uint8_t fat16_dir_entry_read_callback(uint8_t* buffer, uint32_t offset, void* p)
+static uint8_t fat16_dir_entry_read_callback(uint8_t* buffer, uint32_t offset, void* p)
 {
 	struct fat16_dir_entry* dir_entry = p;
 
@@ -241,8 +308,7 @@ uint8_t fat16_dir_entry_read_callback(uint8_t* buffer, uint32_t offset, void* p)
  * @param out dir_entry Directory entry descriptor which will get filled.
  * @returns 0 on failure, 1 on success
  */
-uint8_t fat16_read_sub_dir_entry(uint16_t entry_num, const struct fat16_dir_entry* parent,
-		struct fat16_dir_entry* dir_entry)
+static uint8_t fat16_read_sub_dir_entry(uint16_t entry_num, const struct fat16_dir_entry* parent, struct fat16_dir_entry* dir_entry)
 {
 	if (!parent || !dir_entry)
 		return 0;
@@ -267,8 +333,7 @@ uint8_t fat16_read_sub_dir_entry(uint16_t entry_num, const struct fat16_dir_entr
 		// seek to the n-th entry
 		memset(&arg, 0, sizeof(arg));
 		arg.entry_num = entry_num;
-		if (!storage_read_interval(cluster_offset, buffer, sizeof(buffer),
-				cluster_size, fat16_dir_entry_seek_callback, &arg))
+		if (!storage_read_interval(cluster_offset, buffer, sizeof(buffer), cluster_size, fat16_dir_entry_seek_callback, &arg))
 			return 0;
 
 		// check if we found the entry
@@ -295,7 +360,7 @@ uint8_t fat16_read_sub_dir_entry(uint16_t entry_num, const struct fat16_dir_entr
  * 1 long file name entry
  * 2 complete
  */
-uint8_t fat16_interpret_dir_entry(struct fat16_dir_entry* dir_entry,
+static uint8_t fat16_interpret_dir_entry(struct fat16_dir_entry* dir_entry,
 		const uint8_t* raw_entry)
 {
 	if (!dir_entry || !raw_entry || !raw_entry[0])
@@ -370,14 +435,7 @@ uint8_t fat16_interpret_dir_entry(struct fat16_dir_entry* dir_entry,
 	}
 }
 
-/*
- * Retrieves the directory entry of a path.
- *
- * @param in path The path of which to read the directory entry.
- * @param out dir_entry The directory entry to fill.
- * @returns 0 on failure, 1 on success.
- */
-uint8_t fat16_get_dir_entry_of_path(const char* path, struct fat16_dir_entry* dir_entry)
+extern uint8_t fat16_get_dir_entry_of_path(const char* path, struct fat16_dir_entry* dir_entry)
 {
 	if (!path || path[0] == '\0' || !dir_entry)
 		return 0;
@@ -394,8 +452,8 @@ uint8_t fat16_get_dir_entry_of_path(const char* path, struct fat16_dir_entry* di
 
 	while (1)
 	{
-		struct fat16_dir* dd = fat16_open_dir(dir_entry);
-		if (!dd)
+		struct fat16_dir dd;
+		if (!fat16_open_dir(&dd, dir_entry))
 			break;
 
 		// extract the next hierarchy we will search for
@@ -405,15 +463,14 @@ uint8_t fat16_get_dir_entry_of_path(const char* path, struct fat16_dir_entry* di
 		uint8_t length_to_sep = sep_pos - path;
 
 		// read directory entries
-		while (fat16_read_dir(dd, dir_entry))
+		while (fat16_read_dir(&dd, dir_entry))
 		{
 			// check if we have found the next hierarchy
-			if ((strlen(dir_entry->long_name) != length_to_sep || strncmp(path,
-					dir_entry->long_name, length_to_sep) != 0))
+			if ((strlen(dir_entry->long_name) != length_to_sep || strncmp(path, dir_entry->long_name, length_to_sep) != 0))
 				continue;
 
-			fat16_close_dir(dd);
-			dd = 0;
+			//fat16_close_dir(dd);
+			//dd = 0;
 
 			if (path[length_to_sep] == '\0')
 				return 1; // we iterated through the whole path and have found the file
@@ -429,7 +486,7 @@ uint8_t fat16_get_dir_entry_of_path(const char* path, struct fat16_dir_entry* di
 			return 0;
 		}
 
-		fat16_close_dir(dd);
+		//fat16_close_dir(dd);
 	}
 
 	return 0;
@@ -445,14 +502,14 @@ uint8_t fat16_get_dir_entry_of_path(const char* path, struct fat16_dir_entry* di
  * @param in cluster_num The number of the cluster for which to determine its successor.
  * @returns The wanted cluster number, or 0 on error.
  */
-uint16_t fat16_get_next_cluster(uint16_t cluster_num)
+static uint16_t fat16_get_next_cluster(uint16_t cluster_num)
 {
 	if (cluster_num < 2)
 		return 0;
 
 	// read appropriate fat entry
 	uint8_t fat_entry[2];
-	if (!storage_read_bytes(g_filesystem.header.fat_offset + 2 * cluster_num, fat_entry,2))
+	if (!sd_read_bytes(g_filesystem.header.fat_offset + 2 * cluster_num, fat_entry,2))
 		return 0;
 
 	// determine next cluster from fat
@@ -478,7 +535,7 @@ uint16_t fat16_get_next_cluster(uint16_t cluster_num)
  * @param in cluster_num The cluster to which to append a free one.
  * @returns 0 on failure, the number of the new cluster on success.
  */
-uint16_t fat16_append_cluster(uint16_t cluster_num)
+static uint16_t fat16_append_cluster(uint16_t cluster_num)
 {
 	uint32_t fat_offset_from = g_filesystem.header.fat_offset;
 	uint32_t fat_offset_to   = fat_offset_from + g_filesystem.header.fat_size;
@@ -488,7 +545,7 @@ uint16_t fat16_append_cluster(uint16_t cluster_num)
 
 	while (1)
 	{
-		if (!storage_read_bytes(fat_offset, buffer, sizeof(buffer)))
+		if (!sd_read_bytes(fat_offset, buffer, sizeof(buffer)))
 			return 0;
 
 		// check if this is a free cluster
@@ -506,14 +563,14 @@ uint16_t fat16_append_cluster(uint16_t cluster_num)
 
 	buffer[0] = FAT16_CLUSTER_LAST_MAX & 0xff;
 	buffer[1] = (FAT16_CLUSTER_LAST_MAX >> 8) & 0xff;
-	if (!storage_write_bytes(fat_offset_from + 2 * cluster_new, buffer, sizeof(buffer)))
+	if (!sd_write_bytes(fat_offset_from + 2 * cluster_new, buffer, sizeof(buffer)))
 		return 0;
 
 	if (cluster_num >= 2)
 	{
 		buffer[0] = cluster_new & 0xff;
 		buffer[1] = (cluster_new >> 8) & 0xff;
-		storage_write_bytes(fat_offset_from + 2 * cluster_num, buffer, sizeof(buffer));
+		sd_write_bytes(fat_offset_from + 2 * cluster_num, buffer, sizeof(buffer));
 	}
 
 	return cluster_new;
@@ -526,7 +583,7 @@ uint16_t fat16_append_cluster(uint16_t cluster_num)
  * @param in cluster_num The cluster which to free.
  * @returns 0 on failure, 1 on success.
  */
-uint8_t fat16_free_cluster(uint16_t cluster_num)
+static uint8_t fat16_free_cluster(uint16_t cluster_num)
 {
 	if (cluster_num < 2)
 		return 0;
@@ -536,17 +593,11 @@ uint8_t fat16_free_cluster(uint16_t cluster_num)
 	buffer[0] = FAT16_CLUSTER_FREE & 0xff;
 	buffer[1] = (FAT16_CLUSTER_FREE >> 8) & 0xff;
 
-	return storage_write_bytes(g_filesystem.header.fat_offset + 2*cluster_num, buffer, 2);
+	return sd_write_bytes(g_filesystem.header.fat_offset + 2*cluster_num, buffer, 2);
 }
 
-/*
- * Opens a file on a FAT16 filesystem.
- *
- * @param in out the file handle
- * @param in dir_entry The directory entry of the file to open.
- * @returns 1 on success, or 0 on failure.
- */
-uint8_t fat16_open_file(struct fat16_file* file, const struct fat16_dir_entry* dir_entry)
+
+extern uint8_t fat16_open_file(struct fat16_file* file, const struct fat16_dir_entry* dir_entry)
 {
 	if (!dir_entry || (dir_entry->attributes & FAT16_ATTRIB_DIR) || !file)
 		return 0;
@@ -556,15 +607,23 @@ uint8_t fat16_open_file(struct fat16_file* file, const struct fat16_dir_entry* d
 
 	return 1;
 }
-/*
- * Reads data from a file
- *
- * @param in fd The file handle
- * @param out buffer The buffer into which to write.
- * @param in buffer_len The amount of data to read.
- * @returns The number of bytes read, 0 on end of file, or -1 on failure.
- */
-int16_t fat16_read_file(struct fat16_file* fd, uint8_t* buffer, uint16_t buffer_len)
+
+extern uint8_t fat16_open_file_by_name(struct fat16_file* file, const char* filename)
+{
+	if(!file || !filename || !filename[0])
+		return 0;
+
+	fat16_get_dir_entry_of_path(filename, &file->dir_entry);
+
+	if(file->dir_entry.attributes & FAT16_ATTRIB_DIR)
+		return 0;
+
+	file->pos = 0;
+
+	return 1;
+}
+
+extern int16_t fat16_read_file(struct fat16_file* fd, uint8_t* buffer, uint16_t buffer_len)
 {
 	// check arguments
 	if (!fd || !buffer || buffer_len < 1)
@@ -613,7 +672,7 @@ int16_t fat16_read_file(struct fat16_file* fd, uint8_t* buffer, uint16_t buffer_
 			copy_length = buffer_left;
 
 		// read data
-		if (!storage_read_bytes(cluster_offset, buffer, copy_length))
+		if (!sd_read_bytes(cluster_offset, buffer, copy_length))
 			return buffer_len - buffer_left;
 
 		// calculate new file position
@@ -635,16 +694,7 @@ int16_t fat16_read_file(struct fat16_file* fd, uint8_t* buffer, uint16_t buffer_
 	return buffer_len;
 }
 
-/*
- * Writes data to the current file location.
- *
- * @param in fd The file handle
- * @param in buffer The buffer from which to read the data to be written.
- * @param in buffer_len The amount of data to write.
- * @returns The number of bytes written, 0 on disk full, or -1 on failure.
- */
-int16_t fat16_write_file(struct fat16_file* fd, const uint8_t* buffer,
-		uint16_t buffer_len)
+extern int16_t fat16_write_file(struct fat16_file* fd, uint8_t* buffer, uint16_t buffer_len)
 {
 	// check arguments
 	if (!fd || !buffer || buffer_len < 1)
@@ -693,7 +743,7 @@ int16_t fat16_write_file(struct fat16_file* fd, const uint8_t* buffer,
 			write_length = buffer_left;
 
 		// write data which fits into the current cluster
-		if (!storage_write_bytes(cluster_offset, buffer, write_length))
+		if (!sd_write_bytes(cluster_offset, buffer, write_length))
 			break;
 
 		// calculate new file position
@@ -740,27 +790,7 @@ int16_t fat16_write_file(struct fat16_file* fd, const uint8_t* buffer,
 	return buffer_len - buffer_left;
 }
 
-/*
- * Changes the file offset
- *
- * If the new offset is beyond the end of the file, fat16_resize_file()
- * is implicitly called, i.e. the file is expanded.
- *
- * - FAT16_SEEK_SET:  *offset is relative to the beginning of the file.
- * - FAT16_SEEK_CUR:  *offset is relative to the current file position.
- * - FAT16_SEEK_END:  *offset is relative to the end of the file.
- *
- * The resulting absolute offset is written to the location the  offset
- * parameter points to.
- *
- * @param in fd The file decriptor
- * @param in,out offset A pointer to the new offset, as affected by the whence
- *                   parameter. The function writes the new absolute offset
- *                   to this location before it returns.
- * @param in whence Affects the way offset is interpreted, see above.
- * @returns 0 on failure, 1 on success.
- */
-uint8_t fat16_seek_file(struct fat16_file* fd, int32_t* offset, uint8_t whence)
+extern uint8_t fat16_seek_file(struct fat16_file* fd, int32_t* offset, uint8_t whence)
 {
 	if (!fd || !offset)
 		return 0;
@@ -789,25 +819,13 @@ uint8_t fat16_seek_file(struct fat16_file* fd, int32_t* offset, uint8_t whence)
 	return 1;
 }
 
-/*
- * Enlarges or shrinks the file pointed to by the file descriptor to have
- * exactly the specified size.
- *
- * If the file is truncated, all bytes having an equal or larger offset
- * than the given size are lost. If the file is expanded, the additional
- * bytes are allocated, but they keep their values.
- *
- * @param in fd The file decriptor
- * @param in size
- * @returns 0 on failure, 1 on success.
- */
-uint8_t fat16_resize_file(struct fat16_file* fd, uint32_t size)
+extern uint8_t fat16_resize_file(struct fat16_file* fd, uint32_t size)
 {
 	if (!fd)
 		return 0;
 
 	uint16_t cluster_num = fd->dir_entry.cluster;
-	uint16_t cluster_size = (fd->fs)->header.cluster_size;
+	uint16_t cluster_size = g_filesystem.header.cluster_size;
 	uint32_t size_new = size;
 
 	if (fd->dir_entry.file_size < size)
@@ -816,7 +834,7 @@ uint8_t fat16_resize_file(struct fat16_file* fd, uint32_t size)
 		if (cluster_num == 0)
 		{
 			// allocate first cluster
-			if (!(cluster_num = fat16_append_cluster(fd->fs, cluster_num)))
+			if (!(cluster_num = fat16_append_cluster(cluster_num)))
 				return 0;
 			fd->dir_entry.cluster = cluster_num;
 		}
@@ -888,14 +906,7 @@ uint8_t fat16_resize_file(struct fat16_file* fd, uint32_t size)
 	return 1;
 }
 
-/*
- * Opens a directory.
- *
- * @param in out dir the directory handle
- * @param in dir_entry The directory entry which stands for the directory to open.
- * @returns directory descriptor on success, 0 on failure.
- */
-uint8_t fat16_open_dir(struct fat16_dir* dir, const struct fat16_dir_entry* dir_entry)
+extern uint8_t fat16_open_dir(struct fat16_dir* dir, const struct fat16_dir_entry* dir_entry)
 {
 	if (!dir_entry || !(dir_entry->attributes & FAT16_ATTRIB_DIR) || !dir)
 		return 0;
@@ -906,14 +917,7 @@ uint8_t fat16_open_dir(struct fat16_dir* dir, const struct fat16_dir_entry* dir_
 	return 1;
 }
 
-/*
- * Reads the next directory entry contained within a parent directory.
- *
- * @param in dd The descriptor of the parent directory
- * @param out dir_entry Pointer to a buffer into which to write the directory entry information.
- * @returns 0 on failure, 1 on success.
- */
-uint8_t fat16_read_dir(struct fat16_dir* dd, struct fat16_dir_entry* dir_entry)
+extern uint8_t fat16_read_dir(struct fat16_dir* dd, struct fat16_dir_entry* dir_entry)
 {
 	if (!dd || !dir_entry)
 		return 0;
@@ -944,14 +948,7 @@ uint8_t fat16_read_dir(struct fat16_dir* dd, struct fat16_dir_entry* dir_entry)
 	return 0;
 }
 
-/*
- * Resets the directory handle such that reading restarts
- * with the first directory entry.
- *
- * @param in dd The directory handle
- * @returns 0 on failure, 1 on success.
- */
-uint8_t fat16_reset_dir(struct fat16_dir* dd)
+extern uint8_t fat16_reset_dir(struct fat16_dir* dd)
 {
 	if (!dd)
 		return 0;
@@ -960,15 +957,7 @@ uint8_t fat16_reset_dir(struct fat16_dir* dd)
 	return 1;
 }
 
-/*
- * Writes a directory entry to disk.
- *
- * The file name is not checked for invalid characters.
- *
- * @param in dir_entry
- * @returns 0 on failure, 1 on success.
- */
-uint8_t fat16_write_dir_entry(const struct fat16_dir_entry* dir_entry)
+extern uint8_t fat16_write_dir_entry(const struct fat16_dir_entry* dir_entry)
 {
 	if (!dir_entry)
 		return 0;
@@ -1022,7 +1011,7 @@ uint8_t fat16_write_dir_entry(const struct fat16_dir_entry* dir_entry)
 	buffer[0x1f] = (dir_entry->file_size >> 24) & 0xff;
 
 	// write to disk
-	if (!storage_write_bytes(offset + (uint32_t) lfn_entry_count * 32, buffer, sizeof(buffer)))
+	if (!sd_write_bytes(offset + (uint32_t) lfn_entry_count * 32, buffer, sizeof(buffer)))
 		return 0;
 
 	// calculate checksum of 8.3 name
@@ -1073,7 +1062,7 @@ uint8_t fat16_write_dir_entry(const struct fat16_dir_entry* dir_entry)
 		buffer[0x0d] = checksum;
 
 		// write entry
-		storage_write_bytes(offset, buffer, sizeof(buffer));
+		sd_write_bytes(offset, buffer, sizeof(buffer));
 
 		offset += sizeof(buffer);
 	}
@@ -1081,21 +1070,7 @@ uint8_t fat16_write_dir_entry(const struct fat16_dir_entry* dir_entry)
 	return 1;
 }
 
-/*
- * Creates a file and obtains the directory entry of the
- * new file. If the file to create already exists, the
- * directory entry of the existing file will be returned
- * within the dir_entry parameter.
- *
- * The file name is not checked for invalid characters.
- *
- * @param in parent The handle of the directory in which to create the file
- * @param in file The filename
- * @param out dir_entry The directory entry for the new file
- * @returns 0 on failure, 1 on success.
- */
-uint8_t fat16_create_file(struct fat16_dir* parent, const char* file,
-		struct fat16_dir_entry* dir_entry)
+extern uint8_t fat16_create_file(struct fat16_dir* parent, const char* file, struct fat16_dir_entry* dir_entry)
 {
 	if (!parent || !file || !file[0])
 		return 0;
@@ -1168,7 +1143,7 @@ uint8_t fat16_create_file(struct fat16_dir* parent, const char* file,
 
 		// read next lfn or 8.3 entry
 		uint8_t first_char;
-		if (!storage_read_bytes(offset, &first_char, sizeof(first_char)))
+		if (!sd_read_bytes(offset, &first_char, sizeof(first_char)))
 			return 0;
 
 		// check if we found a free directory entry
@@ -1178,7 +1153,7 @@ uint8_t fat16_create_file(struct fat16_dir* parent, const char* file,
 			{
 				// Mark the directory entries as deleted. This is needed if our new directory entry is too large to fit into the current cluster.
 				first_char = FAT16_DIRENTRY_DELETED;
-				if (!storage_write_bytes(offset, &first_char, sizeof(first_char)))
+				if (!sd_write_bytes(offset, &first_char, sizeof(first_char)))
 					return 0;
 			}
 
@@ -1205,19 +1180,7 @@ uint8_t fat16_create_file(struct fat16_dir* parent, const char* file,
 	return 1;
 }
 
-/*
- * Deletes a file or directory.
- *
- * It is not checked if the file to delete is a directory.
- * If a directory is deleted without first deleting its
- * subdirectories and files, disk space occupied by these
- * files will get wasted as there is no chance to release
- * it and mark it as free!!!
- *
- * @param in dir_entry The directory entry of the file to delete.
- * @returns 0 on failure, 1 on success.
- */
-uint8_t fat16_delete_file(struct fat16_dir_entry* dir_entry)
+extern uint8_t fat16_delete_file(struct fat16_dir_entry* dir_entry)
 {
 	if (!dir_entry)
 		return 0;
@@ -1231,14 +1194,14 @@ uint8_t fat16_delete_file(struct fat16_dir_entry* dir_entry)
 	while (1)
 	{
 		// read directory entry
-		if (!storage_read_bytes(dir_entry_offset, buffer, sizeof(buffer)))
+		if (!sd_read_bytes(dir_entry_offset, buffer, sizeof(buffer)))
 			return 0;
 
 		// mark the directory entry as deleted
 		buffer[0] = FAT16_DIRENTRY_DELETED;
 
 		// write back entry
-		if (!storage_write_bytes(dir_entry_offset, buffer, sizeof(buffer)))
+		if (!sd_write_bytes(dir_entry_offset, buffer, sizeof(buffer)))
 			return 0;
 
 		// check if we deleted the whole entry
