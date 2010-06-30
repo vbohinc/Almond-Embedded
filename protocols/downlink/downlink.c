@@ -14,20 +14,12 @@ downlink_package package;
 /* WARNING: Assuming layer above already connected */
 uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t value, bool *err)
 {
-
-  //downlink_package *package = malloc(sizeof(downlink_package));
-
   *err = false;
   package.opcode = opcode | flag;
   package.id = id;
   package.value = value;
   
-  // FIXME: HACK!
-  uint8_t return_package_length;
-  return_package_length = DOWNLINK_PACKAGE_LENGTH;
-
-  // Little Hack...
-  switch (bluetooth_send_data_package (&package.opcode, &return_package_length, true, DOWNLINK_TIMEOUT_MS))
+  switch (bluetooth_send_data_package (&package.opcode, DOWNLINK_PACKAGE_LENGTH))
     {
     case 0:
       if ((package.opcode == (RET | flag)) && (package.id == id))
@@ -188,7 +180,7 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
   if (return_package)
     {
       p->opcode = RET;
-      bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH, false, 100);
+      bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH);
     }
 }
 #endif

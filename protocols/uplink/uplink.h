@@ -88,11 +88,7 @@ struct _uplink_package
 
 
 #ifdef SQUIRREL
-void uplink_init(void);
-void uplink_send_configuration(uint8_t);
-void uplink_receive_configuration(uint8_t);
-void uplink_send_log(void);
-bool uplink_handle_package (uplink_package *p);
+void uplink_bluetooth_callback_handler (char *data_package, const uint8_t callback_type, const uint8_t data_length);
 #endif
 
 #endif

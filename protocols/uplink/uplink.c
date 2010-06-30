@@ -72,12 +72,11 @@ static inline bool uplink_handle_set_package (uplink_package *p)
         return false;
 
       default:
-          return false;
-        }
+        return false;
+    }
 }
 
-/* FIXME: Change parameter list */
-void uplink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
+void uplink_bluetooth_callback_handler (char *data_package, const uint8_t callback_type, const uint8_t data_length)
 {
   bool error;
   uplink_package *p;
@@ -122,9 +121,7 @@ void uplink_bluetooth_callback_handler (uint8_t *data_package, const uint8_t cal
   else
     p->opcode = RET;
 
-  // FIXME: Pointer!
-  uint8_t hack = UPLINK_PACKAGE_LENGTH;
-  bluetooth_send_data_package (&(p->opcode), &hack, false, 0);
+  bluetooth_send_data_package (&(p->opcode), UPLINK_PACKAGE_LENGTH);
 }
 
 #endif

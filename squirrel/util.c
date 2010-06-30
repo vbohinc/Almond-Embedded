@@ -2,6 +2,7 @@
  *  util.c
  *
  */
+ 
 #include "util.h"
 
 static uint32_t emu_time = 0;
