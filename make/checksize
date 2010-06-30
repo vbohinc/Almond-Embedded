@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Name: checksize
 # Project: 
 # Author: Christian Starkjohann
@@ -32,23 +32,27 @@ if [ $# -gt 4 ]; then
 fi
 
 set -- `avr-size -A -d "$1" | awk -f $2`
+let P=($1*100)/$codelimit
 if [ $1 -gt $codelimit ]; then
-	echo "*** code size $1 exceeds limit of $codelimit"
+	echo "*** code size $1 exceeds limit of $codelimit [$P%]"
 	error=1
 else
-	echo "ROM: $1 bytes (data=$3)"
+	echo "ROM:	$1	bytes [$P%] (data=$3)"
 fi
+let P=($2*100)/$datalimit
 if [ $2 -gt $datalimit ]; then
-	echo "*** data size $2 exceeds limit of $datalimit"
+	echo "*** data size $2 exceeds limit of $datalimit [$P%]"
 	error=1
 else
-	echo "RAM: $2 bytes"
+	echo "RAM:	$2	bytes [$P%]"
 fi
+
+let P=($4*100)/$eepromlimit
 if [ $4 -gt $eepromlimit ]; then
-	echo "*** eeprom size $4 exceeds limit of $eepromlimit"
+	echo "*** eeprom size $4 exceeds limit of $eepromlimit [$P%]"
 	error=1
 else
-	echo "EEPROM: $4 bytes"
+	echo "EEPROM:	$4	bytes [$P%]"
 fi
 
 exit $error
