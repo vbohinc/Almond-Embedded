@@ -213,7 +213,7 @@ void bluetooth_process_response(void)
 	}
 	if (strncmp_P(bluetooth_cmd_buffer, PSTR("CONNECT"), 7)==0)
 	{
-		bluetooth_address_to_array(bluetooth_cmd_buffer, bluetooth_data_package, 10, 0, 1);
+		bluetooth_address_to_array(bluetooth_cmd_buffer+10, bluetooth_data_package, 1);
 		bluetooth_is_connected = 1;
 		bluetooth_response_code = 2;
 		//Call callback function
@@ -222,7 +222,7 @@ void bluetooth_process_response(void)
 	}
 	if (strncmp_P(bluetooth_cmd_buffer, PSTR("DISCONNECT"), 10)==0)
 	{
-		bluetooth_address_to_array(bluetooth_cmd_buffer,bluetooth_data_package, 13, 0, 1);
+		bluetooth_address_to_array(bluetooth_cmd_buffer+13,bluetooth_data_package,1);
 		bluetooth_is_connected =  0;
 		bluetooth_response_code = 3;
 		//Call callback function
@@ -238,14 +238,14 @@ void bluetooth_process_response(void)
 		break;
 	case 'B':
 		//copy received address into return array without '-'
-		bluetooth_address_to_array(bluetooth_cmd_buffer,bluetooth_data_package , 0,0, 1);
+		bluetooth_address_to_array(bluetooth_cmd_buffer,bluetooth_data_package , 1);
 		break;
 	case 'C':
 		strcpy(bluetooth_data_package,bluetooth_cmd_buffer); //copy received value into return array
 		break;
 	case 'D':
 		//copy received address into return array without '-'
-		bluetooth_address_to_array(bluetooth_cmd_buffer,bluetooth_data_package,  0,0, 1);
+		bluetooth_address_to_array(bluetooth_cmd_buffer,bluetooth_data_package,  1);
 		break;
 	case 'E':
 		strcpy(bluetooth_data_package,bluetooth_cmd_buffer); //copy received value into return array
@@ -271,7 +271,7 @@ void bluetooth_process_response(void)
 			bluetooth_data_package[1+index*(16+6)+i] = bluetooth_cmd_buffer[i+3];
 
 		//Copy address
-		bluetooth_address_to_array(bluetooth_cmd_buffer, bluetooth_data_package,1+index*(16+6)+16, 21 , 1);
+		bluetooth_address_to_array(bluetooth_cmd_buffer+(1+index*(16+6)+16), bluetooth_data_package+21, 1);
 
 		break;
 	case 'H':
@@ -941,12 +941,12 @@ uint8_t hex_to_char(uint8_t hex)
 }
 
 
-void bluetooth_address_to_array(const char *full_address, char *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen)
+void bluetooth_address_to_array(const char *full_address, char *compressed_address, const uint8_t address_with_hyphen)
 {
 	uint8_t addr_buffer = 0;
-	uint8_t buf_idx = full_start_idx;
+	uint8_t buf_idx = 0;
 
-	for (uint8_t i=compressed_start_idx; i<compressed_start_idx+6; i++)
+	for (uint8_t i=0; i<6; i++)
 	{
 		addr_buffer |= ((char_to_hex(full_address[buf_idx])<<4)& 0xF0);
 		buf_idx++;

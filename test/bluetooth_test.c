@@ -30,7 +30,7 @@ uint8_t int_to_send = 1;
 
 uint8_t pkg_received = 0;
 
-void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_type, const uint8_t data_length)
+void bluetooth_callback_handler(char *data_package, const uint8_t callback_type, const uint8_t data_length)
 {
 	if (callback_type == 0) {//is data package
 		print((uint8_t*)"Package:");
@@ -49,7 +49,7 @@ void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_ty
 		//printf("]\n");
 	} else if (callback_type == 1) //connected
 	{
-		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+		bluetooth_array_to_address((char*)data_package, (char*)cmd, 0);
 
 		print((uint8_t*)"Con\0");
 		print(cmd);
@@ -57,7 +57,7 @@ void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_ty
 		connected = 1;
 	} else if (callback_type == 2) //disconnected
 	{
-		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+		bluetooth_array_to_address((char*)data_package, (char*)cmd, 0);
 		print((uint8_t*)"DCon\0");
 		print(cmd);
 		FTDISend('\n');
@@ -103,7 +103,7 @@ void master_test(void)
 		cmd[11] = '1';
 
 		uint8_t compressed[6];
-		bluetooth_address_to_array((uint8_t*)cmd, compressed, 0,0,0);
+		bluetooth_address_to_array((char*)cmd, (char*)compressed, 0);
 
 		//printf("\nATD ret=%d",retval);
 
