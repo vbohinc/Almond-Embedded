@@ -312,8 +312,8 @@ int main(void)
 		debug_pgm(PSTR("BTM: Test Conn=OK"));
 		FTDISend(10);
 		LED2_PORT |= (1<<0);
-		master_test();
-		//slave_test();
+		//master_test();
+		slave_test();
 	}
 }
 
