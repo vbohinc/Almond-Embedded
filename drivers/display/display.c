@@ -403,6 +403,7 @@ void display_write_text(const char *text, uint8_t status)
 	uint8_t i;
 	uint8_t symbol = 0;
 	uint8_t row = 1;
+	uint8_t blank = (uint8_t) ' ';
 
 	//prepare display
 	for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
@@ -449,10 +450,18 @@ void display_write_text(const char *text, uint8_t status)
 		}
 
 	}
-	//TODO add blanks
+	//TODO add blanks and testing
+	for (row = row;row < DISPLAY_PAGE_NUMBER; row++) {
+		for(symbol=symbol; symbol<max_symbols; symbol++){display_write_char(blank, 1); symbol =0;}
+	}
+	if (row==DISPLAY_PAGE_NUMBER) {
+		for(symbol=symbol; symbol<max_symbols-1; symbol++){display_write_char(blank, 1); symbol =0;}
+	}
+
+
 
 	//Paint navigation arrow if set
-	if ((status & DISPLAY_TEXT_TOP) || (status & DIPSLAY_TEXT_BOTTOM))
+	if ((status & DISPLAY_TEXT_TOP) && (status & DIPSLAY_TEXT_BOTTOM))
 	{
 		display_write_char_util(DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL, 0);
 	}
@@ -467,6 +476,10 @@ void display_write_text(const char *text, uint8_t status)
 	else if (status & DIPSLAY_TEXT_BOTTOM)
 	{
 		display_write_char_util(DISPLAY_CHAR_ARROW_BOTTOM_SMALL, 0);
+	}
+
+	else {
+		display_write_char(blank, 1);
 	}
 }
 
