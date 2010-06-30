@@ -32,6 +32,7 @@ void sd_get_response(uint8_t response_type);
 
 void sd_init() {
 	spi_init();
+	debug_pgm(PSTR("SD: SPI Init Succeeded"));
 	// Place SD Card into Idle State
 	sd_send_command(CMD0, NULL); 
 	sd_get_response(R1);
@@ -43,6 +44,7 @@ void sd_init() {
 	// Check supply voltage
 	sd_send_command(CMD8, NULL); 
 	sd_get_response(R1);
+	debug_pgm(PSTR("SD: Switch to SPI Mode Succeeded. Voltage queried"));
 	if (sd_response_buffer[0] == 0x04) { // CMD8 is illegal, Version 1 card
 		do {
 			// Prepare 'A'-Command transmission
@@ -52,6 +54,7 @@ void sd_init() {
 			sd_send_command(ACMD41, NULL);
 			sd_get_response(R1);
 		} while (sd_response_buffer[0] != 0x00);
+		debug_pgm(PSTR("SD: Type 1 Initialization complete"));
 	} else { // Version 2
 		do {
 			// Prepare 'A'-Command transmission
@@ -64,6 +67,7 @@ void sd_init() {
 		// Gets the OCR [Operating Conditions Register] (including Card Capacity)
 		sd_send_command(CMD58, NULL); 
 		sd_get_response(R3);
+		debug_pgm(PSTR("SD: Type 2 Initialization complete"));
 	}
 	// Set block size to 32 bytes
 	//sd_send_command(CMD16, NULL);
@@ -78,6 +82,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 			sd_buffer[0] = 0x40;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
 			sd_buffer[5] = 0x95;
+			debug_pgm(PSTR("SD: CMD0 complete"));
 			break;
 		case CMD8:
 			// Static CMD8. Ask the card if it likes tasty 2.7-3.6V
@@ -85,6 +90,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 			sd_buffer[0] = 0x48;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[4] = 0x00;
 			sd_buffer[3] = sd_buffer[5] = 0x01;
+			debug_pgm(PSTR("SD: CMD8 complete"));
 			break;
 		case CMD16:
 			// Static CMD16. Sets the block size to 32 bytes.
@@ -93,6 +99,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = 0x00;
 			sd_buffer[4] = 0x20;
 			sd_buffer[5] = 0x01;
+			debug_pgm(PSTR("SD: CMD16 complete"));
 			break;
 		case CMD17:
 			// Requests a single block beginning at the address passed (4 Bytes)
@@ -100,6 +107,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 			for (int i = 0; i < 4; i++)
 				sd_buffer[i+1] = arguments[i];
 			sd_buffer[5] = 0x01;
+			debug_pgm(PSTR("SD: CMD17 complete"));
 			break;
 		case CMD24:
 			// Writes a single block at the address passed
@@ -107,6 +115,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 			for (int i = 0; i < 4; i++)
 				sd_buffer[i+1] = arguments[i];
 			sd_buffer[5] = 0x01;
+			debug_pgm(PSTR("SD: CMD24 complete"));
 			break;
 		case CMD55:
 			// Static CMD55. Informs the card the next command will be an 'A'-Command (Application Specific)
@@ -114,6 +123,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 			sd_buffer[0] = 0x77;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
 			sd_buffer[5] = 0x01;
+			debug_pgm(PSTR("SD: CMD55 complete"));
 			break;
 		case ACMD41:
 			// Static ACMD41. Initialize the card. Inform it we don't support High Capacity.
@@ -122,6 +132,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 			sd_buffer[1] = 0x60;
 			sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
 			sd_buffer[5] = 0x01;
+			debug_pgm(PSTR("SD: ACMD41 complete"));
 			break;
 		case CMD58:
 			// Static CMD58. Get OCR. (Operating Conditions Register) Returns the Card Capacity. 
@@ -129,6 +140,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 			sd_buffer[0] = 0x79;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
 			sd_buffer[5] = 0x01;
+			debug_pgm(PSTR("SD: CMD58 complete"));
 			break;
 		default:
 			return false;
@@ -140,6 +152,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 void sd_read_block(uint8_t *addr, uint8_t *read_buffer) {
 	if(sd_send_command(CMD17, addr))
 	{
+		debug_pgm(PSTR("SD: CMD17 Succeeded"));
 		sd_get_response(R1);
 		if (sd_response_buffer[0] == 0x00)
 		{
@@ -157,11 +170,13 @@ void sd_read_block(uint8_t *addr, uint8_t *read_buffer) {
 	for (int i = 0; i < 32; i++) {
 		read_buffer[i] = sd_token_buffer[i+2];
 	}
+	debug_pgm(PSTR("SD: Read Succeeded"));
 }
 
 
 void sd_write_block(uint8_t *addr, uint8_t *write_buffer) {
 	if (sd_send_command(CMD24, addr)) {
+		debug_pgm(PSTR("SD: CMD24 Succeeded"));
 		sd_get_response(R1);
 		if (sd_response_buffer[0] == 0x00) {
 			uint8_t start_token = 0xFE;
@@ -177,11 +192,13 @@ void sd_write_block(uint8_t *addr, uint8_t *write_buffer) {
 		// Busy tokens?
 			
 	}
+	debug_pgm(PSTR("SD: Write Succeeded"));
 }
 
 void sd_send_buffer() {
 	for (int i = 0; i < 6; i++) {
 		spi_send_byte(sd_buffer[i]);
+		debug_pgm(PSTR("SD: Buffer Byte Sent"));
 	}
 }
 
@@ -189,16 +206,19 @@ void sd_get_response(uint8_t response_type) {
 	switch (response_type) {
 		case R1:
 			sd_response_buffer[0] = spi_receive_byte();
+			debug_pgm(PSTR("SD: R1 received"));
 			break;
 		case R1b:
 			sd_response_buffer[0] = spi_receive_byte();
 			do {
 				sd_response_buffer[1] = spi_receive_byte();
 			} while (sd_response_buffer[1] == 0x00);
+			debug_pgm(PSTR("SD: R1b received"));
 			break;
 		case R2:
 			sd_response_buffer[0] = spi_receive_byte();
 			sd_response_buffer[1] = spi_receive_byte();
+			debug_pgm(PSTR("SD: R2 received"));
 			break;
 		case R3:
 		case R7:
@@ -207,6 +227,7 @@ void sd_get_response(uint8_t response_type) {
 			sd_response_buffer[2] = spi_receive_byte();
 			sd_response_buffer[3] = spi_receive_byte();
 			sd_response_buffer[4] = spi_receive_byte();
+			debug_pgm(PSTR("SD: R3/7 received"));
 			break;
 		default:
 			return;
