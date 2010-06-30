@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "storage/sd.h"
+
 // Globals:
 static struct fat16_filesystem g_filesystem;
 
@@ -76,56 +78,9 @@ static uint16_t fat16_get_next_cluster(uint16_t cluster_num);
 static uint16_t fat16_append_cluster(uint16_t cluster_num);
 static uint8_t fat16_free_cluster(uint16_t cluster_num);
 
+static uint8_t storage_read_interval(uint32_t offset, uint8_t* buffer, uint16_t interval, uint16_t length, interval_handler callback, void* p);
 
-uint8_t sd_write_bytes(uint32_t offset, uint8_t* buffer, uint16_t size);
-uint8_t sd_read_bytes(uint32_t offset, uint8_t* buffer, uint16_t size);
-
-uint8_t storage_read_interval(uint32_t offset, uint8_t* buffer, uint16_t interval, uint16_t length, interval_handler callback, void* p);
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-uint8_t sd_read_bytes(uint32_t offset, uint8_t* buffer, uint16_t size)
-{
-	FILE *file;
-	if ((file = fopen(g_filename, "r+b")) == NULL)
-	{
-		printf("Problem opening file %s.\n", g_filename);
-		return 0;
-	}
-
-	fseek(file, offset, SEEK_SET);
-	fread(buffer, sizeof(uint8_t), size, file);
-
-	if (fclose(file) == EOF)
-	{
-		printf("Problem closing file.");
-		return 0;
-	}
-
-	return 1;
-}
-
-uint8_t sd_write_bytes(uint32_t offset, uint8_t* buffer, uint16_t size)
-{
-	FILE *file;
-	if ((file = fopen(g_filename, "r+b")) == NULL)
-	{
-		printf("Problem opening file %s.\n", g_filename);
-		return 0;
-	}
-
-	fseek(file, offset, SEEK_SET);
-	fwrite(buffer, sizeof(uint8_t), size, file);
-
-	if (fclose(file) == EOF)
-	{
-		printf("Problem closing file.");
-		return 0;
-	}
-
-	return 1;
-}
-
-uint8_t storage_read_interval(uint32_t offset, uint8_t* buffer, uint16_t interval, uint16_t length, interval_handler callback, void* p)
+static uint8_t storage_read_interval(uint32_t offset, uint8_t* buffer, uint16_t interval, uint16_t length, interval_handler callback, void* p)
 {
 	while (length >= interval)
 	{
@@ -138,7 +93,7 @@ uint8_t storage_read_interval(uint32_t offset, uint8_t* buffer, uint16_t interva
 	}
 	return 1;
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 static uint8_t partition_open(uint8_t index)
 {

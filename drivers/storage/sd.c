@@ -1,4 +1,4 @@
-/*      ___                         ___           ___           ___          _____    
+/*    ___                         ___           ___           ___          _____
      /  /\                       /__/\         /  /\         /__/\        /  /::\   
     /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\  
    /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\ 
@@ -149,7 +149,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 	return true;
 }
 
-void sd_read_block(uint32_t addr, uint8_t *read_buffer, uint16_t size) {
+void sd_read_bytes(uint32_t addr, uint8_t *read_buffer, uint16_t size) {
 	uint32_t block_addr = addr - (addr % SD_BLOCK_SIZE);
 	uint8_t bytes_read = 0;
 	while (bytes_read < size) {
@@ -188,7 +188,7 @@ void sd_read_block(uint32_t addr, uint8_t *read_buffer, uint16_t size) {
 }
 
 
-void sd_write_block(uint32_t addr, uint8_t *write_buffer, uint16_t size) {
+void sd_write_bytes(uint32_t addr, uint8_t *write_buffer, uint16_t size) {
 	if (sd_send_command(CMD24, addr)) {
 		debug_pgm(PSTR("SD: CMD24 Succeeded"));
 		sd_get_response(R1);

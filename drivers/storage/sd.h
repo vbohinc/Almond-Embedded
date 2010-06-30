@@ -23,5 +23,5 @@ static uint8_t sd_token_buffer[SD_BLOCK_SIZE+3];
 
 void sd_init(void);
 bool sd_send_command(uint8_t command_nr, uint8_t *arguments);
-void sd_read_block(uint32_t addr, uint8_t *read_buffer, uint16_t size);
-void sd_write_block(uint32_t addr, uint8_t *write_buffer, uint16_t size);
+void sd_read_bytes(uint32_t addr, uint8_t *read_buffer, uint16_t size);
+void sd_write_bytes(uint32_t addr, uint8_t *write_buffer, uint16_t size);
