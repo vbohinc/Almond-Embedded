@@ -140,7 +140,7 @@ void master_test(void)
 		while (1)
 		{
 			len = 64;
-			uint8_t ret = bluetooth_send_data_package(pkg, &len, 1, 2000);
+			uint8_t ret = bluetooth_send_data_package_with_response(pkg, &len, 2000);
 			if (ret == 1)
 				print((uint8_t*)"UE\n");
 			else if (ret == 2)
