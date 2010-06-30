@@ -417,10 +417,6 @@ Purpose:  called when the UART has received a character
 **************************************************************************/
 {
 
-#ifdef UART_ENABLE_FLOW_CONTROL
-	UART_CTS_PORT |= (1<<UART_CTS_PIN); //not ready for data = high
-#endif
-
 
 #ifdef ATXMEGA_USART0
 	USART_RXComplete(&USART_data);
@@ -461,11 +457,14 @@ Purpose:  called when the UART has received a character
         /* store received data in buffer */
         UART_RxBuf[tmphead] = data;
 
-#ifdef UART_ENABLE_FLOW_CONTROL
+       FTDISend('I');
+       FTDISend(data);
+
+#ifdef UART0_ENABLE_FLOW_CONTROL
         //Check if buffer is full
-        tmphead = ( UART_RxHead + 16) & UART_RX_BUFFER_MASK;
+        tmphead = ( UART_RxHead + 1) & UART_RX_BUFFER_MASK;
         if ( tmphead == UART_RxTail ) {
-            UART_CTS_PORT |= (1<<UART_CTS_PIN); //not ready for data = high
+            UART0_CTS_PORT |= (1<<UART0_CTS_PIN); //not ready for data = high
         }
 #endif
     }
@@ -493,7 +492,7 @@ Purpose:  called when the UART is ready to transmit the next byte
         /* get one byte from buffer and write it to UART */
         UART0_DATA = UART_TxBuf[tmptail];  /* start transmission */
 
-    	FTDISend(UART_TxBuf[tmptail]);
+    	//FTDISend(UART_TxBuf[tmptail]);
     }else{
         /* tx buffer empty, disable UDRE interrupt */
         UART0_CONTROL &= ~_BV(UART0_UDRIE);
@@ -634,7 +633,11 @@ Returns:  lower byte:  received byte from ringbuffer
           higher byte: last receive error
 **************************************************************************/
 unsigned int uart_getc(void)
-{    
+{
+#ifdef UART0_ENABLE_FLOW_CONTROL
+    UART0_CTS_PORT &= ~(1<<UART0_CTS_PIN); //ready for data = low
+#endif
+
 #ifdef ATXMEGA_USART0
     if (USART_RXBufferData_Available(&USART_data)== false)
         return UART_NO_DATA;   /* no data available */
@@ -647,9 +650,7 @@ unsigned int uart_getc(void)
     }
 #endif
     
-#ifdef UART_ENABLE_FLOW_CONTROL
-    UART_CTS_PORT &= ~(1<<UART_CTS_PIN); //ready for data = low
-#endif
+
 
 #ifdef ATXMEGA_USART0
     return USART_RXBuffer_GetByte(&USART_data);
