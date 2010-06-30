@@ -84,7 +84,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 			//sd_buffer = 0x480000010001;
 			sd_buffer[0] = 0x48;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[4] = 0x00;
-			sd_buffer[3] = sd_buffer[5] 0x01;
+			sd_buffer[3] = sd_buffer[5] = 0x01;
 			break;
 		case CMD16:
 			// Static CMD16. Sets the block size to 32 bytes.
@@ -92,7 +92,7 @@ bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 			sd_buffer[0] = 0x50;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = 0x00;
 			sd_buffer[4] = 0x20;
-			sd_buffer[5] 0x01;
+			sd_buffer[5] = 0x01;
 			break;
 		case CMD17:
 			// Requests a single block beginning at the address passed (4 Bytes)
@@ -165,7 +165,7 @@ void sd_write_block(uint8_t *addr, uint8_t *write_buffer) {
 		sd_get_response(R1);
 		if (sd_response_buffer[0] == 0x00) {
 			uint8_t start_token = 0xFE;
-			spi_send_byte(&start_token);
+			spi_send_byte(start_token);
 			for (int i = 0; i < 512; i++) {
 				spi_send_byte(write_buffer[i]);
 			}
@@ -211,3 +211,4 @@ void sd_get_response(uint8_t response_type) {
 			return;
 	}
 }
+
