@@ -425,8 +425,6 @@ void bluetooth_process_data(void)
 	bluetooth_input_to_array();
 
 
-
-
 	while (bluetooth_infifo.count>0)
 	{ //read all bytes from fifo
 		//Check if received data is a datapackage or a response to a sent command.
@@ -457,15 +455,17 @@ void bluetooth_process_data(void)
 				debug(error_builder);
 				debug(itoa(byte, error_builder,10));
 			}*/
-			if (byte == 10)
+			if (byte == 13)
 			{
+				//uart_putc('%');
 				//FTDISend('%');
 				//handle received command
 				bluetooth_cmd_buffer[bluetooth_cmd_buffer_head]=0;
 				bluetooth_process_response();
 				bluetooth_cmd_buffer_head = 0;
-			} else if (byte != 13 && byte != 0) //don't handle <CR>
+			} else if (byte != 10 && byte != 0) //don't handle <CR>
 			{
+				//uart_putc(byte);
 				bluetooth_cmd_buffer[bluetooth_cmd_buffer_head] = byte;
 				bluetooth_cmd_buffer_head++;
 				if (bluetooth_cmd_buffer_head == BLUETOOTH_CMD_BUFFER_SIZE)

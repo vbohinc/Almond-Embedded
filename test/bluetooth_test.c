@@ -5,6 +5,22 @@
  *      Author: stefan
  */
 
+#ifdef __AVR_ATxmega128A1__
+#define LED1_DDR PORTD.DIR
+#define LED1_PORT PORTD.OUT
+#define LED2_DDR PORTD.DIR
+#define LED2_PORT PORTD.OUT
+#define LED1_PIN PIN3
+#define LED2_PIN PIN6
+#else
+#define LED1_DDR DDRD
+#define LED1_PORT PORTD
+#define LED2_DDR DDRC
+#define LED2_PORT PORTC
+#define LED1_PIN 7
+#define LED2_PIN 0
+#endif
+
 #include <avr/io.h>
 #include <util/delay.h>
 #include "bluetooth/bluetooth.h"
@@ -229,17 +245,7 @@ void slave_test(void)
 
 //uint8_t arr[200] EEMEM = " asdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljfasdfasdfasdfjasdflkjasdfhlkjasfhlkjsajgaljfaklhfaklaskljf";
 
-#ifdef __AVR_ATxmega128A1__
-#define LED1_DDR PORTD.DIR
-#define LED1_PORT PORTD.OUT
-#define LED2_DDR PORTC.DIR
-#define LED2_PORT PORTC.OUT
-#else
-#define LED1_DDR DDRD
-#define LED1_PORT PORTD
-#define LED2_DDR DDRC
-#define LED2_PORT PORTC
-#endif
+
 
 int main(void)
 {
@@ -248,28 +254,28 @@ int main(void)
 
 	LED2_DDR |= 0xFF;
 
-	LED1_PORT |= (1<<7);
-	LED2_PORT |= (1<<0);
-			_delay_ms(500);
-			LED1_PORT &= ~(1<<7);
-			LED2_PORT &= ~(1<<0);
-			_delay_ms(500);
+	LED1_PORT |= (1<<LED1_PIN);
+	LED2_PORT |= (1<<LED2_PIN);
+	_delay_ms(500);
+	LED1_PORT &= ~(1<<LED1_PIN);
+	LED2_PORT &= ~(1<<LED2_PIN);
+	_delay_ms(500);
 
 
-			FTDISend(10);
-			FTDISend(13);
-			FTDISend('#');
-			FTDISend('#');
-			FTDISend('#');
-			FTDISend(10);
-			FTDISend(13);
+	FTDISend(10);
+	FTDISend(13);
+	FTDISend('#');
+	FTDISend('#');
+	FTDISend('#');
+	FTDISend(10);
+	FTDISend(13);
 
-			LED1_PORT |= (1<<7);
-			LED2_PORT |= (1<<0);
-			_delay_ms(500);
-			LED1_PORT &= ~(1<<7);
-			LED2_PORT &= ~(1<<0);
-			_delay_ms(500);
+	LED1_PORT |= (1<<LED1_PIN);
+	LED2_PORT |= (1<<LED2_PIN);
+	_delay_ms(500);
+	LED1_PORT &= ~(1<<LED1_PIN);
+	LED2_PORT &= ~(1<<LED2_PIN);
+	_delay_ms(500);
 
 
 	bluetooth_init(bluetooth_callback_handler);
@@ -277,11 +283,11 @@ int main(void)
 
 	sei();
 
-	LED1_PORT |= (1<<7);
-	LED2_PORT |= (1<<0);
+	LED1_PORT |= (1<<LED1_PIN);
+	LED2_PORT |= (1<<LED2_PIN);
 	_delay_ms(500);
-	LED1_PORT &= ~(1<<7);
-	LED2_PORT &= ~(1<<0);
+	LED1_PORT &= ~(1<<LED1_PIN);
+	LED2_PORT &= ~(1<<LED2_PIN);
 	_delay_ms(500);
 
 
@@ -302,7 +308,7 @@ int main(void)
 	{
 
 		error_pgm(PSTR("BTM: Test Conn=ERROR"));
-		LED1_PORT |= (1<<7);
+		LED1_PORT |= (1<<LED1_PIN);
 
 		FTDISend(13);
 		FTDISend(10);
@@ -311,7 +317,7 @@ int main(void)
 	{
 		debug_pgm(PSTR("BTM: Test Conn=OK"));
 		FTDISend(10);
-		LED2_PORT |= (1<<0);
+		LED2_PORT |= (1<<LED2_PIN);
 		//master_test();
 		slave_test();
 	}

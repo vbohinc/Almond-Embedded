@@ -417,7 +417,6 @@ Purpose:  called when the UART has received a character
 **************************************************************************/
 {
 
-
 #ifdef ATXMEGA_USART0
 	USART_RXComplete(&USART_data);
 
@@ -507,7 +506,7 @@ Purpose:  initialize UART and set baudrate
 Input:    baudrate using macro UART_BAUD_SELECT()
 Returns:  none
 **************************************************************************/
-void uart_init(unsigned int baudrate)
+void uart_init(uint16_t baudrate)
 {
 #ifndef ATXMEGA_USART0
     UART_TxHead = 0;
@@ -602,23 +601,24 @@ void uart_init(unsigned int baudrate)
 	USART_InterruptDriver_Initialize(&USART_data, &USART, USART_DREINTLVL_LO_gc);
 
 	/* USARTC0, 8 Data bits, No Parity, 1 Stop bit. */
-	USART_Format_Set(&USART, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
+	USART_Format_Set(USART_data.usart, USART_CHSIZE_8BIT_gc,
+					 USART_PMODE_DISABLED_gc, false);
 
 	/* Enable RXC interrupt. */
 	USART_RxdInterruptLevel_Set(USART_data.usart, USART_RXCINTLVL_LO_gc);
 
-	/* Enable RXC interrupt. */
-	USART_TxdInterruptLevel_Set(USART_data.usart, USART_TXCINTLVL_LO_gc);
-
-	/* Set Baudrate
+	/* Set Baudrate to 9600 bps:
+	 * Use the default I/O clock frequency that is 2 MHz.
 	 * Do not use the baudrate scale factor
 	 *
+	 * Baudrate select = (1/(16*(((I/O clock frequency)/Baudrate)-1)
+	 *                 = 12
 	 */
-	USART_Baudrate_Set(&USART, baudrate , 0);
+	USART_Baudrate_Set(&USART, 12 , 0);
 
 	/* Enable both RX and TX. */
-	USART_Rx_Enable(&USART);
-	USART_Tx_Enable(&USART);
+	USART_Rx_Enable(USART_data.usart);
+	USART_Tx_Enable(USART_data.usart);
 
 	/* Enable PMIC interrupt level low. */
 	PMIC.CTRL |= PMIC_LOLVLEX_bm;
@@ -643,21 +643,17 @@ unsigned int uart_getc(void)
 
 #ifdef ATXMEGA_USART0
     if (USART_RXBufferData_Available(&USART_data)== false)
+    {
         return UART_NO_DATA;   /* no data available */
-
+    }
+    return USART_RXBuffer_GetByte(&USART_data);
 #else
     unsigned char tmptail;
     unsigned char data;
     if ( UART_RxHead == UART_RxTail ) {
         return UART_NO_DATA;   /* no data available */
     }
-#endif
-    
 
-
-#ifdef ATXMEGA_USART0
-    return USART_RXBuffer_GetByte(&USART_data);
-#else
     /* calculate /store buffer index */
     tmptail = (UART_RxTail + 1) & UART_RX_BUFFER_MASK;
     UART_RxTail = tmptail; 
@@ -691,11 +687,7 @@ int uart_putc(uint8_t data)
     
 #ifdef ATXMEGA_USART0
 
-		while(!USART_IsTXDataRegisterEmpty(&USART)) {
-			;
-		}
-
-	USART_PutChar(&USART, data);
+    USART_TXBuffer_PutByte(&USART_data,data);
 #else
 
     unsigned char tmphead;
@@ -787,7 +779,7 @@ void uart_flush(void)
  */
 #if defined( ATMEGA_USART1 )
 
-SIGNAL(UART1_RECEIVE_INTERRUPT)
+ISR(UART1_RECEIVE_INTERRUPT)
 /*************************************************************************
 Function: UART1 Receive Complete interrupt
 Purpose:  called when the UART1 has received a character
@@ -825,7 +817,7 @@ Purpose:  called when the UART1 has received a character
 }
 
 
-SIGNAL(UART1_TRANSMIT_INTERRUPT)
+ISR(UART1_TRANSMIT_INTERRUPT)
 /*************************************************************************
 Function: UART1 Data Register Empty interrupt
 Purpose:  called when the UART1 is ready to transmit the next byte
