@@ -74,13 +74,9 @@ endif
 #uart
 ifeq (uart, $(findstring uart,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/uart/uart.c 
+ifeq ($(MCU), atxmega128a1)
+SRC += $(BASE)/drivers/uart/usart_driver.c 
 endif
-
-#uart atxmega
-ifeq (uart, $(findstring uart,$(ALMONDLIBS)))
-	ifeq ($(MCU), atxmega128a1)
-		SRC += $(BASE)/drivers/uart/usart_driver.c 
-	endif
 endif
 
 #twi
@@ -92,6 +88,18 @@ endif
 ifeq (error, $(findstring error,$(ALMONDLIBS)))
 SRC += $(BASE)/shared/error.c $(BASE)/shared/ftdi.c 
 endif
+
+#sd
+ifeq (storage, $(findstring storage,$(ALMONDLIBS)))
+ALMONDLIBS += spi
+SRC += $(BASE)/drivers/storage/sd.c $(BASE)/drivers/storage/fat16.c
+endif
+
+#spi
+ifeq (spi, $(findstring spi,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/spi/spi.c
+endif
+
 
 
 
