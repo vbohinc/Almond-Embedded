@@ -142,7 +142,17 @@ uint8_t bluetooth_handle_array(void);
  * @param timeout_ms timeout in ms to wait for response
  * @return 0 on success, 1 on error, 2 on timeout
  */
-extern uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_t wait_for_response_package, const uint16_t timeout_ms);
+extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
+
+/**
+ * Sends the data to the connected client.
+ * Adds the stop-byte at the end of the package
+ * @param data The data to send. If wait_for_response_package enabled, contains the response package. Must be big enought.
+ * @param length the length (number of bytes) in the data array. If wait_for_response_package enabled, contains the lenght of the received package
+ * @param timeout_ms timeout in ms to wait for response
+ * @return 0 on success, 1 on error, 2 on timeout
+ */
+extern uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length, const uint16_t timeout_ms);
 
 /**
  * Processes received data stored in the FIFO. Should be called in the while-loop of the main program
@@ -180,7 +190,7 @@ extern uint8_t bluetooth_test_connection(uint8_t tries);
  * @param compressed_start_idx index where the compressed address should start in the compressed_address array. Use 0 if array should only contain address
  * @param address_with_hyphen 1 if address is in the format xxxx-xx-xxxxxx or 0 if address is without hypen xxxxxxxxxxxx
  */
-extern void bluetooth_address_to_array(const char *full_address, char *compressed_address, const uint8_t full_start_idx, const uint8_t compressed_start_idx, const uint8_t address_with_hyphen);
+extern void bluetooth_address_to_array(const char *full_address, char *compressed_address, const uint8_t address_with_hyphen);
 
 /**
  * Converts the compressed address format into the string representation of a bluetooth address into.

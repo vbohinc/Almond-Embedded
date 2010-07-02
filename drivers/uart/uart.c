@@ -1,7 +1,7 @@
 /*************************************************************************
 Title:    Interrupt UART library with receive/transmit circular buffers
 Author:   Peter Fleury <pfleury@gmx.ch>   http://jump.to/fleury
-File:     $Id: uart.c,v 1.6.2.2 2009/11/29 08:56:12 Peter Exp $
+File:     $Id: uart.c,v 1.6.2.1 2007/07/01 11:14:38 peter Exp $
 Software: AVR-GCC 4.1, AVR Libc 1.4.6 or higher
 Hardware: any AVR with built-in UART, 
 License:  GNU General Public License 
@@ -36,6 +36,68 @@ LICENSE:
     GNU General Public License for more details.
                         
 *************************************************************************/
+
+/************************************************************************
+uart_available, uart_flush, uart1_available, and uart1_flush functions
+were adapted from the Arduino HardwareSerial.h library by Tim Sharpe on
+11 Jan 2009.  The license info for HardwareSerial.h is as follows:
+
+  HardwareSerial.cpp - Hardware serial library for Wiring
+  Copyright (c) 2006 Nicholas Zambetti.  All right reserved.
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+<Zusammenführungskonflikt>
+  Modified 23 November 2006 by David A. Mellis
+************************************************************************/
+
+/************************************************************************
+Changelog for modifications made by Tim Sharpe, starting with the current
+<Zusammenführungskonflikt>
+
+Date        Description
+=========================================================================
+05/11/2009  Changed all existing UARTx_RECEIVE_INTERRUPT and UARTx_TRANSMIT_INTERRUPT
+              macros to use the "_vect" format introduced in AVR-Libc
+			  v1.4.0.  Had to split the 3290 and 6490 out of their existing
+<Zusammenführungskonflikt>
+			  vector name (seems like a typo: USART_RX_vect for the 3290/6490
+			  vice USART0_RX_vect for the others in the macro).
+			Verified all existing macro register names against the device
+			  header files in AVR-Libc v1.6.6 to catch any inconsistencies.
+05/12/2009  Added support for 48P, 88P, 168P, and 328P by adding them to the
+               existing 48/88/168 macro.
+			Added Arduino-style available() and flush() functions for both
+			supported UARTs.  Really wanted to keep them out of the library, so
+			that it would be as close as possible to Peter Fleury's original
+			library, but has scoping issues accessing internal variables from
+			another program.  Go C!
+05/13/2009  Changed Interrupt Service Routine label from the old "SIGNAL" to
+               the "ISR" format introduced in AVR-Libc v1.4.0.
+
+************************************************************************/
+
+/************************************************************************
+Changelog for modifications made by Stefan Profanter, starting with the
+  library version of Tim Sharpe.
+
+Date        Description
+=========================================================================
+29/06/2010	Added handling for Atxmega128A1 and CTS RTS for all others
+
+************************************************************************/
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
@@ -47,14 +109,6 @@ LICENSE:
  *  constants and macros
  */
 
-#define UART_ENABLE_FLOW_CONTROL
-#define UART_RTS_PORT_CTRL DDRC
-#define UART_RTS_PORT PORTC
-#define UART_RTS_PPIN PINC
-#define UART_RTS_PIN 1
-#define UART_CTS_PORT_CTRL DDRC
-#define UART_CTS_PORT PORTC
-#define UART_CTS_PIN 2
 
 
 
@@ -75,8 +129,8 @@ LICENSE:
  || defined(__AVR_ATmega103__)
  /* old AVR classic or ATmega103 with one UART */
  #define AT90_UART
- #define UART0_RECEIVE_INTERRUPT   SIG_UART_RECV
- #define UART0_TRANSMIT_INTERRUPT  SIG_UART_DATA
+ #define UART0_RECEIVE_INTERRUPT   UART_RX_vect
+ #define UART0_TRANSMIT_INTERRUPT  UART_UDRE_vect
  #define UART0_STATUS   USR
  #define UART0_CONTROL  UCR
  #define UART0_DATA     UDR  
@@ -84,19 +138,27 @@ LICENSE:
 #elif defined(__AVR_AT90S2333__) || defined(__AVR_AT90S4433__)
  /* old AVR classic with one UART */
  #define AT90_UART
- #define UART0_RECEIVE_INTERRUPT   SIG_UART_RECV
- #define UART0_TRANSMIT_INTERRUPT  SIG_UART_DATA
+ #define UART0_RECEIVE_INTERRUPT   UART_RX_vect
+ #define UART0_TRANSMIT_INTERRUPT  UART_UDRE_vect
  #define UART0_STATUS   UCSRA
  #define UART0_CONTROL  UCSRB
  #define UART0_DATA     UDR 
  #define UART0_UDRIE    UDRIE
 #elif  defined(__AVR_ATmega8__)  || defined(__AVR_ATmega16__) || defined(__AVR_ATmega32__) \
-  || defined(__AVR_ATmega8515__) || defined(__AVR_ATmega8535__) \
   || defined(__AVR_ATmega323__)
   /* ATmega with one USART */
  #define ATMEGA_USART
- #define UART0_RECEIVE_INTERRUPT   SIG_UART_RECV
- #define UART0_TRANSMIT_INTERRUPT  SIG_UART_DATA
+ #define UART0_RECEIVE_INTERRUPT   USART_RXC_vect
+ #define UART0_TRANSMIT_INTERRUPT  USART_UDRE_vect
+ #define UART0_STATUS   UCSRA
+ #define UART0_CONTROL  UCSRB
+ #define UART0_DATA     UDR
+ #define UART0_UDRIE    UDRIE
+#elif  defined(__AVR_ATmega8515__) || defined(__AVR_ATmega8535__)
+  /* ATmega with one USART */
+ #define ATMEGA_USART
+ #define UART0_RECEIVE_INTERRUPT   USART_RX_vect
+ #define UART0_TRANSMIT_INTERRUPT  USART_UDRE_vect
  #define UART0_STATUS   UCSRA
  #define UART0_CONTROL  UCSRB
  #define UART0_DATA     UDR
@@ -104,8 +166,8 @@ LICENSE:
 #elif defined(__AVR_ATmega163__) 
   /* ATmega163 with one UART */
  #define ATMEGA_UART
- #define UART0_RECEIVE_INTERRUPT   SIG_UART_RECV
- #define UART0_TRANSMIT_INTERRUPT  SIG_UART_DATA
+ #define UART0_RECEIVE_INTERRUPT   UART_RX_vect
+ #define UART0_TRANSMIT_INTERRUPT  UART_UDRE_vect
  #define UART0_STATUS   UCSRA
  #define UART0_CONTROL  UCSRB
  #define UART0_DATA     UDR
@@ -114,10 +176,10 @@ LICENSE:
  /* ATmega with two USART */
  #define ATMEGA_USART0
  #define ATMEGA_USART1
- #define UART0_RECEIVE_INTERRUPT   SIG_USART0_RECV
- #define UART1_RECEIVE_INTERRUPT   SIG_USART1_RECV
- #define UART0_TRANSMIT_INTERRUPT  SIG_USART0_DATA
- #define UART1_TRANSMIT_INTERRUPT  SIG_USART1_DATA
+ #define UART0_RECEIVE_INTERRUPT   USART0_RXC_vect
+ #define UART1_RECEIVE_INTERRUPT   USART1_RXC_vect
+ #define UART0_TRANSMIT_INTERRUPT  USART0_UDRE_vect
+ #define UART1_TRANSMIT_INTERRUPT  USART1_UDRE_vect
  #define UART0_STATUS   UCSR0A
  #define UART0_CONTROL  UCSR0B
  #define UART0_DATA     UDR0
@@ -130,10 +192,10 @@ LICENSE:
  /* ATmega with two USART */
  #define ATMEGA_USART0
  #define ATMEGA_USART1
- #define UART0_RECEIVE_INTERRUPT   SIG_UART0_RECV
- #define UART1_RECEIVE_INTERRUPT   SIG_UART1_RECV
- #define UART0_TRANSMIT_INTERRUPT  SIG_UART0_DATA
- #define UART1_TRANSMIT_INTERRUPT  SIG_UART1_DATA
+ #define UART0_RECEIVE_INTERRUPT   USART0_RX_vect
+ #define UART1_RECEIVE_INTERRUPT   USART1_RX_vect
+ #define UART0_TRANSMIT_INTERRUPT  USART0_UDRE_vect
+ #define UART1_TRANSMIT_INTERRUPT  USART1_UDRE_vect
  #define UART0_STATUS   UCSR0A
  #define UART0_CONTROL  UCSR0B
  #define UART0_DATA     UDR0
@@ -148,49 +210,62 @@ LICENSE:
 #elif defined(__AVR_ATmega169__) 
  /* ATmega with one USART */
  #define ATMEGA_USART
- #define UART0_RECEIVE_INTERRUPT   SIG_USART_RECV
- #define UART0_TRANSMIT_INTERRUPT  SIG_USART_DATA
+ #define UART0_RECEIVE_INTERRUPT   USART0_RX_vect
+ #define UART0_TRANSMIT_INTERRUPT  USART0_UDRE_vect
  #define UART0_STATUS   UCSRA
  #define UART0_CONTROL  UCSRB
  #define UART0_DATA     UDR
  #define UART0_UDRIE    UDRIE
-#elif defined(__AVR_ATmega48__) ||defined(__AVR_ATmega88__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega48P__) || defined(__AVR_ATmega88P__) || defined(__AVR_ATmega168P__) || defined(__AVR_ATmega328P__)
+#elif defined(__AVR_ATmega48__) ||defined(__AVR_ATmega88__) || defined(__AVR_ATmega168__) || \
+      defined(__AVR_ATmega48P__) ||defined(__AVR_ATmega88P__) || defined(__AVR_ATmega168P__) || \
+      defined(__AVR_ATmega328P__)
+ /* TLS-Added 48P/88P/168P/328P */
  /* ATmega with one USART */
  #define ATMEGA_USART0
- #define UART0_RECEIVE_INTERRUPT   SIG_USART_RECV
- #define UART0_TRANSMIT_INTERRUPT  SIG_USART_DATA
+ #define UART0_RECEIVE_INTERRUPT   USART_RX_vect
+ #define UART0_TRANSMIT_INTERRUPT  USART_UDRE_vect
  #define UART0_STATUS   UCSR0A
  #define UART0_CONTROL  UCSR0B
  #define UART0_DATA     UDR0
  #define UART0_UDRIE    UDRIE0
 #elif defined(__AVR_ATtiny2313__)
  #define ATMEGA_USART
- #define UART0_RECEIVE_INTERRUPT   SIG_USART0_RX 
- #define UART0_TRANSMIT_INTERRUPT  SIG_USART0_UDRE
+ #define UART0_TRANSMIT_INTERRUPT  USART_UDRE_vect
  #define UART0_STATUS   UCSRA
  #define UART0_CONTROL  UCSRB
  #define UART0_DATA     UDR
  #define UART0_UDRIE    UDRIE
-#elif defined(__AVR_ATmega329__) ||defined(__AVR_ATmega3290__) ||\
-      defined(__AVR_ATmega649__) ||defined(__AVR_ATmega6490__) ||\
+#elif defined(__AVR_ATmega329__) ||\
+      defined(__AVR_ATmega649__) ||\
       defined(__AVR_ATmega325__) ||defined(__AVR_ATmega3250__) ||\
       defined(__AVR_ATmega645__) ||defined(__AVR_ATmega6450__)
   /* ATmega with one USART */
   #define ATMEGA_USART0
-  #define UART0_RECEIVE_INTERRUPT   SIG_UART_RECV
-  #define UART0_TRANSMIT_INTERRUPT  SIG_UART_DATA
+  #define UART0_RECEIVE_INTERRUPT   USART0_RX_vect
+  #define UART0_TRANSMIT_INTERRUPT  USART0_UDRE_vect
   #define UART0_STATUS   UCSR0A
   #define UART0_CONTROL  UCSR0B
   #define UART0_DATA     UDR0
   #define UART0_UDRIE    UDRIE0
-#elif defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega1280__)  || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega640__)
+#elif defined(__AVR_ATmega3290__) ||\
+      defined(__AVR_ATmega6490__)
+  /* TLS-Separated these two from the previous group because of inconsistency in the USART_RX */
+  /* ATmega with one USART */
+  #define ATMEGA_USART0
+  #define UART0_RECEIVE_INTERRUPT   USART_RX_vect
+  #define UART0_TRANSMIT_INTERRUPT  USART0_UDRE_vect
+  #define UART0_STATUS   UCSR0A
+  #define UART0_CONTROL  UCSR0B
+  #define UART0_DATA     UDR0
+  #define UART0_UDRIE    UDRIE0
+#elif defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega640__)
 /* ATmega with two USART */
   #define ATMEGA_USART0
   #define ATMEGA_USART1
-  #define UART0_RECEIVE_INTERRUPT   SIG_USART0_RECV
-  #define UART1_RECEIVE_INTERRUPT   SIG_USART1_RECV
-  #define UART0_TRANSMIT_INTERRUPT  SIG_USART0_DATA
-  #define UART1_TRANSMIT_INTERRUPT  SIG_USART1_DATA
+  #define UART0_RECEIVE_INTERRUPT   USART0_RX_vect
+  #define UART1_RECEIVE_INTERRUPT   USART1_RX_vect
+  #define UART0_TRANSMIT_INTERRUPT  USART0_UDRE_vect
+  #define UART1_TRANSMIT_INTERRUPT  USART1_UDRE_vect
   #define UART0_STATUS   UCSR0A
   #define UART0_CONTROL  UCSR0B
   #define UART0_DATA     UDR0
@@ -202,8 +277,8 @@ LICENSE:
 #elif defined(__AVR_ATmega644__)
  /* ATmega with one USART */
  #define ATMEGA_USART0
- #define UART0_RECEIVE_INTERRUPT   SIG_USART_RECV
- #define UART0_TRANSMIT_INTERRUPT  SIG_USART_DATA
+ #define UART0_RECEIVE_INTERRUPT   USART0_RX_vect
+ #define UART0_TRANSMIT_INTERRUPT  USART0_UDRE_vect
  #define UART0_STATUS   UCSR0A
  #define UART0_CONTROL  UCSR0B
  #define UART0_DATA     UDR0
@@ -212,10 +287,10 @@ LICENSE:
  /* ATmega with two USART */
  #define ATMEGA_USART0
  #define ATMEGA_USART1
- #define UART0_RECEIVE_INTERRUPT   SIG_USART_RECV
- #define UART1_RECEIVE_INTERRUPT   SIG_USART1_RECV
- #define UART0_TRANSMIT_INTERRUPT  SIG_USART_DATA
- #define UART1_TRANSMIT_INTERRUPT  SIG_USART1_DATA
+ #define UART0_RECEIVE_INTERRUPT   USART0_RX_vect
+ #define UART1_RECEIVE_INTERRUPT   USART1_RX_vect
+ #define UART0_TRANSMIT_INTERRUPT  USART0_UDRE_vect
+ #define UART1_TRANSMIT_INTERRUPT  USART1_UDRE_vect
  #define UART0_STATUS   UCSR0A
  #define UART0_CONTROL  UCSR0B
  #define UART0_DATA     UDR0
@@ -224,11 +299,93 @@ LICENSE:
  #define UART1_CONTROL  UCSR1B
  #define UART1_DATA     UDR1
  #define UART1_UDRIE    UDRIE1
+#elif defined(__AVR_ATxmega128A1__)
+/* ATxmega uses special driver file */
+
+  #define ATXMEGA_USART0
+
+  #define UART0_RECEIVE_INTERRUPT   USARTC0_RXC_vect
+  #define UART0_TRANSMIT_INTERRUPT  USARTC0_DRE_vect
+  #define UART0_STATUS   UCSR0A
+  #define UART0_CONTROL  UCSR0B
+  #define UART0_DATA     UDR0
+  #define UART0_UDRIE    UDRIE0
+
+#include "usart_driver.h"
+	/*! Input data buffer for interrupt on receive */
+	USART_data_t USART_data;
+
+	/*! Define that selects the Usart used in example. */
+	#define USART USARTC0
 #else
  #error "no UART definition for MCU available"
 #endif
 
+/*
+ * Constants for UART0 Flow control ports
+ */
 
+
+/*! Uncomment to enable flow control for UART0 */
+#define UART0_ENABLE_FLOW_CONTROL
+/*! Uncomment to enable flow control for UART1 */
+#define UART1_ENABLE_FLOW_CONTROL
+
+#ifndef ATXMEGA_USART0
+
+	/*! RTS Port to set pullup resistors (DDRC)*/
+	#define UART0_RTS_PORT_CTRL DDRC
+	/*! Port which has the RTS pin (PORTC) */
+	#define UART0_RTS_PORT PORTC
+	/*! Pin which has the RTS pin (to read data) (PINC) */
+	#define UART0_RTS_PPIN PINC
+	/*! Pin number on defined port (1) */
+	#define UART0_RTS_PIN 1
+	/*! CTS Port to set pullup resistors (DDRC)*/
+	#define UART0_CTS_PORT_CTRL DDRC
+	/*! Port which has the CTS pin (PORTC) */
+	#define UART0_CTS_PORT PORTC
+	/*! Pin number on defined port (2) */
+	#define UART0_CTS_PIN 2
+
+	/*
+	 * Constants for UART1 Flow control ports
+	 */
+
+	/*! RTS Port to set pullup resistors (DDRC)*/
+	#define UART1_RTS_PORT_CTRL DDRC
+	/*! Port which has the RTS pin (PORTC) */
+	#define UART1_RTS_PORT PORTC
+	/*! Pin which has the RTS pin (to read data) (PINC) */
+	#define UART1_RTS_PPIN PINC
+	/*! Pin number on defined port (1) */
+	#define UART1_RTS_PIN 1
+	/*! CTS Port to set pullup resistors (DDRC)*/
+	#define UART1_CTS_PORT_CTRL DDRC
+	/*! Port which has the CTS pin (PORTC) */
+	#define UART1_CTS_PORT PORTC
+	/*! Pin number on defined port (2) */
+	#define UART1_CTS_PIN 2
+
+#else
+	/*! RTS Port to set pullup resistors (DDRC)*/
+	#define UART0_RTS_PORT_CTRL PORTC.DIR
+	/*! Port which has the RTS pin (PORTC) */
+	#define UART0_RTS_PORT PORTC.OUT
+	/*! Pin which has the RTS pin (to read data) (PINC) */
+	#define UART0_RTS_PPIN PORTC.IN
+	/*! Pin number on defined port (1) */
+	#define UART0_RTS_PIN 1
+	/*! CTS Port to set pullup resistors (DDRC)*/
+	#define UART0_CTS_PORT_CTRL PORTC.DIR
+	/*! Port which has the CTS pin (PORTC) */
+	#define UART0_CTS_PORT PORTC.OUT
+	/*! Pin number on defined port (2) */
+	#define UART0_CTS_PIN 2
+#endif
+
+
+#ifndef ATXMEGA_USART0
 /*
  *  module global variables
  */
@@ -250,19 +407,25 @@ static volatile unsigned char UART1_RxTail;
 static volatile unsigned char UART1_LastRxError;
 #endif
 
+#endif
 
 
-SIGNAL(UART0_RECEIVE_INTERRUPT)
+ISR(UART0_RECEIVE_INTERRUPT)
 /*************************************************************************
 Function: UART Receive Complete interrupt
 Purpose:  called when the UART has received a character
 **************************************************************************/
 {
-	UART_CTS_PORT |= (1<<UART_CTS_PIN); //not ready for data = high
+
+
+#ifdef ATXMEGA_USART0
+	USART_RXComplete(&USART_data);
+
+#else
     unsigned char tmphead;
     unsigned char data;
     unsigned char usr;
-    unsigned char lastRxError = 0;
+    unsigned char lastRxError;
  
  
     /* read UART status register and UART data register */ 
@@ -279,44 +442,48 @@ Purpose:  called when the UART has received a character
 #elif defined ( ATMEGA_UART )
     lastRxError = (usr & (_BV(FE)|_BV(DOR)) );
 #endif
-
-
     /* calculate buffer index */ 
     tmphead = ( UART_RxHead + 1) & UART_RX_BUFFER_MASK;
     
     if ( tmphead == UART_RxTail ) {
         /* error: receive buffer overflow */
         lastRxError = UART_BUFFER_OVERFLOW >> 8;
-        UART_CTS_PORT |= (1<<UART_CTS_PIN); //not ready for data = high
-
+#ifdef UART0_ENABLE_FLOW_CONTROL
+        UART0_CTS_PORT |= (1<<UART0_CTS_PIN); //not ready for data = high
+#endif
     }else{
         /* store new index */
         UART_RxHead = tmphead;
-
         /* store received data in buffer */
-
         UART_RxBuf[tmphead] = data;
 
+       FTDISend('I');
+       FTDISend(data);
+
+#ifdef UART0_ENABLE_FLOW_CONTROL
         //Check if buffer is full
-        tmphead = ( UART_RxHead + 16) & UART_RX_BUFFER_MASK;
+        tmphead = ( UART_RxHead + 1) & UART_RX_BUFFER_MASK;
         if ( tmphead == UART_RxTail ) {
-            UART_CTS_PORT |= (1<<UART_CTS_PIN); //not ready for data = high
+            UART0_CTS_PORT |= (1<<UART0_CTS_PIN); //not ready for data = high
         }
-
-
+#endif
     }
     UART_LastRxError = lastRxError;   
+#endif
 }
 
 
-SIGNAL(UART0_TRANSMIT_INTERRUPT)
+ISR(UART0_TRANSMIT_INTERRUPT)
 /*************************************************************************
 Function: UART Data Register Empty interrupt
 Purpose:  called when the UART is ready to transmit the next byte
 **************************************************************************/
 {
-    unsigned char tmptail;
+#ifdef ATXMEGA_USART0
+    USART_DataRegEmpty(&USART_data);
+#else
 
+    unsigned char tmptail;
     
     if ( UART_TxHead != UART_TxTail) {
         /* calculate and store new buffer index */
@@ -325,11 +492,12 @@ Purpose:  called when the UART is ready to transmit the next byte
         /* get one byte from buffer and write it to UART */
         UART0_DATA = UART_TxBuf[tmptail];  /* start transmission */
 
-    	FTDISend(UART_TxBuf[tmptail]);
+    	//FTDISend(UART_TxBuf[tmptail]);
     }else{
         /* tx buffer empty, disable UDRE interrupt */
         UART0_CONTROL &= ~_BV(UART0_UDRIE);
     }
+#endif
 }
 
 
@@ -341,20 +509,19 @@ Returns:  none
 **************************************************************************/
 void uart_init(unsigned int baudrate)
 {
+#ifndef ATXMEGA_USART0
     UART_TxHead = 0;
     UART_TxTail = 0;
     UART_RxHead = 0;
     UART_RxTail = 0;
+#endif
     
-#ifdef UART_ENABLE_FLOW_CONTROL
-	UART_CTS_PORT_CTRL &= ~(1<<UART_CTS_PIN); //set as output
-	UART_RTS_PORT_CTRL |= (1<<UART_RTS_PIN); //set as input
-	UART_RTS_PPIN |= ( 1 << UART_RTS_PIN ); // activate pullup
+#ifdef UART0_ENABLE_FLOW_CONTROL
+	UART0_CTS_PORT_CTRL &= ~(1<<UART0_CTS_PIN); //set as output
+	UART0_RTS_PORT_CTRL |= (1<<UART0_RTS_PIN); //set as input
+	UART0_RTS_PPIN |= ( 1 << UART0_RTS_PIN ); // activate pullup
 
-
-    UART_CTS_PORT &= ~(1<<UART_CTS_PIN); //ready for data = low
-
-
+    UART0_CTS_PORT &= ~(1<<UART0_CTS_PIN); //ready for data = low
 #endif
 
 #if defined( AT90_UART )
@@ -416,6 +583,43 @@ void uart_init(unsigned int baudrate)
 
     /* Enable UART receiver and transmitter and receive complete interrupt */
     UART0_CONTROL = _BV(RXCIE)|(1<<RXEN)|(1<<TXEN);
+#elif defined ( ATXMEGA_USART0 )
+
+	/**
+	* @todo maxi fragen, wo btm-222 beim atxmega dranhaengt.
+	*/
+
+	/* This PORT setting is only valid to USARTC0 if other USARTs is used a
+	 * different PORT and/or pins is used. */
+	/* PIN3 (TXD0) as output. */
+	PORTC.DIRSET = PIN3_bm;
+
+	/* PC2 (RXD0) as input. */
+	PORTC.DIRCLR = PIN2_bm;
+
+
+	/* Use USARTC0 and initialize buffers. */
+	USART_InterruptDriver_Initialize(&USART_data, &USART, USART_DREINTLVL_LO_gc);
+
+	/* USARTC0, 8 Data bits, No Parity, 1 Stop bit. */
+	USART_Format_Set(&USART, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
+
+	/* Enable RXC interrupt. */
+	USART_RxdInterruptLevel_Set(USART_data.usart, USART_RXCINTLVL_LO_gc);
+
+	/* Set Baudrate
+	 * Do not use the baudrate scale factor
+	 *
+	 */
+	USART_Baudrate_Set(&USART, baudrate , 0);
+
+	/* Enable both RX and TX. */
+	USART_Rx_Enable(&USART);
+	USART_Tx_Enable(&USART);
+
+	/* Enable PMIC interrupt level low. */
+	PMIC.CTRL |= PMIC_LOLVLEX_bm;
+
 
 #endif
 
@@ -429,18 +633,28 @@ Returns:  lower byte:  received byte from ringbuffer
           higher byte: last receive error
 **************************************************************************/
 unsigned int uart_getc(void)
-{    
+{
+#ifdef UART0_ENABLE_FLOW_CONTROL
+    UART0_CTS_PORT &= ~(1<<UART0_CTS_PIN); //ready for data = low
+#endif
+
+#ifdef ATXMEGA_USART0
+    if (USART_RXBufferData_Available(&USART_data)== false)
+        return UART_NO_DATA;   /* no data available */
+
+#else
     unsigned char tmptail;
     unsigned char data;
-
-
     if ( UART_RxHead == UART_RxTail ) {
         return UART_NO_DATA;   /* no data available */
     }
+#endif
     
 
-    UART_CTS_PORT &= ~(1<<UART_CTS_PIN); //ready for data = low
 
+#ifdef ATXMEGA_USART0
+    return USART_RXBuffer_GetByte(&USART_data);
+#else
     /* calculate /store buffer index */
     tmptail = (UART_RxTail + 1) & UART_RX_BUFFER_MASK;
     UART_RxTail = tmptail; 
@@ -449,6 +663,7 @@ unsigned int uart_getc(void)
     data = UART_RxBuf[tmptail];
     
     return (UART_LastRxError << 8) + data;
+#endif
 
 }/* uart_getc */
 
@@ -462,26 +677,41 @@ Returns:  1 on succes, 0 if remote not ready
 int uart_putc(unsigned char data)
 {
 
-    unsigned char tmphead;
-
-    if (UART_RTS_PPIN & (1<<UART_RTS_PIN))
+#ifdef UART0_ENABLE_FLOW_CONTROL
+    //Check if remote is ready to receive data
+    if (UART0_RTS_PPIN & (1<<UART0_RTS_PIN))
     {
     	FTDISend('!');
     	return 0;
     }
+#endif
     
+#ifdef ATXMEGA_USART0
+
+		/*while(!USART_IsTXDataRegisterEmpty(&USART)) {
+			;
+		}*/
+
+	USART_PutChar(&USART, data);
+#else
+
+    unsigned char tmphead;
     tmphead  = (UART_TxHead + 1) & UART_TX_BUFFER_MASK;
-    
-    while ( tmphead == UART_TxTail ){
-        ;/* wait for free space in buffer */
-    }
-    
+
+	while ( tmphead == UART_TxTail ){
+		;/* wait for free space in buffer */
+	}
+
     UART_TxBuf[tmphead] = data;
     UART_TxHead = tmphead;
+
+
+
 
     /* enable UDRE interrupt */
     UART0_CONTROL    |= _BV(UART0_UDRIE);
 
+#endif
     return 1;
 
 }/* uart_putc */
@@ -517,6 +747,38 @@ void uart_puts_p(const char *progmem_s )
 }/* uart_puts_p */
 
 
+
+/*************************************************************************
+Function: uart_available()
+Purpose:  Determine the number of bytes waiting in the receive buffer
+Input:    None
+Returns:  Integer number of bytes in the receive buffer or on AtxMega true if data available
+**************************************************************************/
+int uart_available(void)
+{
+#ifdef ATXMEGA_USART0
+        return USART_RXBufferData_Available(&USART_data);
+#else
+        return (UART_RX_BUFFER_MASK + UART_RxHead - UART_RxTail) % UART_RX_BUFFER_MASK;
+#endif
+}/* uart_available */
+
+
+
+/*************************************************************************
+Function: uart_flush()
+Purpose:  Flush bytes waiting the receive buffer.  Acutally ignores them.
+Input:    None
+Returns:  None
+**************************************************************************/
+void uart_flush(void)
+{
+#ifndef ATXMEGA_USART0
+        UART_RxHead = UART_RxTail;
+#endif
+}/* uart_flush */
+
+
 /*
  * these functions are only for ATmegas with two USART
  */
@@ -547,6 +809,9 @@ Purpose:  called when the UART1 has received a character
     if ( tmphead == UART1_RxTail ) {
         /* error: receive buffer overflow */
         lastRxError = UART_BUFFER_OVERFLOW >> 8;
+#ifdef UART1_ENABLE_FLOW_CONTROL
+        UART1_CTS_PORT |= (1<<UART1_CTS_PIN); //not ready for data = high
+#endif
     }else{
         /* store new index */
         UART1_RxHead = tmphead;
@@ -593,6 +858,14 @@ void uart1_init(unsigned int baudrate)
     UART1_RxTail = 0;
     
 
+#ifdef UART1_ENABLE_FLOW_CONTROL
+	UART1_CTS_PORT_CTRL &= ~(1<<UART1_CTS_PIN); //set as output
+	UART1_RTS_PORT_CTRL |= (1<<UART1_RTS_PIN); //set as input
+	UART1_RTS_PPIN |= ( 1 << UART1_RTS_PIN ); // activate pullup
+
+    UART1_CTS_PORT &= ~(1<<UART1_CTS_PIN); //ready for data = low
+#endif
+
     /* Set baud rate */
     if ( baudrate & 0x8000 ) 
     {
@@ -630,6 +903,11 @@ unsigned int uart1_getc(void)
         return UART_NO_DATA;   /* no data available */
     }
     
+#ifdef UART1_ENABLE_FLOW_CONTROL
+    UART1_CTS_PORT &= ~(1<<UART1_CTS_PIN); //ready for data = low
+#endif
+
+
     /* calculate /store buffer index */
     tmptail = (UART1_RxTail + 1) & UART_RX_BUFFER_MASK;
     UART1_RxTail = tmptail; 
@@ -651,6 +929,15 @@ Returns:  none
 void uart1_putc(unsigned char data)
 {
     unsigned char tmphead;
+
+#ifdef UART1_ENABLE_FLOW_CONTROL
+    //Check if remote is ready to receive data
+    if (UART1_RTS_PPIN & (1<<UART1_RTS_PIN))
+    {
+    	FTDISend('!');
+    	return 0;
+    }
+#endif
 
     
     tmphead  = (UART1_TxHead + 1) & UART_TX_BUFFER_MASK;
@@ -697,5 +984,30 @@ void uart1_puts_p(const char *progmem_s )
 
 }/* uart1_puts_p */
 
+
+
+/*************************************************************************
+Function: uart1_available()
+Purpose:  Determine the number of bytes waiting in the receive buffer
+Input:    None
+Returns:  Integer number of bytes in the receive buffer
+**************************************************************************/
+int uart1_available(void)
+{
+        return (UART_RX_BUFFER_MASK + UART1_RxHead - UART1_RxTail) % UART_RX_BUFFER_MASK;
+}/* uart1_available */
+
+
+
+/*************************************************************************
+Function: uart1_flush()
+Purpose:  Flush bytes waiting the receive buffer.  Acutally ignores them.
+Input:    None
+Returns:  None
+**************************************************************************/
+void uart1_flush(void)
+{
+        UART1_RxHead = UART1_RxTail;
+}/* uart1_flush */
 
 #endif
