@@ -11,9 +11,9 @@ inline void _send_msg(const char *msg)
 {
   for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
   {
-    FTDISend(msg[i]);
+    //FTDISend(msg[i]);
   }
-  FTDISend('\n');
+  //FTDISend('\n');
 }
 
 void send_pgm(const prog_char *msg)
@@ -22,7 +22,7 @@ void send_pgm(const prog_char *msg)
         myByte = pgm_read_byte(msg);
 	for(int i = 1; myByte != '\0'; i++)
 	{
-		 FTDISend(myByte);
+		 //FTDISend(myByte);
                  myByte = pgm_read_byte(msg+i);
 	}
 }
@@ -82,7 +82,7 @@ void assert_pgm(bool condition, const prog_char *msg) {
 	if (condition) {
 		send_pgm(PSTR("ASS:"));
 		send_pgm(msg);
-		FTDISend('\n');
+		//FTDISend('\n');
 	}
 }
 
@@ -90,27 +90,27 @@ void info_pgm(const prog_char *msg)
 {
 	send_pgm(PSTR("INF:"));
 	send_pgm(msg);
-	FTDISend('\n');
+	//FTDISend('\n');
 }
 
 void warn_pgm(const prog_char *msg)
 {
 	send_pgm(PSTR("WARN:"));
 	send_pgm(msg);
-	FTDISend('\n');
+	//FTDISend('\n');
 }
 
 void error_pgm(const prog_char *msg)
 {
 	send_pgm(PSTR("ERR:"));
 	send_pgm(msg);
-	FTDISend('\n');
+	//FTDISend('\n');
 }
 
 void debug_pgm(const prog_char *msg)
 {
 	send_pgm(PSTR("DBG:"));
 	send_pgm(msg);
-	FTDISend('\n');
+	//FTDISend('\n');
 }
 

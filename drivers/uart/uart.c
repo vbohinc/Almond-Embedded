@@ -327,7 +327,7 @@ Date        Description
 
 
 /*! Uncomment to enable flow control for UART0 */
-#define UART0_ENABLE_FLOW_CONTROL
+//#define UART0_ENABLE_FLOW_CONTROL
 /*! Uncomment to enable flow control for UART1 */
 #define UART1_ENABLE_FLOW_CONTROL
 
@@ -457,8 +457,8 @@ Purpose:  called when the UART has received a character
         /* store received data in buffer */
         UART_RxBuf[tmphead] = data;
 
-       FTDISend('I');
-       FTDISend(data);
+       //FTDISend('I');
+       //FTDISend(data);
 
 #ifdef UART0_ENABLE_FLOW_CONTROL
         //Check if buffer is full
@@ -607,6 +607,9 @@ void uart_init(unsigned int baudrate)
 	/* Enable RXC interrupt. */
 	USART_RxdInterruptLevel_Set(USART_data.usart, USART_RXCINTLVL_LO_gc);
 
+	/* Enable RXC interrupt. */
+	USART_TxdInterruptLevel_Set(USART_data.usart, USART_TXCINTLVL_LO_gc);
+
 	/* Set Baudrate
 	 * Do not use the baudrate scale factor
 	 *
@@ -674,23 +677,23 @@ Purpose:  write byte to ringbuffer for transmitting via UART
 Input:    byte to be transmitted
 Returns:  1 on succes, 0 if remote not ready
 **************************************************************************/
-int uart_putc(unsigned char data)
+int uart_putc(uint8_t data)
 {
 
 #ifdef UART0_ENABLE_FLOW_CONTROL
     //Check if remote is ready to receive data
     if (UART0_RTS_PPIN & (1<<UART0_RTS_PIN))
     {
-    	FTDISend('!');
+    	//FTDISend('!');
     	return 0;
     }
 #endif
     
 #ifdef ATXMEGA_USART0
 
-		/*while(!USART_IsTXDataRegisterEmpty(&USART)) {
+		while(!USART_IsTXDataRegisterEmpty(&USART)) {
 			;
-		}*/
+		}
 
 	USART_PutChar(&USART, data);
 #else
@@ -934,7 +937,7 @@ void uart1_putc(unsigned char data)
     //Check if remote is ready to receive data
     if (UART1_RTS_PPIN & (1<<UART1_RTS_PIN))
     {
-    	FTDISend('!');
+    	//FTDISend('!');
     	return 0;
     }
 #endif
