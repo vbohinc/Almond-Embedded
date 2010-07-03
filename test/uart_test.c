@@ -88,15 +88,16 @@ int main_old(void)
 int main(void)
 {
 
-	PORTD.DIR |= (1<<PIN3);
-	PORTD.DIR |= (1<<PIN6);
+	PORTB.DIR |= (1<<PIN4);
+	PORTB.DIR |= (1<<PIN6);
 while(1){
-		PORTD.OUT |= (1<<PIN3);
+		PORTB.OUT |= (1<<PIN4);
 		_delay_ms(500);
-		PORTD.OUT &= ~(1<<PIN3);
-		PORTD.OUT |= (1<<PIN6);
+		PORTB.OUT &= ~(1<<PIN4);
+		PORTB.OUT |= (1<<PIN6);
 		_delay_ms(500);
-		PORTD.OUT &= ~(1<<PIN6);}
+		PORTB.OUT &= ~(1<<PIN6);
+}
 
 
 

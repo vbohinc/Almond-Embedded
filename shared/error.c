@@ -27,17 +27,6 @@ void send_pgm(const prog_char *msg)
 	}
 }
 
-void error (const char *msg)
-{
-#ifdef SERIAL
-	printf("[ERROR]: %s\n", msg);
-#else
-    send_pgm(PSTR("ERR:"));
-    _send_msg(msg);
-#endif
-}
-
-
 #ifdef DEBUG
 void assert (bool condition, const char *msg) {
   if (condition) {
@@ -76,6 +65,16 @@ void debug (const char *msg)
 	printf("[DEBUG]: %s\n", msg);
 #else
     send_pgm(PSTR("DBG:"));
+    _send_msg(msg);
+#endif
+}
+
+void error (const char *msg)
+{
+#ifdef SERIAL
+	printf("[ERROR]: %s\n", msg);
+#else
+    send_pgm(PSTR("ERR:"));
     _send_msg(msg);
 #endif
 }
