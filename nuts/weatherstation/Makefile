@@ -6,5 +6,6 @@ ALMONDLIBS = downlink twi
 SRC = ../sensors/bmp085.c ../common/timer.c
 EXTRAINCDIRS = ../sensors/ ../
 TARGETTYPE = NUT
+ENABLE_DEBUG = 1
 include ../../make/base.makefile 
 

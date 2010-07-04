@@ -6,5 +6,6 @@ BASE = ..
 ALMONDLIBS = downlink uplink
 EXTRAINCDIRS = ../drivers/ ../protocols/ ../shared/
 TARGETTYPE = SQUIRREL
+ENABLE_DEBUG = 1
 include ../make/base.makefile 
 

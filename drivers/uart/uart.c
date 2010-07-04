@@ -304,18 +304,18 @@ Date        Description
 
   #define ATXMEGA_USART0
 
+
+
   #define UART0_RECEIVE_INTERRUPT   USARTC0_RXC_vect
   #define UART0_TRANSMIT_INTERRUPT  USARTC0_DRE_vect
-  #define UART0_STATUS   UCSR0A
-  #define UART0_CONTROL  UCSR0B
-  #define UART0_DATA     UDR0
-  #define UART0_UDRIE    UDRIE0
 
-#include "usart_driver.h"
+
+	#include "usart_driver.h"
 	/*! Input data buffer for interrupt on receive */
 	USART_data_t USART_data;
 
 	/*! Define that selects the Usart used in example. */
+	//Change also pin settings in init function!!!!
 	#define USART USARTC0
 #else
  #error "no UART definition for MCU available"

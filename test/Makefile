@@ -7,4 +7,5 @@ ALMONDLIBS = uart bluetooth
 SRC = ../shared/error.c
 EXTRAINCDIRS =
 TARGETTYPE = SQUIRREL
+ENABLE_DEBUG = 1
 include ../make/base.makefile 

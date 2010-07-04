@@ -87,6 +87,7 @@ endif
 #error 
 ifeq (error, $(findstring error,$(ALMONDLIBS)))
 SRC += $(BASE)/shared/error.c $(BASE)/shared/ftdi.c 
+SRC += $(BASE)/shared/error.c $(BASE)/shared/error_driver.c 
 endif
 
 #sd
@@ -163,6 +164,10 @@ CSTANDARD = -std=gnu99
 
 # Place -D or -U options here for C sources
 CDEFS = -DF_CPU=$(F_CPU)UL
+
+ifeq ($(ENABLE_DEBUG),1)
+CDEFS += -DDEBUG
+endif
 
 #For nuts only:
 CDEFS += -D$(TARGETTYPE)
