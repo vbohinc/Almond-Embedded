@@ -166,7 +166,17 @@ uint8_t bluetooth_handle_array(void);
  * @param timeout_ms timeout in ms to wait for response
  * @return 0 on success, 1 on error, 2 on timeout
  */
-extern uint8_t bluetooth_send_data_package(uint8_t *data, uint8_t *length, const uint8_t wait_for_response_package, const uint16_t timeout_ms);
+extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
+
+/**
+ * Sends the data to the connected client.
+ * Adds the stop-byte at the end of the package
+ * @param data The data to send. If wait_for_response_package enabled, contains the response package. Must be big enought.
+ * @param length the length (number of bytes) in the data array. If wait_for_response_package enabled, contains the lenght of the received package
+ * @param timeout_ms timeout in ms to wait for response
+ * @return 0 on success, 1 on error, 2 on timeout
+ */
+extern uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length, const uint16_t timeout_ms);
 
 /**
  * Processes received data stored in the FIFO. Should be called in the while-loop of the main program

@@ -25,7 +25,7 @@
 
 /**
  * downlink.h
- * 
+ *
  * Header files for downlink.c
  *
  * Everybody using this header for a nut must provide following:
@@ -58,10 +58,11 @@
 
 typedef struct _downlink_package downlink_package;
 
-struct _downlink_package {
-	uint8_t opcode;
-	uint8_t id;
-	uint16_t value;
+struct _downlink_package
+{
+  uint8_t opcode;
+  uint8_t id;
+  uint16_t value;
 };
 
 #ifdef SQUIRREL
@@ -78,7 +79,7 @@ extern uint16_t downlink_bye (uint16_t time_ms, bool *err);
 #ifdef NUT
 
 /**
- * MUST BE IMPLEMENTED IN YOUR FILES 
+ * MUST BE IMPLEMENTED IN YOUR FILES
  */
 extern const uint8_t class_id_nut;
 extern const uint8_t class_id_extensions[];

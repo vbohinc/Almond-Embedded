@@ -1,11 +1,11 @@
-MCU = atmega8535
-#MCU = atxmega128a1
-F_CPU = 16000000
+#MCU = atmega8535
+MCU = atxmega128a1
+F_CPU = 2000000
 TARGET = bluetooth_test
 BASE = ..
-ALMONDLIBS = bluetooth
+ALMONDLIBS = uart bluetooth
 SRC = ../shared/error.c
 EXTRAINCDIRS =
-TARGETTYPE = NUT
+TARGETTYPE = SQUIRREL
+ENABLE_DEBUG = 1
 include ../make/base.makefile 
-

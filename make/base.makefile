@@ -74,13 +74,9 @@ endif
 #uart
 ifeq (uart, $(findstring uart,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/uart/uart.c 
+ifeq ($(MCU), atxmega128a1)
+SRC += $(BASE)/drivers/uart/usart_driver.c 
 endif
-
-#uart atxmega
-ifeq (uart, $(findstring uart,$(ALMONDLIBS)))
-	ifeq ($(MCU), atxmega128a1)
-		SRC += $(BASE)/drivers/uart/usart_driver.c 
-	endif
 endif
 
 #twi
@@ -91,6 +87,7 @@ endif
 #error 
 ifeq (error, $(findstring error,$(ALMONDLIBS)))
 SRC += $(BASE)/shared/error.c $(BASE)/shared/ftdi.c 
+SRC += $(BASE)/shared/error.c $(BASE)/shared/error_driver.c 
 endif
 
 #sd
@@ -171,6 +168,10 @@ CSTANDARD = -std=gnu99
 
 # Place -D or -U options here for C sources
 CDEFS = -DF_CPU=$(F_CPU)UL
+
+ifeq ($(ENABLE_DEBUG),1)
+CDEFS += -DDEBUG
+endif
 
 #For nuts only:
 CDEFS += -D$(TARGETTYPE)
