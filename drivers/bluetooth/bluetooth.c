@@ -428,7 +428,9 @@ bool bluetooth_is_disconnect_msg(void)
 					break;
 			}
 			if (j==9)
+			{
 				return true;
+			}
 		}
 	}
 	return false;
@@ -515,7 +517,7 @@ void bluetooth_process_data(void)
 					//debug(itoa(byte, error_builder,10));
 					//printf("recByte=%d\n", byte);
 					//check if module sent disconnect message
-					if (bluetooth_data_package_index > 10 && bluetooth_is_disconnect_msg())
+					if (bluetooth_data_package_index >= 10 && bluetooth_is_disconnect_msg())
 					{
 						if(byte == 10 && bluetooth_data_package_index==31)
 						{ //data was DISCONNECT message from module
