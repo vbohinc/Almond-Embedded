@@ -29,7 +29,7 @@ void spi_init() {
 	//clear_bit(PORTD_OUT, 4);
 	set_bit(PORTD.OUT, 4); // Sets Slave Select (SS) as Output
 	set_bit(PORTD.OUT, 5); // Set MOSI and SCK as Output
-	set_but(PORTD.OUT, 7);
+	set_bit(PORTD.OUT, 7);
 	set_bit(SPID.CTRL, 6); // Enable SPI
 	set_bit(SPID.CTRL, 4); // Set to Master
 	set_bit(SPID.CTRL, 7); // CLK2X
