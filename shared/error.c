@@ -8,11 +8,6 @@
 #include <avr/pgmspace.h>
 #include "error_driver.h"
 
-inline void error_init()
-{
-	error_driver_init();
-}
-
 inline void _send_msg(const char *msg)
 {
   for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
@@ -34,6 +29,19 @@ void send_pgm(const prog_char *msg)
 }
 
 #ifdef DEBUG
+
+void error_init(void)
+{
+	error_driver_init();
+}
+
+
+void error_putc(const char c)
+{
+	error_driver_write_c(c);
+}
+
+
 void assert (bool condition, const char *msg) {
   if (condition) {
 #ifdef SERIAL

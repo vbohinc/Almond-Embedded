@@ -12,7 +12,9 @@
 
 #ifdef DEBUG
 
-void error_init();
+void error_init(void);
+
+void error_putc(const char c);
 
 void assert (bool condition, const char *msg);
 void info (const char *msg);
@@ -29,6 +31,9 @@ void error_pgm(const prog_char *msg);
 #else
 
 #define error_init() {}
+
+
+#define error_putc(c) {}
 
 #define assert(cond, msg) {}
 #define info(msg) {}
