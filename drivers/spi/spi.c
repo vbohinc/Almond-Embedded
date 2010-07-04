@@ -23,6 +23,7 @@
      \__\/         \__\/              
 */
 #include "spi.h"
+#include <util/delay.h>
 
 void spi_init() {
 	// Assert low on SS - SPI connected to PORTD
@@ -39,12 +40,16 @@ void spi_init() {
 void spi_send_byte(uint8_t byte_to_send) {
 	SPID.DATA = byte_to_send;
 	while (!check_bit(SPID.STATUS,7)); // Wait until IF is set to signal end of Tx
-	debug_pgm(PSTR("SPI: Byte Sent"));
+	//debug_pgm(PSTR("SPI: Byte Sent"));
 	return;
 }
 uint8_t spi_receive_byte() {
+
+	SPID.DATA = 0xFF;
+	_delay_ms(10);
+
 	while (!check_bit(SPID.STATUS,7)); // Wait until IF is set to signal end of Rx
-	debug_pgm(PSTR("SPI: Byte Received"));
+	//debug_pgm(PSTR("SPI: Byte Received"));
 	return SPID.DATA;
 }
 

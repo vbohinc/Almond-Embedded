@@ -24,7 +24,13 @@
 sd.c - SD lives here
 */
 
+#include <util/delay.h>
 #include "sd.h"
+
+static uint8_t sd_buffer[6];
+static uint8_t sd_response_buffer[5];
+static uint8_t sd_token_buffer[SD_BLOCK_SIZE+3];
+
 //void sd_read_block(uint8_t *addr, uint8_t *read_buffer);
 //void sd_write_block(uint8_t *addr, uint8_t *write_buffer);
 void sd_send_buffer(void);
@@ -32,6 +38,15 @@ void sd_get_response(uint8_t response_type);
 
 void sd_init() {
 	spi_init();
+
+	_delay_ms(100);
+
+	for (uint8_t i=0; i<80; i++)
+	{
+		spi_send_byte(0x0F);
+	}
+
+
 	debug_pgm(PSTR("SD: SPI Init Succeeded"));
 	// Place SD Card into Idle State
 	sd_send_command(CMD0, NULL); 
@@ -65,7 +80,7 @@ void sd_init() {
 			sd_get_response(R1);
 		} while (sd_response_buffer[0] != 0x00);
 		// Gets the OCR [Operating Conditions Register] (including Card Capacity)
-		sd_send_command(CMD58, NULL); 
+		sd_send_command(CMD58, NULL);
 		sd_get_response(R3);
 		debug_pgm(PSTR("SD: Type 2 Initialization complete"));
 	}
@@ -75,6 +90,13 @@ void sd_init() {
 }
 
 bool sd_send_command(uint8_t command_nr, uint8_t *arguments) {
+	_delay_ms(100);
+
+	for (uint8_t i=0; i<80; i++)
+	{
+		spi_send_byte(0x0F);
+	}
+
 	switch (command_nr) {
 		case CMD0:
 			// Static CMD0. As the card is still in SD mode a valid CRC is required
@@ -155,16 +177,18 @@ void sd_read_bytes(uint32_t addr, uint8_t *read_buffer, uint16_t size) {
 	while (bytes_read < size) {
 	uint8_t addr_bytes[4];
 	 
-	addr_bytes[0] = block_addr;
-	addr_bytes[1] = block_addr>>8;
-	addr_bytes[2] = block_addr>>16;
-	addr_bytes[3] = block_addr>>24;
+	addr_bytes[0] = block_addr>>24;
+	addr_bytes[1] = block_addr>>16;
+	addr_bytes[2] = block_addr>>8;
+	addr_bytes[3] = block_addr;
+
 	if(sd_send_command(CMD17, addr_bytes))
 	{
 		debug_pgm(PSTR("SD: CMD17 Succeeded"));
 		sd_get_response(R1);
 		if (sd_response_buffer[0] == 0x00)
 		{
+			debug_pgm(PSTR("SD: Reading Block"));
 			for (int i = 0; i < 3+SD_BLOCK_SIZE; i++)
 			{
 				sd_token_buffer[i] = spi_receive_byte();
@@ -194,11 +218,12 @@ void sd_write_bytes(uint32_t addr, uint8_t *write_buffer, uint16_t size) {
 	uint8_t bytes_written = 0;
 	while (bytes_written < size) {
 	sd_read_bytes(block_addr, NULL, SD_BLOCK_SIZE);
+
 	uint8_t addr_bytes[4];
-	addr_bytes[0] = block_addr;
-	addr_bytes[1] = block_addr>>8;
-	addr_bytes[2] = block_addr>>16;
-	addr_bytes[3] = block_addr>>24;
+	addr_bytes[0] = block_addr>>24;
+	addr_bytes[1] = block_addr>>16;
+	addr_bytes[2] = block_addr>>8;
+	addr_bytes[3] = block_addr;
 	if (sd_send_command(CMD24, addr_bytes)) {
 		debug_pgm(PSTR("SD: CMD24 Succeeded"));
 		sd_get_response(R1);
@@ -228,15 +253,17 @@ void sd_write_bytes(uint32_t addr, uint8_t *write_buffer, uint16_t size) {
 void sd_send_buffer() {
 	for (int i = 0; i < 6; i++) {
 		spi_send_byte(sd_buffer[i]);
-		debug_pgm(PSTR("SD: Buffer Byte Sent"));
+		//debug_pgm(PSTR("SD: Buffer Byte Sent"));
 	}
 }
 
 void sd_get_response(uint8_t response_type) {
+
+	debug_pgm(PSTR("SD: Waiting for response"));
 	switch (response_type) {
 		case R1:
 			sd_response_buffer[0] = spi_receive_byte();
-			debug_pgm(PSTR("SD: R1 received"));
+			debug_pgm(PSTR("SD: R1 received:"));
 			break;
 		case R1b:
 			sd_response_buffer[0] = spi_receive_byte();
