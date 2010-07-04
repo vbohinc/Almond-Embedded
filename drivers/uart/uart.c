@@ -304,18 +304,18 @@ Date        Description
 
   #define ATXMEGA_USART0
 
+
+
   #define UART0_RECEIVE_INTERRUPT   USARTC0_RXC_vect
   #define UART0_TRANSMIT_INTERRUPT  USARTC0_DRE_vect
-  #define UART0_STATUS   UCSR0A
-  #define UART0_CONTROL  UCSR0B
-  #define UART0_DATA     UDR0
-  #define UART0_UDRIE    UDRIE0
 
-#include "usart_driver.h"
+
+	#include "usart_driver.h"
 	/*! Input data buffer for interrupt on receive */
 	USART_data_t USART_data;
 
 	/*! Define that selects the Usart used in example. */
+	//Change also pin settings in init function!!!!
 	#define USART USARTC0
 #else
  #error "no UART definition for MCU available"
@@ -327,7 +327,7 @@ Date        Description
 
 
 /*! Uncomment to enable flow control for UART0 */
-#define UART0_ENABLE_FLOW_CONTROL
+//#define UART0_ENABLE_FLOW_CONTROL
 /*! Uncomment to enable flow control for UART1 */
 #define UART1_ENABLE_FLOW_CONTROL
 
@@ -416,12 +416,6 @@ Function: UART Receive Complete interrupt
 Purpose:  called when the UART has received a character
 **************************************************************************/
 {
-
-#ifdef UART_ENABLE_FLOW_CONTROL
-	UART_CTS_PORT |= (1<<UART_CTS_PIN); //not ready for data = high
-#endif
-
-
 #ifdef ATXMEGA_USART0
 	USART_RXComplete(&USART_data);
 
@@ -461,11 +455,14 @@ Purpose:  called when the UART has received a character
         /* store received data in buffer */
         UART_RxBuf[tmphead] = data;
 
-#ifdef UART_ENABLE_FLOW_CONTROL
+       //FTDISend('I');
+       //FTDISend(data);
+
+#ifdef UART0_ENABLE_FLOW_CONTROL
         //Check if buffer is full
-        tmphead = ( UART_RxHead + 16) & UART_RX_BUFFER_MASK;
+        tmphead = ( UART_RxHead + 1) & UART_RX_BUFFER_MASK;
         if ( tmphead == UART_RxTail ) {
-            UART_CTS_PORT |= (1<<UART_CTS_PIN); //not ready for data = high
+            UART0_CTS_PORT |= (1<<UART0_CTS_PIN); //not ready for data = high
         }
 #endif
     }
@@ -493,7 +490,7 @@ Purpose:  called when the UART is ready to transmit the next byte
         /* get one byte from buffer and write it to UART */
         UART0_DATA = UART_TxBuf[tmptail];  /* start transmission */
 
-    	FTDISend(UART_TxBuf[tmptail]);
+    	//FTDISend(UART_TxBuf[tmptail]);
     }else{
         /* tx buffer empty, disable UDRE interrupt */
         UART0_CONTROL &= ~_BV(UART0_UDRIE);
@@ -508,7 +505,7 @@ Purpose:  initialize UART and set baudrate
 Input:    baudrate using macro UART_BAUD_SELECT()
 Returns:  none
 **************************************************************************/
-void uart_init(unsigned int baudrate)
+void uart_init(uint16_t baudrate)
 {
 #ifndef ATXMEGA_USART0
     UART_TxHead = 0;
@@ -603,20 +600,24 @@ void uart_init(unsigned int baudrate)
 	USART_InterruptDriver_Initialize(&USART_data, &USART, USART_DREINTLVL_LO_gc);
 
 	/* USARTC0, 8 Data bits, No Parity, 1 Stop bit. */
-	USART_Format_Set(&USART, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
+	USART_Format_Set(USART_data.usart, USART_CHSIZE_8BIT_gc,
+					 USART_PMODE_DISABLED_gc, false);
 
 	/* Enable RXC interrupt. */
 	USART_RxdInterruptLevel_Set(USART_data.usart, USART_RXCINTLVL_LO_gc);
 
-	/* Set Baudrate
+	/* Set Baudrate to 9600 bps:
+	 * Use the default I/O clock frequency that is 2 MHz.
 	 * Do not use the baudrate scale factor
 	 *
+	 * Baudrate select = (1/(16*(((I/O clock frequency)/Baudrate)-1)
+	 *                 = 12
 	 */
 	USART_Baudrate_Set(&USART, baudrate , 0);
 
 	/* Enable both RX and TX. */
-	USART_Rx_Enable(&USART);
-	USART_Tx_Enable(&USART);
+	USART_Rx_Enable(USART_data.usart);
+	USART_Tx_Enable(USART_data.usart);
 
 	/* Enable PMIC interrupt level low. */
 	PMIC.CTRL |= PMIC_LOLVLEX_bm;
@@ -634,26 +635,24 @@ Returns:  lower byte:  received byte from ringbuffer
           higher byte: last receive error
 **************************************************************************/
 unsigned int uart_getc(void)
-{    
+{
+#ifdef UART0_ENABLE_FLOW_CONTROL
+    UART0_CTS_PORT &= ~(1<<UART0_CTS_PIN); //ready for data = low
+#endif
+
 #ifdef ATXMEGA_USART0
     if (USART_RXBufferData_Available(&USART_data)== false)
+    {
         return UART_NO_DATA;   /* no data available */
-
+    }
+    return USART_RXBuffer_GetByte(&USART_data);
 #else
     unsigned char tmptail;
     unsigned char data;
     if ( UART_RxHead == UART_RxTail ) {
         return UART_NO_DATA;   /* no data available */
     }
-#endif
-    
-#ifdef UART_ENABLE_FLOW_CONTROL
-    UART_CTS_PORT &= ~(1<<UART_CTS_PIN); //ready for data = low
-#endif
 
-#ifdef ATXMEGA_USART0
-    return USART_RXBuffer_GetByte(&USART_data);
-#else
     /* calculate /store buffer index */
     tmptail = (UART_RxTail + 1) & UART_RX_BUFFER_MASK;
     UART_RxTail = tmptail; 
@@ -673,25 +672,21 @@ Purpose:  write byte to ringbuffer for transmitting via UART
 Input:    byte to be transmitted
 Returns:  1 on succes, 0 if remote not ready
 **************************************************************************/
-int uart_putc(unsigned char data)
+int uart_putc(uint8_t data)
 {
 
 #ifdef UART0_ENABLE_FLOW_CONTROL
     //Check if remote is ready to receive data
     if (UART0_RTS_PPIN & (1<<UART0_RTS_PIN))
     {
-    	FTDISend('!');
+    	//FTDISend('!');
     	return 0;
     }
 #endif
     
 #ifdef ATXMEGA_USART0
 
-		/*while(!USART_IsTXDataRegisterEmpty(&USART)) {
-			;
-		}*/
-
-	USART_PutChar(&USART, data);
+    USART_TXBuffer_PutByte(&USART_data,data);
 #else
 
     unsigned char tmphead;
@@ -783,7 +778,7 @@ void uart_flush(void)
  */
 #if defined( ATMEGA_USART1 )
 
-SIGNAL(UART1_RECEIVE_INTERRUPT)
+ISR(UART1_RECEIVE_INTERRUPT)
 /*************************************************************************
 Function: UART1 Receive Complete interrupt
 Purpose:  called when the UART1 has received a character
@@ -821,7 +816,7 @@ Purpose:  called when the UART1 has received a character
 }
 
 
-SIGNAL(UART1_TRANSMIT_INTERRUPT)
+ISR(UART1_TRANSMIT_INTERRUPT)
 /*************************************************************************
 Function: UART1 Data Register Empty interrupt
 Purpose:  called when the UART1 is ready to transmit the next byte
@@ -933,7 +928,7 @@ void uart1_putc(unsigned char data)
     //Check if remote is ready to receive data
     if (UART1_RTS_PPIN & (1<<UART1_RTS_PIN))
     {
-    	FTDISend('!');
+    	//FTDISend('!');
     	return 0;
     }
 #endif

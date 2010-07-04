@@ -23,7 +23,7 @@
      \__\/         \__\/         \__\/         \__\/         \__\/         \__\/    
 
  
- /**
+ **
  * Error handling functions
  */
 
@@ -31,14 +31,15 @@
 #include "ftdi.h"
 
 #include <avr/pgmspace.h>
+#include "error_driver.h"
 
 inline void _send_msg(const char *msg)
 {
   for (uint8_t i=0; i<255 && msg[i]!='\0'; i++)
   {
-    FTDISend(msg[i]);
+	  error_driver_write_c(msg[i]);
   }
-  FTDISend('\n');
+  error_driver_write_c('\n');
 }
 
 void send_pgm(const prog_char *msg)
@@ -47,10 +48,24 @@ void send_pgm(const prog_char *msg)
         myByte = pgm_read_byte(msg);
 	for(int i = 1; myByte != '\0'; i++)
 	{
-		 FTDISend(myByte);
-                 myByte = pgm_read_byte(msg+i);
+		error_driver_write_c(myByte);
+        myByte = pgm_read_byte(msg+i);
 	}
 }
+
+#ifdef DEBUG
+
+void error_init(void)
+{
+	error_driver_init();
+}
+
+
+void error_putc(const char c)
+{
+	error_driver_write_c(c);
+}
+
 
 void assert (bool condition, const char *msg) {
   if (condition) {
@@ -83,16 +98,6 @@ void warn (const char *msg)
 #endif
 }
 
-void error (const char *msg)
-{
-#ifdef SERIAL
-	printf("[ERROR]: %s\n", msg);
-#else
-    send_pgm(PSTR("ERR:"));
-    _send_msg(msg);
-#endif
-}
-
 void debug (const char *msg)
 {
 #ifdef SERIAL
@@ -103,11 +108,23 @@ void debug (const char *msg)
 #endif
 }
 
+void error (const char *msg)
+{
+#ifdef SERIAL
+	printf("[ERROR]: %s\n", msg);
+#else
+    send_pgm(PSTR("ERR:"));
+    _send_msg(msg);
+#endif
+}
+#endif
+
+#ifdef DEBUG
 void assert_pgm(bool condition, const prog_char *msg) {
 	if (condition) {
 		send_pgm(PSTR("ASS:"));
 		send_pgm(msg);
-		FTDISend('\n');
+		error_driver_write_c('\n');
 	}
 }
 
@@ -115,27 +132,29 @@ void info_pgm(const prog_char *msg)
 {
 	send_pgm(PSTR("INF:"));
 	send_pgm(msg);
-	FTDISend('\n');
+	error_driver_write_c('\n');
 }
 
 void warn_pgm(const prog_char *msg)
 {
 	send_pgm(PSTR("WARN:"));
 	send_pgm(msg);
-	FTDISend('\n');
+	error_driver_write_c('\n');
 }
+
 
 void error_pgm(const prog_char *msg)
 {
 	send_pgm(PSTR("ERR:"));
 	send_pgm(msg);
-	FTDISend('\n');
+	error_driver_write_c('\n');
 }
 
 void debug_pgm(const prog_char *msg)
 {
 	send_pgm(PSTR("DBG:"));
 	send_pgm(msg);
-	FTDISend('\n');
+	error_driver_write_c('\n');
 }
+#endif
 
