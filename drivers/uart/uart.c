@@ -416,7 +416,6 @@ Function: UART Receive Complete interrupt
 Purpose:  called when the UART has received a character
 **************************************************************************/
 {
-
 #ifdef ATXMEGA_USART0
 	USART_RXComplete(&USART_data);
 
@@ -614,7 +613,7 @@ void uart_init(uint16_t baudrate)
 	 * Baudrate select = (1/(16*(((I/O clock frequency)/Baudrate)-1)
 	 *                 = 12
 	 */
-	USART_Baudrate_Set(&USART, 12 , 0);
+	USART_Baudrate_Set(&USART, baudrate , 0);
 
 	/* Enable both RX and TX. */
 	USART_Rx_Enable(USART_data.usart);

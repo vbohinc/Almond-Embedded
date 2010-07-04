@@ -242,19 +242,10 @@ void slave_test(void)
 
 int main(void)
 {
-	error_init();
 	LED1_DDR |= 0xFF;
 
 	LED2_DDR |= 0xFF;
 
-	LED1_PORT |= (1<<LED1_PIN);
-	LED2_PORT |= (1<<LED2_PIN);
-	_delay_ms(500);
-	LED1_PORT &= ~(1<<LED1_PIN);
-	LED2_PORT &= ~(1<<LED2_PIN);
-	_delay_ms(500);
-
-	debug_pgm(PSTR("\r\n### Bluetooth Test ###\r\n"));
 
 	LED1_PORT |= (1<<LED1_PIN);
 	LED2_PORT |= (1<<LED2_PIN);
@@ -262,12 +253,11 @@ int main(void)
 	LED1_PORT &= ~(1<<LED1_PIN);
 	LED2_PORT &= ~(1<<LED2_PIN);
 	_delay_ms(500);
-
-
+	error_init();
 	bluetooth_init(bluetooth_callback_handler);
-	debug_pgm(PSTR("BTM: Initialized"));
-
 	sei();
+
+	debug_pgm(PSTR("### Bluetooth Test ###"));
 
 	LED1_PORT |= (1<<LED1_PIN);
 	LED2_PORT |= (1<<LED2_PIN);
@@ -287,7 +277,7 @@ int main(void)
 	bluetooth_cmd_send(buf,BLUETOOTH_CMD_WAIT_TIME);*/
 
 
-
+	debug_pgm(PSTR("BTM: Testing Connection"));
 	int ret = bluetooth_test_connection(4);
 
 	if (ret == 0)
@@ -300,6 +290,11 @@ int main(void)
 	{
 		debug_pgm(PSTR("BTM: Test Conn=OK"));
 		LED2_PORT |= (1<<LED2_PIN);
+		char* addr = bluetooth_cmd_get_address();
+		char full[13];
+		bluetooth_array_to_address(addr, full, 0);
+		debug_pgm(PSTR("BTM:My Address:"));
+		debug(full);
 		//master_test();
 		slave_test();
 	}
