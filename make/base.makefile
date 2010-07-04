@@ -86,8 +86,7 @@ endif
 
 #error 
 ifeq (error, $(findstring error,$(ALMONDLIBS)))
-SRC += $(BASE)/shared/error.c $(BASE)/shared/ftdi.c 
-SRC += $(BASE)/shared/error.c $(BASE)/shared/error_driver.c 
+SRC += $(BASE)/shared/error.c $(BASE)/shared/ftdi.c $(BASE)/shared/error_driver.c 
 endif
 
 #sd
