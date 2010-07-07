@@ -327,7 +327,7 @@ Date        Description
 
 
 /*! Uncomment to enable flow control for UART0 */
-//#define UART0_ENABLE_FLOW_CONTROL
+#define UART0_ENABLE_FLOW_CONTROL
 /*! Uncomment to enable flow control for UART1 */
 #define UART1_ENABLE_FLOW_CONTROL
 
@@ -455,9 +455,6 @@ Purpose:  called when the UART has received a character
         /* store received data in buffer */
         UART_RxBuf[tmphead] = data;
 
-       //FTDISend('I');
-       //FTDISend(data);
-
 #ifdef UART0_ENABLE_FLOW_CONTROL
         //Check if buffer is full
         tmphead = ( UART_RxHead + 1) & UART_RX_BUFFER_MASK;
@@ -490,7 +487,6 @@ Purpose:  called when the UART is ready to transmit the next byte
         /* get one byte from buffer and write it to UART */
         UART0_DATA = UART_TxBuf[tmptail];  /* start transmission */
 
-    	//FTDISend(UART_TxBuf[tmptail]);
     }else{
         /* tx buffer empty, disable UDRE interrupt */
         UART0_CONTROL &= ~_BV(UART0_UDRIE);
@@ -679,7 +675,7 @@ int uart_putc(uint8_t data)
     //Check if remote is ready to receive data
     if (UART0_RTS_PPIN & (1<<UART0_RTS_PIN))
     {
-    	//FTDISend('!');
+    	error_pgm(PSTR("UART: Remote not ready for data"));
     	return 0;
     }
 #endif
@@ -928,7 +924,7 @@ void uart1_putc(unsigned char data)
     //Check if remote is ready to receive data
     if (UART1_RTS_PPIN & (1<<UART1_RTS_PIN))
     {
-    	//FTDISend('!');
+    	error_pgm(PSTR("UART1: Remote not ready for data"));
     	return 0;
     }
 #endif
