@@ -140,7 +140,8 @@ uint8_t bluetooth_package_received = 0;
 uint8_t bluetooth_ok_received = 0;
 #endif
 
-#define UART_BAUD_RATE      9600
+//#define UART_BAUD_RATE      9600
+#define UART_BAUD_RATE      19200
 
 
 #ifndef SERIAL
@@ -412,7 +413,7 @@ void bluetooth_input_to_array(void)
 /**
  * Own implementation of strstr function
  */
-bool bluetooth_is_disconnect_msg(void)
+uint8_t bluetooth_is_disconnect_msg(void)
 {
 	uint8_t d = 'D';
 	prog_char *str = PSTR("ISCONNECT");
@@ -429,11 +430,11 @@ bool bluetooth_is_disconnect_msg(void)
 			}
 			if (j==9)
 			{
-				return true;
+				return 1;
 			}
 		}
 	}
-	return false;
+	return 0;
 
 }
 
@@ -483,7 +484,7 @@ void bluetooth_process_data(void)
 				//Data in FIFO is a data package for the callback function
 				int16_t byte = fifo_get_nowait(&bluetooth_infifo);
 
-				//FTDISend(byte);
+				//error_putc(byte);
 
 				if (byte == -1)
 				{
@@ -517,10 +518,9 @@ void bluetooth_process_data(void)
 					//debug(itoa(byte, error_builder,10));
 					//printf("recByte=%d\n", byte);
 					//check if module sent disconnect message
-					if (bluetooth_data_package_index >= 10 && bluetooth_is_disconnect_msg())
+					if (bluetooth_data_package_index >= 10 && bluetooth_is_disconnect_msg()==1)
 					{
-						if(byte == 10 && bluetooth_data_package_index==31)
-						{ //data was DISCONNECT message from module
+						 //data was DISCONNECT message from module
 							uint8_t i;
 							for (i =0 ; i<28; i++)
 							{
@@ -531,12 +531,6 @@ void bluetooth_process_data(void)
 							bluetooth_process_response();
 							bluetooth_cmd_buffer_head = 0;
 							bluetooth_data_package_index=0;
-							break;
-						} else {
-							bluetooth_data_package[bluetooth_data_package_index] = (uint8_t)byte;
-							bluetooth_previous_byte = byte;
-							bluetooth_data_package_index++;
-						}
 					}
 					else
 					{
