@@ -398,22 +398,22 @@ void display_write_title(const char *text, uint8_t status)
 
 }
 
-
 void display_write_text(const char *text, uint8_t status)
 {
 	uint8_t *pointer = (uint8_t *) text;
 	uint8_t i;
 	uint8_t symbol = 0;
-	static 	uint8_t row = 1;
+	static uint8_t row = 1;
 	uint8_t blank = (uint8_t) ' ';
-//TODO remove comment
-	/*
-	//prepare display
-	for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
+	//TODO check if
+	if (!(status & DISPLAY_TEXT_DEBUG))
 	{
-		display_clean_line(i, 0);
+		//prepare display
+		for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
+		{
+			display_clean_line(i, 0);
+		}
 	}
-	*/
 	//TODO 1 in offset
 	display_set_col(DISPLAY_COL_INIT + 1);
 	display_set_page(DISPLAY_PAGE_INIT + row);
@@ -421,15 +421,6 @@ void display_write_text(const char *text, uint8_t status)
 	//start to write
 	while (*pointer != '\0')
 	{
-/*
-		//Let the last field free for GUI Element
-		if (row == DISPLAY_PAGE_NUMBER && symbol == max_symbols - 2 && ((status
-				& DISPLAY_TEXT_TOP) || (status & DISPLAY_TEXT_BOTTOM)))
-		{
-			symbol++;
-		}
-		*/
-
 		display_write_char(*pointer, 0);
 		pointer++;
 		symbol++;
@@ -446,8 +437,11 @@ void display_write_text(const char *text, uint8_t status)
 				row = 1;
 				for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
 				{
-					//TODO remove comment
-				//	display_clean_line(i, 0);
+					//TODO check
+					if (!(status & DISPLAY_TEXT_DEBUG))
+					{
+						display_clean_line(i, 0);
+					}
 				}
 			}
 
@@ -461,7 +455,7 @@ void display_write_text(const char *text, uint8_t status)
 	//broken
 	//TODO 1 in offset
 	display_set_page(DISPLAY_PAGE_INIT + DISPLAY_PAGE_NUMBER);
-	display_set_col(DISPLAY_COL_NUMBER_VISIBLE-DISPLAY_CHAR_WIDTH);
+	display_set_col(DISPLAY_COL_NUMBER_VISIBLE - DISPLAY_CHAR_WIDTH);
 
 	//Paint navigation arrow if set
 	if ((status & DISPLAY_TEXT_TOP) && (status & DISPLAY_TEXT_BOTTOM))
@@ -483,13 +477,16 @@ void display_write_text(const char *text, uint8_t status)
 
 	else
 	{
-//do nothing
+		//do nothing
 	}
-	//TODO remove
-	row++;
-	if (row > DISPLAY_PAGE_NUMBER)
-				{
-					row = 1;
-				}
+	//TODO check
+	if (!(status & DISPLAY_TEXT_DEBUG))
+	{
+		row++;
+		if (row > DISPLAY_PAGE_NUMBER)
+		{
+			row = 1;
+		}
+	}
 }
 
