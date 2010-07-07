@@ -90,7 +90,7 @@ struct fat16_read_callback_arg {
 
 // Internal functions
 static uint8_t partition_open(uint8_t index);
-static uint8_t fat16_read_header();
+static uint8_t fat16_read_header(void);
 
 static uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* dir_entry);
 static uint8_t fat16_dir_entry_seek_callback(uint8_t* buffer, uint32_t offset, void* p);
@@ -161,7 +161,7 @@ extern uint8_t fat16_init(uint8_t partition_index)
 	return 1;
 }
 
-static uint8_t fat16_read_header()
+static uint8_t fat16_read_header(void)
 {
 	uint8_t buffer[25];
 
@@ -591,7 +591,8 @@ extern uint8_t fat16_open_file_by_name(struct fat16_file* file, const char* file
 	if(!file || !filename || !filename[0])
 		return 0;
 
-	fat16_get_dir_entry_of_path(filename, &file->dir_entry);
+	if(fat16_get_dir_entry_of_path(filename, &file->dir_entry) == 0)
+		return 0;
 
 	if(file->dir_entry.attributes & FAT16_ATTRIB_DIR)
 		return 0;
