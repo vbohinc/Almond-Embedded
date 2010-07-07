@@ -63,9 +63,13 @@ uint8_t int_to_send = 1;
 
 uint8_t pkg_received = 0;
 
+uint8_t return_arr[4];
+
 void bluetooth_callback_handler(char *data_package, const uint8_t callback_type, const uint8_t data_length)
 {
 	if (callback_type == 0) {//is data package
+
+
 		debug_pgm(PSTR("Package:"));
 		for (int i=0; i<data_length; i++)
 		{
@@ -317,7 +321,8 @@ int main(void)
 		char* addr = bluetooth_cmd_get_address();
 		char full[13];
 		bluetooth_array_to_address(addr, full, 0);
-		debug_pgm(PSTR("BTM:My Address:"));
+		full[12] = 0;
+		debug_pgm(PSTR("BTM: My Address:"));
 		debug(full);
 		//master_test();
 		slave_test();

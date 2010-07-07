@@ -165,9 +165,26 @@ void master_test()
 
 		printf("Gib daten ein:\n");
 
+		uint8_t package[4];
+
+		package[0] = 0xF0;
+		package[1] = 0x01;
+		package[2] = 0x02;
+		package[3] = 0x03;
+
+
+		uint8_t package_length = 4;
+
+		int ret = bluetooth_send_data_package(package, &package_length, 0, 2000);
+		if (ret != 0)
+		{
+			printf("Send package returned: %d\n", ret);
+			return;
+		}
+
+		/*
 		uint32_t sentPackages = 0;
 
-		uint8_t package_length = 64;
 
 		for (int i=0; i<package_length; i++)
 		{
@@ -223,7 +240,7 @@ void master_test()
 			/*if (bluetooth_send_data_package(cmd, count-1)==0)
 				perror("Couldn't send cmd");
 			bluetooth_process_data();*/
-		}
+		//}
 }
 
 void slave_test()
@@ -247,6 +264,10 @@ void slave_test()
 
 	while(connected)
 	{
+
+
+
+
 		bluetooth_process_data();
 		fgets(buffer, 255, stdin);
 		if (strncmp(buffer, "exit",4)==0)
