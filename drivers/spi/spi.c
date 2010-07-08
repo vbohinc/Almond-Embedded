@@ -28,9 +28,14 @@
 void spi_init() {
 	// Assert low on SS - SPI connected to PORTD
 	//clear_bit(PORTD_OUT, 4);
-	set_bit(PORTD.OUT, 4); // Sets Slave Select (SS) as Output
-	set_bit(PORTD.OUT, 5); // Set MOSI and SCK as Output
-	set_bit(PORTD.OUT, 7);
+	set_bit(PORTD.DIR, 3); // Sets Slave Select (SS) (on atxmega) as Output
+
+	set_bit(PORTD.DIR, 4); // Sets Slave Select (SS) (connected to sd) as Output
+	clear_bit(PORTD.OUT, 4); // Sets Slave Select (SS) (connected to sd) as low
+
+	set_bit(PORTD.DIR, 5); // Set MOSI and SCK as Output
+	set_bit(PORTD.DIR, 7);
+
 	set_bit(SPID.CTRL, 6); // Enable SPI
 	set_bit(SPID.CTRL, 4); // Set to Master
 	set_bit(SPID.CTRL, 7); // CLK2X
