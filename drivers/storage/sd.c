@@ -38,21 +38,22 @@ void sd_get_response(uint8_t response_type);
 
 void sd_init(void) {
 	spi_init();
+	set_bit(PORTD.DIR, 4); // Sets Slave Select (SS) (connected to sd) as Output
+	set_bit(PORTD.OUT, 4); // Sets Slave Select (SS) (connected to sd) as high
+
 
 	_delay_ms(100);
+        for(int i = 0; i < 10; i++)
+        {
+            spi_send_byte(0xFF);
+        }
 
-	for (uint8_t i=0; i<80; i++)
-	{
-		spi_send_byte(0x0F);
-	}
-
+        clear_bit(PORTD.OUT, 4); //SS to low
 
 	debug_pgm(PSTR("SD: SPI Init Succeeded"));
 	// Place SD Card into Idle State
 	sd_send_command(CMD0, NULL); 
 	sd_get_response(R1);
-	// Chip Select Low
-	clear_bit(PORTD.OUT, 3); // Redundant if CS == SS?
 	// Place SD Card into Idle State (again). Transition to SPI mode 
 	sd_send_command(CMD0, NULL);
 	sd_get_response(R1);
@@ -90,78 +91,59 @@ void sd_init(void) {
 }
 
 uint8_t sd_send_command(uint8_t command_nr, uint8_t *arguments) {
-	_delay_ms(100);
-
-	for (uint8_t i=0; i<80; i++)
-	{
-		spi_send_byte(0x0F);
-	}
-
+      	spi_send_byte(0xFF); //make sure device is listening
+        sd_buffer[0] = 0x40|command_nr; //CMD
+        sd_buffer[5] = 0x95; //CRC
 	switch (command_nr) {
 		case CMD0:
 			// Static CMD0. As the card is still in SD mode a valid CRC is required
 			//sd_buffer = 0x400000000095;
-			sd_buffer[0] = 0x40;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
-			sd_buffer[5] = 0x95;
 			debug_pgm(PSTR("SD: CMD0 complete"));
 			break;
 		case CMD8:
 			// Static CMD8. Ask the card if it likes tasty 2.7-3.6V
 			//sd_buffer = 0x480000010001;
-			sd_buffer[0] = 0x48;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[4] = 0x00;
-			sd_buffer[3] = sd_buffer[5] = 0x01;
+			sd_buffer[3] = 0x01;
 			debug_pgm(PSTR("SD: CMD8 complete"));
 			break;
 		case CMD16:
 			// Static CMD16. Sets the block size to 32 bytes.
 			//sd_buffer = 0x500000002001;
-			sd_buffer[0] = 0x50;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = 0x00;
 			sd_buffer[4] = 0x20;
-			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: CMD16 complete"));
 			break;
 		case CMD17:
 			// Requests a single block beginning at the address passed (4 Bytes)
-			sd_buffer[0] = 0x51;
 			for (int i = 0; i < 4; i++)
 				sd_buffer[i+1] = arguments[i];
-			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: CMD17 complete"));
 			break;
 		case CMD24:
 			// Writes a single block at the address passed
-			sd_buffer[0] = 0x58;
 			for (int i = 0; i < 4; i++)
 				sd_buffer[i+1] = arguments[i];
-			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: CMD24 complete"));
 			break;
 		case CMD55:
 			// Static CMD55. Informs the card the next command will be an 'A'-Command (Application Specific)
 			//sd_buffer = 0x770000000001;
-			sd_buffer[0] = 0x77;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
-			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: CMD55 complete"));
 			break;
 		case ACMD41:
 			// Static ACMD41. Initialize the card. Inform it we don't support High Capacity.
 			//sd_buffer = 0x696000000001;
-			sd_buffer[0] = 0x69;
 			sd_buffer[1] = 0x60;
 			sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
-			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: ACMD41 complete"));
 			break;
 		case CMD58:
 			// Static CMD58. Get OCR. (Operating Conditions Register) Returns the Card Capacity. 
 			//sd_buffer = 0x790000000001;
-			sd_buffer[0] = 0x79;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
-			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: CMD58 complete"));
 			break;
 		default:
@@ -194,7 +176,7 @@ uint8_t sd_read_bytes(uint32_t addr, uint8_t *read_buffer, uint16_t size) {
 					sd_token_buffer[i] = spi_receive_byte();
 					if ((i == 0) && (sd_token_buffer[i] != 0xFE))
 					{ // If the first token is not a valid token bail out.
-						return;
+						return 0;
 					}
 					if (i-1+block_addr >= addr && bytes_read < size)
 					{
