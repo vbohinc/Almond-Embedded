@@ -1,9 +1,11 @@
 #include "display.h"
 #include "display_low.h"
 #include <util/delay.h>
+#include <avr/pgmspace.h>
+#include <string.h>
 
 //Special Char enum in display.h defined
-const uint8_t charray[][6] =
+const uint8_t charray[][6] PROGMEM =
 {
 //TODO remove symbols which are not in use
 		//0
@@ -129,8 +131,9 @@ const uint8_t charray[][6] =
 
 };
 
-static uint8_t max_symbols = ((DISPLAY_COL_NUMBER_VISIBLE + 1)
-		/ DISPLAY_CHAR_WIDTH); //0: no space at all
+/* ((DISPLAY_COL_NUMBER_VISIBLE + 1)
+ / DISPLAY_CHAR_WIDTH); //0: no space at all
+ * */
 
 void display_init(void)
 {
@@ -201,14 +204,6 @@ void display_init(void)
 	// Display ON
 	display_command(0xAF);
 
-	//TODO remove?
-	/*
-	 Not needed because display_clean()
-	 //Set initial column and page
-	 display_set_col(DISPLAY_COL_INIT);
-	 display_set_page(DISPLAY_PAGE_INIT);
-	 */
-
 	//Clean Display
 	display_clean();
 }
@@ -235,7 +230,7 @@ void display_clean(void)
 void display_clean_char(uint8_t line, uint8_t symbol, uint8_t inverse_modus)
 {
 	uint8_t blank = (uint8_t) ' ';
-	if (line <= DISPLAY_PAGE_NUMBER && symbol <= max_symbols)
+	if (line <= DISPLAY_PAGE_NUMBER && symbol <= DISPLAY_CHAR_MAX)
 	{
 		display_set_col(DISPLAY_COL_INIT + 1 + DISPLAY_CHAR_WIDTH * symbol);
 		display_set_page(DISPLAY_PAGE_INIT + line);
@@ -251,7 +246,7 @@ void display_clean_line(uint8_t line, uint8_t inverse_modus)
 	{
 		display_set_col(DISPLAY_COL_INIT + 1);
 		display_set_page(DISPLAY_PAGE_INIT + line);
-		for (i = 0; i < max_symbols; i++)
+		for (i = 0; i < DISPLAY_CHAR_MAX; i++)
 		{
 			display_write_char(blank, inverse_modus);
 		}
@@ -266,10 +261,10 @@ void display_clean_line(uint8_t line, uint8_t inverse_modus)
 
 static void display_util_write_char(uint8_t number, uint8_t inverse_modus)
 {
-	int i;
+	uint8_t i;
 	for (i = 0; i < 6; i++)
 	{
-		display_write(charray[number][i], inverse_modus);
+		display_write(pgm_read_byte(&charray[number][i]), inverse_modus);
 	}
 }
 
@@ -295,6 +290,11 @@ void display_write_char(uint8_t character, uint8_t inverse_modus)
 		{
 			display_util_write_char(52, inverse_modus); //blank
 		}
+		//TODO Tilde to centigrade?
+		else if (character == '~')
+		{
+			display_util_write_char(44, inverse_modus); //
+		}
 		else if (character == '.')
 		{
 			display_util_write_char(45, inverse_modus); //dot
@@ -303,14 +303,15 @@ void display_write_char(uint8_t character, uint8_t inverse_modus)
 		{
 			display_util_write_char(46, inverse_modus); //double dot
 		}
-		else if (character == '%')
-		{
-			display_util_write_char(46, inverse_modus); //double dot
-		}
 		else if (character >= 14 && character <= 19)
 		{
 			display_util_write_char(character - 40, inverse_modus); //double dot
 		}
+		else if (character == '%')
+		{
+			display_util_write_char(53, inverse_modus); //Percent
+		}
+
 		else if (character == '!')
 		{
 			display_util_write_char(59, inverse_modus); //exclamationmark
@@ -326,16 +327,15 @@ void display_write_title(const char *text, uint8_t status)
 {
 
 	//text
-	uint8_t *pointer = (uint8_t *) text;
-	uint8_t *pointer_store = (uint8_t *) text;
+	char *pointer = (char*) text;
 
-	uint8_t blank = (uint8_t) ' ';
+	char blank = ' ';
 
 	//counter and numbers
 	uint8_t i = 0;
 	uint8_t blank_number = 0;
 	//counter to count the chars of the title
-	uint8_t c = 0;
+	uint8_t c = strlen(text);
 
 	//prepare display
 	display_set_col(DISPLAY_COL_INIT + 1);
@@ -351,17 +351,10 @@ void display_write_title(const char *text, uint8_t status)
 		display_write_char(blank, 1);
 	}
 
-	pointer_store = pointer;
-	while (*pointer_store != '\0')
-	{
-		c++;
-		pointer_store++;
-	}
-
-	blank_number = max_symbols - c - 2;
+	blank_number = DISPLAY_CHAR_MAX - c - 2;
 
 	//write title
-	if (c <= max_symbols - 2)
+	if (c <= DISPLAY_CHAR_MAX - 2)
 	{
 
 		for (i = 0; i < (blank_number / 2); i++)
@@ -400,11 +393,10 @@ void display_write_title(const char *text, uint8_t status)
 
 void display_write_text(const char *text, uint8_t status)
 {
-	uint8_t *pointer = (uint8_t *) text;
+	char *pointer = (char *) text;
 	uint8_t i;
 	uint8_t symbol = 0;
 	static uint8_t row = 1;
-	uint8_t blank = (uint8_t) ' ';
 	//TODO check if
 	if (!(status & DISPLAY_TEXT_DEBUG))
 	{
@@ -413,6 +405,7 @@ void display_write_text(const char *text, uint8_t status)
 		{
 			display_clean_line(i, 0);
 		}
+		row = 1;
 	}
 	//TODO 1 in offset
 	display_set_col(DISPLAY_COL_INIT + 1);
@@ -426,7 +419,7 @@ void display_write_text(const char *text, uint8_t status)
 		symbol++;
 
 		//line break
-		if (symbol >= max_symbols)
+		if (symbol >= DISPLAY_CHAR_MAX)
 		{
 			symbol = 0;
 			row++;
@@ -435,11 +428,12 @@ void display_write_text(const char *text, uint8_t status)
 			if (row > DISPLAY_PAGE_NUMBER)
 			{
 				row = 1;
-				for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
+				//TODO check
+				if (!(status & DISPLAY_TEXT_DEBUG))
 				{
-					//TODO check
-					if (!(status & DISPLAY_TEXT_DEBUG))
+					for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
 					{
+
 						display_clean_line(i, 0);
 					}
 				}
@@ -480,7 +474,7 @@ void display_write_text(const char *text, uint8_t status)
 		//do nothing
 	}
 	//TODO check
-	if (!(status & DISPLAY_TEXT_DEBUG))
+	if (status & DISPLAY_TEXT_DEBUG)
 	{
 		row++;
 		if (row > DISPLAY_PAGE_NUMBER)
@@ -489,4 +483,3 @@ void display_write_text(const char *text, uint8_t status)
 		}
 	}
 }
-

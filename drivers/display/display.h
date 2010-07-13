@@ -14,6 +14,9 @@
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 
+//0 means no visible chars
+#define DISPLAY_CHAR_MAX ((DISPLAY_COL_NUMBER_VISIBLE + 1)/ DISPLAY_CHAR_WIDTH)
+
 
 
 /*
