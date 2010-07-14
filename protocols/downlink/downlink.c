@@ -167,45 +167,72 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
   bool return_package;
   downlink_package *p;
 
-  if (callback_type != 0 && data_length != DOWNLINK_PACKAGE_LENGTH)
-    {
-      error ("Malformed Downlink package");
-      return;
-    }
 
-  p = (downlink_package *) data_package;
 
-  switch (p->opcode & 0xF0)
-    {
+  uint8_t buffer[20];
+  if (callback_type == 1) //connected
+  	{
+  		bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
+  		//debug_pgm(PSTR("Connected:"));
+  		debug((char*)buffer);
+  		error_putc('\n');
+  		//connected = 1;
+  	} else if (callback_type == 2) //disconnected
+  	{
+  		bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
+  		//debug_pgm(PSTR("Disconnected:"));
+  		debug((char*)buffer);
+  		error_putc('\n');
+  		//connected = 0;
+  	}
+  	else
+  	{
 
-    case GET:
-      return_package = downlink_handle_get_package (p);
-      break;
+	  if (callback_type != 0 && data_length != DOWNLINK_PACKAGE_LENGTH)
+		{
 
-    case SET:
-      return_package = downlink_handle_set_package (p);
-      break;
+		//  error ("bäh");
+		  return;
+		}
 
-    case BYE:
-      // FIXME! bluetooth_disabled_for_s = p->value;
-      p->id = 0;
-      p->value = 0;
-      return_package = true;
-      break;
+	  p = (downlink_package *) (data_package+1);
+		info_pgm(PSTR("PKG"));
+		byte_to_hex(data_package[1]);
 
-    case ECHO:
-      return_package = true;
-      break;
+	  switch (p->opcode & 0xF0)
+		{
 
-    default:
-      return_package = false;
-      break;
-    }
+		case GET:
+		  return_package = downlink_handle_get_package (p);
+		  break;
 
-  if (return_package)
-    {
-      p->opcode = RET;
-      bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH);
-    }
+		case SET:
+		  return_package = downlink_handle_set_package (p);
+		  break;
+
+		case BYE:
+		  // FIXME! bluetooth_disabled_for_s = p->value;
+		  p->id = 0;
+		  p->value = 0;
+		  return_package = true;
+		  break;
+
+		case ECHO:
+		  return_package = true;
+		  break;
+
+		default:
+		  return_package = true;
+
+		  debug_pgm (PSTR("FLL BCK"));
+		  break;
+		}
+
+	  if (return_package)
+		{
+		  p->opcode = RET;
+		  bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH);
+		}
+  	}
 }
 #endif

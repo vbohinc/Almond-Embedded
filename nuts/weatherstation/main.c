@@ -40,6 +40,7 @@
 #include <classes.h>
 #include <common/timer.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 
 const uint8_t class_id_nut = WEATHERSTATION;
 const uint8_t class_id_extensions[] = {TEMPERATURE, PRESSURE};
@@ -49,12 +50,18 @@ int main (void)
 {
   //init sleeping
   init_timer();
+  error_init();
+	debug_pgm(PSTR("## NUT Started ##"));
   //start bluetooth
   bluetooth_init(downlink_bluetooth_callback_handler);
+  sei();
   bluetooth_test_connection(4); //random number
   bluetooth_set_as_slave();
   //initialize sensors
   init_bmp085_sensor();
+
+
+	debug_pgm(PSTR("Wait for pgk ..."));
   //mainloop
   while(1)
   {
@@ -63,8 +70,10 @@ int main (void)
     //TODO check variable for bluetooth 
     //TODO sleep again if no connection is recieved
     //process data
+	  bluetooth_process_data();
 
-    start_sleep(4); //TODO use a variable, instead of random number 
+   // start_sleep(4); //TODO use a variable, instead of random number
+		//_delay_ms(1000);
   }
 }
 
