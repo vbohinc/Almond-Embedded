@@ -68,8 +68,8 @@ extern void squirrel_state_set (uint8_t s)
       debug_pgm (PSTR ("Switching to MASTER..."));
       break;
 
-    case defaul:
-      debug_pgm (PSTR ("Switching to ???..."))
+    default:
+      debug_pgm (PSTR ("Switching to ???..."));
     }
 #endif
   state = s;
