@@ -290,10 +290,9 @@ void display_write_char(uint8_t character, uint8_t inverse_modus)
 		{
 			display_util_write_char(52, inverse_modus); //blank
 		}
-		//TODO Tilde to centigrade?
-		else if (character == '~')
+		else if (character == '°')
 		{
-			display_util_write_char(44, inverse_modus); //
+			display_util_write_char(44, inverse_modus); //degree
 		}
 		else if (character == '.')
 		{
@@ -311,6 +310,14 @@ void display_write_char(uint8_t character, uint8_t inverse_modus)
 		{
 			display_util_write_char(53, inverse_modus); //Percent
 		}
+		else if (character == '-')
+				{
+					display_util_write_char(49, inverse_modus); //minus
+				}
+		else if (character == '+')
+				{
+					display_util_write_char(50, inverse_modus); //plus
+				}
 
 		else if (character == '!')
 		{

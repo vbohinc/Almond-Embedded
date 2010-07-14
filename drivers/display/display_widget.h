@@ -17,7 +17,7 @@ void display_widget_wind(uint8_t direction, uint8_t force, uint8_t status);
  * @param pressure
  * @param status of the title
  */
-void display_widget_weather(uint16_t temperature, uint16_t humidity, uint16_t pressure, uint8_t status);
+void display_widget_weather(int16_t temperature, uint16_t humidity, uint16_t pressure, uint8_t status);
 
 /**
  * Widget to show intensity of light
