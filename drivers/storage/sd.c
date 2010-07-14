@@ -27,7 +27,7 @@ sd.c - SD lives here
 #include <util/delay.h>
 #include "sd.h"
 
-static uint8_t sd_buffer[6];
+
 static uint8_t sd_response_buffer[5];
 static uint8_t sd_token_buffer[SD_BLOCK_SIZE+3];
 
@@ -36,27 +36,41 @@ static uint8_t sd_token_buffer[SD_BLOCK_SIZE+3];
 void sd_send_buffer(void);
 void sd_get_response(uint8_t response_type);
 
+void sd_enable_cs() {
+	clear_bit(PORTD.OUT, 4); // Sets Slave Select (SS) (connected to sd) as low
+	clear_bit(PORTD.OUT, 3);	
+}
+
+void sd_disable_cs() {
+	set_bit(PORTD.OUT, 4); // Sets Slave Select (SS) (connected to sd) as high
+	set_bit(PORTD.OUT, 3);
+}
+
 void sd_init(void) {
 	spi_init();
 	set_bit(PORTD.DIR, 4); // Sets Slave Select (SS) (connected to sd) as Output
-	set_bit(PORTD.OUT, 4); // Sets Slave Select (SS) (connected to sd) as high
-
+	sd_disable_cs();
 
 	_delay_ms(100);
         for(int i = 0; i < 10; i++)
         {
             spi_send_byte(0xFF);
-            spi_receive_byte();
         }
-
-        clear_bit(PORTD.OUT, 4); //SS to low
 
 	debug_pgm(PSTR("SD: SPI Init Succeeded"));
 	// Place SD Card into Idle State
 	do {
+	for(int i = 0; i < 10; i++)
+        {
+            spi_send_byte(0xFF);
+        }
+        sd_enable_cs();
 	sd_send_command(CMD0, NULL); 
 	sd_get_response(R1);
+	sd_disable_cs();
+	_delay_ms(1000);
 	} while (sd_response_buffer[0] != 0x01);
+	sd_enable_cs();
 	// Place SD Card into Idle State (again). Transition to SPI mode 
 	sd_send_command(CMD0, NULL);
 	sd_get_response(R1);
@@ -94,65 +108,90 @@ void sd_init(void) {
 }
 
 uint8_t sd_send_command(uint8_t command_nr, uint8_t *arguments) {
-      	spi_send_byte(0xFF); //make sure device is listening
-        sd_buffer[0] = 0x40|command_nr; //CMD
-        sd_buffer[5] = 0x95; //CRC
+      	uint8_t sd_buffer[6];
+
+        
 	switch (command_nr) {
 		case CMD0:
 			// Static CMD0. As the card is still in SD mode a valid CRC is required
 			//sd_buffer = 0x400000000095;
+			sd_buffer[0] = 0x40;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
+			sd_buffer[5] = 0x95; //CRC
 			debug_pgm(PSTR("SD: CMD0 complete"));
 			break;
 		case CMD8:
 			// Static CMD8. Ask the card if it likes tasty 2.7-3.6V
 			//sd_buffer = 0x480000010001;
+			sd_buffer[0] = 0x48;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[4] = 0x00;
 			sd_buffer[3] = 0x01;
+			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: CMD8 complete"));
 			break;
 		case CMD16:
 			// Static CMD16. Sets the block size to 32 bytes.
 			//sd_buffer = 0x500000002001;
+			sd_buffer[0] = 0x50;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = 0x00;
 			sd_buffer[4] = 0x20;
+			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: CMD16 complete"));
 			break;
 		case CMD17:
 			// Requests a single block beginning at the address passed (4 Bytes)
+			sd_buffer[0] = 0x51;
 			for (int i = 0; i < 4; i++)
 				sd_buffer[i+1] = arguments[i];
+			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: CMD17 complete"));
+			
 			break;
 		case CMD24:
 			// Writes a single block at the address passed
+			sd_buffer[0] = 0x58;
 			for (int i = 0; i < 4; i++)
 				sd_buffer[i+1] = arguments[i];
+			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: CMD24 complete"));
+			
 			break;
 		case CMD55:
 			// Static CMD55. Informs the card the next command will be an 'A'-Command (Application Specific)
 			//sd_buffer = 0x770000000001;
+			sd_buffer[0] = 0x77;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
+			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: CMD55 complete"));
 			break;
 		case ACMD41:
 			// Static ACMD41. Initialize the card. Inform it we don't support High Capacity.
 			//sd_buffer = 0x696000000001;
+			sd_buffer[0] = 0x69;
 			sd_buffer[1] = 0x60;
 			sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
+			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: ACMD41 complete"));
 			break;
 		case CMD58:
 			// Static CMD58. Get OCR. (Operating Conditions Register) Returns the Card Capacity. 
 			//sd_buffer = 0x790000000001;
+			sd_buffer[0] = 0x79;
 			sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
+			sd_buffer[5] = 0x01;
 			debug_pgm(PSTR("SD: CMD58 complete"));
 			break;
 		default:
 			return 0;
 	}
-	sd_send_buffer();
+	//sd_disable_cs();
+      	spi_send_byte(0x00); //make sure device is listening
+	sd_enable_cs();
+	for (int i = 0; i < 6; i++) {
+		spi_send_byte(sd_buffer[i]);
+		//debug_pgm(PSTR("SD: Buffer Byte Sent"));
+	}
+	//sd_disable_cs();
 	return 1;
 }
 
@@ -241,21 +280,15 @@ uint8_t sd_write_bytes(uint32_t addr, uint8_t *write_buffer, uint16_t size) {
 	return 1;
 }
 
-void sd_send_buffer() {
-	for (int i = 0; i < 6; i++) {
-		spi_send_byte(sd_buffer[i]);
-		//debug_pgm(PSTR("SD: Buffer Byte Sent"));
-	}
-}
-
 void sd_get_response(uint8_t response_type) {
 
 	debug_pgm(PSTR("SD: Waiting for response"));
+	sd_enable_cs();
 	switch (response_type) {
 		case R1:
 			sd_response_buffer[0] = spi_receive_byte();
 			debug_pgm(PSTR("SD: R1 received:"));
-			error_putc(sd_response_buffer[0]);
+			byte_to_hex(sd_response_buffer[0]);
 			break;
 		case R1b:
 			sd_response_buffer[0] = spi_receive_byte();
@@ -281,5 +314,6 @@ void sd_get_response(uint8_t response_type) {
 		default:
 			return;
 	}
+	//sd_disable_cs();
 }
 
