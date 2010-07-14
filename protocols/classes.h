@@ -52,6 +52,7 @@ enum class_id_actors
 
   SWITCH		= 0x81,
   DIMMER		= 0x82,
+  LED			= 0x83,
 
   INVALID		= 0xFF, // Used to mark N/A
 };

@@ -42,12 +42,32 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+#define LED1_DDR DDRD
+#define LED1_PORT PORTD
+#define LED2_DDR DDRC
+#define LED2_PORT PORTC
+#define LED1_PIN 7
+#define LED2_PIN 0
+
+
 const uint8_t class_id_nut = WEATHERSTATION;
-const uint8_t class_id_extensions[] = {TEMPERATURE, PRESSURE};
-const uint8_t class_id_extensions_length = 2;
+const uint8_t class_id_extensions[] = {TEMPERATURE, PRESSURE, LED};
+const uint8_t class_id_extensions_length = 3;
 
 int main (void)
 {
+
+	LED1_DDR |= 0xFF;
+
+	//LED2_DDR |= 0xFF;
+	/*LED1_PORT |= (1<<LED1_PIN);
+	LED2_PORT |= (1<<LED2_PIN);
+	_delay_ms(500);
+	LED1_PORT &= ~(1<<LED1_PIN);
+	LED2_PORT &= ~(1<<LED2_PIN);
+	_delay_ms(500);*/
+
+
   //init sleeping
   init_timer();
   error_init();
@@ -58,10 +78,10 @@ int main (void)
   bluetooth_test_connection(4); //random number
   bluetooth_set_as_slave();
   //initialize sensors
-  init_bmp085_sensor();
+  //init_bmp085_sensor();
 
 
-	debug_pgm(PSTR("WAIT PKG"));
+	//debug_pgm(PSTR("WTPG"));
   //mainloop
   while(1)
   {
@@ -82,11 +102,14 @@ int main (void)
 uint16_t get_value(uint8_t id)
 {
   switch(id) {
-    case TEMPERATURE:
+    case 0: // TEMP
+    	return (uint16_t) 366;
     break;
-    case PRESSURE:
+    case 1: // PRESS
+    	return (uint16_t) 1000;
     break;
     default:
+    	// DEBUG!!!
     break;
   }
   return 0;
@@ -94,6 +117,18 @@ uint16_t get_value(uint8_t id)
 
 void set_value(uint8_t id, uint16_t value)
 {
-  return; //no actor on this nut
+
+  switch(id) {
+	  case 2: // LED
+		  if (value == 0)
+				LED1_PORT &= ~(1<<LED1_PIN);
+		  else
+			  LED1_PORT |= (1<<LED1_PIN);
+		  break;
+
+	  default:
+		  break;
+
+  }
 }
 

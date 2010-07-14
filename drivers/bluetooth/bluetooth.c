@@ -445,7 +445,7 @@ int inline bluetooth_putc(const uint8_t byte)
  */
 void bluetooth_resent_package(void)
 {
-	debug_pgm(PSTR("BTM: RES")); //BTM RESENT
+	//debug_pgm(PSTR("B: RES")); //BTM RESENT
 	for (uint8_t i=0; i<bluetooth_sent_length; i++)
 	{
 		if (bluetooth_putc(bluetooth_data_package[i])==0)
@@ -542,7 +542,7 @@ void bluetooth_process_data(void)
 
 							bluetooth_data_package_index=0;
 
-							debug_pgm(PSTR("BT: TMO (STOP)")); //BT Timeout (STOP)
+							//debug_pgm(PSTR("BT: TMO (STOP)")); //BT Timeout (STOP)
 
 							//reorder package
 							bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
