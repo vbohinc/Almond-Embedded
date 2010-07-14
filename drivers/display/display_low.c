@@ -11,13 +11,13 @@ void display_command(uint8_t command)
 	set_bit(PORTE, DISPLAY_CS);
 }
 
-void display_write(uint8_t value, uint8_t inverse)
+void display_write(uint8_t value, uint8_t inverse_modus)
 {
 	set_bit(PORTB, DISPLAY_RS);
 	clear_bit(PORTE, DISPLAY_CS);
 	clear_bit(PORTE, DISPLAY_WR);
 	set_bit(PORTB, DISPLAY_RD);
-	if (inverse)
+	if (inverse_modus)
 	{
 		value = ~value;
 	}
