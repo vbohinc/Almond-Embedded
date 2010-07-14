@@ -1,7 +1,7 @@
 #include "../drivers/storage/sd.h"
 
 #include <avr/interrupt.h>
-
+#include <util/delay.h>
 
 #define NUM_BYTES 254
 
@@ -46,13 +46,21 @@ uint8_t main(void) {
 
 	sei();
 	debug_pgm(PSTR("### Storage Test ###"));
+	/*spi_init();
+	for (uint8_t i = 0; i < 256; i++) {
+	spi_send_byte(0xAA);
+	_delay_ms(10);
+	//spi_receive_byte();
+	}
+	_delay_ms(1000);
+	while (1) spi_send_byte(0x00);*/
 	sd_init();
 	/*uint8_t b = 0;
 	for (uint16_t i=0; i<NUM_BYTES; i++)
 	{
 		bytes[i] = b;
 		b++;
-	}*/
+	}
 
 	//sd_write_bytes(0, bytes, NUM_BYTES);
 
@@ -70,6 +78,6 @@ uint8_t main(void) {
 			error_putc('\n');
 
 
-	}
+	}*/
 	return 0;
 }

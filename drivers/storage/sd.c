@@ -46,14 +46,17 @@ void sd_init(void) {
         for(int i = 0; i < 10; i++)
         {
             spi_send_byte(0xFF);
+            spi_receive_byte();
         }
 
         clear_bit(PORTD.OUT, 4); //SS to low
 
 	debug_pgm(PSTR("SD: SPI Init Succeeded"));
 	// Place SD Card into Idle State
+	do {
 	sd_send_command(CMD0, NULL); 
 	sd_get_response(R1);
+	} while (sd_response_buffer[0] != 0x01);
 	// Place SD Card into Idle State (again). Transition to SPI mode 
 	sd_send_command(CMD0, NULL);
 	sd_get_response(R1);
@@ -252,6 +255,7 @@ void sd_get_response(uint8_t response_type) {
 		case R1:
 			sd_response_buffer[0] = spi_receive_byte();
 			debug_pgm(PSTR("SD: R1 received:"));
+			error_putc(sd_response_buffer[0]);
 			break;
 		case R1b:
 			sd_response_buffer[0] = spi_receive_byte();
