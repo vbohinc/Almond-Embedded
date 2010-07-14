@@ -232,7 +232,7 @@ void bluetooth_input_to_array(void)
 		if ( c & UART_FRAME_ERROR )
 		{
 			/* Framing Error detected, i.e no stop bit detected */
-			warn_pgm(PSTR("Frame ERR"));
+			warn_pgm(PSTR("FRM ERR")); //Frame Error
 		}
 		if ( c & UART_OVERRUN_ERROR )
 		{
@@ -241,7 +241,7 @@ void bluetooth_input_to_array(void)
 			 * not read by the interrupt handler before the next character arrived,
 			 * one or more received characters have been dropped
 			 */
-			warn_pgm(PSTR("Overrun ERR"));
+			warn_pgm(PSTR("OVR ERR")); //Overrun Error
 		}
 		if ( c & UART_BUFFER_OVERFLOW )
 		{
@@ -249,7 +249,7 @@ void bluetooth_input_to_array(void)
 			 * We are not reading the receive buffer fast enough,
 			 * one or more received character have been dropped
 			 */
-			warn_pgm(PSTR("Buffer overflow ERR"));
+			warn_pgm(PSTR("BUF ERR")); //Buffer Overflow error
 		}
 		else if (c!=UART_NO_DATA)
 		{
@@ -427,7 +427,7 @@ void bluetooth_process_response(void)
 
 int inline bluetooth_putc(const uint8_t byte)
 {
-	byte_to_hex(byte);
+	//byte_to_hex(byte);
 	//error_putc(byte);
 
 	uint8_t error = 0;
@@ -445,7 +445,7 @@ int inline bluetooth_putc(const uint8_t byte)
  */
 void bluetooth_resent_package(void)
 {
-	debug_pgm(PSTR("BTM: resent"));
+	debug_pgm(PSTR("BTM: RES")); //BTM RESENT
 	for (uint8_t i=0; i<bluetooth_sent_length; i++)
 	{
 		if (bluetooth_putc(bluetooth_data_package[i])==0)
@@ -542,7 +542,7 @@ void bluetooth_process_data(void)
 
 							bluetooth_data_package_index=0;
 
-							debug_pgm(PSTR("BT: Timeout (STOP)"));
+							debug_pgm(PSTR("BT: TMO (STOP)")); //BT Timeout (STOP)
 
 							//reorder package
 							bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
@@ -619,7 +619,7 @@ void bluetooth_process_data(void)
 						}
 						else if (byte == BLUETOOTH_RESENT_BYTE  && bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE)
 						{
-							debug_pgm(PSTR("Resent req."));
+							debug_pgm(PSTR("RES req.")); //Resent requested
 							bluetooth_ms_to_timeout = -1; //disable timeout
 							bluetooth_previous_byte = -1;
 
@@ -674,7 +674,7 @@ void bluetooth_process_data(void)
 								break;
 							}
 						} else {
-							debug_pgm(PSTR("BTM: Package full. Reorder."));
+							debug_pgm(PSTR("PKG fLL. REO.")); //BTM: Package full. Reorder
 							//flush fifo
 							while (bluetooth_infifo.count>0)
 								fifo_get_nowait(&bluetooth_infifo);
@@ -796,7 +796,13 @@ uint8_t bluetooth_handle_array(void)
 
 uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 {
-	debug_pgm(PSTR("SND PKG"));
+	debug_pgm(PSTR("P SND:"));
+	for (uint8_t i=0; i<length; i++)
+	{
+		byte_to_hex(data[i]);
+		error_putc(' ');
+	}
+	error_putc(13);
 	bluetooth_wait_response_array = NULL;
 	bluetooth_wait_response_length = NULL;
 

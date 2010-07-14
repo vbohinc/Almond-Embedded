@@ -51,7 +51,7 @@ int main (void)
   //init sleeping
   init_timer();
   error_init();
-	debug_pgm(PSTR("## NUT Started ##"));
+	//debug_pgm(PSTR("#NUT#"));
   //start bluetooth
   bluetooth_init(downlink_bluetooth_callback_handler);
   sei();
@@ -61,7 +61,7 @@ int main (void)
   init_bmp085_sensor();
 
 
-	debug_pgm(PSTR("Wait for pgk ..."));
+	debug_pgm(PSTR("WAIT PKG"));
   //mainloop
   while(1)
   {

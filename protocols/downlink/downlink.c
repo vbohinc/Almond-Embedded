@@ -50,18 +50,18 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
       if ((package.opcode == (RET | flag)) && (package.id == id))
         return package.value;
       else if (package.opcode == (ERROR | flag))
-        error ("Nut signaled error");
+        error ("NSE"); //Nut signaled error
       else
-        error ("Downlink protocol mismatch");
+        error ("DPM");//Downlink protocol mismatch
       break;
     case 1:
-      error ("Bluetooth error");
+      error ("BTE"); //Bluetooth error
       break;
     case 2:
-      warn ("Timeout");
+      warn ("TMO"); //Timeout
       break;
     default:
-      error ("Unkown return value");
+      error ("URV"); //Unkown return value
     }
 
   *err = true;
@@ -173,31 +173,41 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
   if (callback_type == 1) //connected
   	{
   		bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
-  		//debug_pgm(PSTR("Connected:"));
-  		debug((char*)buffer);
+  		debug_pgm(PSTR("CON:"));
+  		for (uint8_t i=0; i<12; i++)
+  			error_putc(buffer[i]);
   		error_putc('\n');
   		//connected = 1;
   	} else if (callback_type == 2) //disconnected
   	{
   		bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
-  		//debug_pgm(PSTR("Disconnected:"));
-  		debug((char*)buffer);
+  		debug_pgm(PSTR("DCO:"));
+  		for (uint8_t i=0; i<12; i++)
+  			error_putc(buffer[i]);
   		error_putc('\n');
   		//connected = 0;
   	}
   	else
   	{
 
+  		debug_pgm(PSTR("P REC:"));
+  		for (uint8_t i=0; i<data_length; i++)
+  		{
+  			byte_to_hex(data_package[i]);
+  			error_putc(' ');
+  		}
+  	  error_putc(13);
+		//error_putc('P');
+		//byte_to_hex(data_package[0]);
+
 	  if (callback_type != 0 && data_length != DOWNLINK_PACKAGE_LENGTH)
 		{
 
-		//  error ("bäh");
+		  error_putc('%');
 		  return;
 		}
 
-	  p = (downlink_package *) (data_package+1);
-		info_pgm(PSTR("PKG"));
-		byte_to_hex(data_package[1]);
+	  p = (downlink_package *) (data_package);
 
 	  switch (p->opcode & 0xF0)
 		{
@@ -224,7 +234,7 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
 		default:
 		  return_package = true;
 
-		  debug_pgm (PSTR("FLL BCK"));
+		  error_putc("#");
 		  break;
 		}
 
