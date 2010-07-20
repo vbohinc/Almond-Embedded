@@ -34,16 +34,21 @@
  * @param pressure a pointer to the pressure data
  * @return 1 on failure 0 otherwise
  */
-#ifdef __BMP085_H__
+#ifndef __BMP085_H__
 #define __BMP085_H__
+
+#include <common.h>
 
 struct bmp_data {
   int32_t temprature;
   int32_t pressure;
-}
+};
+
+typedef struct bmp_data bmp_data_t;
 
 extern void init_bmp085_sensor(void);
 
-struct bmp_data bmp085_get_data(void);
+extern bmp_data_t bmp085_get_data(void);
+
 #endif //__BMP085_H__
 

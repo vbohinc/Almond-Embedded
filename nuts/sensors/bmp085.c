@@ -55,20 +55,10 @@ struct pressure_conversion_data {
 
 
 //the eeprom saved conversion data
-const struct temprature_conversion_data tempconv EEMEM = {0, 0, 0, 0};
-const struct pressure_conversion_data pressconv EEMEM = {0, 0, 0, 0, 0, 0};
-const uint8_t have_bmp_conversion_data EEMEM = 0;
+struct temprature_conversion_data tempconv EEMEM = {0, 0, 0, 0};
+struct pressure_conversion_data pressconv EEMEM = {0, 0, 0, 0, 0, 0};
+uint8_t have_bmp_conversion_data EEMEM = 0;
 const uint8_t oversampling_setting = 0;
-
-void init_bmp085_sensor()
-{
-  uint8_t data_availible = eeprom_read_byte(&have_bmp_conversion_data);
-  if(data_availible == 0)
-  {
-    get_conversion_data();
-    eeprom_write_byte(&have_bmp_conversion_data,1);
-  }
-}
 
 uint16_t get_word(const uint8_t word)
 {
@@ -113,16 +103,18 @@ void get_conversion_data(void)
 
 int16_t calculate_true_temprature(int32_t* B5, int16_t utemprature)
 {
-  struct temprature_conversion_data data = eeprom_read_block(&tempconv,sizeof(struct temprature_conversion_data));
-  int32_t X1 = ((int32_t)(utemprature-data.AC6) * (int32_t)(data->AC5))>>15;
-  int32_t X2 = ((int32_t)data.MC << 11) / (X1 + data->MD);
+  struct temprature_conversion_data data;
+  eeprom_read_block(&data,&tempconv,sizeof(struct temprature_conversion_data));
+  int32_t X1 = ((int32_t)(utemprature-data.AC6) * (int32_t)(data.AC5))>>15;
+  int32_t X2 = ((int32_t)data.MC << 11) / (X1 + data.MD);
   *B5 = X1+X2;
   return (*B5+8)>>4;
 }
 
 int32_t calculate_true_pressure(int32_t* B5, int16_t upressure)
 {
-  struct pressure_conversion_data data = eeprom_read_block(&pressconv,sizeof(struct pressure_conversion_data));
+  struct pressure_conversion_data data;
+  eeprom_read_block(&data,&pressconv,sizeof(struct pressure_conversion_data));
   //Behold: Magic!
   int32_t B6, X1, X2, X3, B3, p;
   uint32_t B4, B7;
@@ -150,11 +142,23 @@ int32_t calculate_true_pressure(int32_t* B5, int16_t upressure)
   return p;
 }
 
-struct bmp_data bmp085_get_data()
+bmp_data_t bmp085_get_data()
 {
   int32_t B5;
-  struct bmp_data data;
+  bmp_data_t data;
   data.temprature = calculate_true_temprature(&B5, get_word(0x2E));
   data.pressure = calculate_true_pressure(&B5, get_word(0x34));
   return data;
 }
+
+void init_bmp085_sensor()
+{
+  uint8_t data_availible = eeprom_read_byte(&have_bmp_conversion_data);
+  if(data_availible == 0)
+  {
+    get_conversion_data();
+    eeprom_write_byte(&have_bmp_conversion_data,1);
+  }
+}
+
+
