@@ -70,12 +70,12 @@ void bluetooth_callback_handler(uint8_t *data_package, const uint8_t callback_ty
 		//printf("]\n");
 	} else if (callback_type == 1) //connected
 	{
-		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+		bluetooth_array_to_address(data_package, cmd,0);
 		printf("Connected to: %s\n", buffer);
 		connected = 1;
 	} else if (callback_type == 2) //disconnected
 	{
-		bluetooth_array_to_address(data_package, cmd, 0,0,0);
+		bluetooth_array_to_address(data_package, cmd,0);
 		printf("Disconnected from: %s\n", buffer);
 		connected = 0;
 	} else
@@ -108,7 +108,7 @@ void master_test()
 
 		char addr[12] = "701A041CDBF1";
 		uint8_t compressed[6];
-		bluetooth_address_to_array((uint8_t*)addr, compressed, 0,0,0);
+		bluetooth_address_to_array((uint8_t*)addr, compressed,0);
 
 		int retval = bluetooth_cmd_set_remote_address(compressed);
 
@@ -175,7 +175,7 @@ void master_test()
 
 		uint8_t package_length = 4;
 
-		int ret = bluetooth_send_data_package(package, &package_length, 0, 2000);
+		int ret = bluetooth_send_data_package_with_response(package, &package_length, 2000);
 		if (ret != 0)
 		{
 			printf("Send package returned: %d\n", ret);
@@ -287,7 +287,7 @@ void slave_test()
 
 		count--;
 
-		if (bluetooth_send_data_package(cmd, &count, 0, 0)!=0)
+		if (bluetooth_send_data_package(cmd, &count)!=0)
 			perror("Couldn't send cmd");
 		bluetooth_process_data();
 	}

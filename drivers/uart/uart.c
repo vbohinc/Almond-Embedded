@@ -103,6 +103,7 @@ Date        Description
 #include <avr/pgmspace.h>
 #include "uart.h"
 #include "../../shared/ftdi.h"
+#include "../../shared/error.h"
 
 
 /*
@@ -454,6 +455,12 @@ Purpose:  called when the UART has received a character
         UART_RxHead = tmphead;
         /* store received data in buffer */
         UART_RxBuf[tmphead] = data;
+
+        //error_putc('I');
+		//byte_to_hex(data);
+		//error_putc(' ');
+		//error_putc(data);
+		//error_putc(13);
 
 #ifdef UART0_ENABLE_FLOW_CONTROL
         //Check if buffer is full

@@ -53,6 +53,8 @@ void warn_pgm(const prog_char *msg);
 void debug_pgm(const prog_char *msg);
 void error_pgm(const prog_char *msg);
 
+void byte_to_hex(uint8_t byte);
+
 #else
 
 #define error_init() {}
@@ -71,7 +73,6 @@ void error_pgm(const prog_char *msg);
 #define warn_pgm(msg) {}
 #define debug_pgm(msg) {}
 #define error_pgm(msg) {}
-
+#define byte_to_hex(byte) {}
 #endif
-
 #endif

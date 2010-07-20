@@ -50,18 +50,18 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
       if ((package.opcode == (RET | flag)) && (package.id == id))
         return package.value;
       else if (package.opcode == (ERROR | flag))
-        error ("Nut signaled error");
+        error ("NSE"); //Nut signaled error
       else
-        error ("Downlink protocol mismatch");
+        error ("DPM");//Downlink protocol mismatch
       break;
     case 1:
-      error ("Bluetooth error");
+      error ("BTE"); //Bluetooth error
       break;
     case 2:
-      warn ("Timeout");
+      warn ("TMO"); //Timeout
       break;
     default:
-      error ("Unkown return value");
+      error ("URV"); //Unkown return value
     }
 
   *err = true;
@@ -167,45 +167,82 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
   bool return_package;
   downlink_package *p;
 
-  if (callback_type != 0 && data_length != DOWNLINK_PACKAGE_LENGTH)
-    {
-      error ("Malformed Downlink package");
-      return;
-    }
 
-  p = (downlink_package *) data_package;
 
-  switch (p->opcode & 0xF0)
-    {
+  uint8_t buffer[20];
+  if (callback_type == 1) //connected
+  	{
+  		bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
+  		debug_pgm(PSTR("CON:"));
+  		for (uint8_t i=0; i<12; i++)
+  			error_putc(buffer[i]);
+  		error_putc('\n');
+  		//connected = 1;
+  	} else if (callback_type == 2) //disconnected
+  	{
+  		bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
+  		debug_pgm(PSTR("DCO:"));
+  		for (uint8_t i=0; i<12; i++)
+  			error_putc(buffer[i]);
+  		error_putc('\n');
+  		//connected = 0;
+  	}
+  	else
+  	{
 
-    case GET:
-      return_package = downlink_handle_get_package (p);
-      break;
+  		debug_pgm(PSTR("P REC:"));
+  		for (uint8_t i=0; i<data_length; i++)
+  		{
+  			byte_to_hex(data_package[i]);
+  			error_putc(' ');
+  		}
+  	  error_putc(13);
+		//error_putc('P');
+		//byte_to_hex(data_package[0]);
 
-    case SET:
-      return_package = downlink_handle_set_package (p);
-      break;
+	  if (callback_type != 0 && data_length != DOWNLINK_PACKAGE_LENGTH)
+		{
 
-    case BYE:
-      // FIXME! bluetooth_disabled_for_s = p->value;
-      p->id = 0;
-      p->value = 0;
-      return_package = true;
-      break;
+		  error_putc('%');
+		  return;
+		}
 
-    case ECHO:
-      return_package = true;
-      break;
+	  p = (downlink_package *) (data_package);
 
-    default:
-      return_package = false;
-      break;
-    }
+	  switch (p->opcode & 0xF0)
+		{
 
-  if (return_package)
-    {
-      p->opcode = RET;
-      bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH);
-    }
+		case GET:
+		  return_package = downlink_handle_get_package (p);
+		  break;
+
+		case SET:
+		  return_package = downlink_handle_set_package (p);
+		  break;
+
+		case BYE:
+		  // FIXME! bluetooth_disabled_for_s = p->value;
+		  p->id = 0;
+		  p->value = 0;
+		  return_package = true;
+		  break;
+
+		case ECHO:
+		  return_package = true;
+		  break;
+
+		default:
+		  return_package = true;
+
+		  error_putc("#");
+		  break;
+		}
+
+	  if (return_package)
+		{
+		  p->opcode = RET;
+		  bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH);
+		}
+  	}
 }
 #endif

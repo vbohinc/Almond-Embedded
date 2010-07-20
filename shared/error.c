@@ -156,5 +156,39 @@ void debug_pgm(const prog_char *msg)
 	send_pgm(msg);
 	error_driver_write_c('\n');
 }
+
+void print_hex(uint8_t num)
+{
+	if (num<10)
+		error_putc(num+48);
+	else
+	{
+		switch (num)
+		{
+		case 10:
+			error_putc('A'); break;
+		case 11:
+			error_putc('B'); break;
+		case 12:
+			error_putc('C'); break;
+		case 13:
+			error_putc('D'); break;
+		case 14:
+			error_putc('E'); break;
+		case 15:
+			error_putc('F'); break;
+		default:
+			error_putc('#'); break;
+		}
+	}
+}
+
+void byte_to_hex(uint8_t byte){
+	uint8_t b2 = (byte & 0x0F);
+	uint8_t b1 = ((byte & 0xF0)>>4);
+	print_hex(b1);
+	print_hex(b2);
+}
+
 #endif
 
