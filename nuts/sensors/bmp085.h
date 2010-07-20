@@ -37,9 +37,13 @@
 #ifdef __BMP085_H__
 #define __BMP085_H__
 
+struct bmp_data {
+  int32_t temprature;
+  int32_t pressure;
+}
+
 extern void init_bmp085_sensor(void);
 
-uint8_t bmp085_get_data(uint16_t * temprature, uint16_t * pressure);
-
+struct bmp_data bmp085_get_data(void);
 #endif //__BMP085_H__
 
