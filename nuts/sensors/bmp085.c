@@ -34,6 +34,8 @@
 #include <stdbool.h>
 
 #include "bmp085.h"
+#include "error.h"
+
 
 struct temprature_conversion_data {
   uint16_t AC5;
@@ -74,6 +76,7 @@ uint16_t get_word(const uint8_t word)
   twi_read(&temp,NACK);
   result += temp;
   twi_stop();
+
   return result;
 }
 
@@ -153,6 +156,7 @@ bmp_data_t bmp085_get_data()
 
 void init_bmp085_sensor()
 {
+  twi_init();
   uint8_t data_availible = eeprom_read_byte(&have_bmp_conversion_data);
   if(data_availible == 0)
   {
