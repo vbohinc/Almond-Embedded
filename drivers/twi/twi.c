@@ -26,6 +26,7 @@
 
 #include <twi/twi.h>
 #include <util/twi.h>
+#include <error.h>
 
 void twi_wait(void);
 
@@ -41,8 +42,10 @@ uint8_t twi_start(void) {
   uint8_t status = twi_status();
   if(status == 0x08 || status == 0x10)
     return 0;
-  else
+  else {
+debug_pgm(PSTR("error start twi"));
     return 1;
+}
 }
 
 void twi_stop(void) {
@@ -56,16 +59,21 @@ uint8_t twi_connect(enum twi_access_mode mode, uint8_t addr)
   uint8_t status = twi_status();
   if(status == 0x08 || status == 0x10)
     return 0;
-  else
+  else {
+debug_pgm(PSTR("error connect1 twi"));
     return 1;
+}
   TWDR = (addr<<1)|mode;
   TWCR = (1<<TWINT)|(1<<TWEN);
   twi_wait();
   status = twi_status();
   if(status == 0x18 || status == 0x20 || status == 0x40 || status == 0x48)
     return 0;
-  else
+  else {
+debug_pgm(PSTR("error connect2 twi"));
     return 1;
+  
+}
 }
 
 uint8_t twi_write(uint8_t data)
@@ -76,8 +84,10 @@ uint8_t twi_write(uint8_t data)
   uint8_t status = twi_status();
   if(status == 0x28 || status == 0x30)
     return 0;
-  else
+  else {
+debug_pgm(PSTR("error write twi"));
     return 1;
+}
 
 }
 
@@ -89,17 +99,21 @@ uint8_t twi_read(uint8_t* data, enum twi_send_ack ack)
   uint8_t status = twi_status();
   if(status == 0x50 || status == 0x58)
     return 0;
-  else
+  else {
+debug_pgm(PSTR("error read twi"));
     return 1;
+}
 }
 
 uint8_t twi_status(void)
 {
+  byte_to_hex(TWSR & 0xF8);
   return (TWSR & 0xF8); //mask of prescaler bits
 }
 
 void twi_wait(void)
 {
+debug_pgm(PSTR("twi waiting"));
    while (!(TWCR & (1<<TWINT)));
 }
 

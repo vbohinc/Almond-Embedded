@@ -72,7 +72,7 @@ int main (void)
   
   //init_timer();
   error_init();
-	//debug_pgm(PSTR("#NUT#"));
+	debug_pgm(PSTR("#NUT#"));
   //start bluetooth
   //bluetooth_init(downlink_bluetooth_callback_handler);
   //sei();

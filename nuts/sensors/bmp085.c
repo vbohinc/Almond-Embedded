@@ -72,8 +72,10 @@ uint16_t get_word(const uint8_t word)
   uint8_t temp;
   uint16_t result;
   twi_read(&temp,ACK);
+  byte_to_hex(temp);
   result = (((uint16_t)temp)<<8);
   twi_read(&temp,NACK);
+  byte_to_hex(temp);
   result += temp;
   twi_stop();
 
@@ -82,6 +84,7 @@ uint16_t get_word(const uint8_t word)
 
 void get_conversion_data(void)
 {
+  debug_pgm(PSTR("condata1"));
   {
   struct temprature_conversion_data temptable;
   //temprature
@@ -102,6 +105,7 @@ void get_conversion_data(void)
   presstable.B2  = get_word(0xB8);
   eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
   }
+  debug_pgm(PSTR("condata2"));
 }
 
 int16_t calculate_true_temprature(int32_t* B5, int16_t utemprature)
@@ -157,11 +161,11 @@ bmp_data_t bmp085_get_data()
 void init_bmp085_sensor()
 {
   twi_init();
-  uint8_t data_availible = eeprom_read_byte(&have_bmp_conversion_data);
-  if(data_availible == 0)
+  //uint8_t data_availible = eeprom_read_byte(&have_bmp_conversion_data);
+  //if(data_availible == 0)
   {
     get_conversion_data();
-    eeprom_write_byte(&have_bmp_conversion_data,1);
+    //eeprom_write_byte(&have_bmp_conversion_data,1);
   }
 }
 
