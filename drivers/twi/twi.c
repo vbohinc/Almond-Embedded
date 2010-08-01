@@ -28,7 +28,13 @@
 #include <util/twi.h>
 #include <error.h>
 
-void twi_wait(void);
+
+#ifdef NUT
+void twi_wait(void)
+{
+debug_pgm(PSTR("twi waiting"));
+   while (!(TWCR & (1<<TWINT)));
+}
 
 void twi_init(void) {
   TWSR = 0;
@@ -111,9 +117,8 @@ uint8_t twi_status(void)
   return (TWSR & 0xF8); //mask of prescaler bits
 }
 
-void twi_wait(void)
-{
-debug_pgm(PSTR("twi waiting"));
-   while (!(TWCR & (1<<TWINT)));
-}
+#else
 
+
+
+#endif
