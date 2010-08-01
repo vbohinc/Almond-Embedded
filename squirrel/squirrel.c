@@ -1,29 +1,4 @@
 /*
-      ___                         ___           ___           ___          _____    
-     /  /\                       /__/\         /  /\         /__/\        /  /::\   
-    /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\  
-   /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\ 
-  /  /:/~/::\  /__/\   /  /\  __|__|:|\:\   /  /:/  \:\   _____\__\:\  /__/:/ \__\:|
- /__/:/ /:/\:\ \  \:\ /  /:/ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\ \  \:\ /  /:/
- \  \:\/:/__\/  \  \:\  /:/  \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/  \  \:\  /:/ 
-  \  \::/        \  \:\/:/    \  \:\        \  \:\  /:/   \  \:\  ~~~    \  \:\/:/  
-   \  \:\         \  \::/      \  \:\        \  \:\/:/     \  \:\         \  \::/   
-    \  \:\         \__\/        \  \:\        \  \::/       \  \:\         \__\/    
-     \__\/                       \__\/         \__\/         \__\/                  
-      ___                         ___                       ___           ___           ___                   
-     /  /\          ___          /__/\        ___          /  /\         /  /\         /  /\                  
-    /  /:/_        /  /\         \  \:\      /  /\        /  /::\       /  /::\       /  /:/_                 
-   /  /:/ /\      /  /::\         \  \:\    /  /:/       /  /:/\:\     /  /:/\:\     /  /:/ /\    ___     ___ 
-  /  /:/ /::\    /  /:/\:\    ___  \  \:\  /__/::\      /  /:/~/:/    /  /:/~/:/    /  /:/ /:/_  /__/\   /  /\
- /__/:/ /:/\:\  /  /:/~/::\  /__/\  \__\:\ \__\/\:\__  /__/:/ /:/___ /__/:/ /:/___ /__/:/ /:/ /\ \  \:\ /  /:/
- \  \:\/:/~/:/ /__/:/ /:/\:\ \  \:\ /  /:/    \  \:\/\ \  \:\/:::::/ \  \:\/:::::/ \  \:\/:/ /:/  \  \:\  /:/ 
-  \  \::/ /:/  \  \:\/:/__\/  \  \:\  /:/      \__\::/  \  \::/~~~~   \  \::/~~~~   \  \::/ /:/    \  \:\/:/  
-   \__\/ /:/    \  \::/        \  \:\/:/       /__/:/    \  \:\        \  \:\        \  \:\/:/      \  \::/   
-     /__/:/      \__\/          \  \::/        \__\/      \  \:\        \  \:\        \  \::/        \__\/    
-     \__\/                       \__\/                     \__\/         \__\/         \__\/                  
-
-
-/*
  * squirrel.c
  *
  */
@@ -80,18 +55,19 @@ extern void squirrel_state_set (uint8_t s)
  * ----------------------------------------------------------------------- */
 
 #define NUTS_LIST 16
+#define EXTENSIONS_LIST 16
+#define POLL_INTERVALL 15
 
 typedef struct _device_info device_info;
+
 struct _device_info
 {
   uint8_t mac[6];
   uint8_t class;
-  uint8_t actuator_types[16];
-  uint8_t sensor_types[16];
-  uint8_t config_types[16];
+  uint8_t extension_types[EXTENSIONS_LIST];
+  uint16_t values_cache[EXTENSIONS_LIST];
 };
 
-const uint8_t poll_time EEMEM = 15;
 static device_info device_list [NUTS_LIST];
 
 void squirrel_create_device_info_entry (const uint8_t *address)
@@ -109,11 +85,9 @@ void squirrel_create_device_info_entry (const uint8_t *address)
 #ifdef DEBUG
 
 #endif
-
           for (int j = 0; j < 16; j++)
             {
-              device_list[k].sensor_types[j] = downlink_get_sensor_class(j, NULL);
-              device_list[k].actuator_types[j] = downlink_get_actuator_class(j + 0x80, NULL); // Actuators begin at ID 0x80
+              device_list[k].extension_types[j] = downlink_get_extension_class(j, NULL);
             }
           return;
         }
@@ -140,7 +114,6 @@ void downlink_discover(void)
       // Data Structure COUNT (1) | NAME (16) | MAC (6) | ...
       squirrel_create_device_info_entry (&found[1 + i * (16 + 6) + 16]);
     }
-
 }
 
 /* ----------------------------------------------------------------------- 
@@ -185,11 +158,47 @@ void slave_loop (void)
 
 void master_loop (void)
 {
-  while (state == MASTER)
+  // FIXME: Trim Strings!
+  assert (bluetooth_set_as_master() == 1, "Could not set master mode");
+  
+  for (int k = 0; k < NUTS_LIST && device_list[k].mac[0] != 0; k++)
     {
-      // Poll nuts!
+      if (bluetooth_cmd_set_remote_address (&device_list[k].mac) != 1) 
+        break; // Could not connect
+        
+      for (int i = 0; i < EXTENSIONS_LIST; i++) 
+        {
+          if (device_list[k].extension_types[i] < 0x80)
+            {
+              device_list[k].values_cache[i] = downlink_get_sensor_value(i, NULL);
+              // log??
+            } 
+        }
     }
+  
+  assert (bluetooth_set_as_slave() == 1, "Could not set master mode");
+  state = SLAVE;
 }
+
+void draw_ui (uint8_t device, uint8_t page) 
+{
+  const char *heading; 
+  
+  switch (device_list[device].class) 
+    {
+      // FIXME: Move to EEPROM!!
+      case WEATHERSTATION:
+        heading = "Wetterstation";
+        break;
+        
+      default:
+        heading = "Unbekannt";
+        break;
+    }
+    
+  // call display.h / widgets.c 
+}
+
 
 int main (void)
 {
@@ -203,6 +212,13 @@ int main (void)
 
   while (true)
     {
+      // Check for input events...
+      // redraw UI
+      // TIMER events!
+      
+      // if (something changed)
+      draw_ui (0, 0);
+    
       if (state == MASTER)
         {
           master_loop ();

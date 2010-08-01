@@ -83,12 +83,7 @@ uint8_t downlink_get_nut_class (bool *err)
   return (uint8_t) downlink_request (GET, INFO_NUT, 0, 0, err);
 }
 
-uint8_t downlink_get_actuator_class (uint8_t id, bool *err)
-{
-  return (uint8_t) downlink_request (GET, INFO_EXTENSION, id + 0x80, 0, err);
-}
-
-uint8_t downlink_get_sensor_class (uint8_t id, bool *err)
+uint8_t downlink_get_extension_class (uint8_t id, bool *err)
 {
   return (uint8_t) downlink_request (GET, INFO_EXTENSION, id, 0, err);
 }
