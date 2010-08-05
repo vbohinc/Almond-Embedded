@@ -56,8 +56,7 @@ const uint8_t class_id_extensions_length = 3;
 
 int main (void)
 {
-
-//	LED1_DDR |= 0xFF;
+	LED1_DDR |= 0xFF;
 
 	//LED2_DDR |= 0xFF;
 	/*LED1_PORT |= (1<<LED1_PIN);
@@ -68,35 +67,34 @@ int main (void)
 	_delay_ms(500);*/
 
 
-  //init sleeping
-  
-  //init_timer();
-  error_init();
-	debug_pgm(PSTR("#NUT#"));
-  //start bluetooth
-  //bluetooth_init(downlink_bluetooth_callback_handler);
-  //sei();
-  //bluetooth_test_connection(4); //random number
-  //bluetooth_set_as_slave();
-  //initialize sensors
-  init_bmp085_sensor();
+	//init sleeping
+	init_timer();
+	error_init();
+	//debug_pgm(PSTR("#NUT#"));
+	//start bluetooth
+	bluetooth_init(downlink_bluetooth_callback_handler);
+	sei();
+	bluetooth_test_connection(4); //random number
+	bluetooth_set_as_slave();
+	//initialize sensors
+	//init_bmp085_sensor();
 
 
 	//debug_pgm(PSTR("WTPG"));
-  //mainloop
-  while(1)
-  {
-    bmp085_get_data();
-    //activate bluetooth 
-    //TODO make meassurements
-    //TODO check variable for bluetooth 
-    //TODO sleep again if no connection is recieved
-    //process data
-	  //bluetooth_process_data();
+	//mainloop
+	while(1)
+	{
+		//activate bluetooth
+		//TODO make meassurements
+		//TODO check variable for bluetooth
+		//TODO sleep again if no connection is recieved
+		//process data
+		bluetooth_process_data();
 
-   // start_sleep(4); //TODO use a variable, instead of random number
+		// start_sleep(4); //TODO use a variable, instead of random number
 		//_delay_ms(1000);
-  }
+	}
+
 }
 
 //functions for downlink protocol

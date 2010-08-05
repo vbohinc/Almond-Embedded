@@ -48,7 +48,6 @@
  * Enables CRC check for bluetooth packages
  */
 //#define ENABLE_CRC
-//#define BLUETOOTH_ENABLE_OK
 
 #ifdef ENABLE_CRC
 #include "./../../shared/crc.h"
@@ -88,22 +87,11 @@
  */
 #define BLUETOOTH_RESENT_BYTE 253
 
-
-#ifdef BLUETOOTH_ENABLE_OK
-/**
- * The OK-Byte in combination with special byte to tell connected client that received package was ok.
- * First comes special byte, then resent byte.
- */
-#define BLUETOOTH_OK_BYTE 252
-#endif
-
 /**
  * Default waiting for commands in milliseconds.
  *
  */
 #define BLUETOOTH_CMD_WAIT_TIME 42
-
-//extern uint8_t bluetooth_data_package[225];
 
 /*
  * Contains the address of the connected device or [0]=0 if disconnected
@@ -249,6 +237,16 @@ uint8_t bluetooth_cmd_send (const char* cmd, const uint16_t delay_ms);
 uint8_t bluetooth_cmd_wait_response (void);
 
 /**
+ * Command: AT
+ * Check connection to bluetooth device
+ * @return Returns 1 on success check, 0 otherwise if timeout occured or error returned
+ *
+ */
+extern uint8_t bluetooth_cmd_test_connection (void);
+
+#ifdef SQUIRREL
+
+/**
  * Command: ATA
  * When it's in master mode. This command establish a connection. When it's in slave mode, the command will be rejected.
  * Connect to a Bluetooth device (It's only available when “ATD=xxxxxxxxxxxx" assigned).
@@ -259,19 +257,13 @@ uint8_t bluetooth_cmd_wait_response (void);
 extern uint8_t bluetooth_cmd_connect (const uint8_t dev_num);
 
 /**
- * Command: AT
- * Check connection to bluetooth device
- * @return Returns 1 on success check, 0 otherwise if timeout occured or error returned
- *
- */
-extern uint8_t bluetooth_cmd_test_connection (void);
-
-/**
  * Command: ATB?
  * Get the local device BD address.
  * @return Returns the local BluetoothDevice Address as a char array (in one byte are 2 char-values). Length is normally 6 byte (char)
  */
 extern char* bluetooth_cmd_get_address (void);
+
+#endif
 
 /**
  * Command: ATD
@@ -288,6 +280,7 @@ extern char* bluetooth_cmd_get_address (void);
 extern uint8_t bluetooth_cmd_set_remote_address (const char* address);
 
 #ifdef SQUIRREL
+
 /**
  * Command: ATF?
  * Search bluetooth devices.
@@ -298,7 +291,6 @@ extern uint8_t bluetooth_cmd_set_remote_address (const char* address);
  * @see bluetooth_data_package
  */
 extern char* bluetooth_cmd_search_devices (void);
-#endif
 
 /**
  * Command: ATH (only in online command mode)
@@ -333,6 +325,8 @@ extern uint8_t bluetooth_cmd_set_name (const char *name);
  */
 extern char* bluetooth_cmd_get_name (void);
 
+#endif
+
 
 /**
  * Command: ATO
@@ -342,6 +336,7 @@ extern char* bluetooth_cmd_get_name (void);
  */
 extern uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect);
 
+#ifdef SQUIRREL
 
 /**
  * Command: ATP
@@ -360,6 +355,9 @@ extern uint8_t bluetooth_cmd_set_pin (const char *pin);
  */
 extern char* bluetooth_cmd_get_pin (void);
 
+#endif
+
+
 /**
  * Command: ATR
  * Set mode of the device: master or slave.
@@ -376,6 +374,7 @@ extern uint8_t bluetooth_cmd_set_mode (uint8_t mode);
  */
 extern char *bluetooth_cmd_get_mode (void);
 
+#ifdef SQUIRREL
 /**
  * Command: ATZ
  * Restore factory/default settings.
@@ -389,7 +388,7 @@ extern uint8_t bluetooth_cmd_restore_settings (void);
  * @return Returns 1 on success otherwise 0.
  */
 extern uint8_t bluetooth_cmd_online_command (void);
-
+#endif
 
 
 #endif /* _BLUETOOTH_H_ */
