@@ -35,23 +35,11 @@
 #ifndef _BLUETOOTH_H_
 #define _BLUETOOTH_H_
 
-#ifdef SERIAL
-#include "bluetooth_serial.h"
-#else
 #include <avr/io.h>
 #include "./../uart/uart.h"
-#endif
 #include "./../../shared/fifo.h"
 #include "./../../shared/error.h"
 
-/**
- * Enables CRC check for bluetooth packages
- */
-//#define ENABLE_CRC
-
-#ifdef ENABLE_CRC
-#include "./../../shared/crc.h"
-#endif
 
 /**
  * Maximum possible size of a data package in bytes. The formula for the maximum size is (SIZE is the normal size of a package)
@@ -82,16 +70,10 @@
 #define BLUETOOTH_STOP_BYTE 254
 
 /**
- * The resent-Byte in combination with special byte to tell connected client to resent received data package due to CRC error.
+ * The resent-Byte in combination with special byte to tell connected client to resent received data package due to timeout.
  * First comes special byte, then resent byte.
  */
 #define BLUETOOTH_RESENT_BYTE 253
-
-/**
- * Default waiting for commands in milliseconds.
- *
- */
-#define BLUETOOTH_CMD_WAIT_TIME 42
 
 /*
  * Contains the address of the connected device or [0]=0 if disconnected
@@ -107,12 +89,6 @@ extern uint8_t bluetooth_is_connected;
 * @li data_length Length of the received data or the address
 */
 extern void bluetooth_init(void (*bluetooth_callback_handler)(char *data_package, const uint8_t callback_type, const uint8_t data_length));
-
-
-/**
- * In SERIAL mode (PC) closes the opened sockets and threads
- */
-extern void bluetooth_close(void);
 
 
 /**
@@ -133,17 +109,15 @@ extern void bluetooth_close(void);
 void (*bluetooth_callback)(char *data_package, const uint8_t callback_type, const uint8_t data_length);
 
 /**
- * Writes the byte to the usart or the bluetooth serial connection
- * On Serial connection returns 1 for success, 0 for error.
- * On Uart mode returns always 1
+ * Writes the byte to the usart connection
+ * @return 1 for success, 0 for error.
  */
 extern int bluetooth_putc(const uint8_t byte);
 
 /**
- * Called by bluetooth_process_data if a stop byte was received or the data-package is complete. Checks if CRC is ok.
- * @return -1 means there was a CRC error and input buffer should be deleted
+ * Called by bluetooth_process_data if a stop byte was received or the data-package is complete.
  */
-uint8_t bluetooth_handle_array(void);
+void bluetooth_handle_array(void);
 
 /**
  * Sends the data to the connected client.
@@ -219,12 +193,11 @@ extern void bluetooth_array_to_address(const char *compressed_address, char *ful
 //---------------------------------------------------------
 
 /**
- * Sends an AT-Command as a String to the bluetooth module
- * @param cmd The command as char array with '"backslash"0'. Ex: 'ATL1'
- * @param delay_ms milliseconds to wait between each byte
+ * Sends an AT-Command as a String to the bluetooth module.
+ * @param cmd The command as char array with nullbyte. Ex: 'ATL1'
  * @return 1 on success, 0 on failure (timeout)
  */
-uint8_t bluetooth_cmd_send (const char* cmd, const uint16_t delay_ms);
+uint8_t bluetooth_cmd_send (const char* cmd);
 
 /**
  * Waits until the bluetooth device returns one of the following responses. For each response will be returned a number which is given in the brackets:

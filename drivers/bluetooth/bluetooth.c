@@ -37,12 +37,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include "ftdi.h"
+#include <util/delay.h>
 
 #include <avr/pgmspace.h>
-
-#ifdef SERIAL
-#include <unistd.h>
-#endif
 
 /**
  * FIFO to store received data. Uses bluetooth_inbuffer to store bytes
@@ -123,8 +120,6 @@ uint8_t bluetooth_cmd_buffer_head = 0;
  */
 uint8_t bluetooth_response_code = 0;
 
-uint8_t bluetooth_is_connected;
-
 /**
  * Contains the length of the recently sent package. The data is stored in bluetooth_data_package
  */
@@ -141,7 +136,8 @@ uint8_t *bluetooth_wait_response_array = NULL;
 uint8_t *bluetooth_wait_response_length = NULL;
 
 /**
- * timeout to wait for stop byte. In ms
+ * timeout to wait for stop byte. In ms.
+ * If timeout occurs the resent byte will be sent to the connected device.
  */
 #define BLUETOOTH_STOP_BYTE_TIMEOUT 1000
 
@@ -157,72 +153,19 @@ int32_t bluetooth_ms_to_timeout = -1; //disable timeout
  */
 uint8_t bluetooth_package_received = 0;
 
-#ifdef BLUETOOTH_ENABLE_OK
-/**
- * Used for the bluetooth_send_datapackage to determine if remote end responsed with ok
- */
-uint8_t bluetooth_ok_received = 0;
-#endif
-
 //#define UART_BAUD_RATE      9600
 #define UART_BAUD_RATE      19200
-
-
-#ifndef SERIAL
-#include <util/delay.h>
-#else
-
-#include <time.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-#include <unistd.h>
-#endif
 
 
 void bluetooth_init(void (*bluetooth_callback_handler)(char *data_package, const uint8_t callback_type, const uint8_t data_length))
 {
 	bluetooth_callback = bluetooth_callback_handler;
 	fifo_init (&bluetooth_infifo,   bluetooth_inbuffer, BLUETOOTH_RECEIVE_BUFFER_SIZE);
-#ifdef SERIAL
-	bluetooth_serial_set_byte_handler(bluetooth_byte_received);
-	bluetooth_serial_init();
-#else
 	uart_init(UART_BAUD_SELECT(UART_BAUD_RATE,F_CPU) );
-#endif
-}
-
-void bluetooth_close()
-{
-#ifdef SERIAL
-	bluetooth_serial_close();
-#endif
-}
-
-
-/**
- * Special delay function to distinguish between Microcontroller Mode or
- * PC Mode
- */
-void bluetooth_delay(uint16_t ms)
-{
-#ifdef SERIAL
-	int sec = ms/1000;
-	ms -= sec*1000;
-
-	struct timespec s;
-	s.tv_sec = sec;
-	s.tv_nsec = 1000000L * ms;
-	nanosleep(&s, NULL);
-#else
-	_delay_ms(ms);
-#endif
 }
 
 void bluetooth_input_to_array(void)
 {
-#ifndef SERIAL
 	//Read bytes from UART input buffer
 	unsigned int c;
 
@@ -257,8 +200,6 @@ void bluetooth_input_to_array(void)
 		}
 
 	} while (c!=UART_NO_DATA && c!= UART_FRAME_ERROR && c!= UART_OVERRUN_ERROR && c!=UART_BUFFER_OVERFLOW);
-
-#endif
 }
 
 /**
@@ -301,7 +242,7 @@ void bluetooth_process_response(void)
 	{
 
 		//remove remaining bytes
-		bluetooth_delay(100);
+		_delay_ms(100);
 		bluetooth_input_to_array();
 		while (bluetooth_infifo.count>0)
 		{
@@ -318,7 +259,7 @@ void bluetooth_process_response(void)
 	if (strncmp_P(bluetooth_cmd_buffer, PSTR("DISCONNECT"), 10)==0)
 	{
 		//remove remaining bytes
-		bluetooth_delay(100);
+		_delay_ms(100);
 		bluetooth_input_to_array();
 		while (bluetooth_infifo.count>0)
 		{
@@ -427,25 +368,14 @@ void bluetooth_process_response(void)
 
 int inline bluetooth_putc(const uint8_t byte)
 {
-	//byte_to_hex(byte);
-	//error_putc(byte);
-
-	uint8_t error = 0;
-#ifdef SERIAL
-		error = (error || (bluetooth_serial_putc(byte)==0));
-
-#else
-		uart_putc(byte);
-#endif
-	return !error;
+	return uart_putc(byte);
 }
 
 /**
- * Resents the byte from bluetooth_data_package because the remote end asked to do so (caused by a crc error)
+ * Resents the byte from bluetooth_data_package because the remote end asked to do so (caused by a timeout)
  */
 void bluetooth_resent_package(void)
 {
-	//debug_pgm(PSTR("B: RES")); //BTM RESENT
 	for (uint8_t i=0; i<bluetooth_sent_length; i++)
 	{
 		if (bluetooth_putc(bluetooth_data_package[i])==0)
@@ -542,28 +472,18 @@ void bluetooth_process_data(void)
 
 							bluetooth_data_package_index=0;
 
-							//debug_pgm(PSTR("BT: TMO (STOP)")); //BT Timeout (STOP)
-
 							//reorder package
 							bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
 							bluetooth_putc(BLUETOOTH_RESENT_BYTE);
 						}
 
-						bluetooth_delay(1);
+						_delay_ms(1);
 					} else {
 						return;
 					}
 				}
 				else
 				{
-					/*error_putc('I');
-					byte_to_hex(byte);
-					error_putc(' ');
-					error_putc(byte);
-					error_putc(13);*/
-					//debug("BTM: fifo_get:");
-					//debug(itoa(byte, error_builder,10));
-					//printf("recByte=%d\n", byte);
 					//check if module sent disconnect message
 					if (bluetooth_data_package_index >= 10 && bluetooth_is_disconnect_msg()==1)
 					{
@@ -608,18 +528,12 @@ void bluetooth_process_data(void)
 							bluetooth_ms_to_timeout = -1; //disable timeout
 							bluetooth_previous_byte = -1;
 
-							if (bluetooth_handle_array() == -1)
-							{
-								//flush fifo
-								while (bluetooth_infifo.count>0)
-									fifo_get_nowait(&bluetooth_infifo);
-							}
+							bluetooth_handle_array();
 							bluetooth_data_package_index=0;
 							break;
 						}
 						else if (byte == BLUETOOTH_RESENT_BYTE  && bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE)
 						{
-							debug_pgm(PSTR("RES req.")); //Resent requested
 							bluetooth_ms_to_timeout = -1; //disable timeout
 							bluetooth_previous_byte = -1;
 
@@ -627,23 +541,6 @@ void bluetooth_process_data(void)
 							bluetooth_resent_package();
 							break;
 						}
-#ifdef BLUETOOTH_ENABLE_OK
-						else if (byte == BLUETOOTH_OK_BYTE  && bluetooth_previous_byte==BLUETOOTH_SPECIAL_BYTE)
-						{
-							bluetooth_previous_byte = -1;
-							bluetooth_ms_to_timeout = BLUETOOTH_STOP_BYTE_TIMEOUT; //reset timeout
-
-							bluetooth_data_package_index=0;
-							bluetooth_ok_received = 1;
-							if (bluetooth_wait_response_array == NULL)
-							{
-								//flush fifo
-								while (bluetooth_infifo.count>0)
-									fifo_get_nowait(&bluetooth_infifo);
-								break;
-							}
-						}
-#endif
 						else if (bluetooth_data_package_index < BLUETOOTH_DATA_PACKAGE_SIZE-1)
 						{
 
@@ -664,17 +561,12 @@ void bluetooth_process_data(void)
 
 								bluetooth_ms_to_timeout = -1; //disable timeout
 								//array is full, handle it
-								if (bluetooth_handle_array() == -1)
-								{
-									//flush fifo
-									while (bluetooth_infifo.count>0)
-										fifo_get_nowait(&bluetooth_infifo);
-								}
+								bluetooth_handle_array();
 								bluetooth_data_package_index=0;
 								break;
 							}
 						} else {
-							debug_pgm(PSTR("PKG fLL. REO.")); //BTM: Package full. Reorder
+							//BTM: Package full. Reorder
 							//flush fifo
 							while (bluetooth_infifo.count>0)
 								fifo_get_nowait(&bluetooth_infifo);
@@ -717,61 +609,8 @@ void bluetooth_byte_received (uint8_t byte)
 */
 //}
 
-uint8_t bluetooth_handle_array(void)
+void bluetooth_handle_array(void)
 {
-
-#ifdef ENABLE_CRC
-	if (bluetooth_data_package_index<9)
-	{
-		debug_pgm(PSTR("BTM: Pkg too small. Reorder."));
-		bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
-		bluetooth_putc(BLUETOOTH_RESENT_BYTE);
-		return -1;
-	}
-
-
-	/*
-	 * Calculate and check if CRC32 checksum is ok.
-	 * The last 8 bytes of package should be the reversed crc value
-	 */
-	uint32_t checksum = 0xFFFFFFFF;
-	crc_32(&checksum, bluetooth_data_package, bluetooth_data_package_index-8);
-	checksum ^= 0xffffffff;
-
-	//Check checksum reversed
-	for (int8_t i=7; i>=0; i--)
-	{
-		if ((checksum&0xF) != bluetooth_data_package[bluetooth_data_package_index-1-i])
-		{
-
-			debug_pgm(PSTR("BTM: CRC error. Reorder."));
-
-			//Reorder package
-			bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
-			bluetooth_putc(BLUETOOTH_RESENT_BYTE);
-
-			return -1;
-		}
-		checksum = checksum >> 4;
-	}
-
-	//Overwrite checksum with 0
-	//for (uint8_t i=bluetooth_data_package_index-8; i<bluetooth_data_package_index;i++)
-	//	bluetooth_data_package[i]=0;
-
-	bluetooth_data_package_index-=8;
-#endif
-
-
-#ifdef BLUETOOTH_ENABLE_OK
-
-	for (uint8_t i = 0; i<1; i++)
-	{
-		//send ok byte
-		bluetooth_putc(BLUETOOTH_SPECIAL_BYTE);
-		bluetooth_putc(BLUETOOTH_OK_BYTE);
-	}
-#endif
 
 	if (bluetooth_wait_response_array != NULL)
 	{
@@ -787,11 +626,6 @@ uint8_t bluetooth_handle_array(void)
 		//Call callback function
 		bluetooth_callback(bluetooth_data_package, 0, bluetooth_data_package_index);
 	}
-
-
-
-
-	return 0;
 }
 
 uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
@@ -825,27 +659,6 @@ uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 		bluetooth_data_package_index++;
 	}
 
-#ifdef ENABLE_CRC
-	/*
-	 * Calculate and send CRC32 checksum
-	 */
-	uint32_t checksum = 0xFFFFFFFF;
-	crc_32(&checksum, data, *length);
-	checksum ^= 0xffffffff;
-
-	//Send checksum reversed
-	for (int8_t i=7; i>=0; i--)
-	{
-		//send crc byte
-		error = (error || (bluetooth_putc(checksum&0xF)==0));
-		put_count++;
-
-		bluetooth_data_package[bluetooth_data_package_index] = (checksum&0xF);
-		bluetooth_data_package_index++;
-		checksum = checksum >> 4;
-	}
-#endif
-
 	bluetooth_package_received = 0;
 
 
@@ -858,24 +671,6 @@ uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 	bluetooth_data_package_index++;
 	bluetooth_sent_length = bluetooth_data_package_index;
 	bluetooth_data_package_index = 0;
-
-#ifdef BLUETOOTH_ENABLE_OK
-	int16_t ok_timeout = 10000;
-
-	while (!bluetooth_ok_received && ok_timeout>0)
-	{
-		//wait a millisecond
-		bluetooth_delay(1);
-			ok_timeout--;
-		if (ok_timeout == 0)
-		{
-			//timeout!!
-			return 2;
-		}
-		//check if package is available
-		bluetooth_process_data();
-	}
-#endif
 
 	if (error)
 			return 1;
@@ -902,7 +697,7 @@ uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length
 	while (!bluetooth_package_received && ms_to_timeout>0)
 	{
 		//wait a millisecond
-		bluetooth_delay(1);
+		_delay_ms(1);
 		ms_to_timeout--;
 		if (ms_to_timeout == 0)
 		{
@@ -1054,8 +849,13 @@ void bluetooth_array_to_address(const char *compressed_address, char *full_addre
 //
 //---------------------------------------------------------
 
-
-uint8_t bluetooth_cmd_send (const char* cmd, const uint16_t delay_ms)
+/**
+ * Sends an AT-Command as a String to the bluetooth module.
+ * @param cmd The command as char array with nullbyte. Ex: 'ATL1'
+ * @param delay_ms milliseconds to wait between each byte
+ * @return 1 on success, 0 on failure (timeout)
+ */
+uint8_t bluetooth_cmd_send_delay (const char* cmd, const uint16_t delay_ms)
 {
 	bluetooth_response_code = 0;
 
@@ -1063,10 +863,6 @@ uint8_t bluetooth_cmd_send (const char* cmd, const uint16_t delay_ms)
 
 	bluetooth_cmd_sent[0] = cmd[2];
 	bluetooth_cmd_sent[1] = cmd[3];
-
-	//debug("BTM: Cmd:");
-	//debug((char*)cmd);
-
 
 	for (uint8_t i =0; cmd[i]!='\0'; i++)
 	{
@@ -1076,12 +872,16 @@ uint8_t bluetooth_cmd_send (const char* cmd, const uint16_t delay_ms)
 			return 0;
 		}
 
-		bluetooth_delay(delay_ms);
+		_delay_ms(delay_ms);
 	}
 
-	//bluetooth_delay(500);
-
 	return 1;
+}
+
+uint8_t bluetooth_cmd_send (const char* cmd)
+{
+	//The delay of 42ms ist a result of a test run, where the delay time is now the minimum possible
+	return bluetooth_cmd_send_delay(cmd,42);
 }
 
 uint8_t bluetooth_cmd_wait_response (void)
@@ -1097,7 +897,7 @@ uint8_t bluetooth_cmd_wait_response (void)
 uint8_t bluetooth_cmd_test_connection (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("AT\r"));
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 	return (bluetooth_cmd_wait_response()==1); //OK
 
@@ -1113,7 +913,7 @@ uint8_t bluetooth_cmd_connect (const uint8_t dev_num)
 		bluetooth_cmd_buffer[4] = 13; //<CR>
 		bluetooth_cmd_buffer[5] = 0;
         }
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()!=1)//OK
@@ -1128,7 +928,7 @@ char* bluetooth_cmd_get_address (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATB?\r"));
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()!=1) //OK
@@ -1152,12 +952,12 @@ uint8_t bluetooth_cmd_set_remote_address (const char* address)
 
 	}
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
-		bluetooth_delay(2000);
+		_delay_ms(2000);
 		return 1;
 	} else
 		return 0;
@@ -1170,7 +970,7 @@ char* bluetooth_cmd_search_devices (void)
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATF?\r"));
 
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()!=1) //OK
@@ -1182,7 +982,7 @@ char* bluetooth_cmd_search_devices (void)
 uint8_t bluetooth_cmd_close_connection (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATH\r"));
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
@@ -1192,7 +992,7 @@ uint8_t bluetooth_cmd_discoverable (const uint8_t discoverable)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATH?\r")); //? will be replaced 
 	bluetooth_cmd_buffer[3] = discoverable+48; //Convert number to number as char
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
@@ -1207,7 +1007,7 @@ uint8_t bluetooth_cmd_set_name (const char *name)
 	strcpy(bluetooth_cmd_buffer+4,name);
         strcat_P(bluetooth_cmd_buffer,PSTR("\r"));
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 			return 0;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
@@ -1218,7 +1018,7 @@ char* bluetooth_cmd_get_name (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATN?\r"));
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()!=1) //OK
@@ -1236,12 +1036,12 @@ uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect)
 	if (autoconnect == 1)
 		bluetooth_cmd_buffer[3] = '0';
 	
-        if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+        if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
-		bluetooth_delay(3000);
+		_delay_ms(3000);
 		return 1;
 	} else
 		return 0;
@@ -1261,7 +1061,7 @@ uint8_t bluetooth_cmd_set_pin (const char *pin)
             strcat_P(bluetooth_cmd_buffer,PSTR("\r"));
         }
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 			return 0;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
@@ -1272,7 +1072,7 @@ char* bluetooth_cmd_get_pin (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATP?\r"));
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()!=1) //OK
@@ -1288,12 +1088,12 @@ uint8_t bluetooth_cmd_set_mode (uint8_t mode)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATR?\r")); // ? will be replaced
 	bluetooth_cmd_buffer[3] = mode+48; //Convert number to number as char
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
-		bluetooth_delay(3500);
+		_delay_ms(3500);
 		return 1;
 	} else
 		return 0;
@@ -1304,7 +1104,7 @@ char* bluetooth_cmd_get_mode (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATR?\r"));
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0)
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return NULL;
 
 	if (bluetooth_cmd_wait_response()!=1) //OK
@@ -1318,7 +1118,7 @@ char* bluetooth_cmd_get_mode (void)
 uint8_t bluetooth_cmd_restore_settings (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATZ0\r"));
-	return (bluetooth_cmd_send(bluetooth_cmd_buffer, BLUETOOTH_CMD_WAIT_TIME) == 0);
+	return (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0);
 
 }
 
@@ -1326,7 +1126,7 @@ uint8_t bluetooth_cmd_online_command (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("++++"));
 
-	if (bluetooth_cmd_send(bluetooth_cmd_buffer, 1500) == 0)
+	if (bluetooth_cmd_send_delay(bluetooth_cmd_buffer, 1500) == 0)
 			return 0;
 	return (bluetooth_cmd_wait_response()==1); //OK
 }

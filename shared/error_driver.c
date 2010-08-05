@@ -30,7 +30,6 @@
 		}while(!USART_IsTXDataRegisterEmpty(&USART));
 		USART_PutChar(&USART, c);
 
-		//bluetooth_delay(1);
 	}
 
 	inline void error_driver_init(void)
