@@ -695,7 +695,7 @@ uint8_t bluetooth_disconnect(void)
 
 }
 
-uint8_t bluetooth_connect(const char * compressed_address)
+uint8_t bluetooth_connect(const char *compressed_address)
 {
 	if (bluetooth_cmd_set_remote_address(compressed_address)==0)
 		return 0;
