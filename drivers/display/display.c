@@ -127,13 +127,13 @@ const uint8_t charray[][6] PROGMEM =
 		//arrows bottom/top
 		{ 0x0, 0x14, 0x36, 0x77, 0x36, 0x14 },
 		//59: exclamation mark
-		{ 0x0, 0x0, 0x7b, 0x7b, 0x0, 0x0 }
+		{ 0x0, 0x0, 0x7b, 0x7b, 0x0, 0x0 },
+		//60: spinner dot
+		{ 0x0, 0x3c, 0x24, 0x24, 0x3c, 0x0 },
+		// spinner dot full
+		{ 0x0, 0x3c, 0x3c, 0x3c, 0x3c, 0x0 }
 
 };
-
-/* ((DISPLAY_COL_NUMBER_VISIBLE + 1)
- / DISPLAY_CHAR_WIDTH); //0: no space at all
- * */
 
 void display_init(void)
 {
@@ -311,13 +311,13 @@ void display_write_char(uint8_t character, uint8_t inverse_modus)
 			display_util_write_char(53, inverse_modus); //Percent
 		}
 		else if (character == '-')
-				{
-					display_util_write_char(49, inverse_modus); //minus
-				}
+		{
+			display_util_write_char(49, inverse_modus); //minus
+		}
 		else if (character == '+')
-				{
-					display_util_write_char(50, inverse_modus); //plus
-				}
+		{
+			display_util_write_char(50, inverse_modus); //plus
+		}
 
 		else if (character == '!')
 		{
@@ -440,7 +440,6 @@ void display_write_text(const char *text, uint8_t status)
 				{
 					for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
 					{
-
 						display_clean_line(i, 0);
 					}
 				}
@@ -489,4 +488,65 @@ void display_write_text(const char *text, uint8_t status)
 			row = 1;
 		}
 	}
+}
+
+//TODO write
+void display_spinner(void)
+{
+	char *text = "Almond";
+	static uint8_t tick = 0;
+
+	//counter and numbers
+	uint8_t i = 0;
+	uint8_t symbol = 0;
+	uint8_t row = 1;
+	uint8_t blank_number = 0;
+	//counter to count the chars of the title
+	uint8_t c = strlen(text);
+
+	blank_number = DISPLAY_CHAR_MAX - c;
+
+	//prepare display
+	display_clean();
+	row = 2;
+
+	display_set_col(DISPLAY_COL_INIT + 1);
+	display_set_page(DISPLAY_PAGE_INIT + row);
+
+	//Write Almond
+	for (i = 0; i < (blank_number / 2); i++)
+	{
+		display_write_char(' ', DISPLAY_MODE_NORMAL);
+	}
+	while (*text != '\0')
+	{
+		display_write_char(*text, 0);
+		text++;
+		symbol++;
+	}
+	for (i = 0; i < ((blank_number / 2) + (blank_number % 2)); i++)
+	{
+		display_write_char(' ', DISPLAY_MODE_NORMAL);
+	}
+
+	row = 4;
+	display_set_col(DISPLAY_COL_INIT + 1 + 5 * DISPLAY_CHAR_WIDTH);
+	display_set_page(DISPLAY_PAGE_INIT + row);
+	for (i = 0; i < 4; i++)
+	{
+		display_write_char(' ', DISPLAY_MODE_NORMAL);
+		if (i != tick)
+		{
+			display_util_write_char(DISPLAY_CHAR_SPINNER_DOT,
+					DISPLAY_MODE_NORMAL);
+		}
+		else
+		{
+			display_util_write_char(DISPLAY_CHAR_SPINNER_DOT_FULL,
+					DISPLAY_MODE_NORMAL);
+		}
+	}
+
+	tick = (tick + 1) % 4;
+
 }

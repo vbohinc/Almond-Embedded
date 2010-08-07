@@ -33,4 +33,6 @@ void display_widget_light(uint8_t intensity, uint8_t status);
  */
 void display_widget_time(uint32_t time, uint8_t status);
 
+
+
 #endif //__DISPLAY_WIDGET_H__

@@ -52,7 +52,19 @@ enum
 	DISPLAY_CHAR_ARROW_RIGHT = 55,
 	DISPLAY_CHAR_ARROW_TOP_SMALL = 56,
 	DISPLAY_CHAR_ARROW_BOTTOM_SMALL = 57,
-	DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL = 58
+	DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL = 58,
+	DISPLAY_CHAR_SPINNER_DOT = 60,
+	DISPLAY_CHAR_SPINNER_DOT_FULL = 61
+};
+
+/**
+ * MODES
+ * Helps to control the write_text
+ */
+enum
+{
+	DISPLAY_MODE_NORMAL = 0,
+	DISPLAY_MODE_INVERSE = 1
 };
 
 /**
@@ -96,10 +108,14 @@ void display_write_title(const char *text, uint8_t status);
 
 /**
  * Writes a text on the display
- * @param *character arry of chars to be written
+ * @param *character array of chars to be written
  * @param status of the bottom/top arrows
  */
 void display_write_text(const char *text, uint8_t status);
 
+/**
+ * Widget to show a start up screen
+ */
+void display_spinner(void);
 
 #endif //__DISPLAY_H__
