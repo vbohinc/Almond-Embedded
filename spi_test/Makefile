@@ -1,6 +1,6 @@
 #MCU = atmega8535
 MCU = atxmega128a1
-F_CPU = 2000000
+F_CPU = 32000000
 TARGET = spi_test
 BASE = ..
 ALMONDLIBS = uart error

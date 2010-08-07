@@ -52,7 +52,7 @@
 		 * Baudrate select = (1/(16*(((I/O clock frequency)/Baudrate)-1)
 		 *                 = 12
 		 */
-		USART_Baudrate_Set(&USART, 12 , 0);
+		USART_Baudrate_Set(&USART, 212/*12*/ , 0);
 
 		/* Enable both RX and TX. */
 		USART_Rx_Enable(&USART);

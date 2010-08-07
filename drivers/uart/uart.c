@@ -335,13 +335,13 @@ Date        Description
 #ifndef ATXMEGA_USART0
 
 	/*! RTS Port to set pullup resistors (DDRC)*/
-	#define UART0_RTS_PORT_CTRL DDRC
+	#define UART0_RTS_PORT_CTRL DDRD
 	/*! Port which has the RTS pin (PORTC) */
-	#define UART0_RTS_PORT PORTC
+	#define UART0_RTS_PORT PORTD
 	/*! Pin which has the RTS pin (to read data) (PINC) */
-	#define UART0_RTS_PPIN PINC
+	#define UART0_RTS_PPIN PIND
 	/*! Pin number on defined port (1) */
-	#define UART0_RTS_PIN 1
+	#define UART0_RTS_PIN 3
 	/*! CTS Port to set pullup resistors (DDRC)*/
 	#define UART0_CTS_PORT_CTRL DDRC
 	/*! Port which has the CTS pin (PORTC) */

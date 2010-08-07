@@ -32,22 +32,23 @@
 #define nop() \
    asm volatile ("nop");
 
-#define P_RD  PB2
-#define P_WR  PB3
-#define P_TXE PB0
-#define P_RXF PB1
-#define P_SI  PB4
+#define P_RD  PD6
+#define P_WR  PC5
+#define P_TXE PC3
+#define P_RXF PC4
+#define P_SI  PD5
 
-#define DD_RD  DDB2 // 1
-#define DD_WR  DDB3 // 1
-#define DD_TXE DDB0 // 0
-#define DD_RXF DDB1 // 0
-#define DD_SI  DDB4 // 1
+#define DD_RD  DDD6 // 1
+#define DD_WR  DDC5 // 1
+#define DD_TXE DDC3 // 0
+#define DD_RXF DDC4 // 0
+#define DD_SI  DDD5 // 1
 
-#define TXE (PINB & (1<<P_TXE))
-#define RXF (PINB & (1<<P_RXF))
+#define TXE (PINC & (1<<P_TXE))
+#define RXF (PINC & (1<<P_RXF))
 
-#define FTDI_DD ( (1 << DD_RD) | (1 << DD_WR) | (1 << DD_SI) )
+#define FTDI_DD1 ( (1 << DD_RD) | (1 << DD_SI) )
+#define FTDI_DD2 ( (1 << DD_WR) )
 
 extern void FTDIInit(void);
 
