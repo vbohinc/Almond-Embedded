@@ -2,7 +2,7 @@
  * squirrel.c
  *
  */
- 
+
 #include <avr/eeprom.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,7 +15,7 @@
 #include "../protocols/uplink/uplink.h"
 #include "../protocols/package_types.h"
 
-/* ----------------------------------------------------------------------- 
+/* -----------------------------------------------------------------------
  * Squirrel State
  * ----------------------------------------------------------------------- */
 
@@ -50,7 +50,7 @@ extern void squirrel_state_set (uint8_t s)
   state = s;
 }
 
-/* ----------------------------------------------------------------------- 
+/* -----------------------------------------------------------------------
  * Nut Handling
  * ----------------------------------------------------------------------- */
 
@@ -69,6 +69,27 @@ struct _device_info
 };
 
 static device_info device_list [NUTS_LIST];
+
+bool squirrel_list (uint8_t num, uplink_payload_list *p)
+{
+  if (num < EXTENSIONS_LIST && device_list[num].mac[0] != 0)
+    {
+
+      for (int i = 0; i < 6; i++)
+        p->bt_address[i] = device_list[num].mac[i];
+
+      p->nut_class = device_list[num].class;
+
+      for (int i = 0; i < EXTENSIONS_LIST; i++)
+        p->extension_class[i] = device_list[num].extension_types[i];
+
+      return true;
+    }
+  else
+    {
+      return false;
+    }
+}
 
 void squirrel_create_device_info_entry (const uint8_t *address)
 {
@@ -122,13 +143,13 @@ void downlink_get_values (void)
     {
       if (device_list[k].mac[0] == 0)
         {
-          
+
         }
     }
 
 }
 
-/* ----------------------------------------------------------------------- 
+/* -----------------------------------------------------------------------
  * Init
  * ----------------------------------------------------------------------- */
 
@@ -172,43 +193,43 @@ void master_loop (void)
 {
   // FIXME: Trim Strings!
   assert (bluetooth_set_as_master() == 1, "Could not set master mode");
-  
+
   for (int k = 0; k < NUTS_LIST && device_list[k].mac[0] != 0; k++)
     {
-      if (bluetooth_cmd_set_remote_address (&device_list[k].mac) != 1) 
+      if (bluetooth_cmd_set_remote_address (&device_list[k].mac) != 1)
         break; // Could not connect
-        
-      for (int i = 0; i < EXTENSIONS_LIST; i++) 
+
+      for (int i = 0; i < EXTENSIONS_LIST; i++)
         {
           if (device_list[k].extension_types[i] < 0x80)
             {
               device_list[k].values_cache[i] = downlink_get_sensor_value(i, NULL);
               // log??
-            } 
+            }
         }
     }
-  
+
   assert (bluetooth_set_as_slave() == 1, "Could not set master mode");
   state = SLAVE;
 }
 
-void draw_ui (uint8_t device, uint8_t page) 
+void draw_ui (uint8_t device, uint8_t page)
 {
-  const char *heading; 
-  
-  switch (device_list[device].class) 
+  const char *heading;
+
+  switch (device_list[device].class)
     {
       // FIXME: Move to EEPROM!!
-      case WEATHERSTATION:
-        heading = "Wetterstation";
-        break;
-        
-      default:
-        heading = "Unbekannt";
-        break;
+    case WEATHERSTATION:
+      heading = "Wetterstation";
+      break;
+
+    default:
+      heading = "Unbekannt";
+      break;
     }
-    
-  // call display.h / widgets.c 
+
+  // call display.h / widgets.c
 }
 
 
@@ -227,10 +248,10 @@ int main (void)
       // Check for input events...
       // redraw UI
       // TIMER events!
-      
+
       // if (something changed)
       draw_ui (0, 0);
-    
+
       if (state == MASTER)
         {
           master_loop ();

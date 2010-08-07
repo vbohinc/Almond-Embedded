@@ -1,26 +1,26 @@
 /*
-      ___                         ___           ___           ___          _____    
-     /  /\                       /__/\         /  /\         /__/\        /  /::\   
-    /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\  
-   /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\ 
+      ___                         ___           ___           ___          _____
+     /  /\                       /__/\         /  /\         /__/\        /  /::\
+    /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\
+   /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\
   /  /:/~/::\  /__/\   /  /\  __|__|:|\:\   /  /:/  \:\   _____\__\:\  /__/:/ \__\:|
  /__/:/ /:/\:\ \  \:\ /  /:/ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\ \  \:\ /  /:/
- \  \:\/:/__\/  \  \:\  /:/  \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/  \  \:\  /:/ 
-  \  \::/        \  \:\/:/    \  \:\        \  \:\  /:/   \  \:\  ~~~    \  \:\/:/  
-   \  \:\         \  \::/      \  \:\        \  \:\/:/     \  \:\         \  \::/   
-    \  \:\         \__\/        \  \:\        \  \::/       \  \:\         \__\/    
-     \__\/                       \__\/         \__\/         \__\/                  
-     _____          ___           ___           ___                                     ___           ___     
-    /  /::\        /  /\         /__/\         /__/\                      ___          /__/\         /__/|    
-   /  /:/\:\      /  /::\       _\_ \:\        \  \:\                    /  /\         \  \:\       |  |:|    
-  /  /:/  \:\    /  /:/\:\     /__/\ \:\        \  \:\    ___     ___   /  /:/          \  \:\      |  |:|    
- /__/:/ \__\:|  /  /:/  \:\   _\_ \:\ \:\   _____\__\:\  /__/\   /  /\ /__/::\      _____\__\:\   __|  |:|    
+ \  \:\/:/__\/  \  \:\  /:/  \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/  \  \:\  /:/
+  \  \::/        \  \:\/:/    \  \:\        \  \:\  /:/   \  \:\  ~~~    \  \:\/:/
+   \  \:\         \  \::/      \  \:\        \  \:\/:/     \  \:\         \  \::/
+    \  \:\         \__\/        \  \:\        \  \::/       \  \:\         \__\/
+     \__\/                       \__\/         \__\/         \__\/
+     _____          ___           ___           ___                                     ___           ___
+    /  /::\        /  /\         /__/\         /__/\                      ___          /__/\         /__/|
+   /  /:/\:\      /  /::\       _\_ \:\        \  \:\                    /  /\         \  \:\       |  |:|
+  /  /:/  \:\    /  /:/\:\     /__/\ \:\        \  \:\    ___     ___   /  /:/          \  \:\      |  |:|
+ /__/:/ \__\:|  /  /:/  \:\   _\_ \:\ \:\   _____\__\:\  /__/\   /  /\ /__/::\      _____\__\:\   __|  |:|
  \  \:\ /  /:/ /__/:/ \__\:\ /__/\ \:\ \:\ /__/::::::::\ \  \:\ /  /:/ \__\/\:\__  /__/::::::::\ /__/\_|:|____
   \  \:\  /:/  \  \:\ /  /:/ \  \:\ \:\/:/ \  \:\~~\~~\/  \  \:\  /:/     \  \:\/\ \  \:\~~\~~\/ \  \:\/:::::/
-   \  \:\/:/    \  \:\  /:/   \  \:\ \::/   \  \:\  ~~~    \  \:\/:/       \__\::/  \  \:\  ~~~   \  \::/~~~~ 
-    \  \::/      \  \:\/:/     \  \:\/:/     \  \:\         \  \::/        /__/:/    \  \:\        \  \:\     
-     \__\/        \  \::/       \  \::/       \  \:\         \__\/         \__\/      \  \:\        \  \:\    
-                   \__\/         \__\/         \__\/                                   \__\/         \__\/    
+   \  \:\/:/    \  \:\  /:/   \  \:\ \::/   \  \:\  ~~~    \  \:\/:/       \__\::/  \  \:\  ~~~   \  \::/~~~~
+    \  \::/      \  \:\/:/     \  \:\/:/     \  \:\         \  \::/        /__/:/    \  \:\        \  \:\
+     \__\/        \  \::/       \  \::/       \  \:\         \__\/         \__\/      \  \:\        \  \:\
+                   \__\/         \__\/         \__\/                                   \__\/         \__\/
 */
 
 /**
@@ -43,7 +43,7 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
   package.opcode = opcode | flag;
   package.id = id;
   package.value = value;
-  
+
   switch (bluetooth_send_data_package (&package.opcode, DOWNLINK_PACKAGE_LENGTH))
     {
     case 0:
@@ -166,78 +166,76 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
 
   uint8_t buffer[20];
   if (callback_type == 1) //connected
-  	{
-  		bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
-  		debug_pgm(PSTR("CON:"));
-  		for (uint8_t i=0; i<12; i++)
-  			error_putc(buffer[i]);
-  		error_putc('\n');
-  		//connected = 1;
-  	} else if (callback_type == 2) //disconnected
-  	{
-  		bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
-  		debug_pgm(PSTR("DCO:"));
-  		for (uint8_t i=0; i<12; i++)
-  			error_putc(buffer[i]);
-  		error_putc('\n');
-  		//connected = 0;
-  	}
-  	else
-  	{
+    {
+      bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
+      debug_pgm(PSTR("CON:"));
+      for (uint8_t i=0; i<12; i++)
+        error_putc(buffer[i]);
+      error_putc('\n');
+      //connected = 1;
+    }
+  else if (callback_type == 2) //disconnected
+    {
+      bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
+      debug_pgm(PSTR("DCO:"));
+      for (uint8_t i=0; i<12; i++)
+        error_putc(buffer[i]);
+      error_putc('\n');
+      //connected = 0;
+    }
+  else
+    {
 
-  		debug_pgm(PSTR("P REC:"));
-  		for (uint8_t i=0; i<data_length; i++)
-  		{
-  			byte_to_hex(data_package[i]);
-  			error_putc(' ');
-  		}
-  	  error_putc(13);
-		//error_putc('P');
-		//byte_to_hex(data_package[0]);
+      debug_pgm(PSTR("P REC:"));
+      for (uint8_t i=0; i<data_length; i++)
+        {
+          byte_to_hex(data_package[i]);
+          error_putc(' ');
+        }
+      error_putc(13);
+      //error_putc('P');
+      //byte_to_hex(data_package[0]);
 
-	  if (callback_type != 0 && data_length != DOWNLINK_PACKAGE_LENGTH)
-		{
+      if (callback_type != 0 && data_length != DOWNLINK_PACKAGE_LENGTH)
+        {
 
-		  error_putc('%');
-		  return;
-		}
+          error_putc('%');
+          return;
+        }
 
-	  p = (downlink_package *) (data_package);
+      p = (downlink_package *) (data_package);
 
-	  switch (p->opcode & 0xF0)
-		{
+      switch (p->opcode & 0xF0)
+        {
 
-		case GET:
-		  return_package = downlink_handle_get_package (p);
-		  break;
+        case GET:
+          return_package = downlink_handle_get_package (p);
+          break;
 
-		case SET:
-		  return_package = downlink_handle_set_package (p);
-		  break;
+        case SET:
+          return_package = downlink_handle_set_package (p);
+          break;
 
-		case BYE:
-		  // FIXME! bluetooth_disabled_for_s = p->value;
-		  p->id = 0;
-		  p->value = 0;
-		  return_package = true;
-		  break;
+        case BYE:
+          // FIXME! bluetooth_disabled_for_s = p->value;
+          p->id = 0;
+          p->value = 0;
+          return_package = true;
+          break;
 
-		case ECHO:
-		  return_package = true;
-		  break;
+        case ECHO:
+          return_package = true;
+          break;
 
-		default:
-		  return_package = true;
+        default:
+          return_package = true;
 
-		  error_putc("#");
-		  break;
-		}
+          error_putc("#");
+          break;
+        }
 
-	  if (return_package)
-		{
-		  p->opcode = RET;
-		  bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH);
-		}
-  	}
+      p->opcode = return_package ? RET : ERROR;
+      bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH);
+    }
 }
 #endif

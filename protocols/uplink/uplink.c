@@ -1,27 +1,4 @@
 /*
-      ___                         ___           ___           ___          _____    
-     /  /\                       /__/\         /  /\         /__/\        /  /::\   
-    /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\  
-   /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\ 
-  /  /:/~/::\  /__/\   /  /\  __|__|:|\:\   /  /:/  \:\   _____\__\:\  /__/:/ \__\:|
- /__/:/ /:/\:\ \  \:\ /  /:/ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\ \  \:\ /  /:/
- \  \:\/:/__\/  \  \:\  /:/  \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/  \  \:\  /:/ 
-  \  \::/        \  \:\/:/    \  \:\        \  \:\  /:/   \  \:\  ~~~    \  \:\/:/  
-   \  \:\         \  \::/      \  \:\        \  \:\/:/     \  \:\         \  \::/   
-    \  \:\         \__\/        \  \:\        \  \::/       \  \:\         \__\/    
-     \__\/                       \__\/         \__\/         \__\/                  
-      ___           ___                                   ___           ___     
-     /__/\         /  /\                    ___          /__/\         /__/|    
-     \  \:\       /  /::\                  /  /\         \  \:\       |  |:|    
-      \  \:\     /  /:/\:\  ___     ___   /  /:/          \  \:\      |  |:|    
-  ___  \  \:\   /  /:/~/:/ /__/\   /  /\ /__/::\      _____\__\:\   __|  |:|    
- /__/\  \__\:\ /__/:/ /:/  \  \:\ /  /:/ \__\/\:\__  /__/::::::::\ /__/\_|:|____
- \  \:\ /  /:/ \  \:\/:/    \  \:\  /:/     \  \:\/\ \  \:\~~\~~\/ \  \:\/:::::/
-  \  \:\  /:/   \  \::/      \  \:\/:/       \__\::/  \  \:\  ~~~   \  \::/~~~~ 
-   \  \:\/:/     \  \:\       \  \::/        /__/:/    \  \:\        \  \:\     
-    \  \::/       \  \:\       \__\/         \__\/      \  \:\        \  \:\    
-     \__\/         \__\/                                 \__\/         \__\/    
-     
  *
  * uplink.c
  *
@@ -67,16 +44,13 @@ static inline bool uplink_handle_get_package (uplink_package *p)
     {
 
     case LIST:
-      return false;
+      return squirrel_list (p->id, &(p->payload.list));
 
     case LOG:
       return false;
 
     case TIME:
       p->payload.time.time = time_get ();
-      return false;
-
-    case CONFIG:
       return true;
 
     default:
@@ -92,11 +66,8 @@ static inline bool uplink_handle_set_package (uplink_package *p)
     case TIME:
       return !time_set (p->payload.time.time);
 
-    case CONFIG:
-        return false;
-
-      default:
-        return false;
+    default:
+      return false;
     }
 }
 
@@ -112,7 +83,7 @@ void uplink_bluetooth_callback_handler (char *data_package, const uint8_t callba
     }
 
   squirrel_state_set (SLAVE_BUSY);
-  
+
   p = (uplink_package *) data_package;
 
   switch (p->opcode & 0xF0)
@@ -127,7 +98,7 @@ void uplink_bluetooth_callback_handler (char *data_package, const uint8_t callba
       break;
 
     case BYE:
-      squirrel_state_set (SLAVE); 
+      squirrel_state_set (SLAVE);
       error = false;
       break;
 
