@@ -84,7 +84,7 @@ static int16_t bluetooth_previous_byte=-1;
  * Timeout in seconds for a response code of a command.
  * @see bluetooth_cmd_wait_response
  */
-#define BLUETOOTH_WAIT_RESPONSE_TIMEOUT 3000
+#define BLUETOOTH_WAIT_RESPONSE_TIMEOUT 3
 
 /**
  * Buffer to build cmd to send or to parse resonse of bluetooth device.
@@ -626,19 +626,13 @@ uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length)
 
 uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length, const uint16_t timeout_ms)
 {
-
 	if (bluetooth_send_data_package(data, *length)==1)
 		return 1;
-
 
 	bluetooth_wait_response_array = data;
 	bluetooth_wait_response_length = length;
 
-
-
-
 	uint16_t ms_to_timeout = timeout_ms;
-
 
 	while (!bluetooth_package_received && ms_to_timeout>0)
 	{
@@ -654,13 +648,9 @@ uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length
 		bluetooth_process_data();
 	}
 
-
 	//data already copied in handle_array fkt
 	bluetooth_wait_response_array = NULL;
 	bluetooth_wait_response_length = NULL;
-	return 0;
-
-
 	return 0;
 }
 
@@ -717,7 +707,7 @@ uint8_t bluetooth_disconnect(uint8_t tries)
 uint8_t bluetooth_connect(const char *compressed_address)
 {
 	if (bluetooth_cmd_set_remote_address(compressed_address)==0)
-		return 0;
+		return 3;
 	return bluetooth_cmd_connect(0);
 }
 #endif
@@ -947,7 +937,7 @@ uint8_t bluetooth_cmd_set_remote_address (const char* address)
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
-		//_delay_ms(2000);
+		_delay_ms(2000);
 		return 1;
 	} else
 		return 0;
