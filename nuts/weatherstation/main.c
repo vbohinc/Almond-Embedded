@@ -25,31 +25,31 @@ uint16_t read_adc(uint8_t pin)
   // wandlung starten
   ADCSRA |= (1<<ADSC);
   // warten bis ergebniss
-  while(ADCSRA & (1<<ADSC));
-  
+  while (ADCSRA & (1<<ADSC));
+
   return ADCW;
 }
 
 void init_adc(uint8_t pin, uint8_t factor)
 {
-	// Den ADC aktivieren und Teilungsfaktor auf 64 stellen
-	ADCSRA = (1<<ADEN) | factor;
+  // Den ADC aktivieren und Teilungsfaktor auf 64 stellen
+  ADCSRA = (1<<ADEN) | factor;
 
-	// eingangspin waehlen
-	ADMUX = pin;
+  // eingangspin waehlen
+  ADMUX = pin;
 
-	// referenzspannung waehlen
-	ADMUX |= (1<<REFS1) | (1<<REFS0); // interne referenzspannung (also 2,56 V)
-	//ADMUX |= (1<<REFS0); // avcc als referenzspannung
-	//ADMUX |= 0;// aref als referenzspannung
+  // referenzspannung waehlen
+  ADMUX |= (1<<REFS1) | (1<<REFS0); // interne referenzspannung (also 2,56 V)
+  //ADMUX |= (1<<REFS0); // avcc als referenzspannung
+  //ADMUX |= 0;// aref als referenzspannung
 
-	// erstes mal auslesen, dummyreadout
-	read_adc(pin);
+  // erstes mal auslesen, dummyreadout
+  read_adc(pin);
 }
 
 void close_adc(void)
 {
-	ADCSRA &= ~(1<<ADEN);
+  ADCSRA &= ~(1<<ADEN);
 }
 
 /* Downlink */
@@ -62,8 +62,9 @@ const uint8_t class_id_extensions_length = 5;
 uint16_t get_value(uint8_t id)
 {
   bmp_data_t d;
-  
-  switch(id) {
+
+  switch (id)
+    {
     case 0: // TEMPERATURE
       d = bmp085_get_data();
       return (uint16_t) d.temprature;
@@ -83,26 +84,27 @@ uint16_t get_value(uint8_t id)
     default:
       debug_pgm(PSTR("UNK:SEN"));
       return 0;
-  }
+    }
 }
 
 void set_value(uint8_t id, uint16_t value)
 {
-  switch(id) {
-	  case 4: // LED
-		  if (value == 0)
-				LED1_PORT &= ~(1<<LED1_PIN);
-		  else
-			  LED1_PORT |= (1<<LED1_PIN);
-		  break;
+  switch (id)
+    {
+    case 4: // LED
+      if (value == 0)
+        LED1_PORT &= ~(1<<LED1_PIN);
+      else
+        LED1_PORT |= (1<<LED1_PIN);
+      break;
 
-	  default:
-	    debug_pgm(PSTR("UNK:AKT"));
-		break;
-  }
+    default:
+      debug_pgm(PSTR("UNK:AKT"));
+      break;
+    }
 }
 
-void blue_sky (void) 
+void blue_sky (void)
 {
   bluetooth_init(downlink_bluetooth_callback_handler);
   sei();
@@ -114,10 +116,10 @@ int main (void)
 {
   /* FTDI */
   error_init ();
-  
+
   /* Initialize Bluetooth */
-  blue_sky (); 
-  
+  blue_sky ();
+
   /* Initialize Sensors */
   init_bmp085_sensor ();
 
@@ -125,16 +127,18 @@ int main (void)
   LED1_DDR |= (1<<LED1_PIN);
   LED1_PORT |= (1<<LED1_PIN);
 
-  while(true) {
-    bluetooth_process_data ();
+  while (true)
+    {
+      bluetooth_process_data ();
 
-    if (sleep > BLUETOOTH_START_TIME) {
-      LED1_PORT &= ~(1<<LED1_PIN);
-      for (; sleep > BLUETOOTH_START_TIME; sleep--)
-        _delay_ms(1000);
+      if (sleep > BLUETOOTH_START_TIME)
+        {
+          LED1_PORT &= ~(1<<LED1_PIN);
+          for (; sleep > BLUETOOTH_START_TIME; sleep--)
+            _delay_ms(1000);
 
-      blue_sky();
-      LED1_PORT |= (1<<LED1_PIN);
-    }   
-  }
+          blue_sky();
+          LED1_PORT |= (1<<LED1_PIN);
+        }
+    }
 }
