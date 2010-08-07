@@ -912,7 +912,7 @@ char* bluetooth_cmd_get_address (void)
 
 uint8_t bluetooth_cmd_set_remote_address (const char* address)
 {
-        strcpy_P(bluetooth_cmd_buffer,PSTR("ATD0\r"));
+    strcpy_P(bluetooth_cmd_buffer,PSTR("ATD0\r"));
 	if(address != NULL)
         {
 		bluetooth_cmd_buffer[3]='=';
@@ -929,7 +929,7 @@ uint8_t bluetooth_cmd_set_remote_address (const char* address)
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
-		_delay_ms(2000);
+		//_delay_ms(2000);
 		return 1;
 	} else
 		return 0;
