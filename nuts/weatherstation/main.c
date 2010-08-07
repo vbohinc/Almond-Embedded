@@ -2,7 +2,6 @@
 
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include <common/timer.h>
 
 /* Sensor */
 
@@ -48,7 +47,7 @@ void init_adc(uint8_t pin, uint8_t factor)
 	read_adc(pin);
 }
 
-void close_adc()
+void close_adc(void)
 {
 	ADCSRA &= ~(1<<ADEN);
 }
@@ -124,13 +123,16 @@ int main (void)
 
   /* Initialize Actors */
   LED1_DDR |= (1<<LED1_PIN);
+  LED1_PORT |= (1<<LED1_PIN);
 
-  while(1) {
-	bluetooth_process_data ();
+  while(true) {
+    bluetooth_process_data ();
 
     if (sleep > BLUETOOTH_START_TIME) {
       LED1_PORT &= ~(1<<LED1_PIN);
-      start_sleep (sleep - BLUETOOTH_START_TIME);
+      for (; sleep > BLUETOOTH_START_TIME; sleep--)
+        _delay_ms(1000);
+
       blue_sky();
       LED1_PORT |= (1<<LED1_PIN);
     }   
