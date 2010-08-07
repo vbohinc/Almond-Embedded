@@ -164,9 +164,13 @@ extern void bluetooth_address_to_array(const char *full_address, char *compresse
  */
 extern void bluetooth_array_to_address(const char *compressed_address, char *full_address, const uint8_t address_with_hyphen);
 
+#define SQUIRREL
+
 /**
  * Disconnects from a currently connected device by switching to online command mode an then close the connection.
  * @return 1 on successfully disconnected, 0 on disconnect error
+ *
+ * Only on SQUIRREL
  */
 extern uint8_t bluetooth_disconnect(void);
 
@@ -174,8 +178,12 @@ extern uint8_t bluetooth_disconnect(void);
  * Connects to the given compressed bluetooth mac-address. To compress an address use bluetooth_address_to_array.
  * Uses bluetooth_cmd_set_remote_address and bluetooth_cmd_connect.
  * @return 1 if successfully connected, 0 on error
+ *
+ * Only on SQUIRREL
  */
 extern uint8_t bluetooth_connect(const char * compressed_address);
+
+#endif
 
 //---------------------------------------------------------
 //
@@ -215,8 +223,6 @@ extern uint8_t bluetooth_cmd_connect (const uint8_t dev_num);
  */
 extern char* bluetooth_cmd_get_address (void);
 
-#endif
-
 /**
  * Command: ATD
  * Set remote address to connect to.
@@ -228,10 +234,11 @@ extern char* bluetooth_cmd_get_address (void);
  * 				(12 Characters in 6 bytes) or NULL to clear. USe the function bluetooth_address_to_array to convert
  * 				from xxxxxxxxxxxx to xx|xx|xx|xx|xx|xx.
  * @return Returns 1 on success otherwise 0.
+ *
+ * Only on SQUIRREL.
  */
 extern uint8_t bluetooth_cmd_set_remote_address (const char* address);
 
-#ifdef SQUIRREL
 
 /**
  * Command: ATF?
@@ -246,17 +253,15 @@ extern uint8_t bluetooth_cmd_set_remote_address (const char* address);
  */
 extern char* bluetooth_cmd_search_devices (void);
 
-#endif
 
 /**
  * Command: ATH (only in online command mode)
  * Drop (close) connection.
  * @return Returns 1 on success otherwise 0.
  *
+ * Only on SQUIRREL.
  */
 extern uint8_t bluetooth_cmd_close_connection (void);
-
-#ifdef SQUIRREL
 
 /**
  * Command: ATH1 / ATH0
