@@ -1,28 +1,3 @@
-/*
-      ___                         ___           ___           ___          _____    
-     /  /\                       /__/\         /  /\         /__/\        /  /::\   
-    /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\  
-   /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\ 
-  /  /:/~/::\  /__/\   /  /\  __|__|:|\:\   /  /:/  \:\   _____\__\:\  /__/:/ \__\:|
- /__/:/ /:/\:\ \  \:\ /  /:/ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\ \  \:\ /  /:/
- \  \:\/:/__\/  \  \:\  /:/  \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/  \  \:\  /:/ 
-  \  \::/        \  \:\/:/    \  \:\        \  \:\  /:/   \  \:\  ~~~    \  \:\/:/  
-   \  \:\         \  \::/      \  \:\        \  \:\/:/     \  \:\         \  \::/   
-    \  \:\         \__\/        \  \:\        \  \::/       \  \:\         \__\/    
-     \__\/                       \__\/         \__\/         \__\/                  
-                    ___           ___            
-     _____         /__/\         /  /\           
-    /  /::\       |  |::\       /  /::\          
-   /  /:/\:\      |  |:|:\     /  /:/\:\         
-  /  /:/~/::\   __|__|:|\:\   /  /:/~/:/         
- /__/:/ /:/\:| /__/::::| \:\ /__/:/ /:/          
- \  \:\/:/~/:/ \  \:\~~\__\/ \  \:\/:/           
-  \  \::/ /:/   \  \:\        \  \::/            
-   \  \:\/:/     \  \:\        \  \:\            
-    \  \::/       \  \:\        \  \:\           
-     \__\/         \__\/         \__\/           
-*/
-
 /**
  * @brief sensor driver for the bmp085 pressure and temprature sensor
  * 
@@ -102,7 +77,7 @@ uint16_t start_converison(const uint8_t register_value)
 
 void get_conversion_data(void)
 {
-  debug_pgm(PSTR("condata1"));
+  //debug_pgm(PSTR("condata1"));
   {
   struct temprature_conversion_data temptable;
   //temprature
@@ -123,7 +98,7 @@ void get_conversion_data(void)
   presstable.B2  = get_word(0xB8);
   //eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
   }
-  debug_pgm(PSTR("condata2"));
+  //debug_pgm(PSTR("condata2"));
 }
 
 int16_t calculate_true_temprature(int32_t* B5, int16_t utemprature)
