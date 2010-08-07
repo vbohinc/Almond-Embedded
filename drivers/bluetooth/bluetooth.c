@@ -141,10 +141,13 @@ static int32_t bluetooth_ms_to_timeout = -1; //disable timeout
  */
 static uint8_t bluetooth_package_received = 0;
 
+
+/**
+ * Baudrate for the UART-connection to the BTM-222 on SQUIRREL
+ */
 #ifdef SQUIRREL
 #define UART_BAUD_RATE      9600
 #endif
-
 #ifdef NUT
 #define UART_BAUD_RATE      19200
 #endif
@@ -156,6 +159,9 @@ void bluetooth_init(void (*bluetooth_callback_handler)(char *data_package, const
 	uart_init(UART_BAUD_SELECT(UART_BAUD_RATE,F_CPU) );
 }
 
+/**
+ * Reads the data from the uart input buffer and writes the received bytes into bluetooth_infifo.
+ */
 void bluetooth_input_to_array(void)
 {
 	//Read bytes from UART input buffer
@@ -961,6 +967,20 @@ char* bluetooth_cmd_search_devices (void)
 		return NULL;
 	else
 		return bluetooth_data_package;
+}
+
+char* bluetooth_cmd_search_devices_debug (void)
+{
+    bluetooth_data_package[0] = 1;
+    strcpy(bluetooth_data_package+1,"eumel_dbg       ");
+    bluetooth_data_package[17] = 0x00;
+    bluetooth_data_package[18] = 0x12;
+    bluetooth_data_package[19] = 0x6F;
+    bluetooth_data_package[20] = 0x03;
+    bluetooth_data_package[21] = 0x70;
+    bluetooth_data_package[22] = 0x95;
+
+	return bluetooth_data_package;
 }
 
 uint8_t bluetooth_cmd_close_connection (void)

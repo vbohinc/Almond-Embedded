@@ -186,6 +186,7 @@ extern uint8_t bluetooth_connect(const char * compressed_address);
 
 #endif
 
+
 //---------------------------------------------------------
 //
 //               Bluetooth Commands
@@ -224,6 +225,8 @@ extern uint8_t bluetooth_cmd_connect (const uint8_t dev_num);
  */
 extern char* bluetooth_cmd_get_address (void);
 
+#endif
+
 /**
  * Command: ATD
  * Set remote address to connect to.
@@ -236,10 +239,10 @@ extern char* bluetooth_cmd_get_address (void);
  * 				from xxxxxxxxxxxx to xx|xx|xx|xx|xx|xx.
  * @return Returns 1 on success otherwise 0.
  *
- * Only on SQUIRREL.
  */
 extern uint8_t bluetooth_cmd_set_remote_address (const char* address);
 
+#ifdef SQUIRREL
 
 /**
  * Command: ATF?
@@ -253,6 +256,11 @@ extern uint8_t bluetooth_cmd_set_remote_address (const char* address);
  * Only on SQUIRREL.
  */
 extern char* bluetooth_cmd_search_devices (void);
+
+/**
+ * Remove if not used!!!!!!!!!!
+ */
+extern char* bluetooth_cmd_search_devices_debug (void);
 
 
 /**
