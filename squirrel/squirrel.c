@@ -3,6 +3,7 @@
  *
  */
 
+#include <util/delay.h>
 #include <avr/eeprom.h>
 #include <stdlib.h>
 #include <string.h>
@@ -93,16 +94,7 @@ static void dump (void)
 
 }
 
-static inline bool valid (uint8_t num) 
-{
-  return (num < NUTS_LIST && (
-          device_list[num].mac[0] != 0 ||
-          device_list[num].mac[1] != 0 ||
-          device_list[num].mac[2] != 0 ||
-          device_list[num].mac[3] != 0 ||
-          device_list[num].mac[4] != 0 ||
-          device_list[num].mac[5] != 0));
-}
+#define valid(num) (num < NUTS_LIST && (device_list[num].mac[0] != 0 || device_list[num].mac[1] != 0 || device_list[num].mac[2] != 0 || device_list[num].mac[3] != 0 || device_list[num].mac[4] != 0 || device_list[num].mac[5] != 0))
 
 extern bool squirrel_list (uint8_t num, uplink_payload_list *p)
 {
@@ -130,7 +122,7 @@ void update_id (uint8_t num)
   
   device_list[num].class = downlink_get_nut_class (NULL);
 
-  for (uint8_t j = 0; j < EXTENSIONS_LIST; j++)
+  for (uint8_t j = 0; j < 6; j++)
     device_list[num].extension_types[j] = downlink_get_extension_class(j, NULL);
 }
 
@@ -138,7 +130,7 @@ void update_values (uint8_t num)
 {
   if (!valid (num)) return;
   
-  for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
+  for (uint8_t i = 0; i < 6; i++)
     {
       if (device_list[num].extension_types[i] < GENERIC_ACTOR)
         {
@@ -159,12 +151,29 @@ void squirrel_create_device_info_entry (const uint8_t *address)
           // We haven't found the MAC, time to create a new entry
           memcpy (&device_list[k], (void *) address, 6);
           
-          if (bluetooth_connect (device_list[k].mac) != 1) {
-            debug_pgm(PSTR("could not connect"));
-          } else {
-            debug_pgm(PSTR("connected"));  
+          switch (bluetooth_connect (device_list[k].mac)) {
+            case 0:
+              debug_pgm(PSTR("connected"));
+              break;
+              
+            case 1:
+              debug_pgm(PSTR("1"));
+              return;
+            
+            case 2:
+              debug_pgm(PSTR("2"));
+              return;
+            
+            case 3:
+              debug_pgm(PSTR("3"));
+              return;
+                          
+            default:
+              debug_pgm(PSTR("FUCK"));
+              return;
           }
 
+          _delay_ms (1000);
           update_id (k);
           update_values (k);
             
@@ -188,7 +197,7 @@ void squirrel_create_device_info_entry (const uint8_t *address)
 
 void downlink_update(void)
 {
-  char *found = bluetooth_cmd_search_devices();
+  char *found = bluetooth_cmd_search_devices_debug();
 
   assert (found != NULL, "Malformed search result");
 
@@ -313,7 +322,8 @@ int main (void)
       else if (state == SLAVE)
         {
           // We wait for connections from the backend...
-          bluetooth_process_data ();  
+          bluetooth_process_data ();
+          squirrel_state_set (MASTER);
         }
     }
 }
