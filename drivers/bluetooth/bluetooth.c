@@ -694,7 +694,7 @@ uint8_t bluetooth_set_as_slave(void)
 #ifdef SQUIRREL
 uint8_t bluetooth_disconnect(uint8_t tries)
 {
-	for (tries; tries>0; tries--)
+	for (; tries>0; tries--)
 	{
 		if (bluetooth_cmd_online_command() == 1)
 			break;
