@@ -20,28 +20,35 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
   package.value = value;
   uint8_t length = DOWNLINK_PACKAGE_LENGTH;
 
-  switch (bluetooth_send_data_package_with_response (&package.opcode, &length, 100))
+  switch (bluetooth_send_data_package_with_response (&package.opcode, &length, 2000))
     {
+    
     case 0:
-      error_putc (length);
+      debug_pgm(PSTR("\n-- RECV --"));
+      for (uint8_t i=0; i < DOWNLINK_PACKAGE_LENGTH; i++)
+	      {
+		      byte_to_hex( * ((&package.opcode) + i));    
+	      }
+      error_putc('\n');
+      
       if ((package.opcode == (RET | flag)) && (package.id == id))
         return package.value;
       else if (package.opcode == (ERROR | flag))
-        error ("NSE"); //Nut signaled error
+        error ("\nNSE"); //Nut signaled error
       else
-        error ("DPM");//Downlink protocol mismatch
-        debug_pgm(PSTR("P SND:"));
-	      for (uint8_t i=0; i < DOWNLINK_PACKAGE_LENGTH; i++)
-	        {
-		        byte_to_hex( * ((&package.opcode) + i));
-		        error_putc(' ');
-	        }
+        error ("\nDPM");//Downlink protocol mismatch
       break;
     case 1:
       error ("BTE"); //Bluetooth error
       break;
     case 2:
       warn ("TMO"); //Timeout
+      debug_pgm(PSTR("\n-- RECV --"));
+      for (uint8_t i=0; i < DOWNLINK_PACKAGE_LENGTH; i++)
+	      {
+		      byte_to_hex( * ((&package.opcode) + i));
+	      }
+	    error_putc('\n');
       break;
     default:
       error ("URV"); //Unkown return value
@@ -63,12 +70,20 @@ uint16_t downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err)
 
 uint8_t downlink_get_nut_class (bool *err)
 {
-  return (uint8_t) downlink_request (GET, INFO_NUT, 0, 0, err);
+  uint8_t swap = (uint8_t) downlink_request (GET, INFO_NUT, 0, 0, err) >> 8;
+  debug_pgm(PSTR("NUT CLASS: "));
+  byte_to_hex (swap);
+  error_putc('\n');
+  return swap;
 }
 
 uint8_t downlink_get_extension_class (uint8_t id, bool *err)
 {
-  return (uint8_t) downlink_request (GET, INFO_EXTENSION, id, 0, err);
+  uint8_t swap = (uint8_t) downlink_request (GET, INFO_EXTENSION, id, 0, err) >> 8;
+  debug_pgm(PSTR("EXTENSION ID: "));
+  byte_to_hex (swap);
+  error_putc('\n');
+  return swap;
 }
 
 uint16_t downlink_bye (uint16_t time_ms, bool *err)
