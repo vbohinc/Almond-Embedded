@@ -81,6 +81,12 @@ static int16_t bluetooth_previous_byte=-1;
 #define BLUETOOTH_CMD_BUFFER_SIZE 36
 
 /**
+ * Timeout in seconds for a response code of a command.
+ * @see bluetooth_cmd_wait_response
+ */
+#define BLUETOOTH_WAIT_RESPONSE_TIMEOUT 3000
+
+/**
  * Buffer to build cmd to send or to parse resonse of bluetooth device.
  */
 static char bluetooth_cmd_buffer[BLUETOOTH_CMD_BUFFER_SIZE];
@@ -854,14 +860,20 @@ static uint8_t bluetooth_cmd_send (const char* cmd)
  * @li CONNECT (2)
  * @li DISCONNECT (3)
  * @li ERROR (4)
+ * @li timeout (5): no response received
  * @return The number of the response.
  */
 static uint8_t bluetooth_cmd_wait_response (void)
 {
+	uint16_t timeout = BLUETOOTH_WAIT_RESPONSE_TIMEOUT * 10;
 	while (bluetooth_response_code == 0) //Wait until bluetooth devices has responsed (handled by interrupt)
 	{
-
 		bluetooth_process_data();
+		_delay_ms(100);
+		timeout--;
+
+		if (timeout == 0)
+			return 5;
 	}
 	return bluetooth_response_code;
 }
