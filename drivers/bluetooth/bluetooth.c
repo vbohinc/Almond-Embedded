@@ -1,35 +1,17 @@
 /*
-      ___                         ___           ___           ___          _____    
-     /  /\                       /__/\         /  /\         /__/\        /  /::\   
-    /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\  
-   /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\ 
-  /  /:/~/::\  /__/\   /  /\  __|__|:|\:\   /  /:/  \:\   _____\__\:\  /__/:/ \__\:|
- /__/:/ /:/\:\ \  \:\ /  /:/ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\ \  \:\ /  /:/
- \  \:\/:/__\/  \  \:\  /:/  \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/  \  \:\  /:/ 
-  \  \::/        \  \:\/:/    \  \:\        \  \:\  /:/   \  \:\  ~~~    \  \:\/:/  
-   \  \:\         \  \::/      \  \:\        \  \:\/:/     \  \:\         \  \::/   
-    \  \:\         \__\/        \  \:\        \  \::/       \  \:\         \__\/    
-     \__\/                       \__\/         \__\/         \__\/                  
-                                  ___           ___                       ___           ___                       ___     
-     _____                       /__/\         /  /\          ___        /  /\         /  /\          ___        /__/\    
-    /  /::\                      \  \:\       /  /:/_        /  /\      /  /::\       /  /::\        /  /\       \  \:\   
-   /  /:/\:\    ___     ___       \  \:\     /  /:/ /\      /  /:/     /  /:/\:\     /  /:/\:\      /  /:/        \__\:\  
-  /  /:/~/::\  /__/\   /  /\  ___  \  \:\   /  /:/ /:/_    /  /:/     /  /:/  \:\   /  /:/  \:\    /  /:/     ___ /  /::\ 
- /__/:/ /:/\:| \  \:\ /  /:/ /__/\  \__\:\ /__/:/ /:/ /\  /  /::\    /__/:/ \__\:\ /__/:/ \__\:\  /  /::\    /__/\  /:/\:\
- \  \:\/:/~/:/  \  \:\  /:/  \  \:\ /  /:/ \  \:\/:/ /:/ /__/:/\:\   \  \:\ /  /:/ \  \:\ /  /:/ /__/:/\:\   \  \:\/:/__\/
-  \  \::/ /:/    \  \:\/:/    \  \:\  /:/   \  \::/ /:/  \__\/  \:\   \  \:\  /:/   \  \:\  /:/  \__\/  \:\   \  \::/     
-   \  \:\/:/      \  \::/      \  \:\/:/     \  \:\/:/        \  \:\   \  \:\/:/     \  \:\/:/        \  \:\   \  \:\     
-    \  \::/        \__\/        \  \::/       \  \::/          \__\/    \  \::/       \  \::/          \__\/    \  \:\    
-     \__\/                       \__\/         \__\/                     \__\/         \__\/                     \__\/    
-
 *
 * @file bluetooth.c
 * @author Stefan Profanter
 * @date 26.04.2010
 *
-* This file contanis the bodys for the functions available to
-* communicate with the Bluetooth Module over UART.
+* This file contanis the definition for the functions available to
+* communicate with the Bluetooth Module over USART.
+*
+* Some of the functions are only available on the Squirrel (define: SQUIRREL) because on the nut isn't enough program memory available.
+*
 * Used Bluetooth Module: BTM-222
+*
+* @see uart.c
 *
 */
 
@@ -44,26 +26,23 @@
 /**
  * FIFO to store received data. Uses bluetooth_inbuffer to store bytes
  */
-fifo_t bluetooth_infifo;
+static fifo_t bluetooth_infifo;
 
 /**
- * Buffer for the FIFO to put received data in.
+ * Buffer for the FIFO to put received data into.
  */
-uint8_t bluetooth_inbuffer[BLUETOOTH_RECEIVE_BUFFER_SIZE];
+static uint8_t bluetooth_inbuffer[BLUETOOTH_RECEIVE_BUFFER_SIZE];
 
-/**
- * Is set to 1 if bluetooth module is currently connected to a client
- */
 uint8_t bluetooth_is_connected = 0;
 
 /**
  * Array to put data package to send into.
  * Also Callback is called with this array to return a received package.
  * This array is also used to return a response of a command.
- * The biggest response is of the ATF? command.
+ * The biggest response is from the ATF? command.
  * The maximum number of found devices is: 8
  * The maximum lenght of a name is: 16
- * The length of an address is: 6 (without '-', each byte contains 2 chars)
+ * The length of an address is: 6 (compressed format, without '-', each byte contains 2 chars)
  * The data is stored in the following format (where x is the index of found device: Device '1' is at index '0'):
  * arr[0]: Number of found devices
  * arr[1+x*(16+6)] to arr[1+x*(16+6)+15]: Name of found device.
@@ -81,15 +60,15 @@ char bluetooth_data_package[35];
 #endif
 
 /**
- * Index in the bluetooth_data_package array to store new received byte
+ * Index in the bluetooth_data_package array to store new received byte (if byte is part of a datapackage)
  */
-uint8_t bluetooth_data_package_index=0;
+static uint8_t bluetooth_data_package_index=0;
 
 /**
  * Previous processed byte or -1 if no byte jet received.
  * Used to detect stop byte and masked special bytes
  */
-int16_t bluetooth_previous_byte=-1;
+static int16_t bluetooth_previous_byte=-1;
 
 
 /**
@@ -101,39 +80,39 @@ int16_t bluetooth_previous_byte=-1;
 /**
  * Buffer to build cmd to send or to parse resonse of bluetooth device.
  */
-char bluetooth_cmd_buffer[BLUETOOTH_CMD_BUFFER_SIZE];
+static char bluetooth_cmd_buffer[BLUETOOTH_CMD_BUFFER_SIZE];
 
 /**
  * Contains 3rd and 4th byte of the send command. Ex. for ATF? contains 'F?'.
  * Used to check if received data in online mode is a response of the module to a sent command.
  */
-char bluetooth_cmd_sent[2];
+static char bluetooth_cmd_sent[2];
 
 /**
- * Current index to write received byte.
+ * Current index to write received byte (if byte is part of command response)
  */
-uint8_t bluetooth_cmd_buffer_head = 0;
+static uint8_t bluetooth_cmd_buffer_head = 0;
 
 /**
  * When a response for a command comes in, this variable will be set to the value of the response.
  * @see bluetooth_cmd_wait_response
  */
-uint8_t bluetooth_response_code = 0;
+static uint8_t bluetooth_response_code = 0;
 
 /**
- * Contains the length of the recently sent package. The data is stored in bluetooth_data_package
+ * Contains the length of the recently sent package to resent it if needed. The data is stored in bluetooth_data_package
  */
-uint8_t bluetooth_sent_length = 0;
+static uint8_t bluetooth_sent_length = 0;
 
 /**
  * Array to copy response package into. If NULL, no response array expected
  */
-uint8_t *bluetooth_wait_response_array = NULL;
+static uint8_t *bluetooth_wait_response_array = NULL;
 
 /**
  * Pointer to copy response package length into. If NULL, no response array expected
  */
-uint8_t *bluetooth_wait_response_length = NULL;
+static uint8_t *bluetooth_wait_response_length = NULL;
 
 /**
  * timeout to wait for stop byte. In ms.
@@ -142,16 +121,16 @@ uint8_t *bluetooth_wait_response_length = NULL;
 #define BLUETOOTH_STOP_BYTE_TIMEOUT 1000
 
 /**
- * when new data package begin recieved, bluetooth_base_stop_reading will be set to STOP_BYTE_TIMEOUT.
- * If no bytes received for STOP_BYTE_TIMEOUT ms, a timeout occurs and package will be requested because there was no stop byte or there was a transmission error.
+ * when new data package begin received, bluetooth_ms_to_timeout will be set to BLUETOOTH_STOP_BYTE_TIMEOUT.
+ * If no bytes received for BLUETOOTH_STOP_BYTE_TIMEOUT ms, a timeout occurs and package will be re-requested because there was no stop byte or there was a transmission error.
  */
-int32_t bluetooth_ms_to_timeout = -1; //disable timeout
+static int32_t bluetooth_ms_to_timeout = -1; //disable timeout
 
 
 /**
- * Used for the bluetooth_send_datapackage to determine if remote end responsed with a package
+ * Used for the bluetooth_send_datapackage to wait until the remote end responded with a package or timeout occurs.
  */
-uint8_t bluetooth_package_received = 0;
+static uint8_t bluetooth_package_received = 0;
 
 //#define UART_BAUD_RATE      9600
 #define UART_BAUD_RATE      19200
@@ -203,24 +182,9 @@ void bluetooth_input_to_array(void)
 }
 
 /**
- * Copy bluetooth from the src array from the format 1234-AB-56789C into dest with the format 1234AB56789C where startIdxSrc is the
- * index where the address starts in the src array and startIdxDest is the start-index to write the address.
- * Arrays must be initialized and destination must be minimum 13 bytes long.
- * @param dest Destination for address
- * @param src Source of the address
- * @param startIdxDest start-index to write address
- * @param startIdxSrc index where the address starts in src
- */
-void bluetooth_copy_address(uint8_t* dest, uint8_t* src, const uint8_t startIdxDest, const uint8_t startIdxSrc)
-{
-
-	dest[startIdxDest+6] =  0;
-}
-
-/**
  * Processes received response from the BTM-222 Module.
  */
-void bluetooth_process_response(void)
+static void bluetooth_process_response(void)
 {
 	//received response is empty
 	if (bluetooth_cmd_buffer_head == 0)
@@ -326,14 +290,6 @@ void bluetooth_process_response(void)
 		else
 			strcpy(bluetooth_data_package,bluetooth_cmd_buffer); //copy received value into return array
 		break;
-	//case 'I':
-	//	break;
-	//case 'K':
-	//	break;
-	//case 'L':
-	//	break;
-	//case 'M':
-	//	break;
 	case 'N':
 		strcpy(bluetooth_data_package,bluetooth_cmd_buffer); //copy received name into return array
 		break;
@@ -348,17 +304,9 @@ void bluetooth_process_response(void)
 	case 'P':
 		strcpy(bluetooth_data_package,bluetooth_cmd_buffer); //copy received pin into return array
 		break;
-	//case 'Q':
-	//	break;
 	case 'R':
 		strcpy(bluetooth_data_package,bluetooth_cmd_buffer); //copy received value into return array
 		break;
-	//case 'U':
-	//	break;
-	//case 'X':
-	//	break;
-	//case 'Z':
-	//	break;
 	case '+':
 		break;
 	default:
@@ -374,7 +322,7 @@ int inline bluetooth_putc(const uint8_t byte)
 /**
  * Resents the byte from bluetooth_data_package because the remote end asked to do so (caused by a timeout)
  */
-void bluetooth_resent_package(void)
+static void bluetooth_resent_package(void)
 {
 	for (uint8_t i=0; i<bluetooth_sent_length; i++)
 	{
@@ -385,9 +333,9 @@ void bluetooth_resent_package(void)
 
 
 /**
- * Own implementation of strstr function
+ * Own implementation of strstr function to check if bluetooth_data_package contains DISCONNECT.
  */
-uint8_t bluetooth_is_disconnect_msg(void)
+static uint8_t bluetooth_is_disconnect_msg(void)
 {
 	uint8_t d = 'D';
 	prog_char *str = PSTR("ISCONNECT");
@@ -588,27 +536,6 @@ void bluetooth_process_data(void)
 	}
 }
 
-/*
-void bluetooth_byte_received (uint8_t byte)
-{*/
-	//Put received byte into fifo
-//	_inline_fifo_put (&bluetooth_infifo, byte);
-
-	//printf("Byte: %d\n", byte);
-	//fflush(stdout);
-
-/*
-	//if array handling didn't finished jet, don't call again.
-	//After finished handling is another check, if data is available.
-	if (bluetooth_receiveArray_handling==1)
-		return;
-
-	bluetooth_receiveArray_handling=1;
-	bluetooth_process_data();
-	bluetooth_receiveArray_handling=0;
-*/
-//}
-
 void bluetooth_handle_array(void)
 {
 
@@ -771,7 +698,7 @@ uint8_t bluetooth_test_connection(uint8_t tries)
  * @param chr the char value
  * @return the int value
  */
-uint8_t char_to_hex(uint8_t chr)
+static uint8_t char_to_hex(uint8_t chr)
 {
 	//convert char number to int
 	if (chr>='0' && chr <='9')
@@ -789,7 +716,7 @@ uint8_t char_to_hex(uint8_t chr)
  * @param hex the hex value
  * @return the char value
  */
-uint8_t hex_to_char(uint8_t hex)
+static uint8_t hex_to_char(uint8_t hex)
 {
 	if (hex<=9)
 		return hex+'0';
@@ -850,12 +777,12 @@ void bluetooth_array_to_address(const char *compressed_address, char *full_addre
 //---------------------------------------------------------
 
 /**
- * Sends an AT-Command as a String to the bluetooth module.
+ * Sends the command to the bluetooth module with the specified delay_ms between each byte.
  * @param cmd The command as char array with nullbyte. Ex: 'ATL1'
- * @param delay_ms milliseconds to wait between each byte
+ * @param delay_ms milliseconds to wait between each byte.
  * @return 1 on success, 0 on failure (timeout)
  */
-uint8_t bluetooth_cmd_send_delay (const char* cmd, const uint16_t delay_ms)
+static uint8_t bluetooth_cmd_send_delay (const char* cmd, const uint16_t delay_ms)
 {
 	bluetooth_response_code = 0;
 
@@ -878,13 +805,26 @@ uint8_t bluetooth_cmd_send_delay (const char* cmd, const uint16_t delay_ms)
 	return 1;
 }
 
-uint8_t bluetooth_cmd_send (const char* cmd)
+/**
+ * Sends the command to the bluetooth module.
+ * @param cmd The command as char array with nullbyte. Ex: 'ATL1'
+ * @return 1 on success, 0 on failure (timeout)
+ */
+static uint8_t bluetooth_cmd_send (const char* cmd)
 {
 	//The delay of 42ms ist a result of a test run, where the delay time is now the minimum possible
 	return bluetooth_cmd_send_delay(cmd,42);
 }
 
-uint8_t bluetooth_cmd_wait_response (void)
+/**
+ * Waits until the bluetooth device returns one of the following responses. For each response will be returned a number which is given in the brackets:
+ * @li OK (1)
+ * @li CONNECT (2)
+ * @li DISCONNECT (3)
+ * @li ERROR (4)
+ * @return The number of the response.
+ */
+static uint8_t bluetooth_cmd_wait_response (void)
 {
 	while (bluetooth_response_code == 0) //Wait until bluetooth devices has responsed (handled by interrupt)
 	{
