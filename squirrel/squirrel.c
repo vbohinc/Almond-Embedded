@@ -70,7 +70,7 @@ struct _device_info
 
 static device_info device_list [NUTS_LIST];
 
-bool squirrel_list (uint8_t num, uplink_payload_list *p)
+extern bool squirrel_list (uint8_t num, uplink_payload_list *p)
 {
   if (num < EXTENSIONS_LIST && device_list[num].mac[0] != 0)
     {
@@ -196,9 +196,12 @@ void master_loop (void)
 
   for (int k = 0; k < NUTS_LIST && device_list[k].mac[0] != 0; k++)
     {
-      if (bluetooth_cmd_set_remote_address (&device_list[k].mac) != 1)
-        break; // Could not connect
-
+      if (bluetooth_cmd_set_remote_address (&device_list[k].mac) != 1) 
+        {
+          debug_pgm(PSTR("could not connect"));
+          continue;
+        }
+      
       for (int i = 0; i < EXTENSIONS_LIST; i++)
         {
           if (device_list[k].extension_types[i] < 0x80)

@@ -52,40 +52,9 @@ void close_adc()
 	ADCSRA &= ~(1<<ADEN);
 }
 
-int main (void)
-{
-	//init sleeping
-	//init_timer();
-	
-	// FTDI - DEBUG!
-  error_init();
-
-  /* Start Bluetooth */
-  bluetooth_init(downlink_bluetooth_callback_handler);
-  sei();
-  bluetooth_test_connection(4); //random number
-  bluetooth_set_as_slave();
-  
-	/* Initialize Sensors */
-  init_bmp085_sensor();
-
-
-  debug_pgm(PSTR("LOOP"));
-  while(1) {
-    bluetooth_process_data();
-    
-		//activate bluetooth
-		//TODO make meassurements
-		//TODO check variable for bluetooth
-		//TODO sleep again if no connection is recieved
-		//process data
-		// start_sleep(4); //TODO use a variable, instead of random number
-		//_delay_ms(1000);
-	}
-}
-
 /* Downlink */
 
+uint16_t sleep = 10; 
 const uint8_t class_id_nut = WEATHERSTATION;
 const uint8_t class_id_extensions[] = {TEMPERATURE, PRESSURE, LIGHT, HUMIDITY, LED};
 const uint8_t class_id_extensions_length = 5;
@@ -133,3 +102,43 @@ void set_value(uint8_t id, uint16_t value)
   }
 }
 
+void blue_sky (void) 
+{
+  bluetooth_init(downlink_bluetooth_callback_handler);
+  sei();
+  bluetooth_test_connection(4); //random number
+  bluetooth_set_as_slave();
+}
+
+int main (void)
+{
+	/* FTDI */
+  error_init ();
+  
+  /* Initialize Bluetooth */
+  blue_sky (); 
+  
+	/* Initialize Sensors */
+  init_bmp085_sensor ();
+
+  /* Initialize Actors */
+  LED1_DDR |= (1<<LED1_PIN);
+  
+  /* Sleep */
+  init_timer();
+	
+  debug_pgm(PSTR("LOOP"));
+  LED1_PORT |= (1<<LED1_PIN);
+  while(1) {
+    
+    if (sleep > 2) {
+      LED1_PORT &= ~(1<<LED1_PIN);
+      start_sleep (sleep - 2);
+      blue_sky();
+      LED1_PORT |= (1<<LED1_PIN);
+    }   
+    
+    bluetooth_process_data ();
+     
+	}
+}

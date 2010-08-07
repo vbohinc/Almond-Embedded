@@ -62,7 +62,7 @@ uint8_t twi_start(void) {
   if(status == 0x08 || status == 0x10)
     return 0;
   else {
-debug_pgm(PSTR("error start twi"));
+//debug_pgm(PSTR("error start twi"));
     return 1;
 }
 }
@@ -83,7 +83,7 @@ debug_pgm(PSTR("error connect1 twi"));
     return 1;
 }*/
   TWDR = (addr<<1)|mode;
-byte_to_hex((addr<<1)|mode);
+//byte_to_hex((addr<<1)|mode);
   TWCR = (1<<TWINT)|(1<<TWEN);
 
   twi_wait();
@@ -91,7 +91,7 @@ byte_to_hex((addr<<1)|mode);
   if(status == 0x18 || status == 0x20 || status == 0x40 || status == 0x48 || status == 0xF8)
     return 0;
   else {
-debug_pgm(PSTR("err twi_con"));
+//debug_pgm(PSTR("err twi_con"));
     return 1;
   
 }
@@ -108,7 +108,7 @@ uint8_t status = twi_status();
   if(status == 0x28 || status == 0x30)
     return 0;
   else {
-debug_pgm(PSTR("err twi_wr"));
+//debug_pgm(PSTR("err twi_wr"));
     return 1;
 }
 
@@ -123,7 +123,7 @@ uint8_t twi_read(uint8_t* data, enum twi_send_ack ack)
   if(status == 0x50 || status == 0x58)
     return 0;
   else {
-debug_pgm(PSTR("err twi_re"));
+//debug_pgm(PSTR("err twi_re"));
     return 1;
 }
 }

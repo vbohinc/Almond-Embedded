@@ -15,6 +15,7 @@ enum STATES
 
 extern uint8_t squirrel_state_get (void);
 extern void    squirrel_state_set (uint8_t state);
-extern bool    squirrel_list      (uint8_t num, uplink_payload_list *p)
+
+extern bool    squirrel_list      (uint8_t num, uplink_payload_list *p);
 
 #endif

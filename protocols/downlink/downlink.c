@@ -121,9 +121,6 @@ static inline bool downlink_handle_get_package (downlink_package *p)
       p->value = class_id_extensions[p->id];
       break;
 
-    case CONFIG:
-      return false;
-
     default:
       return false;
     }
@@ -146,9 +143,6 @@ static inline bool downlink_handle_set_package (downlink_package *p)
         return false;
       break;
 
-    case CONFIG:
-      return false;
-
     default:
       return false;
     }
@@ -162,8 +156,7 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
   bool return_package;
   downlink_package *p;
 
-
-
+#ifdef DEBUG
   uint8_t buffer[20];
   if (callback_type == 1) //connected
     {
@@ -193,17 +186,17 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
           error_putc(' ');
         }
       error_putc(13);
-      //error_putc('P');
-      //byte_to_hex(data_package[0]);
-
+      error_putc('P');
+      byte_to_hex(data_package[0]);
+#endif
       if (callback_type != 0 && data_length != DOWNLINK_PACKAGE_LENGTH)
         {
-
           error_putc('%');
           return;
         }
 
       p = (downlink_package *) (data_package);
+      sleep = 0;
 
       switch (p->opcode & 0xF0)
         {
@@ -217,7 +210,7 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
           break;
 
         case BYE:
-          // FIXME! bluetooth_disabled_for_s = p->value;
+          sleep = p->value; 
           p->id = 0;
           p->value = 0;
           return_package = true;
@@ -228,7 +221,7 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
           break;
 
         default:
-          return_package = true;
+          return_package = false;
 
           error_putc("#");
           break;
