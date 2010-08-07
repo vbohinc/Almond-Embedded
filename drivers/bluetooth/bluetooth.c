@@ -629,6 +629,8 @@ uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length
 
 	if (bluetooth_send_data_package(data, *length)==1)
 		return 1;
+	if (timeout_ms == 0)
+		return 2;
 
 
 	bluetooth_wait_response_array = data;
@@ -640,7 +642,7 @@ uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length
 	uint16_t ms_to_timeout = timeout_ms;
 
 
-	while (!bluetooth_package_received && ms_to_timeout>0)
+	while (!bluetooth_package_received)
 	{
 		//wait a millisecond
 		_delay_ms(1);
@@ -658,9 +660,6 @@ uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length
 	//data already copied in handle_array fkt
 	bluetooth_wait_response_array = NULL;
 	bluetooth_wait_response_length = NULL;
-	return 0;
-
-
 	return 0;
 }
 
