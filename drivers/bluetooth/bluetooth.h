@@ -164,7 +164,7 @@ extern void bluetooth_address_to_array(const char *full_address, char *compresse
  */
 extern void bluetooth_array_to_address(const char *compressed_address, char *full_address, const uint8_t address_with_hyphen);
 
-#define SQUIRREL
+#ifdef SQUIRREL
 
 /**
  * Disconnects from a currently connected device by switching to online command mode an then close the connection.
