@@ -62,7 +62,7 @@ typedef struct _device_info device_info;
 
 struct _device_info
 {
-  uint8_t mac[6];
+  char mac[6];
   uint8_t class;
   uint8_t extension_types[EXTENSIONS_LIST];
   uint16_t values_cache[EXTENSIONS_LIST];
@@ -70,17 +70,50 @@ struct _device_info
 
 static device_info device_list [NUTS_LIST];
 
+static void dump (void) 
+{
+  for (uint8_t i = 0; i < 3; i++)
+    {
+      debug_pgm (PSTR("\nMAC: "));
+      byte_to_hex (device_list[i].mac[0]);
+      byte_to_hex (device_list[i].mac[1]);
+      byte_to_hex (device_list[i].mac[2]);
+      byte_to_hex (device_list[i].mac[3]);
+      byte_to_hex (device_list[i].mac[4]);
+      byte_to_hex (device_list[i].mac[5]);
+      debug_pgm (PSTR("\nCLASS: "));
+      byte_to_hex (device_list[i].class);
+      debug_pgm (PSTR("\nEXTENSIONS: "));
+      for (uint8_t j = 0; j < EXTENSIONS_LIST; j++)
+        byte_to_hex (device_list[i].extension_types[j]);
+        
+      //for (uint8_t j = 0; j < EXTENSIONS_LIST; j++)
+      //  byte_to_hex (device_list[i].values_cache[j]);  
+    }
+
+}
+
+static inline bool valid (uint8_t num) 
+{
+  return (num < NUTS_LIST && (
+          device_list[num].mac[0] != 0 ||
+          device_list[num].mac[1] != 0 ||
+          device_list[num].mac[2] != 0 ||
+          device_list[num].mac[3] != 0 ||
+          device_list[num].mac[4] != 0 ||
+          device_list[num].mac[5] != 0));
+}
+
 extern bool squirrel_list (uint8_t num, uplink_payload_list *p)
 {
-  if (num < EXTENSIONS_LIST && device_list[num].mac[0] != 0)
+  if (valid (num))
     {
-
-      for (int i = 0; i < 6; i++)
+      for (uint8_t i = 0; i < 6; i++)
         p->bt_address[i] = device_list[num].mac[i];
 
       p->nut_class = device_list[num].class;
 
-      for (int i = 0; i < EXTENSIONS_LIST; i++)
+      for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
         p->extension_class[i] = device_list[num].extension_types[i];
 
       return true;
@@ -91,25 +124,56 @@ extern bool squirrel_list (uint8_t num, uplink_payload_list *p)
     }
 }
 
+void update_id (uint8_t num) 
+{
+  if (!valid (num)) return;
+  
+  device_list[num].class = downlink_get_nut_class (NULL);
+
+  for (uint8_t j = 0; j < EXTENSIONS_LIST; j++)
+    device_list[num].extension_types[j] = downlink_get_extension_class(j, NULL);
+}
+
+void update_values (uint8_t num) 
+{
+  if (!valid (num)) return;
+  
+  for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
+    {
+      if (device_list[num].extension_types[i] < GENERIC_ACTOR)
+        {
+          device_list[num].values_cache[i] = downlink_get_sensor_value (i, NULL);
+          // log??
+        }
+    }
+}
+
+
 void squirrel_create_device_info_entry (const uint8_t *address)
 {
   // ??? debug bluetooth address
-  for (int k = 0; k < NUTS_LIST; k++)
+  for (uint8_t k = 0; k < NUTS_LIST; k++)
     {
-      if (device_list[k].mac[0] == 0)
+      if (!valid (k))
         {
           // We haven't found the MAC, time to create a new entry
           memcpy (&device_list[k], (void *) address, 6);
+          
+          if (bluetooth_connect (device_list[k].mac) != 1) {
+            debug_pgm(PSTR("could not connect"));
+          } else {
+            debug_pgm(PSTR("connected"));  
+          }
 
-          device_list[k].class = downlink_get_nut_class (NULL);
-
-#ifdef DEBUG
-
-#endif
-          for (int j = 0; j < 16; j++)
-            {
-              device_list[k].extension_types[j] = downlink_get_extension_class(j, NULL);
-            }
+          update_id (k);
+          update_values (k);
+            
+          if (bluetooth_disconnect(2) != 1) {
+            debug_pgm(PSTR("could not disconnect"));
+          } else {
+            debug_pgm(PSTR("diconnect"));  
+          }
+          
           return;
         }
       else if (memcmp (device_list[k].mac, (void *) address, 6))
@@ -122,31 +186,31 @@ void squirrel_create_device_info_entry (const uint8_t *address)
   error ("Out of Memory");
 }
 
-void downlink_discover(void)
+void downlink_update(void)
 {
   char *found = bluetooth_cmd_search_devices();
 
   assert (found != NULL, "Malformed search result");
 
   uint8_t count = found[0];
+  
+  debug_pgm(PSTR("Num Found:"));
+  error_putc(count+48);
+  error_putc(13);
+
+  char arr[20];
 
   for (uint8_t i = 0; i < count; i++)
     {
+      debug_pgm(PSTR("Device found"));
+      
+      bluetooth_array_to_address(found + 1 + i * (16 + 6) + 16,arr,1);
+      
+      debug(arr);
+         
       // Data Structure COUNT (1) | NAME (16) | MAC (6) | ...
       squirrel_create_device_info_entry (&found[1 + i * (16 + 6) + 16]);
     }
-}
-
-void downlink_get_values (void)
-{
-  for (int k = 0; k < NUTS_LIST; k++)
-    {
-      if (device_list[k].mac[0] == 0)
-        {
-
-        }
-    }
-
 }
 
 /* -----------------------------------------------------------------------
@@ -160,10 +224,9 @@ void init_bluetooth (void)
       device_list[i].mac[j] = 0;
 
   bluetooth_init (uplink_bluetooth_callback_handler);
+    debug_pgm(PSTR("Test connection")); 
   uint8_t result = bluetooth_test_connection(4);
   assert (result == 1, "Could not test the connection");
-  result = bluetooth_set_as_master();
-  assert (result == 1, "Could not set master mode");
 }
 
 void init_display (void)
@@ -174,46 +237,6 @@ void init_display (void)
 void init_storage (void)
 {
   //fat16_init (0);
-}
-
-void init_downlink (void)
-{
-  downlink_discover();
-}
-
-void slave_loop (void)
-{
-  while (state == SLAVE)
-    {
-      // We wait for connections from the backend...
-    }
-}
-
-void master_loop (void)
-{
-  // FIXME: Trim Strings!
-  assert (bluetooth_set_as_master() == 1, "Could not set master mode");
-
-  for (int k = 0; k < NUTS_LIST && device_list[k].mac[0] != 0; k++)
-    {
-      if (bluetooth_cmd_set_remote_address (&device_list[k].mac) != 1) 
-        {
-          debug_pgm(PSTR("could not connect"));
-          continue;
-        }
-      
-      for (int i = 0; i < EXTENSIONS_LIST; i++)
-        {
-          if (device_list[k].extension_types[i] < 0x80)
-            {
-              device_list[k].values_cache[i] = downlink_get_sensor_value(i, NULL);
-              // log??
-            }
-        }
-    }
-
-  assert (bluetooth_set_as_slave() == 1, "Could not set master mode");
-  state = SLAVE;
 }
 
 void draw_ui (uint8_t device, uint8_t page)
@@ -238,14 +261,38 @@ void draw_ui (uint8_t device, uint8_t page)
 
 int main (void)
 {
-  sei();
+  /* Behold the MAGIC Clock! */
+
+  /* Internen 32Mhz Oszillator einschalten */
+  OSC.CTRL = OSC_RC32MEN_bm;
+
+  /* Warten bis Oszillator stabil ist */
+  while ((OSC.STATUS & OSC_RC32MRDY_bm) == 0);
+
+  /* System Clock selection */
+  CCP = CCP_IOREG_gc;
+  CLK.CTRL = CLK_SCLKSEL_RC32M_gc;
+
+  /* DFLL ein (Auto Kalibrierung) */
+  DFLLRC32M.CTRL = DFLL_ENABLE_bm;
+
+  error_init ();
+  sei ();
+
+  debug_pgm(PSTR("Bluetooth Init"));          
   init_bluetooth ();
+  
+  debug_pgm(PSTR("Display Init"));          
   init_display ();
+  
+  debug_pgm(PSTR("Storage Init"));          
   init_storage ();
-  init_downlink ();
-
-  state = MASTER;
-
+  
+  squirrel_state_set (MASTER);
+  debug_pgm(PSTR("Mainloop"));
+  
+  dump ();
+            
   while (true)
     {
       // Check for input events...
@@ -257,12 +304,16 @@ int main (void)
 
       if (state == MASTER)
         {
-          master_loop ();
+          assert (bluetooth_set_as_master() == 1, "Could not set master mode");
+          downlink_update ();
+          dump ();
+          assert (bluetooth_set_as_slave() == 1, "Could not set slave mode");
+          squirrel_state_set (SLAVE);
         }
-
-      if (state == SLAVE)
+      else if (state == SLAVE)
         {
-          slave_loop ();
+          // We wait for connections from the backend...
+          bluetooth_process_data ();  
         }
     }
 }

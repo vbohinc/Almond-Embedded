@@ -18,16 +18,24 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
   package.opcode = opcode | flag;
   package.id = id;
   package.value = value;
+  uint8_t length = DOWNLINK_PACKAGE_LENGTH;
 
-  switch (bluetooth_send_data_package (&package.opcode, DOWNLINK_PACKAGE_LENGTH))
+  switch (bluetooth_send_data_package_with_response (&package.opcode, &length, 100))
     {
     case 0:
+      error_putc (length);
       if ((package.opcode == (RET | flag)) && (package.id == id))
         return package.value;
       else if (package.opcode == (ERROR | flag))
         error ("NSE"); //Nut signaled error
       else
         error ("DPM");//Downlink protocol mismatch
+        debug_pgm(PSTR("P SND:"));
+	      for (uint8_t i=0; i < DOWNLINK_PACKAGE_LENGTH; i++)
+	        {
+		        byte_to_hex( * ((&package.opcode) + i));
+		        error_putc(' ');
+	        }
       break;
     case 1:
       error ("BTE"); //Bluetooth error
