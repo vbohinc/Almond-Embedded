@@ -164,13 +164,6 @@ extern void bluetooth_array_to_address(const char *compressed_address, char *ful
 //---------------------------------------------------------
 
 /**
- * Sends an AT-Command as a String to the bluetooth module.
- * @param cmd The command as char array with nullbyte. Ex: 'ATL1'
- * @return 1 on success, 0 on failure (timeout)
- */
-uint8_t bluetooth_cmd_send (const char* cmd);
-
-/**
  * Command: AT
  * Check connection to bluetooth device
  * @return Returns 1 on success check, 0 otherwise if timeout occured or error returned
