@@ -1,18 +1,25 @@
-/*
-* @file bluetooth.h
-* @author Stefan Profanter
-* @date 26.04.2010
-*
-* This file contanis the definition for the functions available to
-* communicate with the Bluetooth Module over USART.
-*
-* Some of the functions are only available on the Squirrel (define: SQUIRREL) because on the nut isn't enough program memory available.
-*
-* Used Bluetooth Module: BTM-222
-*
-* @see uart.c
-*
-*/
+/**
+ *  @defgroup BluetoothBTM222 Bluetooth Library
+ *  @code #include <bluetooth.h> @endcode
+ *
+ *  @brief This file contanis the definition for the functions available to communicate with the Bluetooth Module over USART.
+ *
+ *  Some of the functions are only available on the Squirrel (define: SQUIRREL) because on the nut isn't enough program memory available.
+ *
+ *
+ *
+ *  @note Used Bluetooth Module: BTM-222
+ *  @author Stefan Profanter
+ *  @date 26.04.2010
+ *
+ *
+ *  @see uart.c
+ */
+
+/**@{*/
+
+
+
 #ifndef _BLUETOOTH_H_
 #define _BLUETOOTH_H_
 
@@ -56,7 +63,7 @@
  */
 #define BLUETOOTH_RESENT_BYTE 253
 
-/*
+/**
  * Is 1 if bluetooth is currently connected, 0 otherwise.
  */
 extern uint8_t bluetooth_is_connected;
@@ -344,3 +351,7 @@ extern uint8_t bluetooth_cmd_online_command (void);
 
 
 #endif /* _BLUETOOTH_H_ */
+
+
+/**@}*/
+
