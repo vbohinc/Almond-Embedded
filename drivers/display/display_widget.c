@@ -21,7 +21,7 @@ void display_widget_wind(uint8_t direction, uint8_t force, uint8_t status)
 	display_write_text(text, 0);
 }
 
-//TODO write
+//todo write status
 void display_widget_weather(int16_t temperature, uint16_t humidity,
 		uint16_t pressure, uint8_t status)
 {
@@ -78,6 +78,15 @@ void display_widget_light(uint8_t intensity, uint8_t status)
 //TODO write
 void display_widget_time(uint32_t time, uint8_t status)
 {
+	uint8_t year = 0;
+	uint8_t month = 0;
+	uint8_t day = 0;
+	uint8_t hour = 0;
+	uint8_t minute = 0;
+	uint8_t second = 0;
+
+
+
 	const char *text;
 	text = "time widget";
 	display_write_text(text, 0);

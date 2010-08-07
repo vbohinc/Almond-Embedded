@@ -219,7 +219,7 @@ void display_clean(void)
 		// only 128 visible
 		for (j = 0; j <= DISPLAY_COL_NUMBER; j++)
 		{
-			display_write(0x00, 0);
+			display_write(0x00, DISPLAY_MODE_NORMAL);
 		}
 
 	}
@@ -351,11 +351,11 @@ void display_write_title(const char *text, uint8_t status)
 	//Print left arrow if needed
 	if (status & DISPLAY_TITLE_LEFT)
 	{
-		display_util_write_char(DISPLAY_CHAR_ARROW_LEFT, 1);
+		display_util_write_char(DISPLAY_CHAR_ARROW_LEFT, DISPLAY_MODE_INVERSE);
 	}
 	else
 	{
-		display_write_char(blank, 1);
+		display_write_char(blank, DISPLAY_MODE_INVERSE);
 	}
 
 	blank_number = DISPLAY_CHAR_MAX - c - 2;
@@ -366,16 +366,16 @@ void display_write_title(const char *text, uint8_t status)
 
 		for (i = 0; i < (blank_number / 2); i++)
 		{
-			display_write_char(blank, 1);
+			display_write_char(blank, DISPLAY_MODE_INVERSE);
 		}
 		while (*pointer != '\0')
 		{
-			display_write_char(*pointer, 1);
+			display_write_char(*pointer, DISPLAY_MODE_INVERSE);
 			pointer++;
 		}
 		for (i = 0; i < ((blank_number / 2) + (blank_number % 2)); i++)
 		{
-			display_write_char(blank, 1);
+			display_write_char(blank, DISPLAY_MODE_INVERSE);
 		}
 	}
 
@@ -389,7 +389,7 @@ void display_write_title(const char *text, uint8_t status)
 	//print right arrow if needed
 	if (status & DISPLAY_TITLE_RIGHT)
 	{
-		display_util_write_char(DISPLAY_CHAR_ARROW_RIGHT, 1);
+		display_util_write_char(DISPLAY_CHAR_ARROW_RIGHT, DISPLAY_MODE_INVERSE);
 	}
 	else
 	{
@@ -421,7 +421,7 @@ void display_write_text(const char *text, uint8_t status)
 	//start to write
 	while (*pointer != '\0')
 	{
-		display_write_char(*pointer, 0);
+		display_write_char(*pointer, DISPLAY_MODE_NORMAL);
 		pointer++;
 		symbol++;
 
@@ -440,7 +440,7 @@ void display_write_text(const char *text, uint8_t status)
 				{
 					for (i = 1; i <= DISPLAY_PAGE_NUMBER; i++)
 					{
-						display_clean_line(i, 0);
+						display_clean_line(i, DISPLAY_MODE_NORMAL);
 					}
 				}
 			}
@@ -460,19 +460,19 @@ void display_write_text(const char *text, uint8_t status)
 	//Paint navigation arrow if set
 	if ((status & DISPLAY_TEXT_TOP) && (status & DISPLAY_TEXT_BOTTOM))
 	{
-		display_util_write_char(DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL, 0);
+		display_util_write_char(DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL, DISPLAY_MODE_NORMAL);
 	}
 
 	// Paint top arrow if set
 	else if (status & DISPLAY_TEXT_TOP)
 	{
-		display_util_write_char(DISPLAY_CHAR_ARROW_TOP_SMALL, 0);
+		display_util_write_char(DISPLAY_CHAR_ARROW_TOP_SMALL, DISPLAY_MODE_NORMAL);
 	}
 
 	// Paint bottom arrow if set
 	else if (status & DISPLAY_TEXT_BOTTOM)
 	{
-		display_util_write_char(DISPLAY_CHAR_ARROW_BOTTOM_SMALL, 0);
+		display_util_write_char(DISPLAY_CHAR_ARROW_BOTTOM_SMALL, DISPLAY_MODE_NORMAL);
 	}
 
 	else
@@ -490,7 +490,7 @@ void display_write_text(const char *text, uint8_t status)
 	}
 }
 
-//TODO write
+
 void display_spinner(void)
 {
 	char *text = "Almond";
@@ -529,6 +529,7 @@ void display_spinner(void)
 		display_write_char(' ', DISPLAY_MODE_NORMAL);
 	}
 
+	// Paint dots
 	row = 4;
 	display_set_col(DISPLAY_COL_INIT + 1 + 5 * DISPLAY_CHAR_WIDTH);
 	display_set_page(DISPLAY_PAGE_INIT + row);
