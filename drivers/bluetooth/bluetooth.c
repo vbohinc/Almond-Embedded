@@ -283,7 +283,7 @@ static void bluetooth_process_response(void)
 			bluetooth_data_package[1+index*(16+6)+i] = bluetooth_cmd_buffer[i+3];
 
 		//Copy address
-		bluetooth_address_to_array(bluetooth_cmd_buffer+(1+index*(16+6)+16), bluetooth_data_package+21, 1);
+		bluetooth_address_to_array(bluetooth_cmd_buffer+21, bluetooth_data_package+(1+index*(16+6)+16), 1);
 
 		break;
 	case 'H':
@@ -756,6 +756,8 @@ void bluetooth_array_to_address(const char *compressed_address, char *full_addre
 
 	uint8_t addr_buffer = 0;
 	uint8_t buf_idx = 0;
+
+	
 
 	for (uint8_t i=0; i<6; i++)
 	{
