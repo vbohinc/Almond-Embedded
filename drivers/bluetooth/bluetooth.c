@@ -709,7 +709,14 @@ uint8_t bluetooth_disconnect(uint8_t tries)
 	if (tries==0)
 		//switch to online command mode wasn't successful or tries was 0
 		return 0;
-	return bluetooth_cmd_close_connection();
+
+	if (bluetooth_cmd_close_connection()==0)
+		return 0;
+	else
+	{
+		bluetooth_is_connected = 0;
+		return 1;
+	}
 
 }
 
@@ -717,7 +724,13 @@ uint8_t bluetooth_connect(const char *compressed_address)
 {
 	if (bluetooth_cmd_set_remote_address(compressed_address)==0)
 		return 0;
-	return bluetooth_cmd_connect(0);
+	if (bluetooth_cmd_connect(0) == 0)
+		return 0;
+	else
+	{
+		bluetooth_is_connected = 1;
+		return 1;
+	}
 }
 #endif
 
