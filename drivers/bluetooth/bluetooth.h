@@ -164,6 +164,12 @@ extern void bluetooth_address_to_array(const char *full_address, char *compresse
  */
 extern void bluetooth_array_to_address(const char *compressed_address, char *full_address, const uint8_t address_with_hyphen);
 
+/**
+ * Disconnects from a currently connected device by switching to online command mode an then close the connection.
+ * @return 1 on successfully disconnected, 0 on disconnect error
+ */
+extern uint8_t bluetooth_disconnect(void);
+
 //---------------------------------------------------------
 //
 //               Bluetooth Commands
@@ -232,14 +238,17 @@ extern uint8_t bluetooth_cmd_set_remote_address (const char* address);
  */
 extern char* bluetooth_cmd_search_devices (void);
 
+#endif
+
 /**
  * Command: ATH (only in online command mode)
  * Drop (close) connection.
  * @return Returns 1 on success otherwise 0.
  *
- * Only on SQUIRREL.
  */
 extern uint8_t bluetooth_cmd_close_connection (void);
+
+#ifdef SQUIRREL
 
 /**
  * Command: ATH1 / ATH0
@@ -337,6 +346,7 @@ extern char *bluetooth_cmd_get_mode (void);
  * Only on SQUIRREL.
  */
 extern uint8_t bluetooth_cmd_restore_settings (void);
+#endif
 
 /**
  * Command: +++
@@ -344,10 +354,8 @@ extern uint8_t bluetooth_cmd_restore_settings (void);
  * Use bluetooth_cmd_close_connection to close a connection from a connected device.
  * @return Returns 1 on success otherwise 0.
  *
- * Only on SQUIRREL.
  */
 extern uint8_t bluetooth_cmd_online_command (void);
-#endif
 
 
 #endif /* _BLUETOOTH_H_ */

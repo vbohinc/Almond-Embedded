@@ -687,6 +687,17 @@ uint8_t bluetooth_set_as_slave(void)
 
 }
 
+uint8_t bluetooth_disconnect(void)
+{
+	if (bluetooth_cmd_online_command() == 0)
+		return 0;
+	if (bluetooth_cmd_close_connection() == 0)
+		return 0;
+
+	return 1;
+
+}
+
 uint8_t bluetooth_test_connection(uint8_t tries)
 {
 
