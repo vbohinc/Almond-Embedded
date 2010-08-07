@@ -691,11 +691,15 @@ uint8_t bluetooth_disconnect(void)
 {
 	if (bluetooth_cmd_online_command() == 0)
 		return 0;
-	if (bluetooth_cmd_close_connection() == 0)
+	return bluetooth_cmd_close_connection();
+
+}
+
+uint8_t bluetooth_connect(const char * compressed_address)
+{
+	if (bluetooth_cmd_set_remote_address(compressed_address)==0)
 		return 0;
-
-	return 1;
-
+	return bluetooth_cmd_connect(0);
 }
 
 uint8_t bluetooth_test_connection(uint8_t tries)

@@ -170,6 +170,13 @@ extern void bluetooth_array_to_address(const char *compressed_address, char *ful
  */
 extern uint8_t bluetooth_disconnect(void);
 
+/**
+ * Connects to the given compressed bluetooth mac-address. To compress an address use bluetooth_address_to_array.
+ * Uses bluetooth_cmd_set_remote_address and bluetooth_cmd_connect.
+ * @return 1 if successfully connected, 0 on error
+ */
+extern uint8_t bluetooth_connect(const char * compressed_address);
+
 //---------------------------------------------------------
 //
 //               Bluetooth Commands
@@ -191,6 +198,7 @@ extern uint8_t bluetooth_cmd_test_connection (void);
  * When it's in master mode. This command establish a connection. When it's in slave mode, the command will be rejected.
  * Connect to a Bluetooth device (It's only available when “ATD=xxxxxxxxxxxx" assigned).
  * If parameter dev_num is != 0 it connects to a Bluetooth neighborhood device 1~8 (ATF? Result).
+ * If dev_num is 0, connects to address set by bluetooth_cmd_set_remote_address.
  * @param dev_num The index of the device to connect (ATF? Result) or 0 if connect to already set Address
  * @return 1 on success, 0 otherwise
  *
