@@ -1,6 +1,6 @@
 /**
  * @brief sensor driver for the bmp085 pressure and temprature sensor
- * 
+ *
  */
 
 #include <twi/twi.h>
@@ -13,14 +13,16 @@
 #include "error.h"
 
 
-struct temprature_conversion_data {
+struct temprature_conversion_data
+{
   uint16_t AC5;
   uint16_t AC6;
   int16_t MC;
   int16_t MD;
 };
 
-struct pressure_conversion_data {
+struct pressure_conversion_data
+{
   int16_t AC1;
   int16_t AC2;
   int16_t AC3;
@@ -79,24 +81,24 @@ void get_conversion_data(void)
 {
   //debug_pgm(PSTR("condata1"));
   {
-  struct temprature_conversion_data temptable;
-  //temprature
-  temptable.AC5 = get_word(0xB2);
-  temptable.AC6 = get_word(0xB4);
-  temptable.MC  = get_word(0xBC);
-  temptable.MD  = get_word(0xBE);
-  //eeprom_write_block(&temptable,&tempconv,sizeof(struct temprature_conversion_data));
+    struct temprature_conversion_data temptable;
+    //temprature
+    temptable.AC5 = get_word(0xB2);
+    temptable.AC6 = get_word(0xB4);
+    temptable.MC  = get_word(0xBC);
+    temptable.MD  = get_word(0xBE);
+    //eeprom_write_block(&temptable,&tempconv,sizeof(struct temprature_conversion_data));
   }
   //pressure
   {
-  struct pressure_conversion_data presstable;
-  presstable.AC1 = get_word(0xAA);
-  presstable.AC2 = get_word(0xAC);
-  presstable.AC3 = get_word(0xAE);
-  presstable.AC4 = get_word(0xB0);
-  presstable.B1  = get_word(0xB6);
-  presstable.B2  = get_word(0xB8);
-  //eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
+    struct pressure_conversion_data presstable;
+    presstable.AC1 = get_word(0xAA);
+    presstable.AC2 = get_word(0xAC);
+    presstable.AC3 = get_word(0xAE);
+    presstable.AC4 = get_word(0xB0);
+    presstable.B1  = get_word(0xB6);
+    presstable.B2  = get_word(0xB8);
+    //eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
   }
   //debug_pgm(PSTR("condata2"));
 }
@@ -128,13 +130,14 @@ int32_t calculate_true_pressure(int32_t* B5, int16_t upressure)
   X3 = ((X1 + X2) + 2)>>2;
   B4 = (data.AC4 * (uint32_t)(X3 + 32768))>>15;
   B7 = ((uint32_t)upressure - B3) * (50000>>oversampling_setting);
-  if(B7 < 0x80000000){
-    p = (B7<<1)/B4;
-  }
+  if (B7 < 0x80000000)
+    {
+      p = (B7<<1)/B4;
+    }
   else
-  {
-    p = (B7/B4)<<1;
-  }
+    {
+      p = (B7/B4)<<1;
+    }
   X1 = (p>>8)*(p>>8);
   X1 = (X1 * 3038)>>16;
   X2 = (-7357 * p)>>16;
