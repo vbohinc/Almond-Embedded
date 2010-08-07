@@ -135,9 +135,13 @@ static int32_t bluetooth_ms_to_timeout = -1; //disable timeout
  */
 static uint8_t bluetooth_package_received = 0;
 
-//#define UART_BAUD_RATE      9600
-#define UART_BAUD_RATE      19200
+#ifdef SQUIRREL
+#define UART_BAUD_RATE      9600
+#endif
 
+#ifdef NUT
+#define UART_BAUD_RATE      19200
+#endif
 
 void bluetooth_init(void (*bluetooth_callback_handler)(char *data_package, const uint8_t callback_type, const uint8_t data_length))
 {
