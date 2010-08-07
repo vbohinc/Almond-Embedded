@@ -169,10 +169,11 @@ extern void bluetooth_array_to_address(const char *compressed_address, char *ful
 /**
  * Disconnects from a currently connected device by switching to online command mode an then close the connection.
  * @return 1 on successfully disconnected, 0 on disconnect error
+ * @param tries Number of tries to disconnect
  *
  * Only on SQUIRREL
  */
-extern uint8_t bluetooth_disconnect(void);
+extern uint8_t bluetooth_disconnect(uint8_t tries);
 
 /**
  * Connects to the given compressed bluetooth mac-address. To compress an address use bluetooth_address_to_array.
