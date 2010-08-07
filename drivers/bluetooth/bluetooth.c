@@ -687,9 +687,16 @@ uint8_t bluetooth_set_as_slave(void)
 
 }
 
-uint8_t bluetooth_disconnect(void)
+#ifdef SQUIRREL
+uint8_t bluetooth_disconnect(uint8_t tries)
 {
-	if (bluetooth_cmd_online_command() == 0)
+	for (tries; tries>0; tries--)
+	{
+		if (bluetooth_cmd_online_command() == 1)
+			break;
+	}
+	if (tries==0)
+		//switch to online command mode wasn't successful or tries was 0
 		return 0;
 	return bluetooth_cmd_close_connection();
 
@@ -701,6 +708,7 @@ uint8_t bluetooth_connect(const char *compressed_address)
 		return 0;
 	return bluetooth_cmd_connect(0);
 }
+#endif
 
 uint8_t bluetooth_test_connection(uint8_t tries)
 {
@@ -904,7 +912,7 @@ char* bluetooth_cmd_get_address (void)
 
 uint8_t bluetooth_cmd_set_remote_address (const char* address)
 {
-        strcpy_P(bluetooth_cmd_buffer,PSTR("ATD0\r"));
+    strcpy_P(bluetooth_cmd_buffer,PSTR("ATD0\r"));
 	if(address != NULL)
         {
 		bluetooth_cmd_buffer[3]='=';
@@ -921,7 +929,7 @@ uint8_t bluetooth_cmd_set_remote_address (const char* address)
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
-		_delay_ms(2000);
+		//_delay_ms(2000);
 		return 1;
 	} else
 		return 0;
