@@ -17,6 +17,7 @@
 #define LED1_DDR DDRD
 #define LED1_PORT PORTD
 #define LED1_PIN 7
+#define BLUETOOTH_START_TIME 2
 
 /* ADC */
 
@@ -54,7 +55,7 @@ void close_adc()
 
 /* Downlink */
 
-uint16_t sleep = 10; 
+uint16_t sleep = 0;
 const uint8_t class_id_nut = WEATHERSTATION;
 const uint8_t class_id_extensions[] = {TEMPERATURE, PRESSURE, LIGHT, HUMIDITY, LED};
 const uint8_t class_id_extensions_length = 5;
@@ -74,14 +75,14 @@ uint16_t get_value(uint8_t id)
 
     case 2: // LIGHT
       init_adc (0,(1<<ADPS1) | (1<<ADPS0));
-      return read_adc(0);
+      return read_adc (0);
 
     case 3: // HUMIDITY
       init_adc (1,(1<<ADPS1) | (1<<ADPS0));
       return read_adc (1);
 
     default:
-      debug_pgm(PSTR("depp!"));
+      debug_pgm(PSTR("UNK:SEN"));
       return 0;
   }
 }
@@ -97,8 +98,8 @@ void set_value(uint8_t id, uint16_t value)
 		  break;
 
 	  default:
-	    debug_pgm(PSTR("depp!"));
-		  break;
+	    debug_pgm(PSTR("UNK:AKT"));
+		break;
   }
 }
 
@@ -112,33 +113,26 @@ void blue_sky (void)
 
 int main (void)
 {
-	/* FTDI */
+  /* FTDI */
   error_init ();
   
   /* Initialize Bluetooth */
   blue_sky (); 
   
-	/* Initialize Sensors */
+  /* Initialize Sensors */
   init_bmp085_sensor ();
 
   /* Initialize Actors */
   LED1_DDR |= (1<<LED1_PIN);
-  
-  /* Sleep */
-  init_timer();
-	
-  debug_pgm(PSTR("LOOP"));
-  LED1_PORT |= (1<<LED1_PIN);
+
   while(1) {
-    
-    if (sleep > 2) {
+	bluetooth_process_data ();
+
+    if (sleep > BLUETOOTH_START_TIME) {
       LED1_PORT &= ~(1<<LED1_PIN);
-      start_sleep (sleep - 2);
+      start_sleep (sleep - BLUETOOTH_START_TIME);
       blue_sky();
       LED1_PORT |= (1<<LED1_PIN);
     }   
-    
-    bluetooth_process_data ();
-     
-	}
+  }
 }
