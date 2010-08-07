@@ -68,7 +68,7 @@ void error_putc(const char c)
 
 
 void assert (bool condition, const char *msg) {
-  if (condition) {
+  if (!condition) {
     send_pgm(PSTR("ASS:"));
     _send_msg(msg);
   }
