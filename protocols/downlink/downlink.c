@@ -20,36 +20,28 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
   package.value = value;
   uint8_t length = DOWNLINK_PACKAGE_LENGTH;
 
-  switch (bluetooth_send_data_package_with_response (&package.opcode, &length, 2000))
+  switch (bluetooth_send_data_package_with_response (&package.opcode, &length, 500))
     {
     
     case 0:
-      debug_pgm(PSTR("-- RECV --"));
-      for (uint8_t i=0; i < DOWNLINK_PACKAGE_LENGTH; i++)
-	      {
-		      byte_to_hex( * ((&package.opcode) + i));    
-	      }
-      error_putc('\n');
-      byte_to_hex((RET | flag));
-      error_putc('\n');
       if ((package.opcode == (RET | opcode | flag)) && (package.id == id))
         return package.value;
       else if (package.opcode == (ERROR | flag))
-        error ("NSE"); //Nut signaled error
+        error ("NSE"); // Nut signaled error
       else
-        error ("DPM"); //Downlink protocol mismatch
+        error ("DPM"); // Downlink protocol mismatch
       break;
       
     case 1:
-      error ("BTE"); //Bluetooth error
+      error ("BTE"); // Bluetooth error
       break;
       
     case 2:
-      warn ("TMO"); //Timeout
+      warn ("TMO"); // Timeout
       break;
       
     default:
-      error ("URV"); //Unkown return value
+      error ("URV"); // Unkown return value
     }
 
   *err = true;
@@ -68,25 +60,17 @@ uint16_t downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err)
 
 uint8_t downlink_get_nut_class (bool *err)
 {
-  uint8_t swap = (uint8_t) downlink_request (GET, INFO_NUT, 0, 0, err) >> 8;
-  debug_pgm(PSTR("NUT CLASS: "));
-  byte_to_hex (swap);
-  error_putc('\n');
-  return swap;
+  return downlink_request (GET, INFO_NUT, 0, 0, err);
 }
 
 uint8_t downlink_get_extension_class (uint8_t id, bool *err)
 {
-  uint8_t swap = (uint8_t) downlink_request (GET, INFO_EXTENSION, id, 0, err) >> 8;
-  debug_pgm(PSTR("EXTENSION ID: "));
-  byte_to_hex (swap);
-  error_putc('\n');
-  return swap;
+  return downlink_request (GET, INFO_EXTENSION, id, 0, err);
 }
 
-uint16_t downlink_bye (uint16_t time_ms, bool *err)
+uint16_t downlink_bye (uint16_t time_s, bool *err)
 {
-  return downlink_request (BYE, 0, 0, time_ms, err);
+  return downlink_request (BYE, 0, 0, time_s, err);
 }
 #endif
 
@@ -196,7 +180,6 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
 
       switch (p->opcode & 0xF0)
         {
-
         case GET:
           return_package = downlink_handle_get_package (p);
           break;
@@ -218,8 +201,6 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
 
         default:
           return_package = false;
-
-          error_putc("#");
           break;
         }
 

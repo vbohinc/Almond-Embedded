@@ -174,6 +174,7 @@ void squirrel_create_device_info_entry (const uint8_t *address)
               return;
           }
 
+          _delay_ms (1000);
           update_id (k);
           update_values (k);
             
