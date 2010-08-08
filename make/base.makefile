@@ -79,6 +79,12 @@ SRC += $(BASE)/drivers/uart/usart_driver.c
 endif
 endif
 
+#rtc
+ifeq (rtc, $(findstring rtc,$(ALMONDLIBS)))
+ALMONDLIBS += twi
+SRC += $(BASE)/drivers/rtc/rtc.c
+endif
+
 #twi
 ifeq (twi, $(findstring twi,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/twi/twi.c

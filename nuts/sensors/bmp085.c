@@ -7,7 +7,7 @@
 #include <avr/eeprom.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 
 #include "bmp085.h"
 #include "error.h"
@@ -42,14 +42,12 @@ const uint8_t oversampling_setting = 0;
 
 uint16_t get_word(const uint8_t word)
 {
-  //debug_pgm(PSTR("twi_start"));
-  twi_start();
   //debug_pgm(PSTR("twi_connect"));
   twi_connect(WRITE,0x77);
   //debug_pgm(PSTR("twi_write"));
   twi_write(word);
   //debug_pgm(PSTR("twi_start"));
-  twi_start();
+  twi_restart();
   //debug_pgm(PSTR("twi_connect"));
   twi_connect(READ,0x77);
   uint8_t temp;
@@ -68,9 +66,8 @@ uint16_t get_word(const uint8_t word)
   return result;
 }
 
-uint16_t start_converison(const uint8_t register_value)
+void start_converison(const uint8_t register_value)
 {
-  twi_start();
   twi_connect(WRITE,0x77);
   twi_write(0xF4);
   twi_write(register_value);
@@ -151,11 +148,11 @@ bmp_data_t bmp085_get_data()
   bmp_data_t data;
   start_converison(0x2E);
   _delay_ms(6);
-  data.temprature = get_word(0xF6);//calculate_true_temprature(&B5, get_word(0x2E));
+  data.temprature = calculate_true_temprature(&B5, get_word(0x2E));
 
   start_converison(0x34);
   _delay_ms(6);
-  data.pressure = get_word(0xF7);//calculate_true_pressure(&B5, get_word(0x34));
+  data.pressure = calculate_true_pressure(&B5, get_word(0x34));
   return data;
 }
 
