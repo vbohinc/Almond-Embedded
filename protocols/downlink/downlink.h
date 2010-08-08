@@ -1,28 +1,3 @@
-/*
-      ___                         ___           ___           ___          _____    
-     /  /\                       /__/\         /  /\         /__/\        /  /::\   
-    /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\  
-   /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\ 
-  /  /:/~/::\  /__/\   /  /\  __|__|:|\:\   /  /:/  \:\   _____\__\:\  /__/:/ \__\:|
- /__/:/ /:/\:\ \  \:\ /  /:/ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\ \  \:\ /  /:/
- \  \:\/:/__\/  \  \:\  /:/  \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/  \  \:\  /:/ 
-  \  \::/        \  \:\/:/    \  \:\        \  \:\  /:/   \  \:\  ~~~    \  \:\/:/  
-   \  \:\         \  \::/      \  \:\        \  \:\/:/     \  \:\         \  \::/   
-    \  \:\         \__\/        \  \:\        \  \::/       \  \:\         \__\/    
-     \__\/                       \__\/         \__\/         \__\/                  
-     _____          ___           ___           ___                                     ___           ___     
-    /  /::\        /  /\         /__/\         /__/\                      ___          /__/\         /__/|    
-   /  /:/\:\      /  /::\       _\_ \:\        \  \:\                    /  /\         \  \:\       |  |:|    
-  /  /:/  \:\    /  /:/\:\     /__/\ \:\        \  \:\    ___     ___   /  /:/          \  \:\      |  |:|    
- /__/:/ \__\:|  /  /:/  \:\   _\_ \:\ \:\   _____\__\:\  /__/\   /  /\ /__/::\      _____\__\:\   __|  |:|    
- \  \:\ /  /:/ /__/:/ \__\:\ /__/\ \:\ \:\ /__/::::::::\ \  \:\ /  /:/ \__\/\:\__  /__/::::::::\ /__/\_|:|____
-  \  \:\  /:/  \  \:\ /  /:/ \  \:\ \:\/:/ \  \:\~~\~~\/  \  \:\  /:/     \  \:\/\ \  \:\~~\~~\/ \  \:\/:::::/
-   \  \:\/:/    \  \:\  /:/   \  \:\ \::/   \  \:\  ~~~    \  \:\/:/       \__\::/  \  \:\  ~~~   \  \::/~~~~ 
-    \  \::/      \  \:\/:/     \  \:\/:/     \  \:\         \  \::/        /__/:/    \  \:\        \  \:\     
-     \__\/        \  \::/       \  \::/       \  \:\         \__\/         \__\/      \  \:\        \  \:\    
-                   \__\/         \__\/         \__\/                                   \__\/         \__\/    
-*/
-
 /**
  * downlink.h
  *
@@ -33,8 +8,9 @@
  * const uint8_t class_id_nut;
  * const uint8_t class_id_extensions[];
  * const uint8_t class_id_extensions_length;
- * extern uint16_t get_value(uint8_t id);
- * extern void set_value(uint8_t id, uint16_t value);
+ * uint16_t sleep;
+ * uint16_t get_value(uint8_t id);
+ * void set_value(uint8_t id, uint16_t value);
  */
 
 #ifndef __DOWNLINK_H__
@@ -80,11 +56,13 @@ extern uint16_t downlink_bye (uint16_t time_ms, bool *err);
 /**
  * MUST BE IMPLEMENTED IN YOUR FILES
  */
+
 extern const uint8_t class_id_nut;
 extern const uint8_t class_id_extensions[];
 extern const uint8_t class_id_extensions_length;
 extern uint16_t get_value(uint8_t id);
 extern void set_value(uint8_t id, uint16_t value);
+extern uint16_t sleep;
 
 /* Callback handler */
 extern void downlink_bluetooth_callback_handler (char *data_package, const uint8_t callback_type, const uint8_t data_length);

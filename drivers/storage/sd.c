@@ -27,7 +27,8 @@ sd.c - SD lives here
 #include <util/delay.h>
 #include "sd.h"
 
-static uint8_t sd_buffer[6];
+#define R1_IDLE_STATE 0
+
 static uint8_t sd_response_buffer[5];
 static uint8_t sd_token_buffer[SD_BLOCK_SIZE+3];
 
@@ -36,14 +37,44 @@ static uint8_t sd_token_buffer[SD_BLOCK_SIZE+3];
 void sd_send_buffer(void);
 void sd_get_response(uint8_t response_type);
 
+void sd_enable(void) {
+	clear_bit(PORTD.OUT, 7);
+}
+
+void sd_disable(void) {
+	set_bit(PORTD.OUT, 7);
+}
+
 void sd_init(void) {
 	spi_init();
 
-	_delay_ms(100);
+	//_delay_ms(100);
 
-	for (uint8_t i=0; i<80; i++)
+	sd_disable();
+
+	debug_pgm(PSTR("SD: warming up chip"));
+	for (uint8_t i = 0; i < 10; ++i)
 	{
-		spi_send_byte(0x0F);
+		spi_receive_byte();//spi_send_byte(0x0F);
+	}
+
+	sd_enable();
+
+	/* reset card */
+	uint8_t response;
+	for (uint16_t i = 0;; ++i)
+	{
+		response = sd_send_command(CMD0, NULL); //sd_raw_send_command(CMD_GO_IDLE_STATE, 0);
+		byte_to_hex(response);
+		if (response == (1 << R1_IDLE_STATE))
+			break;
+
+		if (i == 0x1ff)
+		{
+			sd_disable();
+			debug_pgm(PSTR("sd: failed (CMD0)"));
+			return;
+		}
 	}
 
 
@@ -52,7 +83,7 @@ void sd_init(void) {
 	sd_send_command(CMD0, NULL); 
 	sd_get_response(R1);
 	// Chip Select Low
-	clear_bit(PORTD.OUT, 3); // Redundant if CS == SS?
+	//clear_bit(PORTD.OUT, 3); // Redundant if CS == SS?
 	// Place SD Card into Idle State (again). Transition to SPI mode 
 	sd_send_command(CMD0, NULL);
 	sd_get_response(R1);
@@ -90,12 +121,11 @@ void sd_init(void) {
 }
 
 uint8_t sd_send_command(uint8_t command_nr, uint8_t *arguments) {
-	_delay_ms(100);
 
-	for (uint8_t i=0; i<80; i++)
-	{
-		spi_send_byte(0x0F);
-	}
+uint8_t response;
+	uint8_t sd_buffer[6];
+
+	spi_receive_byte();
 
 	switch (command_nr) {
 		case CMD0:
@@ -167,8 +197,20 @@ uint8_t sd_send_command(uint8_t command_nr, uint8_t *arguments) {
 		default:
 			return 0;
 	}
-	sd_send_buffer();
-	return 1;
+
+	for( uint8_t i=0; i<6; i++) {
+		spi_send_byte( sd_buffer[i]);
+	}
+
+	response = 0x00;
+	/* receive response */
+	for (uint8_t i = 0; i < 8; ++i)
+	{
+		response = spi_receive_byte();
+		if (response != 0xff)  break;
+	}
+
+	return response;
 }
 
 uint8_t sd_read_bytes(uint32_t addr, uint8_t *read_buffer, uint16_t size) {
@@ -254,13 +296,6 @@ uint8_t sd_write_bytes(uint32_t addr, uint8_t *write_buffer, uint16_t size) {
 		debug_pgm(PSTR("SD: Write Succeeded"));
 	}
 	return 1;
-}
-
-void sd_send_buffer() {
-	for (int i = 0; i < 6; i++) {
-		spi_send_byte(sd_buffer[i]);
-		//debug_pgm(PSTR("SD: Buffer Byte Sent"));
-	}
 }
 
 void sd_get_response(uint8_t response_type) {

@@ -34,17 +34,8 @@
 #ifndef _FIFO_H_
 #define _FIFO_H_
 
-#ifdef SERIAL
-#include <stdint.h>
-#include <pthread.h>
-
-extern pthread_mutex_t mymutex;
-
-
-#else
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#endif
 
 /**
  * The FIFO.
@@ -102,12 +93,9 @@ static inline uint8_t _inline_fifo_put (fifo_t *fifo, const uint8_t data)
 	if (fifo->count >= fifo->size)
 		return 0;
 
-#ifndef SERIAL
 	uint8_t sreg = SREG;
 	cli();
-#else
-	pthread_mutex_lock(&mymutex);
-#endif
+
 	uint8_t * pwrite = fifo->pwrite;
 	
 	*(pwrite++) = data;
@@ -124,11 +112,8 @@ static inline uint8_t _inline_fifo_put (fifo_t *fifo, const uint8_t data)
 	fifo->pwrite = pwrite;
 
 	fifo->count++;
-#ifndef SERIAL
+
 	SREG = sreg;
-#else
-	pthread_mutex_unlock(&mymutex);
-#endif
 	
 	return 1;
 }
@@ -139,12 +124,10 @@ static inline uint8_t _inline_fifo_put (fifo_t *fifo, const uint8_t data)
  */
 static inline uint8_t _inline_fifo_get (fifo_t *f)
 {
-#ifndef SERIAL
+
 	uint8_t sreg = SREG;
 	cli();
-#else
-	pthread_mutex_lock(&mymutex);
-#endif
+
 	uint8_t *pread = f->pread;
 	uint8_t data = *(pread++);
 	uint8_t read2end = f->read2end;
@@ -161,11 +144,8 @@ static inline uint8_t _inline_fifo_get (fifo_t *f)
 
 
 	f->count--;
-#ifndef SERIAL
+
 	SREG = sreg;
-#else
-	pthread_mutex_unlock(&mymutex);
-#endif
 	
 	return data;
 }
