@@ -157,6 +157,7 @@ void bluetooth_init(void (*bluetooth_callback_handler)(char *data_package, const
 	bluetooth_callback = bluetooth_callback_handler;
 	fifo_init (&bluetooth_infifo,   bluetooth_inbuffer, BLUETOOTH_RECEIVE_BUFFER_SIZE);
 	uart_init(UART_BAUD_SELECT(UART_BAUD_RATE,F_CPU) );
+
 }
 
 /**

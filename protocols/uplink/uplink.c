@@ -114,11 +114,8 @@ void uplink_bluetooth_callback_handler (char *data_package, const uint8_t callba
       error = true;
       break;
     }
-
-  if (error)
-    p->opcode = ERROR;
-  else
-    p->opcode = RET;
+  
+  p->opcode |= error ? ERROR : RET;
 
   bluetooth_send_data_package (&(p->opcode), UPLINK_PACKAGE_LENGTH);
 }
