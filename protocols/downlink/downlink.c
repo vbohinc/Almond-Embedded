@@ -24,32 +24,30 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
     {
     
     case 0:
-      debug_pgm(PSTR("\n-- RECV --"));
+      debug_pgm(PSTR("-- RECV --"));
       for (uint8_t i=0; i < DOWNLINK_PACKAGE_LENGTH; i++)
 	      {
 		      byte_to_hex( * ((&package.opcode) + i));    
 	      }
       error_putc('\n');
-      
-      if ((package.opcode == (RET | flag)) && (package.id == id))
+      byte_to_hex((RET | flag));
+      error_putc('\n');
+      if ((package.opcode == (RET | opcode | flag)) && (package.id == id))
         return package.value;
       else if (package.opcode == (ERROR | flag))
-        error ("\nNSE"); //Nut signaled error
+        error ("NSE"); //Nut signaled error
       else
-        error ("\nDPM");//Downlink protocol mismatch
+        error ("DPM"); //Downlink protocol mismatch
       break;
+      
     case 1:
       error ("BTE"); //Bluetooth error
       break;
+      
     case 2:
       warn ("TMO"); //Timeout
-      debug_pgm(PSTR("\n-- RECV --"));
-      for (uint8_t i=0; i < DOWNLINK_PACKAGE_LENGTH; i++)
-	      {
-		      byte_to_hex( * ((&package.opcode) + i));
-	      }
-	    error_putc('\n');
       break;
+      
     default:
       error ("URV"); //Unkown return value
     }
@@ -225,7 +223,7 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
           break;
         }
 
-      p->opcode = return_package ? RET : ERROR;
+      p->opcode |= return_package ? RET : ERROR;
       bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH);
     }
 }

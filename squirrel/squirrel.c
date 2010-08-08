@@ -154,6 +154,7 @@ void squirrel_create_device_info_entry (const uint8_t *address)
           switch (bluetooth_connect (device_list[k].mac)) {
             case 0:
               debug_pgm(PSTR("connected"));
+              bluetooth_is_connected = 1;
               break;
               
             case 1:
@@ -173,14 +174,14 @@ void squirrel_create_device_info_entry (const uint8_t *address)
               return;
           }
 
-          _delay_ms (1000);
           update_id (k);
           update_values (k);
             
           if (bluetooth_disconnect(2) != 1) {
             debug_pgm(PSTR("could not disconnect"));
           } else {
-            debug_pgm(PSTR("diconnect"));  
+            debug_pgm(PSTR("disconnect"));
+            bluetooth_is_connected = 0;
           }
           
           return;
@@ -213,7 +214,7 @@ void downlink_update(void)
     {
       debug_pgm(PSTR("Device found"));
       
-      bluetooth_array_to_address(found + 1 + i * (16 + 6) + 16,arr,1);
+      bluetooth_array_to_address(found + 1 + i * (16 + 6) + 16, arr, 1);
       
       debug(arr);
          

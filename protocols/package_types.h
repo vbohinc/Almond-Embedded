@@ -10,12 +10,12 @@
 
 enum package_type
 {
+  ECHO  = 0x00,	// Debug
   GET   = 0x10,	// Used by: Squirrel/Backend
   SET   = 0x20,	// Used by: Squirrel/Backend
-  RET   = 0x30, // Used by: Nut/Squirrel
-  ERROR = 0xE0, // Signal errors
-  BYE   = 0xB0, // Sends the receiving unit offline for p->value milli/seconds. (Power Saving)
-  ECHO  = 0xF0,	// To tunnel things through the squirrel
+  BYE   = 0x40, // Sends the receiving unit offline for p->value seconds. (Power Saving)
+  RET   = 0x80, // Used by: Nut/Squirrel
+  ERROR = 0xF0, // Signal errors
 };
 
 enum package_type_flags
