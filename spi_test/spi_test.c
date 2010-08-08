@@ -1,13 +1,14 @@
 #include "../drivers/storage/sd.h"
 
 #include <avr/interrupt.h>
+#include <avr/delay.h>
 
 
 #define NUM_BYTES 254
 
 uint8_t bytes[NUM_BYTES];
 
-void print_hex(uint8_t num)
+/*void print_hex(uint8_t num)
 {
 	if (num<10)
 		error_putc(num+48);
@@ -38,13 +39,32 @@ void byte_to_hex(uint8_t byte){
 	uint8_t b1 = ((byte & 0xF0)>>4);
 	print_hex(b1);
 	print_hex(b2);
-}
+}*/
 
 uint8_t main(void) {
 
+   //
+   // Clock
+   //
+
+   // Internen 32Mhz Oszillator einschalten
+   OSC.CTRL = OSC_RC32MEN_bm;
+
+   // Warten bis Oszillator stabil ist
+   while ((OSC.STATUS & OSC_RC32MRDY_bm) == 0);
+
+   // System Clock selection
+   CCP = CCP_IOREG_gc;
+   CLK.CTRL = CLK_SCLKSEL_RC32M_gc;
+
+   // DFLL ein (Auto Kalibrierung)
+   DFLLRC32M.CTRL = DFLL_ENABLE_bm;
+
+
 	error_init();
 
-	sei();
+	//sei();
+	_delay_ms(10);
 	debug_pgm(PSTR("### Storage Test ###"));
 	sd_init();
 	/*uint8_t b = 0;

@@ -1,50 +1,28 @@
-/*
-      ___                         ___           ___           ___          _____    
-     /  /\                       /__/\         /  /\         /__/\        /  /::\   
-    /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\  
-   /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\ 
-  /  /:/~/::\  /__/\   /  /\  __|__|:|\:\   /  /:/  \:\   _____\__\:\  /__/:/ \__\:|
- /__/:/ /:/\:\ \  \:\ /  /:/ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\ \  \:\ /  /:/
- \  \:\/:/__\/  \  \:\  /:/  \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/  \  \:\  /:/ 
-  \  \::/        \  \:\/:/    \  \:\        \  \:\  /:/   \  \:\  ~~~    \  \:\/:/  
-   \  \:\         \  \::/      \  \:\        \  \:\/:/     \  \:\         \  \::/   
-    \  \:\         \__\/        \  \:\        \  \::/       \  \:\         \__\/    
-     \__\/                       \__\/         \__\/         \__\/                  
-                    ___           ___            
-     _____         /__/\         /  /\           
-    /  /::\       |  |::\       /  /::\          
-   /  /:/\:\      |  |:|:\     /  /:/\:\         
-  /  /:/~/::\   __|__|:|\:\   /  /:/~/:/         
- /__/:/ /:/\:| /__/::::| \:\ /__/:/ /:/          
- \  \:\/:/~/:/ \  \:\~~\__\/ \  \:\/:/           
-  \  \::/ /:/   \  \:\        \  \::/            
-   \  \:\/:/     \  \:\        \  \:\            
-    \  \::/       \  \:\        \  \:\           
-     \__\/         \__\/         \__\/           
-*/
-
 /**
  * @brief sensor driver for the bmp085 pressure and temprature sensor
- * 
+ *
  */
 
 #include <twi/twi.h>
 #include <avr/eeprom.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <avr/delay.h>
 
 #include "bmp085.h"
 #include "error.h"
 
 
-struct temprature_conversion_data {
+struct temprature_conversion_data
+{
   uint16_t AC5;
   uint16_t AC6;
   int16_t MC;
   int16_t MD;
 };
 
-struct pressure_conversion_data {
+struct pressure_conversion_data
+{
   int16_t AC1;
   int16_t AC2;
   int16_t AC3;
@@ -64,48 +42,65 @@ const uint8_t oversampling_setting = 0;
 
 uint16_t get_word(const uint8_t word)
 {
+  //debug_pgm(PSTR("twi_start"));
   twi_start();
+  //debug_pgm(PSTR("twi_connect"));
   twi_connect(WRITE,0x77);
+  //debug_pgm(PSTR("twi_write"));
   twi_write(word);
+  //debug_pgm(PSTR("twi_start"));
   twi_start();
+  //debug_pgm(PSTR("twi_connect"));
   twi_connect(READ,0x77);
   uint8_t temp;
   uint16_t result;
   twi_read(&temp,ACK);
   byte_to_hex(temp);
   result = (((uint16_t)temp)<<8);
+
   twi_read(&temp,NACK);
   byte_to_hex(temp);
   result += temp;
+
+//debug_pgm(PSTR("twi_stop"));
   twi_stop();
 
   return result;
 }
 
+uint16_t start_converison(const uint8_t register_value)
+{
+  twi_start();
+  twi_connect(WRITE,0x77);
+  twi_write(0xF4);
+  twi_write(register_value);
+  twi_stop();
+}
+
 void get_conversion_data(void)
 {
-  debug_pgm(PSTR("condata1"));
+  //debug_pgm(PSTR("condata1"));
   {
-  struct temprature_conversion_data temptable;
-  //temprature
-  temptable.AC5 = get_word(0xB2);
-  temptable.AC6 = get_word(0xB4);
-  temptable.MC  = get_word(0xBC);
-  temptable.MD  = get_word(0xBE);
-  eeprom_write_block(&temptable,&tempconv,sizeof(struct temprature_conversion_data));
+    struct temprature_conversion_data temptable;
+    //temprature
+    temptable.AC5 = get_word(0xB2);
+    temptable.AC6 = get_word(0xB4);
+    temptable.MC  = get_word(0xBC);
+    temptable.MD  = get_word(0xBE);
+    //eeprom_write_block(&temptable,&tempconv,sizeof(struct temprature_conversion_data));
   }
   //pressure
   {
-  struct pressure_conversion_data presstable;
-  presstable.AC1 = get_word(0xAA);
-  presstable.AC2 = get_word(0xAC);
-  presstable.AC3 = get_word(0xAE);
-  presstable.AC4 = get_word(0xB0);
-  presstable.B1  = get_word(0xB6);
-  presstable.B2  = get_word(0xB8);
-  eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
+    struct pressure_conversion_data presstable;
+    presstable.AC1 = get_word(0xAA);
+    presstable.AC2 = get_word(0xAC);
+    presstable.AC3 = get_word(0xAE);
+    presstable.AC4 = get_word(0xB0);
+    presstable.B1  = get_word(0xB6);
+    presstable.B2  = get_word(0xB8);
+    //eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
   }
-  debug_pgm(PSTR("condata2"));
+  //debug_pgm(PSTR("condata2"));
 }
 
 int16_t calculate_true_temprature(int32_t* B5, int16_t utemprature)
@@ -135,13 +130,14 @@ int32_t calculate_true_pressure(int32_t* B5, int16_t upressure)
   X3 = ((X1 + X2) + 2)>>2;
   B4 = (data.AC4 * (uint32_t)(X3 + 32768))>>15;
   B7 = ((uint32_t)upressure - B3) * (50000>>oversampling_setting);
-  if(B7 < 0x80000000){
-    p = (B7<<1)/B4;
-  }
+  if (B7 < 0x80000000)
+    {
+      p = (B7<<1)/B4;
+    }
   else
-  {
-    p = (B7/B4)<<1;
-  }
+    {
+      p = (B7/B4)<<1;
+    }
   X1 = (p>>8)*(p>>8);
   X1 = (X1 * 3038)>>16;
   X2 = (-7357 * p)>>16;
@@ -153,8 +149,13 @@ bmp_data_t bmp085_get_data()
 {
   int32_t B5;
   bmp_data_t data;
-  data.temprature = calculate_true_temprature(&B5, get_word(0x2E));
-  data.pressure = calculate_true_pressure(&B5, get_word(0x34));
+  start_converison(0x2E);
+  _delay_ms(6);
+  data.temprature = get_word(0xF6);//calculate_true_temprature(&B5, get_word(0x2E));
+
+  start_converison(0x34);
+  _delay_ms(6);
+  data.pressure = get_word(0xF7);//calculate_true_pressure(&B5, get_word(0x34));
   return data;
 }
 

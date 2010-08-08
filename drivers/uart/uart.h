@@ -58,14 +58,14 @@ LICENSE:
 */
 
 /** @brief  UART Baudrate Expression
- *  @param  xtalcpu  system clock in Mhz, e.g. 4000000L for 4Mhz          
- *  @param  baudrate baudrate in bps, e.g. 1200, 2400, 9600     
+ *  @param  xtalCpu  system clock in Mhz, e.g. 4000000L for 4Mhz
+ *  @param  baudRate baudrate in bps, e.g. 1200, 2400, 9600
  */
 #define UART_BAUD_SELECT(baudRate,xtalCpu) (uint16_t)((xtalCpu)/((baudRate)*16l)-1)
 
 /** @brief  UART Baudrate Expression for ATmega double speed mode
- *  @param  xtalcpu  system clock in Mhz, e.g. 4000000L for 4Mhz           
- *  @param  baudrate baudrate in bps, e.g. 1200, 2400, 9600     
+ *  @param  xtalCpu  system clock in Mhz, e.g. 4000000L for 4Mhz
+ *  @param  baudRate baudrate in bps, e.g. 1200, 2400, 9600
  */
 #define UART_BAUD_SELECT_DOUBLE_SPEED(baudRate,xtalCpu) (((xtalCpu)/((baudRate)*8l)-1)|0x8000)
 
@@ -84,13 +84,26 @@ LICENSE:
 #error "size of UART_RX_BUFFER_SIZE + UART_TX_BUFFER_SIZE larger than size of SRAM"
 #endif
 
-/* 
-** high byte error return code of uart_getc()
-*/
-#define UART_FRAME_ERROR      0x0800              /* Framing Error by UART       */
-#define UART_OVERRUN_ERROR    0x0400              /* Overrun condition by UART   */
-#define UART_BUFFER_OVERFLOW  0x0200              /* receive ringbuffer overflow */
-#define UART_NO_DATA          0x0100              /* no receive data available   */
+/**
+ * high byte error return code of uart_getc():
+ * Framing Error by UART
+ */
+#define UART_FRAME_ERROR      0x0800
+/**
+ * high byte error return code of uart_getc():
+ * Overrun condition by UART
+ */
+#define UART_OVERRUN_ERROR    0x0400
+/**
+ * high byte error return code of uart_getc():
+ * receive ringbuffer overflow
+ */
+#define UART_BUFFER_OVERFLOW  0x0200
+/**
+ * high byte error return code of uart_getc():
+ * no receive data available
+ */
+#define UART_NO_DATA          0x0100
 
 
 /*
@@ -112,7 +125,6 @@ extern void uart_init(unsigned int baudrate);
  * higher byte the last receive error.
  * UART_NO_DATA is returned when no data is available.
  *
- *  @param   void
  *  @return  lower byte:  received byte from ringbuffer
  *  @return  higher byte: last receive status
  *           - \b 0 successfully received data from UART
