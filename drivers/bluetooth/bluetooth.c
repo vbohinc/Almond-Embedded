@@ -344,7 +344,7 @@ static void bluetooth_process_response(void)
 	}
 }
 
-int inline bluetooth_putc(const uint8_t byte)
+bool inline bluetooth_putc(const uint8_t byte)
 {
 	return uart_putc(byte);
 }
@@ -365,7 +365,7 @@ static void bluetooth_resent_package(void)
 /**
  * Own implementation of strstr function to check if bluetooth_data_package contains DISCONNECT.
  */
-static uint8_t bluetooth_is_disconnect_msg(void)
+static bool bluetooth_is_disconnect_msg(void)
 {
 	uint8_t d = 'D';
 	prog_char *str = PSTR("ISCONNECT");
@@ -679,7 +679,7 @@ uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length
 	return 0;
 }
 
-uint8_t bluetooth_set_as_master(void)
+bool bluetooth_set_as_master(void)
 {
 	char* currentMode = bluetooth_cmd_get_mode();
 	if (currentMode == NULL)
@@ -695,7 +695,7 @@ uint8_t bluetooth_set_as_master(void)
 
 }
 
-uint8_t bluetooth_set_as_slave(void)
+bool bluetooth_set_as_slave(void)
 {
 	char* currentMode = bluetooth_cmd_get_mode();
 	if (currentMode == NULL)
@@ -715,7 +715,7 @@ uint8_t bluetooth_set_as_slave(void)
 }
 
 #ifdef SQUIRREL
-uint8_t bluetooth_disconnect(uint8_t tries)
+bool bluetooth_disconnect(uint8_t tries)
 {
 	for (; tries>0; tries--)
 	{
@@ -724,21 +724,21 @@ uint8_t bluetooth_disconnect(uint8_t tries)
 	}
 	if (tries==0)
 		//switch to online command mode wasn't successful or tries was 0
-		return 0;
+		return false;
 
 	return (bluetooth_cmd_close_connection());
 }
 
-uint8_t bluetooth_connect(const char *compressed_address)
+bool bluetooth_connect(const char *compressed_address)
 {
 	if (bluetooth_cmd_set_remote_address(compressed_address)==0)
-		return 0;
+		return false;
 	return (bluetooth_cmd_connect(0));
 }
 
 #endif
 
-uint8_t bluetooth_test_connection(uint8_t tries)
+bool bluetooth_test_connection(uint8_t tries)
 {
 
 	uint8_t i;
@@ -807,7 +807,7 @@ void bluetooth_array_to_address(const char *compressed_address, char *full_addre
  * @param delay_ms milliseconds to wait between each byte.
  * @return 1 on success, 0 on failure (timeout)
  */
-static uint8_t bluetooth_cmd_send_delay (const char* cmd, const uint16_t delay_ms)
+static bool bluetooth_cmd_send_delay (const char* cmd, const uint16_t delay_ms)
 {
 	bluetooth_response_code = 0;
 
@@ -835,7 +835,7 @@ static uint8_t bluetooth_cmd_send_delay (const char* cmd, const uint16_t delay_m
  * @param cmd The command as char array with nullbyte. Ex: 'ATL1'
  * @return 1 on success, 0 on failure (timeout)
  */
-static uint8_t bluetooth_cmd_send (const char* cmd)
+static bool bluetooth_cmd_send (const char* cmd)
 {
 	//The delay of 42ms ist a result of a test run, where the delay time is now the minimum possible
 	return bluetooth_cmd_send_delay(cmd,42);
@@ -865,17 +865,17 @@ static uint8_t bluetooth_cmd_wait_response (void)
 	return bluetooth_response_code;
 }
 
-uint8_t bluetooth_cmd_test_connection (void)
+bool bluetooth_cmd_test_connection (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("AT\r"));
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
-		return 0;
+		return false;
 	return (bluetooth_cmd_wait_response()==1); //OK
 
 }
 
 #ifdef SQUIRREL
-uint8_t bluetooth_cmd_connect (const uint8_t dev_num)
+bool bluetooth_cmd_connect (const uint8_t dev_num)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATA\r"));
 	if (dev_num>0)
@@ -885,10 +885,10 @@ uint8_t bluetooth_cmd_connect (const uint8_t dev_num)
 		bluetooth_cmd_buffer[5] = 0;
         }
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
-		return 0;
+		return false;
 
 	if (bluetooth_cmd_wait_response()!=1)//OK
-		return 0;
+		return false;
 
 	bluetooth_response_code = 0;
 
@@ -909,7 +909,7 @@ char* bluetooth_cmd_get_address (void)
 }
 #endif
 
-uint8_t bluetooth_cmd_set_remote_address (const char* address)
+bool bluetooth_cmd_set_remote_address (const char* address)
 {
     strcpy_P(bluetooth_cmd_buffer,PSTR("ATD0\r"));
 	if(address != NULL)
@@ -924,14 +924,14 @@ uint8_t bluetooth_cmd_set_remote_address (const char* address)
 	}
 
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
-		return 0;
+		return false;
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
 		_delay_ms(2000);
-		return 1;
+		return true;
 	} else
-		return 0;
+		return false;
 }
 
 #ifdef SQUIRREL
@@ -964,41 +964,41 @@ char* bluetooth_cmd_search_devices_debug (void)
 	return bluetooth_data_package;
 }
 
-uint8_t bluetooth_cmd_close_connection (void)
+bool bluetooth_cmd_close_connection (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATH\r"));
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
-		return 0;
+		return false;
 
 	if (bluetooth_cmd_wait_response()!=1)//OK
-		return 0;
+		return false;
 
 	bluetooth_response_code = 0;
 
 	return (bluetooth_cmd_wait_response()==3); //DISCONNECT
 }
 
-uint8_t bluetooth_cmd_discoverable (const uint8_t discoverable)
+bool bluetooth_cmd_discoverable (const uint8_t discoverable)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATH?\r")); //? will be replaced 
 	bluetooth_cmd_buffer[3] = discoverable+48; //Convert number to number as char
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
-		return 0;
+		return false;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
 }
 
-uint8_t bluetooth_cmd_set_name (const char *name)
+bool bluetooth_cmd_set_name (const char *name)
 {
 	if (name == NULL)
-		return 0;
+		return false;
 
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATN=\r"));
 	strcpy(bluetooth_cmd_buffer+4,name);
         strcat_P(bluetooth_cmd_buffer,PSTR("\r"));
 
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
-			return 0;
+			return false;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
 
@@ -1020,26 +1020,26 @@ char* bluetooth_cmd_get_name (void)
 
 #endif
 
-uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect)
+bool bluetooth_cmd_autoconnect (const uint8_t autoconnect)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATO1\r"));
 	if (autoconnect == 1)
 		bluetooth_cmd_buffer[3] = '0';
 	
         if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
-		return 0;
+		return false;
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
 		_delay_ms(3000);
-		return 1;
+		return true;
 	} else
-		return 0;
+		return false;
 }
 
 #ifdef SQUIRREL
 
-uint8_t bluetooth_cmd_set_pin (const char *pin)
+bool bluetooth_cmd_set_pin (const char *pin)
 {
 	if (pin == NULL)
 		return 0;
@@ -1052,7 +1052,7 @@ uint8_t bluetooth_cmd_set_pin (const char *pin)
         }
 
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
-			return 0;
+			return false;
 
 	return (bluetooth_cmd_wait_response()==1); //OK
 
@@ -1074,19 +1074,19 @@ char* bluetooth_cmd_get_pin (void)
 
 #endif
 
-uint8_t bluetooth_cmd_set_mode (uint8_t mode)
+bool bluetooth_cmd_set_mode (uint8_t mode)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATR?\r")); // ? will be replaced
 	bluetooth_cmd_buffer[3] = mode+48; //Convert number to number as char
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
-		return 0;
+		return false;
 
 	if (bluetooth_cmd_wait_response()==1) //OK
 	{
 		_delay_ms(3500);
-		return 1;
+		return true;
 	} else
-		return 0;
+		return false;
 
 }
 
@@ -1105,19 +1105,19 @@ char* bluetooth_cmd_get_mode (void)
 
 
 #ifdef SQUIRREL
-uint8_t bluetooth_cmd_restore_settings (void)
+bool bluetooth_cmd_restore_settings (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("ATZ0\r"));
 	return (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0);
 
 }
 
-uint8_t bluetooth_cmd_online_command (void)
+bool bluetooth_cmd_online_command (void)
 {
         strcpy_P(bluetooth_cmd_buffer,PSTR("++++"));
 
 	if (bluetooth_cmd_send_delay(bluetooth_cmd_buffer, 1500) == 0)
-			return 0;
+			return false;
 	return (bluetooth_cmd_wait_response()==1); //OK
 }
 

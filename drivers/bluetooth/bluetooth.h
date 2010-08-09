@@ -92,7 +92,7 @@ void (*bluetooth_callback)(char *data_package, const uint8_t callback_type, cons
  * Writes the byte to the usart connection
  * @return 1 for success, 0 if error.
  */
-extern int bluetooth_putc(const uint8_t byte);
+extern bool bluetooth_putc(const uint8_t byte);
 
 /**
  * Called by bluetooth_process_data if a stop byte was received or the data-package is complete.
@@ -130,7 +130,7 @@ extern void bluetooth_process_data(void);
  * If it isn't master, it switches to master mode and disables autoconnect.
  * @return 1 on success, 0 on failure
  */
-extern uint8_t bluetooth_set_as_master(void);
+extern bool bluetooth_set_as_master(void);
 
 /**
  * Switches the Bluetooth-Module to Slave mode (Module waits for connections).
@@ -138,14 +138,14 @@ extern uint8_t bluetooth_set_as_master(void);
  * If it isn't slave, it switches to slave mode and enables autoconnect.
  * @return 1 on success, 0 on failure
  */
-extern uint8_t bluetooth_set_as_slave(void);
+extern bool bluetooth_set_as_slave(void);
 
 /**
  * Test if connection with bluetooth module is OK.
  * @param tries Number of tries
  * @return 1 on successful test, 0 otherwise
  */
-extern uint8_t bluetooth_test_connection(uint8_t tries);
+extern bool bluetooth_test_connection(uint8_t tries);
 
 
 /**
@@ -174,7 +174,7 @@ extern void bluetooth_array_to_address(const char *compressed_address, char *ful
  *
  * Only on SQUIRREL
  */
-extern uint8_t bluetooth_disconnect(uint8_t tries);
+extern bool bluetooth_disconnect(uint8_t tries);
 
 /**
  * Connects to the given compressed bluetooth mac-address. To compress an address use bluetooth_address_to_array.
@@ -183,7 +183,7 @@ extern uint8_t bluetooth_disconnect(uint8_t tries);
  *
  * Only on SQUIRREL
  */
-extern uint8_t bluetooth_connect(const char * compressed_address);
+extern bool bluetooth_connect(const char * compressed_address);
 
 #endif
 
@@ -200,7 +200,7 @@ extern uint8_t bluetooth_connect(const char * compressed_address);
  * @return Returns 1 on success check, 0 otherwise if timeout occured or error returned
  *
  */
-extern uint8_t bluetooth_cmd_test_connection (void);
+extern bool bluetooth_cmd_test_connection (void);
 
 #ifdef SQUIRREL
 
@@ -215,7 +215,7 @@ extern uint8_t bluetooth_cmd_test_connection (void);
  *
  * Only on SQUIRREL.
  */
-extern uint8_t bluetooth_cmd_connect (const uint8_t dev_num);
+extern bool bluetooth_cmd_connect (const uint8_t dev_num);
 
 /**
  * Command: ATB?
@@ -241,7 +241,7 @@ extern char* bluetooth_cmd_get_address (void);
  * @return Returns 1 on success otherwise 0.
  *
  */
-extern uint8_t bluetooth_cmd_set_remote_address (const char* address);
+extern bool bluetooth_cmd_set_remote_address (const char* address);
 
 #ifdef SQUIRREL
 
@@ -271,7 +271,7 @@ extern char* bluetooth_cmd_search_devices_debug (void);
  *
  * Only on SQUIRREL.
  */
-extern uint8_t bluetooth_cmd_close_connection (void);
+extern bool bluetooth_cmd_close_connection (void);
 
 /**
  * Command: ATH1 / ATH0
@@ -281,7 +281,7 @@ extern uint8_t bluetooth_cmd_close_connection (void);
  *
  * Only on SQUIRREL.
  */
-extern uint8_t bluetooth_cmd_discoverable (const uint8_t discoverable);
+extern bool bluetooth_cmd_discoverable (const uint8_t discoverable);
 
 
 /**
@@ -293,7 +293,7 @@ extern uint8_t bluetooth_cmd_discoverable (const uint8_t discoverable);
  *
  * Only on SQUIRREL.
  */
-extern uint8_t bluetooth_cmd_set_name (const char *name);
+extern bool bluetooth_cmd_set_name (const char *name);
 
 /**
  * Command: ATN?
@@ -316,7 +316,7 @@ extern char* bluetooth_cmd_get_name (void);
  * @param autoconnect 1 for autoconnect with address of ATD or 0 to disable
  * @return 1 on success or 0.
  */
-extern uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect);
+extern bool bluetooth_cmd_autoconnect (const uint8_t autoconnect);
 
 #ifdef SQUIRREL
 
@@ -329,7 +329,7 @@ extern uint8_t bluetooth_cmd_autoconnect (const uint8_t autoconnect);
  *
  * Only on SQUIRREL.
  */
-extern uint8_t bluetooth_cmd_set_pin (const char *pin);
+extern bool bluetooth_cmd_set_pin (const char *pin);
 
 /**
  * Command: ATP?
@@ -351,7 +351,7 @@ extern char* bluetooth_cmd_get_pin (void);
  * @param mode Master = 0, Slave = 1
  * @return Returns 1 on success otherwise 0.
  */
-extern uint8_t bluetooth_cmd_set_mode (uint8_t mode);
+extern bool bluetooth_cmd_set_mode (uint8_t mode);
 
 /**
  * Command: ATR?
@@ -368,7 +368,7 @@ extern char *bluetooth_cmd_get_mode (void);
  *
  * Only on SQUIRREL.
  */
-extern uint8_t bluetooth_cmd_restore_settings (void);
+extern bool bluetooth_cmd_restore_settings (void);
 #endif
 
 /**
@@ -378,7 +378,7 @@ extern uint8_t bluetooth_cmd_restore_settings (void);
  * @return Returns 1 on success otherwise 0.
  *
  */
-extern uint8_t bluetooth_cmd_online_command (void);
+extern bool bluetooth_cmd_online_command (void);
 
 
 #endif /* _BLUETOOTH_H_ */
