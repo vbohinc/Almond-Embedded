@@ -64,9 +64,10 @@
 #define BLUETOOTH_RESENT_BYTE 253
 
 /**
- * Is 1 if bluetooth is currently connected, 0 otherwise.
+ * Returns the value of bluetooth_is_connected.
+ * @return true on connected, false otherwise
  */
-extern uint8_t bluetooth_is_connected;
+extern bool bluetooth_isConnected(void);
 
 /**
 * Initialization routine for the bluetooth module.
@@ -103,7 +104,7 @@ void bluetooth_handle_array(void);
  * Adds automatically the stop-byte combination at the end of the package
  * @param data The data to send.
  * @param length the length (number of bytes) in the data array to send.
- * @return 0 on success, 1 on error
+ * @return 0 on success, 1 on error, 2 on not connected
  */
 extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
 
@@ -112,10 +113,10 @@ extern uint8_t bluetooth_send_data_package(uint8_t *data, const uint8_t length);
  * Adds automatically the stop-byte combination at the end of the package
  * @param data The data to send. After response is received, it contains the response package. Must be big enough for the response package.
  * @param length the length (number of bytes) in the data array to send. After response is received, contains the length of the received package.
- * @param timeout_ms timeout in ms to wait for response
- * @return 0 on success, 1 on error, 2 on timeout
+ * @param timeout_sec timeout in seconds to wait for response
+ * @return 0 on success, 1 on error, 2 on not connected, 3 on timeout
  */
-extern uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length, const uint16_t timeout_ms);
+extern uint8_t bluetooth_send_data_package_with_response(uint8_t *data, uint8_t *length, const uint16_t timeout_sec);
 
 /**
  * Processes received data stored in the FIFO. Should be called in the while-loop of the main program to handle receive buffer of uart.

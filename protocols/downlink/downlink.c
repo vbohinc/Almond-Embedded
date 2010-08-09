@@ -20,7 +20,7 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
   package.value = value;
   uint8_t length = DOWNLINK_PACKAGE_LENGTH;
 
-  switch (bluetooth_send_data_package_with_response (&package.opcode, &length, 500))
+  switch (bluetooth_send_data_package_with_response (&package.opcode, &length, 1))
     {
     
     case 0:
@@ -37,8 +37,12 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
       break;
       
     case 2:
-      warn ("TMO"); // Timeout
+      error ("NCO"); // Not connected
       break;
+
+    case 3:
+          warn ("TMO"); // Timeout
+          break;
       
     default:
       error ("URV"); // Unkown return value
@@ -205,7 +209,28 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
         }
 
       p->opcode |= return_package ? RET : ERROR;
-      bluetooth_send_data_package (p, DOWNLINK_PACKAGE_LENGTH);
+
+      switch (bluetooth_send_data_package ((uint8_t *)p, DOWNLINK_PACKAGE_LENGTH))
+	  {
+
+	  case 0: //package successfully sent
+		break;
+
+	  case 1:
+		error ("BTE"); // Bluetooth error
+		break;
+
+	  case 2:
+		error ("NCO"); // Not connected
+		break;
+
+	  case 3:
+			warn ("TMO"); // Timeout
+			break;
+
+	  default:
+		error ("URV"); // Unkown return value
+	  }
     }
 }
 #endif

@@ -53,6 +53,30 @@ void send_pgm(const prog_char *msg)
 	}
 }
 
+uint8_t char_to_hex(uint8_t chr)
+{
+	//convert char number to int
+	if (chr>='0' && chr <='9')
+		return chr-'0';
+	else if (chr>='A' && chr<='F')
+		return chr-'A'+10;
+	else if (chr>='a' && chr<='f')
+		return chr-'a'+10;
+	else
+		return 255;
+}
+
+uint8_t hex_to_char(uint8_t hex)
+{
+	if (hex<=9)
+		return hex+'0';
+	else if (hex>9 && hex <= 15)
+		return hex+'A'-10;
+	else
+		return 0;
+}
+
+
 #ifdef DEBUG
 
 void error_init(void)
@@ -139,28 +163,14 @@ void debug_pgm(const prog_char *msg)
 
 void print_hex(uint8_t num)
 {
+	uint8_t chr = hex_to_char(num);
+
+	if (chr == 0)
+		error_putc('#');
+	else
+		error_putc(chr);
 	if (num<10)
 		error_putc(num+48);
-	else
-	{
-		switch (num)
-		{
-		case 10:
-			error_putc('A'); break;
-		case 11:
-			error_putc('B'); break;
-		case 12:
-			error_putc('C'); break;
-		case 13:
-			error_putc('D'); break;
-		case 14:
-			error_putc('E'); break;
-		case 15:
-			error_putc('F'); break;
-		default:
-			error_putc('#'); break;
-		}
-	}
 }
 
 void byte_to_hex(uint8_t byte){
