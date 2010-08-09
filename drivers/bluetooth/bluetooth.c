@@ -704,28 +704,16 @@ uint8_t bluetooth_disconnect(uint8_t tries)
 		//switch to online command mode wasn't successful or tries was 0
 		return 0;
 
-	if (bluetooth_cmd_close_connection()==0)
-		return 0;
-	else
-	{
-		bluetooth_is_connected = 0;
-		return 1;
-	}
-
+	return (bluetooth_cmd_close_connection();
 }
 
 uint8_t bluetooth_connect(const char *compressed_address)
 {
 	if (bluetooth_cmd_set_remote_address(compressed_address)==0)
 		return 0;
-	if (bluetooth_cmd_connect(0) == 0)
-		return 0;
-	else
-	{
-		bluetooth_is_connected = 1;
-		return 1;
-	}
+	return (bluetooth_cmd_connect(0));
 }
+
 #endif
 
 uint8_t bluetooth_test_connection(uint8_t tries)
@@ -917,7 +905,16 @@ uint8_t bluetooth_cmd_connect (const uint8_t dev_num)
 
 	bluetooth_response_code = 0;
 
-	return (bluetooth_cmd_wait_response()==2); //CONNECT
+	if (bluetooth_cmd_wait_response()==2) //CONNECT
+	{
+		bluetooth_is_connected = 1;
+		return 1;
+	}
+	else
+	{
+		bluetooth_is_connected = 0;
+		return 0;
+	}
 }
 
 char* bluetooth_cmd_get_address (void)
@@ -995,7 +992,12 @@ uint8_t bluetooth_cmd_close_connection (void)
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 		return 0;
 
-	return (bluetooth_cmd_wait_response()==1); //OK
+	if (bluetooth_cmd_wait_response()==1){ //OK
+		bluetooth_is_connected = 0;
+		return 1;
+	}
+	else
+		return 0;
 }
 
 uint8_t bluetooth_cmd_discoverable (const uint8_t discoverable)
