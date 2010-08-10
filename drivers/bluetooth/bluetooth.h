@@ -31,11 +31,17 @@
 
 /**
  * Maximum possible size of a data package in bytes. The formula for the maximum size is (SIZE is the normal size of a package):
- * All bytes in package may be Special Byte, so before every byte must be another special byte
- * (SIZE * 2) +10;
- * Ex. real package: 14 Byte. => PACKAGE_SIZE=(2*14)+10=38
+ * All bytes in package may be Special Byte, so before every byte must be another special byte + Stop-Byte combination
+ * (SIZE * 2) +2;
+ * Ex. real package: 14 Byte. => PACKAGE_SIZE=(2*14)+2=30
  */
-#define BLUETOOTH_DATA_PACKAGE_SIZE 138
+#ifdef SQUIRREL
+#define BLUETOOTH_DATA_PACKAGE_SIZE 130
+#endif
+#ifdef NUT
+#define BLUETOOTH_DATA_PACKAGE_SIZE 10
+#endif
+
 
 /**
 * The size of receive buffer in bytes. Each received byte will be stored in this buffer
