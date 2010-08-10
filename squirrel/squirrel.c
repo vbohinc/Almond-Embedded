@@ -151,28 +151,10 @@ void squirrel_create_device_info_entry (const uint8_t *address)
           // We haven't found the MAC, time to create a new entry
           memcpy (&device_list[k], (void *) address, 6);
           
-          switch (bluetooth_connect (device_list[k].mac)) {
-            case 0:
-              debug_pgm(PSTR("connected"));
-              bluetooth_is_connected = 1;
-              break;
-              
-            case 1:
-              debug_pgm(PSTR("1"));
-              return;
-            
-            case 2:
-              debug_pgm(PSTR("2"));
-              return;
-            
-            case 3:
-              debug_pgm(PSTR("3"));
-              return;
-                          
-            default:
-              debug_pgm(PSTR("FUCK"));
-              return;
-          }
+          if (bluetooth_connect (device_list[k].mac))
+        	debug_pgm(PSTR("connected"));
+          else
+              debug_pgm(PSTR("connect error"));
 
           _delay_ms (1000);
           update_id (k);
@@ -182,7 +164,6 @@ void squirrel_create_device_info_entry (const uint8_t *address)
             debug_pgm(PSTR("could not disconnect"));
           } else {
             debug_pgm(PSTR("disconnect"));
-            bluetooth_is_connected = 0;
           }
           
           return;

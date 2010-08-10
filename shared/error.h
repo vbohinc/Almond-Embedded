@@ -76,3 +76,17 @@ void byte_to_hex(uint8_t byte);
 #define byte_to_hex(byte) {}
 #endif
 #endif
+
+/**
+ * Converts a char value 0-9,A-F,a-f to its corresponding int value
+ * @param chr the char value
+ * @return the int value
+ */
+extern uint8_t char_to_hex(uint8_t chr);
+
+/**
+ * Converts a hex value to its corresponding char value 0-9,A-F
+ * @param hex the hex value
+ * @return the char value
+ */
+extern uint8_t hex_to_char(uint8_t hex);
