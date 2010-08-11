@@ -205,12 +205,14 @@ void bluetooth_input_to_array(void)
       else if (c!=UART_NO_DATA)
         {
           _inline_fifo_put (&bluetooth_infifo, c);
-         /* error_putc(c);
+#ifdef DEBUG_BT_MESSAGES
+          error_putc(c);
           if (c == 10)
             error_putc('#');
           if (c == 13)
-            error_putc('+');*/
+            error_putc('+');
         }
+#endif
 //TODO Check if fifo has free mem
     }
   while (c!=UART_NO_DATA && c!= UART_FRAME_ERROR && c!= UART_OVERRUN_ERROR && c!=UART_BUFFER_OVERFLOW);
@@ -357,7 +359,13 @@ static void bluetooth_process_response(void)
 
 bool inline bluetooth_putc(const uint8_t byte)
 {
-//error_putc(byte);
+#ifdef DEBUG_BT_MESSAGES
+	error_putc(byte);
+    if (byte == 10)
+      error_putc('#');
+    if (byte == 13)
+      error_putc('+');
+#endif
   return uart_putc(byte);
 }
 
@@ -981,6 +989,17 @@ bool bluetooth_cmd_set_remote_address (const char* address)
 }
 
 #ifdef SQUIRREL
+
+bool bluetooth_cmd_disable_echo(void)
+{
+	strcpy_P(bluetooth_cmd_buffer,PSTR("ATE0\r"));
+
+	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
+	    return 0;
+
+	else
+		return 1;
+}
 
 char* bluetooth_cmd_search_devices (void)
 {

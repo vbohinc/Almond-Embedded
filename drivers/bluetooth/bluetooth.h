@@ -29,6 +29,8 @@
 #include "./../../shared/error.h"
 
 
+//#define DEBUG_BT_MESSAGES
+
 /**
  * Maximum possible size of a data package in bytes. The formula for the maximum size is (SIZE is the normal size of a package):
  * All bytes in package may be Special Byte, so before every byte must be another special byte + Stop-Byte combination
@@ -250,6 +252,14 @@ extern char* bluetooth_cmd_get_remote_address (void);
 extern bool bluetooth_cmd_set_remote_address (const char* address);
 
 #ifdef SQUIRREL
+
+/**
+ * Command: ATE0
+ * Disable echo.
+ * Only needed on really first connect to the bluetooth.
+ * @return true on successfully sent
+ */
+extern bool bluetooth_cmd_disable_echo(void);
 
 /**
  * Command: ATF?
