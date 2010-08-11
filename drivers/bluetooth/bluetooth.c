@@ -211,8 +211,8 @@ void bluetooth_input_to_array(void)
             error_putc('#');
           if (c == 13)
             error_putc('+');
-        }
 #endif
+        }
 //TODO Check if fifo has free mem
     }
   while (c!=UART_NO_DATA && c!= UART_FRAME_ERROR && c!= UART_OVERRUN_ERROR && c!=UART_BUFFER_OVERFLOW);
@@ -988,18 +988,17 @@ bool bluetooth_cmd_set_remote_address (const char* address)
     return false;
 }
 
-#ifdef SQUIRREL
-
 bool bluetooth_cmd_disable_echo(void)
 {
 	strcpy_P(bluetooth_cmd_buffer,PSTR("ATE0\r"));
 
 	if (bluetooth_cmd_send(bluetooth_cmd_buffer) == 0)
 	    return 0;
-
 	else
 		return 1;
 }
+
+#ifdef SQUIRREL
 
 char* bluetooth_cmd_search_devices (void)
 {

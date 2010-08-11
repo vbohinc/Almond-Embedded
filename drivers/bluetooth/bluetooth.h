@@ -251,8 +251,6 @@ extern char* bluetooth_cmd_get_remote_address (void);
  */
 extern bool bluetooth_cmd_set_remote_address (const char* address);
 
-#ifdef SQUIRREL
-
 /**
  * Command: ATE0
  * Disable echo.
@@ -260,6 +258,8 @@ extern bool bluetooth_cmd_set_remote_address (const char* address);
  * @return true on successfully sent
  */
 extern bool bluetooth_cmd_disable_echo(void);
+
+#ifdef SQUIRREL
 
 /**
  * Command: ATF?
