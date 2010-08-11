@@ -96,6 +96,13 @@ static void dump (void)
 
 #define valid(num) (num < NUTS_LIST && (device_list[num].mac[0] != 0 || device_list[num].mac[1] != 0 || device_list[num].mac[2] != 0 || device_list[num].mac[3] != 0 || device_list[num].mac[4] != 0 || device_list[num].mac[5] != 0))
 
+inline bool bt_cmp (const char *add1, const char *add2)
+{
+  int i;
+  for (i = 0; i < 6 && add1[i] == add2[i]; i++);
+  return (i == 6);
+}
+
 extern bool squirrel_list (uint8_t num, uplink_payload_list *p)
 {
   if (valid (num))
@@ -141,7 +148,7 @@ void update_values (uint8_t num)
 }
 
 
-void squirrel_create_device_info_entry (const uint8_t *address)
+void squirrel_create_device_info_entry (const char *address)
 {
   // ??? debug bluetooth address
   for (uint8_t k = 0; k < NUTS_LIST; k++)
@@ -152,11 +159,11 @@ void squirrel_create_device_info_entry (const uint8_t *address)
           memcpy (&device_list[k], (void *) address, 6);
           
           if (bluetooth_connect (device_list[k].mac))
-        	debug_pgm(PSTR("connected"));
+        	  debug_pgm(PSTR("connected"));
           else
-              debug_pgm(PSTR("connect error"));
+            debug_pgm(PSTR("connect error"));
 
-          _delay_ms (1000);
+          _delay_ms (500);
           update_id (k);
           update_values (k);
             
@@ -168,7 +175,7 @@ void squirrel_create_device_info_entry (const uint8_t *address)
           
           return;
         }
-      else if (memcmp (device_list[k].mac, (void *) address, 6))
+      else if (bt_cmp (device_list[k].mac, address))
         {
           // Already there, nothing to do
           return;

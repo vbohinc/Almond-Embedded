@@ -34,13 +34,10 @@
  * All bytes in package may be Special Byte, so before every byte must be another special byte + Stop-Byte combination
  * (SIZE * 2) +2;
  * Ex. real package: 14 Byte. => PACKAGE_SIZE=(2*14)+2=30
+ *
+ * Must be minimum the size of BLUETOOTH_CMD_BUFFER_SIZE
  */
-#ifdef SQUIRREL
 #define BLUETOOTH_DATA_PACKAGE_SIZE 130
-#endif
-#ifdef NUT
-#define BLUETOOTH_DATA_PACKAGE_SIZE 10
-#endif
 
 
 /**
@@ -48,7 +45,7 @@
 * until bluetooth_process_data function is called and data is elaborated.
 * Must be smaller than (uint8_t-2). Max value is 254.
 */
-#define BLUETOOTH_RECEIVE_BUFFER_SIZE 16
+#define BLUETOOTH_RECEIVE_BUFFER_SIZE 64
 
 
 /**
@@ -231,6 +228,9 @@ extern bool bluetooth_cmd_connect (const uint8_t dev_num);
  * Only on SQUIRREL.
  */
 extern char* bluetooth_cmd_get_address (void);
+
+
+extern char* bluetooth_cmd_get_remote_address (void);
 
 #endif
 
