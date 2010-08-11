@@ -18,7 +18,6 @@
 #define DISPLAY_CHAR_MAX ((DISPLAY_COL_NUMBER_VISIBLE + 1)/ DISPLAY_CHAR_WIDTH)
 
 
-
 /*
  *Status Titlebar
  *|Left|X|X|X|X|X|X|Right|
@@ -48,13 +47,13 @@ enum
  */
 enum
 {
-	DISPLAY_CHAR_ARROW_LEFT = 54,
-	DISPLAY_CHAR_ARROW_RIGHT = 55,
-	DISPLAY_CHAR_ARROW_TOP_SMALL = 56,
-	DISPLAY_CHAR_ARROW_BOTTOM_SMALL = 57,
-	DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL = 58,
-	DISPLAY_CHAR_SPINNER_DOT = 60,
-	DISPLAY_CHAR_SPINNER_DOT_FULL = 61
+	DISPLAY_CHAR_ARROW_LEFT = 47,
+	DISPLAY_CHAR_ARROW_RIGHT = 48,
+	DISPLAY_CHAR_ARROW_TOP_SMALL = 49,
+	DISPLAY_CHAR_ARROW_BOTTOM_SMALL = 50,
+	DISPLAY_CHAR_ARROW_TOP_AND_BOTTOM_SMALL = 51,
+	DISPLAY_CHAR_SPINNER_DOT = 52,
+	DISPLAY_CHAR_SPINNER_DOT_FULL = 53
 };
 
 /**
@@ -105,6 +104,12 @@ void display_write_char(uint8_t character, uint8_t inverse_modus);
  * @param status Controls the left and the right arrow
  */
 void display_write_title(const char *text, uint8_t status);
+
+/**
+ * Writes the status arrows in the last char field
+ * @param status of the bottom/top arrows
+ */
+void display_write_text_status(uint8_t status);
 
 /**
  * Writes a text on the display

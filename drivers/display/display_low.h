@@ -13,6 +13,7 @@
 #define DISPLAY_COL_NUMBER_VISIBLE 127
 #define DISPLAY_COL_HEIGHT 8
 #define DISPLAY_COL_INIT 0 //normal: 0, reverse: 4
+#define DISPLAY_COL_OFFSET 1
 
 
 //CHARACTER
