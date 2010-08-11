@@ -1010,8 +1010,12 @@ char* bluetooth_cmd_search_devices (void)
 
   if (bluetooth_cmd_wait_response()!=1) //OK
     return NULL;
+
+
+  if (bluetooth_cmd_wait_response()!=1) //Inquiry end
+      return NULL;
   else
-    return bluetooth_data_package;
+	  return bluetooth_data_package;
 }
 
 char* bluetooth_cmd_search_devices_debug (void)
