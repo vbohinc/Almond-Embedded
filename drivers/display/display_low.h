@@ -38,8 +38,13 @@
 #define DISPLAY_COL_NUMBER_VISIBLE 127
 #define DISPLAY_COL_HEIGHT 8
 #define DISPLAY_COL_INIT 0 //normal: 0, reverse: 4
+#define DISPLAY_COL_OFFSET 1
+
+
 //CHARACTER
 #define DISPLAY_CHAR_WIDTH 6
+
+
 
 // DISPLAY PORTS
 // chip select
@@ -67,7 +72,7 @@ void display_command(uint8_t command);
  * Writes a value to the lcd-display
  * @param value value to be written
  */
-void display_write(uint8_t value, uint8_t inverse);
+void display_write(uint8_t value, uint8_t inverse_modus);
 
 /**
  *  Sets Column
