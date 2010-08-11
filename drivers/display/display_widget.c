@@ -98,7 +98,7 @@ void display_widget_time(uint32_t time, uint8_t status)
 	display_set_page(DISPLAY_PAGE_INIT + row);
 
 	//time variables
-	uint8_t year = 0;
+	uint16_t year = 0;
 	uint8_t month = 0;
 	uint8_t day = 0;
 	uint8_t hour = 0;
@@ -109,25 +109,24 @@ void display_widget_time(uint32_t time, uint8_t status)
 	uint8_t rem_secs = 0;
 
 	//Get the year
-	year = (time / (3 * DISPLAY_WIDGET_YEAR + 1 * DISPLAY_WIDGET_LEAP_YEAR))
-			* 4;
-	rem_secs = time % time / (3 * DISPLAY_WIDGET_YEAR + 1
+	year = ((time / (3 * DISPLAY_WIDGET_YEAR + 1 * DISPLAY_WIDGET_LEAP_YEAR))* 4)+1970;
+	rem_secs = time % (3 * DISPLAY_WIDGET_YEAR + 1
 			* DISPLAY_WIDGET_LEAP_YEAR);
 	if (rem_secs > (2 * DISPLAY_WIDGET_YEAR + DISPLAY_WIDGET_LEAP_YEAR))
 	{
-		rem_secs = rem_secs % (2 * DISPLAY_WIDGET_YEAR
+		rem_secs = rem_secs - (2 * DISPLAY_WIDGET_YEAR
 				+ DISPLAY_WIDGET_LEAP_YEAR);
 		year += 3;
 	}
 	else if (rem_secs > (2 * DISPLAY_WIDGET_YEAR))
 	{
-		rem_secs = rem_secs % (2 * DISPLAY_WIDGET_YEAR);
+		rem_secs = rem_secs - (2 * DISPLAY_WIDGET_YEAR);
 		year += 2;
 		leap = 1;
 	}
 	else if (rem_secs > (DISPLAY_WIDGET_YEAR))
 	{
-		rem_secs = rem_secs % (DISPLAY_WIDGET_YEAR);
+		rem_secs = rem_secs - (DISPLAY_WIDGET_YEAR);
 		year++;
 	}
 	else
@@ -217,7 +216,7 @@ void display_widget_time(uint32_t time, uint8_t status)
 	sprintf(linebuffer, "%2d.%2d.%4d", day, month, year);
 	display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
 
-	sprintf(linebuffer, "TIME");
+	sprintf(linebuffer, "Time");
 	display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
 	sprintf(linebuffer, "%2d:%2d:%2d", hour, minute, second);
 	display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
