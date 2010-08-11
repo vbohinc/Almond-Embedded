@@ -56,7 +56,6 @@ void display_widget_weather(int16_t temperature, uint16_t humidity,
 	uint8_t row = 1;
 	uint8_t i;
 
-	//TODO check overflow?
 	char linebuffer[DISPLAY_CHAR_MAX + 1];
 
 	//prepare display
@@ -70,24 +69,24 @@ void display_widget_weather(int16_t temperature, uint16_t humidity,
 
 	if (temperature > -10000 && temperature < 10000)
 	{
-		sprintf(linebuffer, "Temperature");
+		snprintf(linebuffer,DISPLAY_CHAR_MAX,"Temperature");
 		display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
-		sprintf(linebuffer, "%+3d.%2d C°", temperature / 100, abs(temperature)
+		snprintf(linebuffer,DISPLAY_CHAR_MAX,"%+3d.%2d C°", temperature / 100, abs(temperature)
 				% 100);
 		display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
 	}
 	if (humidity > 0 && humidity < 200)
 	{
-		sprintf(linebuffer, "Humidity");
+		snprintf(linebuffer,DISPLAY_CHAR_MAX, "Humidity");
 		display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
-		sprintf(linebuffer, "%3d %%", humidity);
+		snprintf(linebuffer,DISPLAY_CHAR_MAX, "%3d %%", humidity);
 		display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
 	}
 	if (pressure >= 300 && pressure <= 1100)
 	{
-		sprintf(linebuffer, "Pressure");
+		snprintf(linebuffer,DISPLAY_CHAR_MAX, "Pressure");
 		display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
-		sprintf(linebuffer, "%4d hPa", pressure);
+		snprintf(linebuffer,DISPLAY_CHAR_MAX, "%4d hPa", pressure);
 		display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
 	}
 
@@ -109,7 +108,6 @@ void display_widget_time(uint32_t time, uint8_t status)
 	uint8_t row = 1;
 	uint8_t i;
 
-	//TODO check overflow?
 	char linebuffer[DISPLAY_CHAR_MAX + 1];
 
 	//prepare display
@@ -124,14 +122,14 @@ void display_widget_time(uint32_t time, uint8_t status)
 
 
 
-	sprintf(linebuffer, "Date");
+	snprintf(linebuffer,DISPLAY_CHAR_MAX, "Date");
 	display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
-	//sprintf(linebuffer, "%2d.%2d.%4d", day, month, year);
+	//sprintf(linebuffer,DISPLAY_CHAR_MAX, "%2d.%2d.%4d", day, month, year);
 	display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
 
-	sprintf(linebuffer, "Time");
+	snprintf(linebuffer,DISPLAY_CHAR_MAX, "Time");
 	display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
-	//sprintf(linebuffer, "%2d:%2d:%2d", hour, minute, second);
+	//snprintf(linebuffer,DISPLAY_CHAR_MAX, "%2d:%2d:%2d", hour, minute, second);
 	display_write_text(linebuffer, status | DISPLAY_TEXT_DEBUG);
 
 }

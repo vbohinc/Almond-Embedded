@@ -34,7 +34,7 @@
 #define DISPLAY_PAGE_INIT 0
 
 //COLUMN
-#define DISPLAY_COL_NUMBER 131  //Starts with column 0, here: 132 colums overall
+#define DISPLAY_COL_NUMBER 131  //Starts with column 0, here: 132 columns overall
 #define DISPLAY_COL_NUMBER_VISIBLE 127
 #define DISPLAY_COL_HEIGHT 8
 #define DISPLAY_COL_INIT 0 //normal: 0, reverse: 4
@@ -43,8 +43,6 @@
 
 //CHARACTER
 #define DISPLAY_CHAR_WIDTH 6
-
-
 
 // DISPLAY PORTS
 // chip select
