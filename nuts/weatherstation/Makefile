@@ -1,11 +1,15 @@
-MCU = atmega8535
-F_CPU = 16000000
-TARGET = main
-BASE = ../..
-#ALMONDLIBS = twi error
-ALMONDLIBS = twi error downlink
-SRC = ../sensors/bmp085.c
-EXTRAINCDIRS = ../sensors/ ../
-TARGETTYPE = NUT
-ENABLE_DEBUG = 1
-include ../../make/base.makefile
+# this will build all nuts
+# author Linus Lotz
+
+subdirs = debug
+
+.PHONY: all
+all: $(subdirs)
+
+.PHONY: $(subdirs)
+$(subdirs):
+	$(MAKE) -C $@ clean
+	$(MAKE) -C $@
+.PHONY: clean
+clean:
+	$(foreach dirs,$(subdirs),$(MAKE) -C $(dirs) clean)
