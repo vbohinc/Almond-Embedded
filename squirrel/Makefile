@@ -1,7 +1,7 @@
 MCU = atxmega128a1
 F_CPU = 32000000
 TARGET = squirrel
-SRC = util.c 
+SRC = squirrel.c util.c 
 BASE = ..
 ALMONDLIBS = downlink uplink storage rtc
 EXTRAINCDIRS = ../drivers/ ../protocols/ ../shared/

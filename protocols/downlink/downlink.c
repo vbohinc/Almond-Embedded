@@ -231,6 +231,8 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
 	  default:
 		error ("URV"); // Unkown return value
 	  }
+#ifdef DEBUG
     }
+#endif
 }
 #endif
