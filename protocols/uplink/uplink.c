@@ -82,7 +82,8 @@ void uplink_bluetooth_callback_handler (char *data_package, const uint8_t callba
 
   if (data_length != UPLINK_PACKAGE_LENGTH)
     {
-      error_pgm (PSTR ("Malformed Uplink package"));
+      byte_to_hex (data_length);
+      error_pgm (PSTR (" <-- Length - Malformed Uplink package"));
       return;
     }
 
@@ -92,7 +93,6 @@ void uplink_bluetooth_callback_handler (char *data_package, const uint8_t callba
 
   switch (p->opcode & 0xF0)
     {
-
     case GET:
       error = uplink_handle_get_package (p);
       break;

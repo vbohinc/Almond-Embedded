@@ -41,8 +41,8 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
       break;
 
     case 3:
-          warn ("TMO"); // Timeout
-          break;
+      warn ("TMO"); // Timeout
+      break;
       
     default:
       error ("URV"); // Unkown return value
@@ -57,9 +57,9 @@ uint16_t downlink_get_sensor_value (uint8_t id, bool *err)
   return downlink_request (GET, STANDARD, id, 0, err);
 }
 
-uint16_t downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err)
+void downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err)
 {
-  return downlink_request (SET, STANDARD, id, value, err);
+  downlink_request (SET, STANDARD, id, value, err);
 }
 
 uint8_t downlink_get_nut_class (bool *err)
@@ -72,9 +72,9 @@ uint8_t downlink_get_extension_class (uint8_t id, bool *err)
   return downlink_request (GET, INFO_EXTENSION, id, 0, err);
 }
 
-uint16_t downlink_bye (uint16_t time_s, bool *err)
+void downlink_bye (uint16_t time_sec, bool *err)
 {
-  return downlink_request (BYE, 0, 0, time_s, err);
+  downlink_request (BYE, 0, 0, time_sec, err);
 }
 #endif
 

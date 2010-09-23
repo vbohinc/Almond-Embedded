@@ -57,7 +57,7 @@ extern void squirrel_state_set (uint8_t s)
 
 #define NUTS_LIST 16
 #define EXTENSIONS_LIST 16
-#define POLL_INTERVALL 15
+#define POLL_INTERVALL 5
 
 typedef struct _device_info device_info;
 
@@ -73,23 +73,31 @@ static device_info device_list [NUTS_LIST];
 
 static void dump (void) 
 {
-  for (uint8_t i = 0; i < 3; i++)
+  for (uint8_t i = 0; i < 2; i++)
     {
-      debug_pgm (PSTR("\nMAC: "));
+      debug_pgm (PSTR("MAC: "));
       byte_to_hex (device_list[i].mac[0]);
       byte_to_hex (device_list[i].mac[1]);
       byte_to_hex (device_list[i].mac[2]);
       byte_to_hex (device_list[i].mac[3]);
       byte_to_hex (device_list[i].mac[4]);
       byte_to_hex (device_list[i].mac[5]);
-      debug_pgm (PSTR("\nCLASS: "));
+      error_putc ('\n');
+      debug_pgm (PSTR("CLASS: "));
       byte_to_hex (device_list[i].class);
-      debug_pgm (PSTR("\nEXTENSIONS: "));
-      for (uint8_t j = 0; j < EXTENSIONS_LIST; j++)
-        byte_to_hex (device_list[i].extension_types[j]);
-        
-      //for (uint8_t j = 0; j < EXTENSIONS_LIST; j++)
-      //  byte_to_hex (device_list[i].values_cache[j]);  
+      error_putc ('\n');
+      debug_pgm (PSTR("VALUES: "));  
+      for (uint8_t j = 0; j < EXTENSIONS_LIST; j++) 
+        {
+          byte_to_hex (device_list[i].extension_types[j]);
+          error_putc (' ');
+          error_putc ('-');
+          error_putc ('>');
+          error_putc (' ');
+          byte_to_hex ((uint8_t) (device_list[i].values_cache[j] >> 8));
+          byte_to_hex ((uint8_t) device_list[i].values_cache[j]);
+          error_putc ('\n');
+        }  
     }
 
 }
@@ -123,71 +131,76 @@ extern bool squirrel_list (uint8_t num, uplink_payload_list *p)
     }
 }
 
-void update_id (uint8_t num) 
+static void update_id (uint8_t num) 
 {
   if (!valid (num)) return;
-  
-  device_list[num].class = downlink_get_nut_class (NULL);
 
-  for (uint8_t j = 0; j < 6; j++)
-    device_list[num].extension_types[j] = downlink_get_extension_class(j, NULL);
+  bool err = false;
+  
+  device_list[num].class = downlink_get_nut_class (&err);
+
+  for (uint8_t j = 0; j < EXTENSIONS_LIST && !err; j++)
+    device_list[num].extension_types[j] = downlink_get_extension_class(j, &err);
 }
 
-void update_values (uint8_t num) 
+static void update_values (uint8_t num) 
 {
   if (!valid (num)) return;
   
-  for (uint8_t i = 0; i < 6; i++)
+  bool err = false;
+  
+  for (uint8_t i = 0; i < EXTENSIONS_LIST && !err; i++)
     {
       if (device_list[num].extension_types[i] < GENERIC_ACTOR)
         {
-          device_list[num].values_cache[i] = downlink_get_sensor_value (i, NULL);
+          device_list[num].values_cache[i] = downlink_get_sensor_value (i, &err);
           // log??
         }
     }
 }
 
-
-void squirrel_create_device_info_entry (const char *address)
+static bool update_device_entry (const char *address)
 {
-  // ??? debug bluetooth address
+  bool err;
+
   for (uint8_t k = 0; k < NUTS_LIST; k++)
     {
-      if (!valid (k))
+      if (!valid (k) || bt_cmp (device_list[k].mac, address))
         {
           // We haven't found the MAC, time to create a new entry
-          memcpy (&device_list[k], (void *) address, 6);
+          if (!valid (k))
+            memcpy (&device_list[k], (void *) address, 6);
           
-          if (bluetooth_connect (device_list[k].mac))
-        	  debug_pgm(PSTR("connected"));
-          else
-            debug_pgm(PSTR("connect error"));
-
-          _delay_ms (500);
+          if (!bluetooth_connect (device_list[k].mac)) 
+            {
+              error_pgm (PSTR("Connection couldn't be established"));
+              return false;
+            }
+          
           update_id (k);
           update_values (k);
-            
-          if (bluetooth_disconnect(2) != 1) {
-            debug_pgm(PSTR("could not disconnect"));
-          } else {
-            debug_pgm(PSTR("disconnect"));
-          }
+          downlink_bye (POLL_INTERVALL, &err);
           
-          return;
-        }
-      else if (bt_cmp (device_list[k].mac, address))
-        {
-          // Already there, nothing to do
-          return;
+          // WARNING: RACE!!!
+          bluetooth_process_data ();
+          
+          if (!bluetooth_disconnect(3) != 1) 
+            {
+              error_pgm(PSTR("Connection couldn't be closed"));
+              // Hard reset module!
+            }
+           
+          return true;
         }
     }
 
-  error ("Out of Memory");
+  error_pgm (PSTR("Out of Memory"));
+  return false;
 }
 
 void downlink_update(void)
 {
-  char *found = bluetooth_cmd_search_devices_debug();
+  char *found = bluetooth_cmd_search_devices ();
 
   assert (found != NULL, "Malformed search result");
 
@@ -208,7 +221,7 @@ void downlink_update(void)
       debug(arr);
          
       // Data Structure COUNT (1) | NAME (16) | MAC (6) | ...
-      squirrel_create_device_info_entry (&found[1 + i * (16 + 6) + 16]);
+      for (uint8_t j = 0; j < 3 && !update_device_entry (&found[1 + i * (16 + 6) + 16]); j++);
     }
 }
 
@@ -289,8 +302,6 @@ int main (void)
   
   squirrel_state_set (MASTER);
   debug_pgm(PSTR("Mainloop"));
-  
-  dump ();
             
   while (true)
     {
@@ -307,13 +318,13 @@ int main (void)
           downlink_update ();
           dump ();
           assert (bluetooth_set_as_slave() == 1, "Could not set slave mode");
-          squirrel_state_set (SLAVE);
+          //squirrel_state_set (SLAVE);
         }
       else if (state == SLAVE)
         {
           // We wait for connections from the backend...
           bluetooth_process_data ();
-          squirrel_state_set (MASTER);
+          //squirrel_state_set (MASTER);
         }
     }
 }
