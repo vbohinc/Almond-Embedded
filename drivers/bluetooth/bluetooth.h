@@ -9,15 +9,15 @@ typedef enum {
   BLUETOOTH_SLAVE
 } bt_mode_t;
 
-bool bt_init (void);
-bool bt_set_mode (bt_mode_t);
-bool bt_receive (uint8_t *data, uint8_t *length);
-bool bt_send (uint8_t *data, uint8_t *length);
+extern bool bt_init (void);
+extern bool bt_set_mode (const bt_mode_t);
+extern bool bt_receive (const uint8_t **data, uint8_t *length);
+extern bool bt_send (const uint8_t **data, const uint8_t length);
 
 #ifdef SQUIRREL
-bool bt_connect (char *address);
-bool bt_disconnect (void);
-bool bt_discover (char *result);
+extern bool bt_connect (char *address);
+extern bool bt_disconnect (void);
+extern bool bt_discover (char *result);
 #endif /* SQUIRREL */
 
 

@@ -120,6 +120,9 @@ fifo_cmp_pgm(fifo_t* fifo, prog_char* progmem)
           i++;
           count--;
         }
+      //we found something, in that case move pointer
+      fifo->head = ((fifo->head + i)%fifo->size);
+      fifo->count = count;
       return true;
     }
   return false;
