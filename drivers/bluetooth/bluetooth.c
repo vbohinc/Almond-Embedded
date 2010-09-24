@@ -331,6 +331,16 @@ bool bt_set_mode (const bt_mode_t mode)
     else
       return false;
   }
+  else if (mode == BLUETOOTH_SLAVE)
+  {
+    if(send_cmd(BT_SET_SLAVE, NULL))
+    {
+      bt_mode = mode;
+      return true;
+    }
+    else
+      return false;
+  }
   else
     return false;
 }
