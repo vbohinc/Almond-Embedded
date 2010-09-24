@@ -15,6 +15,8 @@
 .thumbsdb
 *.swp
 protocols/generate_classes.py.old
+/.kdev_include_paths
+/Almond-Embedded.kdev4
 /Almond-Embedded.anjuta
 /.anjuta/default.profile
 /.anjuta/session/anjuta.session

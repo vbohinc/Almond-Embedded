@@ -59,12 +59,12 @@ fifo_read_c(fifo_t* fifo, char* data)
 }
 
 bool 
-fifo_write_c(fifo_t* fifo, char* data)
+fifo_write_c(fifo_t* fifo, char data)
 {
   if (!fifo_is_full(fifo))
     {
       uint8_t* end = fifo->buffer + ((fifo->head + fifo->count)%fifo->size);
-      *end = (uint8_t) *data;
+      *end = (uint8_t) data;
       fifo->count++;
       return true;
     }
@@ -101,6 +101,27 @@ fifo_write_p(fifo_t* fifo, prog_char* progmem)
 }
 
 bool 
+fifo_write_s (fifo_t* fifo, const char* data)
+{
+  if (!fifo_is_full(fifo))
+    {
+      uint8_t i = 0;
+      uint8_t* end;
+      while (data[i] != 0)
+        {
+          if (fifo_is_full(fifo))
+            return false;
+          end = fifo->buffer + ((fifo->head + fifo->count)%fifo->size);
+          *end = data[i];
+          fifo->count++;
+          i++;
+        }
+      return true;
+    }
+  return false;
+}
+
+bool 
 fifo_cmp_pgm(fifo_t* fifo, prog_char* progmem)
 {
   if (!fifo_is_empty(fifo))
@@ -120,6 +141,9 @@ fifo_cmp_pgm(fifo_t* fifo, prog_char* progmem)
           i++;
           count--;
         }
+      //we found something, in that case move pointer
+      fifo->head = ((fifo->head + i)%fifo->size);
+      fifo->count = count;
       return true;
     }
   return false;
