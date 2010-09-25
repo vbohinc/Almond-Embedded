@@ -13,6 +13,8 @@
 .dep
 *~
 .thumbsdb
+.directory
+/.kdev4
 *.swp
 protocols/generate_classes.py.old
 /.kdev_include_paths

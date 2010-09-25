@@ -1,6 +1,7 @@
 #include "bluetooth.h"
 #include <uart/uart.h>
 #include <fifo.h>
+#include <string.h>
 #include <util/delay.h>
 
 
@@ -14,6 +15,7 @@
 #ifdef NUT
   #define UART_BAUD_RATE      19200
 #endif
+#include <string.h>
 
 typedef enum {
   BT_DATA,
@@ -43,21 +45,15 @@ typedef enum {
 // FIXME: NUT!
 #ifdef SQUIRREL
   #define IN_FIFO_SIZE 255
-  #define OUT_FIFO_SIZE 255
 #endif
 
 #ifdef NUT
   #define IN_FIFO_SIZE 127
-  #define OUT_FIFO_SIZE 127
 #endif
 
-static uint8_t bt_in_buffer[IN_FIFO_SIZE];
-static uint8_t bt_out_buffer[OUT_FIFO_SIZE];
+static uint8_t bt_buffer[IN_FIFO_SIZE];
 
 static fifo_t in_fifo; 
-static fifo_t out_fifo;
-
-
 
 
 static bt_mode_t bt_mode;
@@ -105,7 +101,7 @@ uart_receive (void)
             
           default:
             // FIXME: FIFO
-            fifo_write_c (&in_fifo, uart_data);
+            fifo_write (&in_fifo, uart_data);
             
 #ifdef DEBUG_BLUETOOTH
             error_putc (uart_data);
@@ -122,12 +118,11 @@ uart_receive (void)
 }
 
 static void
-uart_send (void)
+uart_send (const char* data, const uint8_t length)
 {
-  char data;
-  while (fifo_read_c (&out_fifo, &data))
+  for(int i = 0; i < length; i++)
   {
-    uart_putc (data);
+    uart_putc (data[i]);
   }
 }
 
@@ -149,61 +144,58 @@ get_result (void)
 static bool
 send_cmd (bt_cmd_t command, const char *data)
 {
-  //write command to fifo
-  fifo_clear (&out_fifo);
-  
+ 
   //needed for set address
-  char full_command[17];
+  char full_command[20];
   switch (command) {
     case BT_TEST:
-      fifo_write_pgm (&out_fifo, PSTR("AT"));
+      strcpy_P(full_command, PSTR("AT"));
       break;
   
     case BT_CONNECT:
-      fifo_write_pgm (&out_fifo, PSTR("ATA"));
+      strcpy_P(full_command, PSTR("ATA"));
       break;
     
     case BT_DISCONNECT:
-      fifo_write_pgm (&out_fifo, PSTR("ATH"));
+      strcpy_P(full_command, PSTR("ATH"));
       break;
       
     case BT_CLEAR_ADDRESS:
-      fifo_write_pgm (&out_fifo, PSTR("ATD0"));
+      strcpy_P(full_command, PSTR("ATD0"));
       break;
       
     case BT_SET_ADDRESS:
-      strcat_P(PSTR("ATD="),data);
-      fifo_write_s (&out_fifo, full_command);
+      strcpy_P(full_command, PSTR("ATD="));
+      strcat(full_command,data);
       break;
           
     case BT_FIND_DEVICES:
-      fifo_write_pgm (&out_fifo, PSTR("ATF?"));
+      strcpy_P(full_command, PSTR("ATF?"));
       break;
     
     case BT_DISABLE_AUTOCONNECT:
-      fifo_write_pgm (&out_fifo, PSTR("ATO1"));
+      strcpy_P(full_command, PSTR("ATO1"));
       break;
       
     case BT_SET_MASTER:
-      fifo_write_pgm (&out_fifo, PSTR("ATR0"));
+      strcpy_P(full_command, PSTR("ATR0"));
       break;
           
     case BT_SET_SLAVE:
-      fifo_write_pgm (&out_fifo, PSTR("ATR1"));
+      strcpy_P(full_command, PSTR("ATR1"));
       break;
     
     default:
       return false;
   }
-  fifo_write_c (&out_fifo, 13); // \r
-  fifo_write_c (&out_fifo, 0);
+  strcat_P(full_command, PSTR("\r\n"));
   
   //throw away your television
   uart_receive ();
   fifo_clear (&in_fifo);
   
   //send command
-  uart_send ();
+  uart_send (full_command, strlen(full_command));
   
   //get response
   for (uint16_t i = 1000; i > 0; i--)
@@ -256,10 +248,8 @@ check_package(const uint8_t *data, const uint8_t *length)
   {
     if(check_disconnect())
       return false;
-    //TODO check for DISCONNECT
-    //TODO read number of bytes
-    //remember to call uart_receive after every read
-    fifo_read_c(&in_fifo, (char *)length);
+
+    fifo_read(&in_fifo, (char *)length);
     
     //warning!! if no data arrives this function will be stuck
     for(int i = 0; i < *length; i++)
@@ -270,7 +260,7 @@ check_package(const uint8_t *data, const uint8_t *length)
       if(check_disconnect())
         return false;
       
-      fifo_read_c(&in_fifo, (char*)&data[i]);
+      fifo_read(&in_fifo, (char*)&data[i]);
       
     }
     return true;
@@ -278,13 +268,13 @@ check_package(const uint8_t *data, const uint8_t *length)
   return false;
 }
 
-bool bt_init (void)
+bool
+bt_init (void)
 {
   uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
   
   //init fifos
-  fifo_init (&in_fifo, bt_in_buffer, IN_FIFO_SIZE);
-  fifo_init (&out_fifo, bt_out_buffer, OUT_FIFO_SIZE);
+  fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
   
   bool connection = false;
   for(int i = 0; i < 5; i++)
@@ -309,7 +299,8 @@ bool bt_init (void)
   return true;
 }
 
-bool bt_set_mode (const bt_mode_t mode)
+bool
+bt_set_mode (const bt_mode_t mode)
 {
   if(mode == BLUETOOTH_MASTER)
   {
@@ -346,7 +337,7 @@ bool bt_set_mode (const bt_mode_t mode)
 }
 
 bool 
-bt_receive (const uint8_t *data, uint8_t *length)
+bt_receive (const uint8_t *data, const uint8_t *length)
 {
   if(comm_mode == BT_CMD)
   {
@@ -361,16 +352,16 @@ bt_receive (const uint8_t *data, uint8_t *length)
 
 
 bool 
-bt_send (const uint8_t *data, const uint8_t length)
+bt_send (const char *data, const uint8_t length)
 {
-  fifo_clear(&in_fifo);
-  
-  return false;
+  uart_putc((char)length);
+  uart_send(data,length);
+  return check_disconnect();
 }
 
 #ifdef SQUIRREL
 bool 
-bt_connect (char *address)
+bt_connect (const char *address)
 {
   return false;
 }
@@ -381,7 +372,8 @@ bool bt_disconnect (void)
 }
 
 
-bool bt_discover (char *result)
+bool
+bt_discover (const char *result)
 {
   return false;
 }

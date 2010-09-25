@@ -11,13 +11,13 @@ typedef enum {
 
 extern bool bt_init (void);
 extern bool bt_set_mode (const bt_mode_t);
-extern bool bt_receive (const uint8_t* data, uint8_t* length);
-extern bool bt_send (const uint8_t* data, const uint8_t length);
+extern bool bt_receive (const uint8_t* data, const uint8_t* length);
+extern bool bt_send (const char* data, const uint8_t length);
 
 #ifdef SQUIRREL
-extern bool bt_connect (char *address);
+extern bool bt_connect (const char *address);
 extern bool bt_disconnect (void);
-extern bool bt_discover (char *result);
+extern bool bt_discover (const char *result);
 #endif /* SQUIRREL */
 
 

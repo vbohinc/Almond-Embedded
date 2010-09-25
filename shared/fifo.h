@@ -27,12 +27,9 @@ bool fifo_is_full (fifo_t* fifo);
 
 bool fifo_cmp_pgm (fifo_t* fifo, prog_char* programm);
 
-bool fifo_read (fifo_t* fifo, uint8_t* data, uint8_t length);
-bool fifo_read_c (fifo_t* fifo, char* data);
+bool fifo_read (fifo_t* fifo, char* data);
 
-bool fifo_write_s (fifo_t* fifo, const char* data);
-bool fifo_write_c (fifo_t* fifo, char data);
-bool fifo_write_pgm (fifo_t* fifo, prog_char* programm);
+bool fifo_write (fifo_t* fifo, const char data);
 
 bool fifo_clear (fifo_t* fifo);
 
