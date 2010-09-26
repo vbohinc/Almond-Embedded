@@ -63,7 +63,7 @@ fifo_cmp_pgm_at (fifo_t * fifo, const prog_char * pgm, const uint8_t index)
 
   for (i = 0; pgm_read_byte (pgm + i) != 0; i++)
     {
-      if (fifo->count - (i + index) == 0)
+      if (fifo->count <= (i + index))
         return false;
 
       pgm_byte = pgm_read_byte (pgm + i);
@@ -80,18 +80,18 @@ fifo_cmp_pgm_at (fifo_t * fifo, const prog_char * pgm, const uint8_t index)
 }
 
 bool
-fifo_cmp_pgm (fifo_t *fifo, const prog_char *pgm)
+fifo_cmp_pgm (fifo_t * fifo, const prog_char * pgm)
 {
-  return fifo_cmp_pgm_at(fifo,pgm,0);
+  return fifo_cmp_pgm_at (fifo, pgm, 0);
 }
 
 bool
-fifo_strstr_pgm (fifo_t *fifo, const prog_char *pgm)
+fifo_strstr_pgm (fifo_t * fifo, const prog_char * pgm)
 {
-  for(int i = 0; i < fifo->count; i++)
-  {
-      if(fifo_cmp_pgm_at(fifo,pgm,i))
+  for (uint8_t i = 0; i < fifo->count; i++)
+    {
+      if (fifo_cmp_pgm_at (fifo, pgm, i))
         return true;
-  }
+    }
   return false;
 }
