@@ -246,18 +246,21 @@ check_disconnect(void)
 }
 
 static bool
-check_package(uint8_t *data, uint8_t *length)
+check_package (uint8_t *data, uint8_t *length)
 {
   uart_receive();
-  if(!fifo_is_empty(&in_fifo))
-  {
-    if(check_disconnect())
-      return false;
+  
+  if (fifo_is_empty (&in_fifo))
+    return false;
+  
+  if (check_disconnect ())
+    return false;
 
-    fifo_read(&in_fifo, (char *)length);
+  // char?
+  fifo_read (&in_fifo, (char *)length);
     
-    //warning!! if no data arrives this function will be stuck
-    for(int i = 0; i < *length; i++)
+  // Warning!! if no data arrives this function will be stuck
+  for (uint8_t i = 0; i < *length; i++)
     {
       while(fifo_is_empty(&in_fifo))
         uart_receive();
@@ -268,9 +271,7 @@ check_package(uint8_t *data, uint8_t *length)
       fifo_read(&in_fifo, (char*)&data[i]);
       
     }
-    return true;
-  }
-  return false;
+  return true;
 }
 
 bool
@@ -307,7 +308,7 @@ bt_init (void)
 bool
 bt_set_mode (const bt_mode_t mode)
 {
-  if(mode == BLUETOOTH_MASTER)
+  if (mode == BLUETOOTH_MASTER)
   {
     if(send_cmd(BT_SET_MASTER, NULL))
     {
@@ -349,7 +350,7 @@ bt_receive (uint8_t *data, uint8_t *length)
 bool 
 bt_send (const char *data, const uint8_t length)
 {
-  uart_send ((char*) &length, 1);
+  uart_send ((const char*) &length, 1);
   uart_send (data, length);
   return check_disconnect();
 }
@@ -364,15 +365,14 @@ bt_connect (const char *address)
 bool 
 bt_disconnect (void)
 {
-  char plus = '+';
-  uart_send(&plus, 1);
-  for(int i = 0; i < 3; i++)
-  {
-    _delay_ms(1500);
-    uart_send(&plus, 1);
-  }
+  const char plus = '+';
+  for (uint8_t i = 0; i < 3; i++)
+    {
+      uart_send (&plus, 1);
+      _delay_ms(1500);
+    }
   comm_mode = BT_CMD;
-  return send_cmd(BT_DISCONNECT, NULL);
+  return send_cmd (BT_DISCONNECT, NULL);
 }
 
 
