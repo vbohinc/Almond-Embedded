@@ -34,9 +34,11 @@ typedef enum
   BT_FIND_DEVICES,              // ATF?
   BT_DISABLE_AUTOCONNECT,       // ATO1
   BT_SET_MASTER,                // ATR0
-  BT_SET_SLAVE                  // ATR1
+  BT_SET_SLAVE,                 // ATR1
+  BT_DISABLE_ECHO,	        // ATE0
+  BT_SET_BAUDRATE	        // ATL3   TODO: Korrekten wert eintragen
 #if 0
-    TODO:BT_ENABLE_FLOWCONTROL BT_SET_BAUDRATE
+    TODO:BT_ENABLE_FLOWCONTROL 
 #endif
 } bt_cmd_t;
 
@@ -166,6 +168,16 @@ send_cmd (const bt_cmd_t command, const char *data)
 
     case BT_SET_SLAVE:
       strcpy_P (full_command, PSTR ("ATR1"));
+      break;
+
+
+    case BT_DISABLE_ECHO:
+      strcpy_P (full_command, PSTR ("ATE0"));
+      break;
+
+
+    case BT_SET_BAUDRATE:
+      strcpy_P (full_command, PSTR ("ATL3"));
       break;
 
     default:
