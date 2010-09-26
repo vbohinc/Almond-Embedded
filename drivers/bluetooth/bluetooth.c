@@ -209,7 +209,7 @@ clean_line (void)
       uart_receive ();
       _delay_ms (1);
     }
-  warn_pgm ("MISSING \\r\\n");
+  warn_pgm (PSTR("MISSING \\r\\n"));
 }
 
 static communication_mode_t
@@ -392,8 +392,43 @@ bt_disconnect (void)
 
 
 bool
-bt_discover (const char *result)
+bt_discover (char **result, bool (*update_callback)(const char *name, const char *address))
 {
+  char * buffer[50]; //oversized, but who cares?
+  char * bufferhead = buffer;
+  if(!send_cmd(BT_FIND_DEVICES,NULL))
+    return false;
+  while(!fifo_cmp_pgm(&in_fifo, PSTR("\r\nInquiry Results:\r\n")))
+    uart_receive();
+  for(uint16_t i = 0; i < 65000; i++)
+  {
+    if((i % 100) == 0 && update_callback != NULL)
+      update_callback(NULL, NULL);
+    uart_receive();
+    if(!fifo_is_empty(&in_fifo))
+    {
+      while(!fifo_cmp_pgm(&in_fifo, PSTR("\r\n")))
+      {
+        while(fifo_is_empty())
+          uart_receive();
+        fifo_read(&in_fifo,bufferhead);
+        bufferhead++;
+      }
+      *bufferhead = 0;
+      bufferhead = buffer;
+      //end 
+      if(strncmp_P(buffer, PSTR("Inquiry End"))
+      {
+        clean_line();
+        return true;
+      }
+    }
+    _delay_ms(1);
+  }
+  clean_line();
+#ifdef DEBUG_BLUETOOTH
+  warn_pgm(PSTR("Inqury Timeout!");
+#endif
   return false;
 }
 #endif /* SQUIRREL */

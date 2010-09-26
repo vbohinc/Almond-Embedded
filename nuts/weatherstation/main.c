@@ -106,10 +106,9 @@ void set_value(uint8_t id, uint16_t value)
 
 void blue_sky (void)
 {
-  bluetooth_init(downlink_bluetooth_callback_handler);
   sei();
-  bluetooth_test_connection(4); //random number
-  bluetooth_set_as_slave();
+  bt_init();
+  bt_set_mode(BLUETOOTH_SLAVE);
 }
 
 int main (void)
@@ -129,7 +128,7 @@ int main (void)
 
   while (true)
     {
-      bluetooth_process_data ();
+      //insert downlink function, that handles bluetooth
 
       if (sleep > BLUETOOTH_START_TIME)
         {
