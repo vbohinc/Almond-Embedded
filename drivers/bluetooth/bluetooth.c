@@ -15,7 +15,7 @@
 #ifdef NUT
   #define UART_BAUD_RATE      19200
 #endif
-#include <string.h>
+
 
 typedef enum {
   BT_DATA,
@@ -322,16 +322,6 @@ bt_set_mode (const bt_mode_t mode)
     else
       return false;
   }
-  else if (mode == BLUETOOTH_SLAVE)
-  {
-    if(send_cmd(BT_SET_SLAVE, NULL))
-    {
-      bt_mode = mode;
-      return true;
-    }
-    else
-      return false;
-  }
   else
     return false;
 }
@@ -368,7 +358,14 @@ bt_connect (const char *address)
 
 bool bt_disconnect (void)
 {
-  return false;
+  uart_putc('+');
+  for(int i = 0; i < 3; i++)
+  {
+    _delay_ms(1500);
+    uart_putc('+');
+  }
+  comm_mode = BT_CMD;
+  return send_cmd(BT_DISCONNECT, NULL);
 }
 
 
