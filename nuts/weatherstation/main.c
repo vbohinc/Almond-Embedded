@@ -108,7 +108,7 @@ void blue_sky (void)
 {
   sei();
   bt_init();
-  bt_set_mode(BLUETOOTH_SLAVE);
+  bt_set_mode (BLUETOOTH_SLAVE);
 }
 
 int main (void)
@@ -128,8 +128,9 @@ int main (void)
 
   while (true)
     {
-      //insert downlink function, that handles bluetooth
-
+      // insert downlink function, that handles bluetooth
+      // bt_receive ();
+      
       if (sleep > BLUETOOTH_START_TIME)
         {
           LED1_PORT &= ~(1<<LED1_PIN);

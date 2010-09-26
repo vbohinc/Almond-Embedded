@@ -133,7 +133,7 @@ static inline bool downlink_handle_set_package (downlink_package *p)
 
   return true;
 }
-
+#if 0
 /* FIXME: Change parameter list */
 void downlink_bluetooth_callback_handler (char *data_package, const uint8_t callback_type, const uint8_t data_length)
 {
@@ -144,7 +144,7 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
   uint8_t buffer[20];
   if (callback_type == 1) //connected
     {
-      bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
+      //bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
       debug_pgm(PSTR("CON:"));
       for (uint8_t i=0; i<12; i++)
         error_putc(buffer[i]);
@@ -153,7 +153,7 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
     }
   else if (callback_type == 2) //disconnected
     {
-      bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
+      //bluetooth_array_to_address((char*)data_package, (char*)buffer, 0);
       debug_pgm(PSTR("DCO:"));
       for (uint8_t i=0; i<12; i++)
         error_putc(buffer[i]);
@@ -210,6 +210,7 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
 
       p->opcode |= return_package ? RET : ERROR;
 
+
       switch (bluetooth_send_data_package ((uint8_t *)p, DOWNLINK_PACKAGE_LENGTH))
 	  {
 
@@ -233,4 +234,6 @@ void downlink_bluetooth_callback_handler (char *data_package, const uint8_t call
 	  }
     }
 }
+  #endif
+
 #endif
