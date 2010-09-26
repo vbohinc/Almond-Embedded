@@ -14,6 +14,10 @@
 #ifdef NUT
   #define UART_BAUD_RATE      19200
 #endif
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9f998a525ca42d219733e06e4f3dc341d00c206d
 
 typedef enum {
   BT_DATA,
@@ -139,7 +143,7 @@ get_cmd_result (void)
 }
 
 static bool
-send_cmd (bt_cmd_t command, const char *data)
+send_cmd (const bt_cmd_t command, const char *data)
 {
   char full_command[20]; // Maximum command size
   
@@ -246,7 +250,7 @@ check_disconnect(void)
 }
 
 static bool
-check_package(const uint8_t *data, const uint8_t *length)
+check_package(uint8_t *data, uint8_t *length)
 {
   uart_receive();
   if(!fifo_is_empty(&in_fifo))
@@ -327,22 +331,12 @@ bt_set_mode (const bt_mode_t mode)
     else
       return false;
   }
-  else if (mode == BLUETOOTH_SLAVE)
-  {
-    if(send_cmd(BT_SET_SLAVE, NULL))
-    {
-      bt_mode = mode;
-      return true;
-    }
-    else
-      return false;
-  }
   else
     return false;
 }
 
 bool 
-bt_receive (const uint8_t *data, const uint8_t *length)
+bt_receive (uint8_t *data, uint8_t *length)
 {
   if(comm_mode == BT_CMD)
   {
@@ -359,7 +353,7 @@ bt_receive (const uint8_t *data, const uint8_t *length)
 bool 
 bt_send (const char *data, const uint8_t length)
 {
-  uart_send ((char) length, 1);
+  uart_send ((char*) &length, 1);
   uart_send (data, length);
   return check_disconnect();
 }
@@ -374,7 +368,15 @@ bt_connect (const char *address)
 bool 
 bt_disconnect (void)
 {
-  return false;
+  char plus = '+';
+  uart_send(&plus, 1);
+  for(int i = 0; i < 3; i++)
+  {
+    _delay_ms(1500);
+    uart_send(&plus, 1);
+  }
+  comm_mode = BT_CMD;
+  return send_cmd(BT_DISCONNECT, NULL);
 }
 
 
