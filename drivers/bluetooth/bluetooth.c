@@ -118,12 +118,16 @@ uart_receive (void)
 }
 
 static void
-uart_send (const char* data, const uint8_t length)
+uart_send (const char *data, const uint8_t length)
 {
-  for(int i = 0; i < length; i++)
-  {
-    uart_putc (data[i]);
-  }
+  for (uint8_t i = 0; i < length; i++)
+    {
+      while (uart_putc (data[i]) == 0)
+        {
+          warn_pgm (PSTR("UART: Remote not ready"));
+          _delay_ms (1);
+        }
+    }
 }
 
 static bt_result_t
@@ -344,8 +348,8 @@ bt_receive (const uint8_t *data, const uint8_t *length)
 bool 
 bt_send (const char *data, const uint8_t length)
 {
-  uart_putc((char)length);
-  uart_send(data,length);
+  uart_send ((char) length, 1);
+  uart_send (data, length);
   return check_disconnect();
 }
 
@@ -356,7 +360,8 @@ bt_connect (const char *address)
   return false;
 }
 
-bool bt_disconnect (void)
+bool 
+bt_disconnect (void)
 {
   uart_putc('+');
   for(int i = 0; i < 3; i++)
