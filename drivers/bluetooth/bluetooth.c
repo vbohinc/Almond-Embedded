@@ -15,6 +15,7 @@
 #define UART_BAUD_RATE      19200
 #endif
 
+
 typedef enum
 {
   BT_DATA,
@@ -414,14 +415,32 @@ bt_discover (char **result, bool (*update_callback)(const char *name, const char
         fifo_read(&in_fifo,bufferhead);
         bufferhead++;
       }
+      //terminate string
       *bufferhead = 0;
+      
+      //reset bufferhead
       bufferhead = buffer;
       //end 
+      if(strlen(buffer) == 0)
+        continue; //the empty line before end of inquiry
       if(strncmp_P(buffer, PSTR("Inquiry End"))
       {
         clean_line();
         return true;
       }
+      //we have a device
+      char mac[14];
+      char name[14];
+      uint8_t number;
+      strcpy(mac, buffer[17]); //begin of mac
+      buffer[17] = 0;
+      strcpy(name, buffer[3]); //begin of name
+      number = buffer[0] - 48; //convert ascii to number
+      
+      
+      strcpy(result[number-1], mac); //parse mac?
+      if(update_callback != NULL)
+        update_callback(name, mac);
     }
     _delay_ms(1);
   }
