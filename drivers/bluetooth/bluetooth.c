@@ -14,10 +14,6 @@
 #ifdef NUT
   #define UART_BAUD_RATE      19200
 #endif
-<<<<<<< HEAD
-=======
-
->>>>>>> 9f998a525ca42d219733e06e4f3dc341d00c206d
 
 typedef enum {
   BT_DATA,
