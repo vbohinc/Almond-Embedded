@@ -348,7 +348,7 @@ bt_receive (uint8_t *data, uint8_t *length)
 bool 
 bt_send (const char *data, const uint8_t length)
 {
-  uart_send ((char) length, 1);
+  uart_send ((char*) &length, 1);
   uart_send (data, length);
   return check_disconnect();
 }
