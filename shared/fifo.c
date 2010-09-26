@@ -11,13 +11,13 @@ fifo_init (fifo_t* fifo, uint8_t* buffer, uint8_t size)
 }
 
 bool
-fifo_is_empty(fifo_t* fifo)
+fifo_is_empty(const fifo_t* fifo)
 {
   return (fifo->count == 0);
 }
 
 bool 
-fifo_is_full(fifo_t* fifo)
+fifo_is_full(const fifo_t* fifo)
 {
   return (fifo->size - fifo->count <= 0);
 }
@@ -59,7 +59,7 @@ fifo_clear(fifo_t* fifo)
 
 
 bool 
-fifo_cmp_pgm(fifo_t* fifo, prog_char* progmem)
+fifo_cmp_pgm(fifo_t* fifo, const prog_char* progmem)
 {
   if (!fifo_is_empty(fifo))
     {

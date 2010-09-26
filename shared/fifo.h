@@ -22,10 +22,10 @@ typedef struct
 
 void fifo_init(fifo_t* new_fifo,uint8_t* buffer, uint8_t size);
 
-bool fifo_is_empty (fifo_t* fifo);
-bool fifo_is_full (fifo_t* fifo);
+bool fifo_is_empty (const fifo_t* fifo);
+bool fifo_is_full (const fifo_t* fifo);
 
-bool fifo_cmp_pgm (fifo_t* fifo, prog_char* programm);
+bool fifo_cmp_pgm (fifo_t* fifo, const prog_char* progmem);
 
 bool fifo_read (fifo_t* fifo, char* data);
 

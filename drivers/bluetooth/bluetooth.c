@@ -146,7 +146,7 @@ get_result (void)
 }
 
 static bool
-send_cmd (bt_cmd_t command, const char *data)
+send_cmd (const bt_cmd_t command, const char *data)
 {
  
   //needed for set address
@@ -245,7 +245,7 @@ check_disconnect(void)
 }
 
 static bool
-check_package(const uint8_t *data, const uint8_t *length)
+check_package(uint8_t *data, uint8_t *length)
 {
   uart_receive();
   if(!fifo_is_empty(&in_fifo))
@@ -331,7 +331,7 @@ bt_set_mode (const bt_mode_t mode)
 }
 
 bool 
-bt_receive (const uint8_t *data, const uint8_t *length)
+bt_receive (uint8_t *data, uint8_t *length)
 {
   if(comm_mode == BT_CMD)
   {
