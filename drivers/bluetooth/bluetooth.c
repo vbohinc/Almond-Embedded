@@ -4,7 +4,6 @@
 #include <string.h>
 #include <util/delay.h>
 
-
 /**
  * Baudrate for the UART-connection to the BTM-222 on SQUIRREL
  */
@@ -15,7 +14,6 @@
 #ifdef NUT
   #define UART_BAUD_RATE      19200
 #endif
-#include <string.h>
 
 typedef enum {
   BT_DATA,
@@ -40,34 +38,29 @@ typedef enum {
   BT_RES_CONNECT,
   BT_RES_DISCONNECT,
   BT_RES_NONE
-} bt_result_t;
+} bt_cmd_result_t;
 
-// FIXME: NUT!
 #ifdef SQUIRREL
   #define IN_FIFO_SIZE 255
 #endif
 
 #ifdef NUT
-  #define IN_FIFO_SIZE 127
+  #define IN_FIFO_SIZE 65
 #endif
 
 static uint8_t bt_buffer[IN_FIFO_SIZE];
-
 static fifo_t in_fifo; 
 
-
-static bt_mode_t bt_mode;
-
+static bt_mode_t bt_mode = BLUETOOTH_SLAVE;
 static communication_mode_t comm_mode = BT_CMD;
-// Private helper
 
+// Private helper
 
 static void
 uart_receive (void)
 {
   unsigned int uart_data;
   
-  // FIXME: Check if there is place in the buffer...
   while (!fifo_is_full(&in_fifo))
     {
       uart_data = uart_getc ();
@@ -85,7 +78,7 @@ uart_receive (void)
            * one or more received characters have been dropped
            */   
           case UART_OVERRUN_ERROR:
-            warn_pgm(PSTR("OVR ERR")); //Overrun Error
+            warn_pgm(PSTR("OVR ERR"));
             return;
           
           /*
@@ -93,14 +86,14 @@ uart_receive (void)
            * one or more received character have been dropped
            */  
           case UART_BUFFER_OVERFLOW:
-            warn_pgm(PSTR("BUF ERR")); //Buffer Overflow error
+            warn_pgm(PSTR("BUF ERR"));
             return;
         
+          /* UART Inputbuffer empty, nothing to do */
           case UART_NO_DATA:
             return;
             
           default:
-            // FIXME: FIFO
             fifo_write (&in_fifo, uart_data);
             
 #ifdef DEBUG_BLUETOOTH
@@ -130,8 +123,8 @@ uart_send (const char *data, const uint8_t length)
     }
 }
 
-static bt_result_t
-get_result (void)
+static bt_cmd_result_t
+get_cmd_result (void)
 {
   uart_receive();
   if (fifo_cmp_pgm (&in_fifo, PSTR("OK\r\n")))
@@ -148,76 +141,84 @@ get_result (void)
 static bool
 send_cmd (bt_cmd_t command, const char *data)
 {
- 
-  //needed for set address
-  char full_command[20];
+  char full_command[20]; // Maximum command size
+  
   switch (command) {
     case BT_TEST:
-      strcpy_P(full_command, PSTR("AT"));
+      strcpy_P (full_command, PSTR("AT"));
       break;
   
     case BT_CONNECT:
-      strcpy_P(full_command, PSTR("ATA"));
+      strcpy_P (full_command, PSTR("ATA"));
       break;
     
     case BT_DISCONNECT:
-      strcpy_P(full_command, PSTR("ATH"));
+      strcpy_P (full_command, PSTR("ATH"));
       break;
       
     case BT_CLEAR_ADDRESS:
-      strcpy_P(full_command, PSTR("ATD0"));
+      strcpy_P (full_command, PSTR("ATD0"));
       break;
       
     case BT_SET_ADDRESS:
-      strcpy_P(full_command, PSTR("ATD="));
-      strcat(full_command,data);
+      strcpy_P (full_command, PSTR("ATD="));
+      strcat (full_command,data);
       break;
           
     case BT_FIND_DEVICES:
-      strcpy_P(full_command, PSTR("ATF?"));
+      strcpy_P (full_command, PSTR("ATF?"));
       break;
     
     case BT_DISABLE_AUTOCONNECT:
-      strcpy_P(full_command, PSTR("ATO1"));
+      strcpy_P (full_command, PSTR("ATO1"));
       break;
       
     case BT_SET_MASTER:
-      strcpy_P(full_command, PSTR("ATR0"));
+      strcpy_P (full_command, PSTR("ATR0"));
       break;
           
     case BT_SET_SLAVE:
-      strcpy_P(full_command, PSTR("ATR1"));
+      strcpy_P (full_command, PSTR("ATR1"));
       break;
     
     default:
+      warn_pgm (PSTR("CMD UNK"));
       return false;
   }
+  
   strcat_P(full_command, PSTR("\r\n"));
   
-  //throw away your television
+  // throw away your television
   uart_receive ();
   fifo_clear (&in_fifo);
   
-  //send command
-  uart_send (full_command, strlen(full_command));
+  // send command
+  uart_send (full_command, strlen (full_command));
   
-  //get response
+  // get response
   for (uint16_t i = 1000; i > 0; i--)
     {
-      bt_result_t result = get_result();
-      switch(result)
+      bt_cmd_result_t result = get_cmd_result ();
+      switch (result)
       {
-        case BT_RES_NONE:
-          continue;
-        
+        case BT_RES_OK:
+          return true;
+          
+        case BT_RES_CONNECT:
+          return (command == BT_CONNECT);
+          
+        case BT_RES_DISCONNECT:
+          return (command == BT_DISCONNECT);
+       
         case BT_RES_ERROR:
           return false;
           
-        default:
-          return true;
+        case BT_RES_NONE:
+          // Coffee anyone?
+          _delay_ms (1);
       }
-      _delay_ms (1);
     }
+    
   warn_pgm (PSTR("CMD SEND: TIMEOUT"));
   return false;
 }
@@ -225,7 +226,7 @@ send_cmd (bt_cmd_t command, const char *data)
 static bool
 check_connect(void)
 {
-  if(get_result() == BT_RES_CONNECT)
+  if (get_cmd_result() == BT_RES_CONNECT)
   {
     bt_mode = BT_DATA;
     return true;
@@ -236,7 +237,7 @@ check_connect(void)
 static bool
 check_disconnect(void)
 {
-  if(get_result() == BT_RES_DISCONNECT)
+  if (get_cmd_result() == BT_RES_DISCONNECT)
   {
     bt_mode = BT_CMD;
     return true;
