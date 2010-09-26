@@ -1,8 +1,7 @@
 #include "fifo.h"
 
-
 void
-fifo_init (fifo_t* fifo, uint8_t* buffer, uint8_t size)
+fifo_init (fifo_t * fifo, uint8_t * buffer, uint8_t size)
 {
   fifo->size = size;
   fifo->buffer = buffer;
@@ -11,77 +10,71 @@ fifo_init (fifo_t* fifo, uint8_t* buffer, uint8_t size)
 }
 
 bool
-fifo_is_empty(const fifo_t* fifo)
+fifo_is_empty (const fifo_t * fifo)
 {
   return (fifo->count == 0);
 }
 
-bool 
-fifo_is_full(const fifo_t* fifo)
+bool
+fifo_is_full (const fifo_t * fifo)
 {
-  return (fifo->size - fifo->count <= 0);
+  return (fifo->size - fifo->count == 0);
 }
 
-bool 
-fifo_read(fifo_t* fifo, char* data)
+bool
+fifo_read (fifo_t * fifo, char *data)
 {
-  if (!fifo_is_empty (fifo))
-    {
-      uint8_t* head = fifo->buffer + fifo->head;
-      *data = (char) *head;
-      fifo->head = ((fifo->head + 1)%fifo->size);
-      fifo->count--;
-      return true;
-    }
-  return false;
+  if (fifo_is_empty (fifo))
+    return false;
+
+  uint8_t *head = fifo->buffer + fifo->head;
+  *data = (char) *head;
+  fifo->head = ((fifo->head + 1) % fifo->size);
+  fifo->count--;
+  return true;
 }
 
-bool 
-fifo_write(fifo_t* fifo, const char data)
+bool
+fifo_write (fifo_t * fifo, const char data)
 {
-  if (!fifo_is_full(fifo))
-    {
-      uint8_t* end = fifo->buffer + ((fifo->head + fifo->count)%fifo->size);
-      *end = (uint8_t) data;
-      fifo->count++;
-      return true;
-    }
-  return false;
+  if (fifo_is_full (fifo))
+    return false;
+
+  uint8_t *end = fifo->buffer + ((fifo->head + fifo->count) % fifo->size);
+  *end = (uint8_t) data;
+  fifo->count++;
+  return true;
 }
 
-bool 
-fifo_clear(fifo_t* fifo)
+bool
+fifo_clear (fifo_t * fifo)
 {
   fifo->count = 0;
   fifo->head = 0;
   return true;
 }
 
-
-bool 
-fifo_cmp_pgm(fifo_t* fifo, const prog_char* progmem)
+bool
+fifo_cmp_pgm (fifo_t * fifo, const prog_char * pgm)
 {
-  if (!fifo_is_empty(fifo))
+  uint8_t i;
+  uint8_t fifo_byte;
+  uint8_t pgm_byte;
+
+  for (i = 0; pgm_read_byte (pgm + i) != 0; i++)
     {
-      prog_char* pgm = progmem;
-      uint8_t i = 0;
-      uint8_t head = 0;
-      uint8_t* head_p;
-      uint8_t count = fifo->count;
-      while (pgm_read_byte(pgm) != 0)
-        {
-          head = ((fifo->head + i)%fifo->size);
-          head_p = fifo->buffer + head;
-          if (count <= 0 || *head_p != (uint8_t) *pgm)
-            return false;
-          pgm++;
-          i++;
-          count--;
-        }
-      //we found something, in that case move pointer
-      fifo->head = ((fifo->head + i)%fifo->size);
-      fifo->count = count;
-      return true;
+      if (fifo->count - i == 0)
+        return false;
+
+      pgm_byte = pgm_read_byte (pgm + i);
+      fifo_byte = *(fifo->buffer + ((fifo->head + i) % fifo->size));
+
+      if (fifo_byte != pgm_byte)
+        return false;
     }
-  return false;
+
+  // We found the string, lets move the pointer
+  fifo->head = ((fifo->head + i) % fifo->size);
+  fifo->count -= i;
+  return true;
 }
