@@ -363,11 +363,12 @@ bt_connect (const char *address)
 bool 
 bt_disconnect (void)
 {
-  uart_putc('+');
+  char plus = '+';
+  uart_send(&plus, 1);
   for(int i = 0; i < 3; i++)
   {
     _delay_ms(1500);
-    uart_putc('+');
+    uart_send(&plus, 1);
   }
   comm_mode = BT_CMD;
   return send_cmd(BT_DISCONNECT, NULL);
