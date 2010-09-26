@@ -54,8 +54,8 @@ fifo_clear (fifo_t * fifo)
   return true;
 }
 
-bool
-fifo_cmp_pgm (fifo_t * fifo, const prog_char * pgm)
+static bool
+fifo_cmp_pgm_at (fifo_t * fifo, const prog_char * pgm, const uint8_t index)
 {
   uint8_t i;
   uint8_t fifo_byte;
@@ -63,18 +63,35 @@ fifo_cmp_pgm (fifo_t * fifo, const prog_char * pgm)
 
   for (i = 0; pgm_read_byte (pgm + i) != 0; i++)
     {
-      if (fifo->count - i == 0)
+      if (fifo->count - (i + index) == 0)
         return false;
 
       pgm_byte = pgm_read_byte (pgm + i);
-      fifo_byte = *(fifo->buffer + ((fifo->head + i) % fifo->size));
+      fifo_byte = *(fifo->buffer + ((fifo->head + i + index) % fifo->size));
 
       if (fifo_byte != pgm_byte)
         return false;
     }
 
   // We found the string, lets move the pointer
-  fifo->head = ((fifo->head + i) % fifo->size);
+  fifo->head = ((fifo->head + i + index) % fifo->size);
   fifo->count -= i;
   return true;
+}
+
+bool
+fifo_cmp_pgm (fifo_t *fifo, const prog_char *pgm)
+{
+  return fifo_cmp_pgm_at(fifo,pgm,0);
+}
+
+bool
+fifo_strstr_pgm (fifo_t *fifo, const prog_char *pgm)
+{
+  for(int i = 0; i < fifo->count; i++)
+  {
+      if(fifo_cmp_pgm_at(fifo,pgm,i))
+        return true;
+  }
+  return false;
 }

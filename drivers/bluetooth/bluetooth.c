@@ -39,15 +39,6 @@ typedef enum
 #endif
 } bt_cmd_t;
 
-typedef enum
-{
-  BT_RES_OK,
-  BT_RES_ERROR,
-  BT_RES_CONNECT,
-  BT_RES_DISCONNECT,
-  BT_RES_NONE
-} bt_cmd_result_t;
-
 #ifdef SQUIRREL
 #define IN_FIFO_SIZE 255
 #endif
@@ -131,27 +122,10 @@ uart_send (const char *data, const uint8_t length)
     }
 }
 
-static bt_cmd_result_t
-get_cmd_result (void)
-{
-  uart_receive ();
-  // Detect multiple answers?
-  if (fifo_cmp_pgm (&in_fifo, PSTR ("OK\r\n")))
-    return BT_RES_OK;
-  if (fifo_cmp_pgm (&in_fifo, PSTR ("ERROR\r\n")))
-    return BT_RES_ERROR;
-/*  if ()
-    return BT_RES_CONNECT;
-  if (fifo_cmp_pgm (&in_fifo, PSTR ("DISCONNECT\r\n")))
-    return BT_RES_DISCONNECT; */
-  return BT_RES_NONE;
-}
-
 static bool
 send_cmd (const bt_cmd_t command, const char *data)
 {
   // Check for command mode?
-  uint16_t timeout_ms;
   char full_command[20];        // Maximum command size
 
   switch (command)
@@ -210,33 +184,16 @@ send_cmd (const bt_cmd_t command, const char *data)
   // get response
   for (uint16_t i = 0; i < BT_CMD_TIMEOUT_MS; i++)
     {
-      bt_cmd_result_t result = get_cmd_result ();
-#ifdef DEBUG_BLUETOOTH
-      byte_to_hex (result);
-#endif
-      switch (result)
-        {
-        case BT_RES_OK:
-          return true;
-/*
-        case BT_RES_CONNECT:
-          return (command == BT_CONNECT);
-
-        case BT_RES_DISCONNECT:
-          return (command == BT_DISCONNECT);
-*/
-
-        case BT_RES_ERROR:
-          error_pgm (PSTR ("Could not perform "));
-          byte_to_hex (command);
-          return false;
-
-        case BT_RES_NONE:
-          // Coffee anyone?
-          _delay_ms (1);
-        }
+      if(fifo_cmp_pgm(&in_fifo,PSTR("OK\r\n")))
+      {
+        return true;
+      }
+      if(fifo_cmp_pgm(&in_fifo,PSTR("ERROR\r\n")))
+      {
+        return false;
+      }
+      _delay_ms (1);
     }
-
   warn_pgm (PSTR ("CMD SEND: TIMEOUT"));
   return false;
 }
@@ -246,7 +203,7 @@ clean_line (void)
 {
   for (uint16_t i = 0; i < 1000; i++)
     {
-      if (fifo_cmp_pgm (&in_fifo, PSTR ("\r\n"))
+      if (fifo_strstr_pgm (&in_fifo, PSTR ("\r\n")))
         return;
         
       uart_receive ();
@@ -277,13 +234,14 @@ update_comm_mode (uint16_t timeout_ms)
       if (fifo_cmp_pgm (&in_fifo, PSTR ("Time out,Fail to connect!")))
         {
           clean_line ();
-          return comm_mode = BT_CMD
+          return comm_mode = BT_CMD;
         }
 
       _delay_ms (1);
     }
 
-  warn_pgm (PSTR ("Received no answer!"));
+  if(timeout_ms != 1)
+    warn_pgm (PSTR ("Received no answer!"));
   return comm_mode;
 }
 
@@ -295,7 +253,7 @@ check_package (uint8_t * data, uint8_t * length)
   if (fifo_is_empty (&in_fifo))
     return false;
 
-  if (check_disconnect ())
+  if (update_comm_mode(1) == BT_CMD)
     return false;
 
   // char?
@@ -307,7 +265,7 @@ check_package (uint8_t * data, uint8_t * length)
       while (fifo_is_empty (&in_fifo))
         uart_receive ();
 
-      if (check_disconnect ())
+      if (update_comm_mode(1) == BT_CMD)
         return false;
 
       fifo_read (&in_fifo, (char *) &data[i]);
@@ -384,7 +342,7 @@ bt_receive (uint8_t * data, uint8_t * length)
 {
   if (comm_mode == BT_CMD)
     {
-      if (!check_connect ())
+      if (update_comm_mode(1) == BT_CMD)
         {
           return false;
         }
@@ -399,7 +357,7 @@ bt_send (const char *data, const uint8_t length)
 {
   uart_send ((const char *) &length, 1);
   uart_send (data, length);
-  return check_disconnect ();
+  return (update_comm_mode (1) == BT_DATA);
 }
 
 #ifdef SQUIRREL

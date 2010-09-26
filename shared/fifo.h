@@ -27,6 +27,7 @@ bool fifo_is_full (const fifo_t *fifo);
 bool fifo_clear (fifo_t *fifo);
 bool fifo_read (fifo_t *fifo, char *data);
 bool fifo_write (fifo_t *fifo, const char data);
-bool fifo_cmp_pgm (fifo_t *fifo, const prog_char *pgm);
+bool fifo_cmp_pgm (fifo_t* fifo, const prog_char* pgm);
+bool fifo_strstr_pgm (fifo_t *fifo, const prog_char *pgm);
 
 #endif /* _FIFO_H_ */
