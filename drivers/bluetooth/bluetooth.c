@@ -207,7 +207,7 @@ send_cmd (const bt_cmd_t command, const char *data)
   // send command
   uart_send (full_command, strlen (full_command));
 
-  // get response, FIXME: Increase Timeout for CONNECT/DISCONNECT
+  // get response
   for (uint16_t i = 0; i < BT_CMD_TIMEOUT_MS; i++)
     {
       bt_cmd_result_t result = get_cmd_result ();
@@ -241,6 +241,20 @@ send_cmd (const bt_cmd_t command, const char *data)
   return false;
 }
 
+static void
+clean_line (void)
+{
+  for (uint16_t i = 0; i < 1000; i++)
+    {
+      if (fifo_cmp_pgm (&in_fifo, PSTR ("\r\n"))
+        return;
+        
+      uart_receive ();
+      _delay_ms (1);
+    }
+  warn_pgm ("MISSING \\r\\n");
+}
+
 static communication_mode_t
 update_comm_mode (uint16_t timeout_ms)
 {
@@ -250,34 +264,26 @@ update_comm_mode (uint16_t timeout_ms)
 
       if (fifo_cmp_pgm (&in_fifo, PSTR ("DISCONNECT")))
         {
-          comm_mode = BT_CMD;
-          break;
+          clean_line ();
+          return comm_mode = BT_CMD;
         }
 
       if (fifo_cmp_pgm (&in_fifo, PSTR ("CONNECT")))
         {
-          comm_mode = BT_DATA;
-          break;
+          clean_line ();
+          return comm_mode = BT_DATA;
         }
 
       if (fifo_cmp_pgm (&in_fifo, PSTR ("Time out,Fail to connect!")))
         {
-          comm_mode = BT_CMD;
-          break;
-        }
-
-      if (i == timeout_ms - 1)
-        {
-          warn_pgm (PSTR ("Received no answer!"));
-          return comm_mode;
+          clean_line ();
+          return comm_mode = BT_CMD
         }
 
       _delay_ms (1);
     }
 
-  if (!fifo_cmp_pgm (&in_fifo, PSTR ("\r\n")))
-    warn_pgm ("MISSING \\r\\n");
-
+  warn_pgm (PSTR ("Received no answer!"));
   return comm_mode;
 }
 
