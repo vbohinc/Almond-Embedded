@@ -6,8 +6,9 @@
 #define __ERROR__
 
 #include "common.h"
+#ifndef X86
 #include <avr/pgmspace.h>
-
+#endif
 
 
 #ifdef DEBUG
