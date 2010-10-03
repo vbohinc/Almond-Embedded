@@ -106,8 +106,8 @@ void set_value(uint8_t id, uint16_t value)
 
 void blue_sky (void)
 {
-  sei();
-  bt_init();
+  sei ();
+  bt_init ();
   bt_set_mode (BLUETOOTH_SLAVE);
 }
 
@@ -128,8 +128,11 @@ int main (void)
 
   while (true)
     {
-      // insert downlink function, that handles bluetooth
-      // bt_receive ();
+      uint8_t data[DOWNLINK_PACKAGE_LENGTH];
+      uint8_t length = DOWNLINK_PACKAGE_LENGTH;
+      
+      if (bt_receive (data, &length, 0))
+        downlink_process_pkg (data, length);
       
       if (sleep > BLUETOOTH_START_TIME)
         {
