@@ -60,12 +60,12 @@ extern void     downlink_bye (uint16_t time_sec, bool *err);
 extern const uint8_t class_id_nut;
 extern const uint8_t class_id_extensions[];
 extern const uint8_t class_id_extensions_length;
-extern uint16_t get_value(uint8_t id);
-extern void set_value(uint8_t id, uint16_t value);
+extern uint16_t get_value (uint8_t id);
+extern void set_value (uint8_t id, uint16_t value);
 extern uint16_t sleep;
 
 /* Callback handler */
-extern void downlink_bluetooth_callback_handler (char *data_package, const uint8_t callback_type, const uint8_t data_length);
+extern bool downlink_process_pkg (uint8_t * data, uint8_t length);
 
 #endif
 
