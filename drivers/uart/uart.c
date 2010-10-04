@@ -102,8 +102,6 @@ Date        Description
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include "uart.h"
-#include "../../shared/ftdi.h"
-#include "../../shared/error.h"
 
 
 /*
@@ -456,12 +454,6 @@ Purpose:  called when the UART has received a character
         /* store received data in buffer */
         UART_RxBuf[tmphead] = data;
 
-        //error_putc('I');
-		//byte_to_hex(data);
-		//error_putc(' ');
-		//error_putc(data);
-		//error_putc(13);
-
 #ifdef UART0_ENABLE_FLOW_CONTROL
         //Check if buffer is full
         tmphead = ( UART_RxHead + 1) & UART_RX_BUFFER_MASK;
@@ -682,7 +674,6 @@ int uart_putc(uint8_t data)
     //Check if remote is ready to receive data
     if (UART0_RTS_PPIN & (1<<UART0_RTS_PIN))
     {
-    	error_pgm(PSTR("UART: Remote not ready for data"));
     	return 0;
     }
 #endif
@@ -931,7 +922,6 @@ void uart1_putc(unsigned char data)
     //Check if remote is ready to receive data
     if (UART1_RTS_PPIN & (1<<UART1_RTS_PIN))
     {
-    	error_pgm(PSTR("UART1: Remote not ready for data"));
     	return 0;
     }
 #endif

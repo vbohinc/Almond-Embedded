@@ -26,7 +26,7 @@
 #define DOWNLINK_PACKAGE_LENGTH 4
 
 /**
- * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
+ * Every ID identifies a sensor/actor.
  *
  * Package format:
  * | OPCODE (1) | ID (1) | VALUE (2) |
@@ -44,10 +44,10 @@ struct _downlink_package
 #ifdef SQUIRREL
 
 extern uint16_t downlink_get_sensor_value (uint8_t id, bool *err);
-extern uint16_t downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err);
+extern void     downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err);
 extern uint8_t  downlink_get_nut_class (bool *err);
 extern uint8_t  downlink_get_extension_class (uint8_t id, bool *err);
-extern uint16_t downlink_bye (uint16_t time_ms, bool *err);
+extern void     downlink_bye (uint16_t time_sec, bool *err);
 
 #endif
 
