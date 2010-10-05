@@ -101,7 +101,7 @@ uart_receive (void)
 }
 
 static void
-uart_send (const char *data, const uint8_t length, const uint8_t delay)
+uart_send (const char *data, const uint8_t length, const uint16_t delay)
 {
   for (uint8_t i = 0; i < length; i++)
     {
@@ -109,6 +109,16 @@ uart_send (const char *data, const uint8_t length, const uint8_t delay)
         {
           warn_pgm (PSTR ("UART: Remote not ready"));
           _delay_ms (1);
+        }
+        if(comm_mode == BT_CMD)
+        {
+          //check for echo
+          while(fifo_is_empty(&in_fifo))
+            uart_receive();
+          char echo;
+          fifo_read(&in_fifo, &echo);
+          if(echo != data[i])
+            error_pgm(PSTR("BT: WRONG ECHO"));
         }
       _delay_ms (delay);
     }
@@ -180,7 +190,7 @@ send_cmd (const bt_cmd_t command, const char *data)
   fifo_clear (&in_fifo);
 
   // send command
-  uart_send (full_command, strlen (full_command), 50);
+  uart_send (full_command, strlen (full_command), 0);
 
   // get response
   for (uint16_t i = 0; i < BT_CMD_TIMEOUT_MS; i++)
@@ -363,7 +373,8 @@ bt_disconnect (void)
       uart_send (&plus, 1, 1);
       _delay_ms (1500);
     }
-
+    
+   comm_mode = BT_CMD;
   if (!send_cmd (BT_DISCONNECT, NULL))
     return false;
 
