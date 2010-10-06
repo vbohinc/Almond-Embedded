@@ -45,7 +45,16 @@ void pong() {
 		get_input(); // FIXME!
 		move_pad(&pad_left, input_l);
 		move_pad(&pad_right, input_r);
-		if (ball.top_left.x + ball_x_speed < 2 || ball.bottom_right.x + ball_x_speed > 130) { // FIXME!
+		if (ball.top_left.x + ball_x_speed < 2)  { // FIXME!
+			if (ball.top_left.y >= pad_left.top_left.y || ball.bottom_right.y <= pad_left.bottom_right.y ) {
+				ball_x_speed++;
+				uint8_t dist_from_pad_centre = pad_left.bottom_right.y - ball.top_left.y;
+				ball_y_speed += dist_from_pad_centre;
+			} else {
+				// Paddle missed. Game over.
+				break;
+			}
+		} else if (ball.bottom_right.x + ball_x_speed > 130) {
 			if (ball.top_left.y >= pad_left.top_left.y || ball.bottom_right.y <= pad_left.bottom_right.y ) {
 				ball_x_speed++;
 				uint8_t dist_from_pad_centre = pad_left.bottom_right.y - ball.top_left.y;
