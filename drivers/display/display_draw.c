@@ -3,6 +3,16 @@
 #include "display.h"
 #include "display_data.h"
 
+// Text buffer
+#define DISPLAY_TEXTBUFFER_WIDTH 16;
+#define DISPLAY_TEXTBUFFER_HEIGHT 8;
+#define DISPLAY_TEXTBUFFER_CHAR_WIDTH 6;
+#define DISPLAY_TEXTBUFFER_CHAR_HEIGHT 8;
+
+uint8_t text_buffer char*[DISPLAY_TEXTBUFFER_HEIGHT][DISPLAY_TEXTBUFFER_WIDTH];
+uint8_t text_buffer_column = 0;
+uint8_t text_buffer_line = 0;
+
 // Signum function, helper function for line drawing
 static uint8_t
 sgn(int x)
@@ -13,6 +23,7 @@ sgn(int x)
 void
 display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char* asciiIndex)
 {
+	// FIXME: Use actual font size
 	//const uint8_t *font;
 	/*if(font_size <= 0) font = &font_0;
 	if(font_size == 1) font = &font_1;
@@ -34,14 +45,31 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char* asciiIndex)
 				bit_index = 0; 
 				byte_index++;
 			}
-		}		
+		}
 	}
 }
 
-static void
-display_draw_rect(uint8_t topLeftX, uint8_t topLeftY, uint8_t bottomRightX, uint8_t bottomRightY)
+void
+display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, char* char_array)
 {
-	
+	// FIXME: Use actual font size
+	uint8_t char_width = pgm_read_byte(&font_0[0][0]);
+	uint8_t index = 0;
+	uint8_t current_x = x;
+	while(char_array[index] != '\0'){
+		display_draw_char(current_x, y, font_size, char_array[index]);
+		index++;
+		current_x += char_width;
+	}
+}
+
+void
+display_draw_rect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
+{
+	display_draw_line(x1, y1, x2, y1);
+	display_draw_line(x2, y1, x2, y2);
+	display_draw_line(x1, y2, x2, y2);
+	display_draw_line(x1, y1, x1, y2);
 }
 
 void 
@@ -88,5 +116,60 @@ display_draw_line(uint8_t xstart ,uint8_t ystart ,uint8_t xend ,uint8_t yend)
 			 y += pdy;
 		}
 		display_set_pixel(x,y,1);
+	}
+}
+
+static void
+display_textbuffer_shiftup(void){
+	for(uint8_t line = 1; line < DISPLAY_TEXTBUFFER_HEIGHT; line++){
+		for(uint8_t column = 0; column < DISPLAY_TEXTBUFFER_WIDTH; column++){
+			if(line < DISPLAY_TEXTBUFFER_HEIGHT - 1){
+				text_buffer[line][column] = text_buffer[line + 1][column];
+			}else{
+				text_buffer[line][column] = ' ';
+			}
+		}
+	}
+}
+
+void 
+display_print(char* char_array)
+{
+	uint8_t char_index = 0;
+	while(char_array[char_index] != '\0'){
+		text_buffer[text_buffer_column][text_buffer_line] = char_array[char_index];
+		char_index++;
+		text_buffer_column++;
+		if(text_buffer_column >= DISPLAY_TEXTBUFFER_WIDTH){
+			text_buffer_column = 0;
+			text_buffer_line++;
+		}
+		if(text_buffer_column >= DISPLAY_TEXTBUFFER_HEIGHT){
+			// Bounced to bottom
+			display_textbuffer_shiftup();
+			text_buffer_line--;
+		}
+	}
+	
+	for(uint8_t line = 1; line < DISPLAY_TEXTBUFFER_HEIGHT; line++){
+		display_draw_string(0, line * DISPLAY_TEXTBUFFER_HEIGHT, text_buffer[line]);
+	}
+}
+
+void
+display_draw_image(uint8_t topx, uint8_t topy, uint8_t* image_array){
+	uint8_t image_width = image_array[0];
+	uint8_t image_height = image_array[1];
+	uint8_t byte_index = 2;
+	uint8_t bit_index = 0;
+	for(uint8_t y = 0; y < image_height; y++){
+		for(uint8_t x = 0; y < image_width; x++){
+			display_set_pixel(topx + x, topy + y, pgm_read_byte(&image_array[byte_index]) >>(7-bit_index) & 1);
+			bit_index++;
+			if(bit_index >= 8){
+				bit_index = 0; 
+				byte_index++;
+			}
+		}
 	}
 }
