@@ -398,7 +398,7 @@ bt_discover (char **result, bool (*update_callback)(const char *name, const uint
     if (!send_cmd (BT_FIND_DEVICES, NULL))
         return false;
 
-    while (!fifo_cmp_pgm (&in_fifo, PSTR ("\r\nInquiry Results:\r\n")))
+    while_timeout (!fifo_cmp_pgm (&in_fifo, PSTR ("\r\nInquiry Results:\r\n")), 2000)
         uart_receive();
 
     for (uint16_t i = 0; i < 65000; i++)
