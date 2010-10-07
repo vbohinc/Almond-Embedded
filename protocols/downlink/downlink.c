@@ -174,7 +174,7 @@ bool downlink_process_pkg (uint8_t * data, uint8_t length)
     }
 
   p->opcode |= return_package ? RET : ERROR;
-  return bt_send (p, DOWNLINK_PACKAGE_LENGTH);
+  return bt_send ((void *)p, DOWNLINK_PACKAGE_LENGTH);
 #ifdef DEBUG
 #endif
 }

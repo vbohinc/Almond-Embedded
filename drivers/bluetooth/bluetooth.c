@@ -325,13 +325,13 @@ bt_receive (uint8_t * data, uint8_t * length, uint16_t timeout_ms)
 
 
 bool
-bt_send (const char *data, const uint8_t length)
+bt_send (void *data, const uint8_t length)
 {
   if (update_comm_mode (0) == BT_CMD)
     return false;
 
   uart_send ((const char *) &length, 1, 1);
-  uart_send (data, length, 1);
+  uart_send ((char *)data, length, 1);
   return (update_comm_mode (0) == BT_DATA);
 }
 
