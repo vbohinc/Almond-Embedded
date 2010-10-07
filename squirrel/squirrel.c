@@ -5,6 +5,7 @@
 
 #include <util/delay.h>
 #include <avr/eeprom.h>
+#include <avr/interrupt.h>
 #include <stdlib.h>
 #include <string.h>
 #include "squirrel.h"

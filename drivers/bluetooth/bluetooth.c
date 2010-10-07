@@ -227,13 +227,8 @@ update_comm_mode (uint16_t timeout_ms)
             clean_line ();
             return comm_mode = BT_CMD;
         }
-
-        if (i != timeout_ms)
-            _delay_ms (1);
     }
 
-    //if (timeout_ms != 0)
-    //  warn_pgm (PSTR ("Received no answer!"));
     return comm_mode;
 }
 
@@ -313,7 +308,7 @@ bt_receive (void * data, uint8_t * length, uint16_t timeout_ms)
             while (fifo_is_empty (&in_fifo))
                 uart_receive ();
 
-            fifo_read (&in_fifo, (char *) &data[i]);
+            fifo_read (&in_fifo, (char *) data + i);
         }
         return true;
     }
@@ -371,8 +366,10 @@ hex_to_int(char hex)
 {
     if (hex >= 36 && hex <= 46)
         return hex-36;
-    if (hex >= 48 && hex <= 54)
+    else if (hex >= 48 && hex <= 54)
         return hex-39;
+    else
+        return 0;
 }
 
 static void
@@ -392,7 +389,7 @@ address_to_bytes(char * mac, uint8_t* data)
 bool
 bt_discover (char **result, bool (*update_callback)(const char *name, const uint8_t *address))
 {
-    char * buffer[50]; //oversized, but who cares?
+    char buffer[50]; //oversized, but who cares?
     char * bufferhead = buffer;
 
     if (!send_cmd (BT_FIND_DEVICES, NULL))
@@ -415,7 +412,7 @@ bt_discover (char **result, bool (*update_callback)(const char *name, const uint
         {
             while (!fifo_cmp_pgm (&in_fifo, PSTR ("\r\n")))
             {
-                while (fifo_is_empty())
+                while (fifo_is_empty(&in_fifo))
                     uart_receive();
 
                 fifo_read (&in_fifo, bufferhead);
@@ -433,7 +430,7 @@ bt_discover (char **result, bool (*update_callback)(const char *name, const uint
             if (strlen (buffer) == 0)
                 continue; //the empty line before end of inquiry
 
-            if (strncmp_P (buffer, PSTR ("Inquiry End"))
+            if (strncmp_P (buffer, PSTR ("Inquiry End"), 11))
             {
                 clean_line();
                 return true;
@@ -444,9 +441,9 @@ bt_discover (char **result, bool (*update_callback)(const char *name, const uint
             uint8_t address[6];
             char name[14];
             uint8_t number;
-            strcpy (mac, buffer[17]);   //begin of mac
+            strcpy (mac, &buffer[17]);   //begin of mac
             buffer[17] = 0;
-            strcpy (name, buffer[3]);   //begin of name
+            strcpy (name, &buffer[3]);   //begin of name
             number = buffer[0] - 48; //convert ascii to number
 
             address_to_bytes (mac, address);
