@@ -34,11 +34,6 @@ typedef enum
   BT_DISABLE_AUTOCONNECT,       // ATO1
   BT_SET_MASTER,                // ATR0
   BT_SET_SLAVE,                 // ATR1
-  BT_DISABLE_ECHO,              // ATE0
-  BT_SET_BAUDRATE               // ATL3 TODO: Korrekten wert eintragen
-#if 0
-    TODO:BT_ENABLE_FLOWCONTROL 
-#endif
 } bt_cmd_t;
 
 #ifdef SQUIRREL
@@ -110,10 +105,9 @@ uart_send (const char *data, const uint8_t length, const uint16_t delay)
           warn_pgm (PSTR ("UART: Remote not ready"));
           _delay_ms (1);
         }
-        if(comm_mode == BT_CMD)
+      if(comm_mode == BT_CMD)
         {
-          //check for echo
-          while(fifo_is_empty(&in_fifo))
+	  while_timeout(!fifo_is_empty(&in_fifo), 100)
             uart_receive();
           char echo;
           fifo_read(&in_fifo, &echo);
@@ -167,15 +161,6 @@ send_cmd (const bt_cmd_t command, const char *data)
 
     case BT_SET_SLAVE:
       strcpy_P (full_command, PSTR ("ATR1"));
-      break;
-
-    case BT_DISABLE_ECHO:
-      strcpy_P (full_command, PSTR ("ATE0"));
-      break;
-
-    // FIXME: Data...
-    case BT_SET_BAUDRATE:
-      strcpy_P (full_command, PSTR ("ATL3"));
       break;
 
     default:
