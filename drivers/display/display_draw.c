@@ -1,25 +1,34 @@
+#include <avr/pgmspace.h>
 #include "display_draw.h"
 #include "display.h"
 #include "display_data.h"
 
+// Signum function, helper function for line drawing
+static uint8_t
+sgn(int x)
+{
+	return (x > 0) ? 1 : (x < 0) ? -1 : 0;
+}
+
 void
 display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char* asciiIndex)
 {
-	uint8_t PROGMEM font;
-	if(font_size <= 0) font = font_0;
-	if(font_size == 1) font = font_1;
-	if(font_size >= 2) font = font_2;
-	uint8_t char_width = font[0];
-	uint8_t char_height = font[1];
+	//const uint8_t *font;
+	/*if(font_size <= 0) font = &font_0;
+	if(font_size == 1) font = &font_1;
+	if(font_size >= 2) font = &font_2;*/
+	uint8_t char_width = pgm_read_byte(&font_0[0][0]);
+	uint8_t char_height = pgm_read_byte(&font_0[0][1]);
 	uint8_t bit_index = 0;
 	uint8_t byte_index = 0;
-	uint8_t char_index = asciiIndex - FONT_CHAR_ASCII_OFFSET;
+	uint8_t char_index = *asciiIndex - FONT_CHAR_ASCII_OFFSET;
 	// Fall back to '?' for characters out of range
-	char_index = 31 if(char_index <= FONT_CHAR_MIN || char_index >= FONT_CHAR_MAX);
+	if(char_index <= FONT_CHAR_MIN || char_index >= FONT_CHAR_MAX)
+	  char_index = 31;
 	
 	for(uint8_t cy = y; cy <= y + char_height; cy++){
 		for(uint8_t cx = x; cx <= x + char_width; cx++){
-			display_set_pixel(x, y, font[char_index][byte_index]>>(7-bit_index) & 1);
+			display_set_pixel(x, y, pgm_read_byte(&font_0[char_index][byte_index]) >>(7-bit_index) & 1);
 			bit_index++;
 			if(bit_index >= 8){
 				bit_index = 0; 
@@ -80,11 +89,4 @@ display_draw_line(uint8_t xstart ,uint8_t ystart ,uint8_t xend ,uint8_t yend)
 		}
 		display_set_pixel(x,y,1);
 	}
-}
-
-// Signum function, helper function for line drawing
-uint8_t
-sgn(int x)
-{
-	return (x > 0) ? 1 : (x < 0) ? -1 : 0;
 }

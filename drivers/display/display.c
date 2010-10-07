@@ -29,7 +29,9 @@
 enum {
   DISPLAY_CMD,
   DISPLAY_DATA 
-}
+};
+
+inline static void display_send (uint8_t value, bool data);
 
 static uint8_t backbuffer[DISPLAY_BACKBUFFER_LINES][DISPLAY_BACKBUFFER_COLUMNS];
 
@@ -108,8 +110,8 @@ display_send (uint8_t value, bool data)
 inline static void 
 display_set_col(uint8_t col)
 {
-	display_send(0x10 + (col >> 4));		// MSB
-	display_send(0x00 + (col & 0x0F));	// LSB
+	display_send(0x10 + (col >> 4), DISPLAY_CMD);		// MSB
+	display_send(0x00 + (col & 0x0F), DISPLAY_CMD);	// LSB
 }
 
 inline static void 
@@ -117,7 +119,7 @@ display_set_page(uint8_t page)
 {
 	//Top down instead of bottom up
 	uint8_t inverted_page = DISPLAY_PAGE_NUMBER - page;
-	display_send(0xB0 + inverted_page);
+	display_send(0xB0 + inverted_page, DISPLAY_CMD);
 }
 
 void
@@ -127,7 +129,7 @@ display_flip(void)
 		display_set_page(page);
 		display_set_col(0);
 		for(uint8_t col = 0; col < DISPLAY_BACKBUFFER_COLUMNS; col++){
-			display_cmd(backbuffer[page][col], 1);
+			display_send (backbuffer[page][col], DISPLAY_DATA);
 		}
 	}
 }
