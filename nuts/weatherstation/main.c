@@ -73,13 +73,19 @@ uint16_t get_value(uint8_t id)
       d = bmp085_get_data();
       return (uint16_t) d.pressure;
 
-    case 2: // LIGHT
+    case 2:{// LIGHT
       init_adc (0,(1<<ADPS1) | (1<<ADPS0));
-      return read_adc (0);
+      double a = (double)read_adc(0);
+      a = (226.383*(a-468.995)*(a-88.086)*(a-9.53595))/(a*a*a);
+      return (uint16_t)a; // adc value to lux (from 0.1 to 1000)
+    }
 
-    case 3: // HUMIDITY
+    case 3:{// HUMIDITY
       init_adc (1,(1<<ADPS1) | (1<<ADPS0));
-      return read_adc (1);
+      double a = (double)read_adc(1);
+      a = (125*a)/768-26.6667;
+      return (uint16_t)a; // adc value to percent (from 0 to 100)
+    }
 
     default:
       debug_pgm(PSTR("UNK:SEN"));
@@ -106,8 +112,8 @@ void set_value(uint8_t id, uint16_t value)
 
 void blue_sky (void)
 {
-  sei();
-  bt_init();
+  sei ();
+  bt_init ();
   bt_set_mode (BLUETOOTH_SLAVE);
 }
 
@@ -128,8 +134,11 @@ int main (void)
 
   while (true)
     {
-      // insert downlink function, that handles bluetooth
-      // bt_receive ();
+      uint8_t data[DOWNLINK_PACKAGE_LENGTH];
+      uint8_t length = DOWNLINK_PACKAGE_LENGTH;
+      
+      if (bt_receive (data, &length, 0))
+        downlink_process_pkg (data, length);
       
       if (sleep > BLUETOOTH_START_TIME)
         {

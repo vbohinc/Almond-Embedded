@@ -53,6 +53,11 @@ EXTRAINCDIRS += $(BASE)/drivers/ $(BASE)/protocols/ $(BASE)/shared/
 
 ##################### DEFINE ALMOND LIBS HERE ############################
 
+#display
+ifeq (display, $(findstring display,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/display/display.c $(BASE)/drivers/display/display_draw.c
+endif
+
 #downlink 
 ifeq (downlink, $(findstring downlink,$(ALMONDLIBS)))
 ALMONDLIBS += bluetooth
@@ -131,7 +136,7 @@ endif
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC += $(TARGET).c
+#SRC += $(TARGET).c
 
 
 

@@ -75,7 +75,7 @@ fifo_cmp_pgm_at (fifo_t * fifo, const prog_char * pgm, const uint8_t index)
 
   // We found the string, lets move the pointer
   fifo->head = ((fifo->head + i + index) % fifo->size);
-  fifo->count -= i;
+  fifo->count -= (i + index);
   return true;
 }
 
