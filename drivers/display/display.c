@@ -2,13 +2,13 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-//LINES
+// LINES
 #define DISPLAY_PAGE_NUMBER 7  	//Starts with Page 0, here: 8 pages overall
 #define DISPLAY_PAGE_INIT 0
 
-//COLUMNS
+// COLUMNS
 // FIXME: Determine real col number
-#define DISPLAY_COL_NUMBER 131	//Starts with column 0, here: 132 columns overall
+#define DISPLAY_COL_NUMBER 127	//Starts with column 0, here: 132 columns overall
 #define DISPLAY_COL_HEIGHT 8
 #define DISPLAY_COL_INIT 0 		//normal: 0, reverse: 4
 #define DISPLAY_COL_OFFSET 1
@@ -22,7 +22,7 @@
 
 // Backbuffer
 // FIXME: Make consts
-#define DISPLAY_BACKBUFFER_COLUMNS 132
+#define DISPLAY_BACKBUFFER_COLUMNS 128
 #define DISPLAY_BACKBUFFER_LINES 8
 
 static uint8_t backbuffer[DISPLAY_BACKBUFFER_LINES][DISPLAY_BACKBUFFER_COLUMNS];
@@ -136,10 +136,8 @@ display_cmd(uint8_t value, bool data)
 inline static void 
 display_set_col(uint8_t col)
 {
-	// MSB
-	display_command(0x10 + (col >> 4));
-	// LSB
-	display_command(0x00 + (col & 0x0F));
+	display_command(0x10 + (col >> 4));		// MSB
+	display_command(0x00 + (col & 0x0F));	// LSB
 }
 
 inline static void 
