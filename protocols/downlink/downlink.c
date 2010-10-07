@@ -9,29 +9,32 @@
 
 #ifdef SQUIRREL
 
-downlink_package package;
-
 /* WARNING: Assuming layer above already connected */
-uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t value, bool *err)
+static uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t value, bool *err)
 {
-  *err = false;
+  downlink_package package;
+  uint8_t length;
+  
   package.opcode = opcode | flag;
   package.id = id;
   package.value = value;
-  uint8_t length = DOWNLINK_PACKAGE_LENGTH;
+  *err = false;
+  length = DOWNLINK_PACKAGE_LENGTH;
 
-  if (bt_send (&package, length))
+  if (bt_send ((void *) &package, length) && bt_receive ((void *) &package, &length, DOWNLINK_TIMEOUT_MS))
     {
-      // FIXME: Dauerschleife
-      while (!bt_receive (&package, &length))
-        _delay_ms (1);
-        
-      if ((package.opcode == (RET | opcode | flag)) && (package.id == id))
+      if (length != DOWNLINK_PACKAGE_LENGTH)
+        error_pgm (PSTR ("Length doesnt match"));
+      else if ((package.opcode == (RET | opcode | flag)) && (package.id == id) )
         return package.value;
       else if (package.opcode == (ERROR | flag))
-        error ("NSE"); // Nut signaled error
+        error_pgm (PSTR ("Nut signalled error")); // 
       else
-        error ("DPM"); // Downlink protocol mismatch
+        error_pgm (PSTR ("Downlink protocol mismatch")); // 
+    }
+  else
+    {
+      error_pgm (PSTR ("Send/receive error")); 
     }
           
   *err = true;
@@ -62,6 +65,7 @@ void downlink_bye (uint16_t time_sec, bool *err)
 {
   downlink_request (BYE, 0, 0, time_sec, err);
 }
+
 #endif
 
 #ifdef NUT
@@ -174,9 +178,7 @@ bool downlink_process_pkg (uint8_t * data, uint8_t length)
     }
 
   p->opcode |= return_package ? RET : ERROR;
-  return bt_send ((void *)p, DOWNLINK_PACKAGE_LENGTH);
-#ifdef DEBUG
-#endif
+  return bt_send ((void *) p, DOWNLINK_PACKAGE_LENGTH);
 }
 
 #endif

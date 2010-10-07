@@ -43,11 +43,11 @@ struct _downlink_package
 
 #ifdef SQUIRREL
 
-extern uint16_t downlink_get_sensor_value (uint8_t id, bool *err);
-extern void     downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err);
-extern uint8_t  downlink_get_nut_class (bool *err);
-extern uint8_t  downlink_get_extension_class (uint8_t id, bool *err);
-extern void     downlink_bye (uint16_t time_sec, bool *err);
+uint16_t downlink_get_sensor_value (uint8_t id, bool *err);
+void     downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err);
+uint8_t  downlink_get_nut_class (bool *err);
+uint8_t  downlink_get_extension_class (uint8_t id, bool *err);
+void     downlink_bye (uint16_t time_sec, bool *err);
 
 #endif
 
@@ -65,7 +65,7 @@ extern void set_value (uint8_t id, uint16_t value);
 extern uint16_t sleep;
 
 /* Callback handler */
-extern bool downlink_process_pkg (uint8_t * data, uint8_t length);
+bool downlink_process_pkg (uint8_t * data, uint8_t length);
 
 #endif
 
