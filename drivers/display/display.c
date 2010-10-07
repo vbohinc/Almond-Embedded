@@ -14,11 +14,11 @@
 #define DISPLAY_COL_OFFSET 1
 
 // DISPLAY PORTS
-#define DISPLAY_CS  PH6 // chip select
-#define DISPLAY_RST PH7 // reset
-#define DISPLAY_RS  PH5 //Register Select input
-#define DISPLAY_RD  PH3 //read
-#define DISPLAY_WR  PH4 //write
+#define DISPLAY_CS  6 // chip select
+#define DISPLAY_RST 7 // reset
+#define DISPLAY_RS  5 //Register Select input
+#define DISPLAY_RD  3 //read
+#define DISPLAY_WR  4 //write
 
 // Backbuffer
 // FIXME: Make consts

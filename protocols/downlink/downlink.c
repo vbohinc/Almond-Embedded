@@ -23,7 +23,7 @@ uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t va
   if (bt_send (&package, length))
     {
       // FIXME: Dauerschleife
-      while (!bt_receive (&package, &length))
+      while (!bt_receive ((void*)&package, &length))
         _delay_ms (1);
         
       if ((package.opcode == (RET | opcode | flag)) && (package.id == id))
