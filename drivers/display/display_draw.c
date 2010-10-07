@@ -1,15 +1,16 @@
 #include <avr/pgmspace.h>
-#include "display_draw.h"
+
 #include "display.h"
+#include "display_draw.h"
 #include "display_data.h"
 
 // Text buffer
-#define DISPLAY_TEXTBUFFER_WIDTH 16;
-#define DISPLAY_TEXTBUFFER_HEIGHT 8;
-#define DISPLAY_TEXTBUFFER_CHAR_WIDTH 6;
-#define DISPLAY_TEXTBUFFER_CHAR_HEIGHT 8;
+#define DISPLAY_TEXTBUFFER_WIDTH 16
+#define DISPLAY_TEXTBUFFER_HEIGHT 8
+#define DISPLAY_TEXTBUFFER_CHAR_WIDTH 6
+#define DISPLAY_TEXTBUFFER_CHAR_HEIGHT 8
 
-uint8_t text_buffer char*[DISPLAY_TEXTBUFFER_HEIGHT][DISPLAY_TEXTBUFFER_WIDTH];
+char    text_buffer [DISPLAY_TEXTBUFFER_HEIGHT][DISPLAY_TEXTBUFFER_WIDTH];
 uint8_t text_buffer_column = 0;
 uint8_t text_buffer_line = 0;
 
@@ -21,7 +22,7 @@ sgn(int x)
 }
 
 void
-display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char* asciiIndex)
+display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 {
 	// FIXME: Use actual font size
 	//const uint8_t *font;
@@ -32,7 +33,7 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char* asciiIndex)
 	uint8_t char_height = pgm_read_byte(&font_0[0][1]);
 	uint8_t bit_index = 0;
 	uint8_t byte_index = 0;
-	uint8_t char_index = *asciiIndex - FONT_CHAR_ASCII_OFFSET;
+	uint8_t char_index = asciiIndex - FONT_CHAR_ASCII_OFFSET;
 	// Fall back to '?' for characters out of range
 	if(char_index <= FONT_CHAR_MIN || char_index >= FONT_CHAR_MAX)
 	  char_index = 31;
@@ -152,7 +153,7 @@ display_print(char* char_array)
 	}
 	
 	for(uint8_t line = 1; line < DISPLAY_TEXTBUFFER_HEIGHT; line++){
-		display_draw_string(0, line * DISPLAY_TEXTBUFFER_HEIGHT, text_buffer[line]);
+		display_draw_string(0, line * DISPLAY_TEXTBUFFER_HEIGHT, 0, text_buffer[line]);
 	}
 }
 

@@ -9,7 +9,8 @@
 #define FONT_CHAR_ASCII_OFFSET 32
 
 // FONT SIZE: 0 (6x8)
-const uint8_t font_0[][6] PROGMEM = { {6, 8, 0, 0, 0, 0},
+const uint8_t font_0[][6] PROGMEM = { 
+    {  6,  8,  0,  0,  0,  0}, // TYPO INFO
     {  0,  0,  0,  0,  0,  0}, //   (ASCII 32)
     {  0,  2,  8, 32,  2,  0}, // ! (ASCII 33)
     {  1, 69,  0,  0,  0,  0}, // " (ASCII 34)
@@ -306,7 +307,7 @@ const uint8_t font_2[][17] PROGMEM = { {  9,  15,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
 // Almond logo
-const uint8_t image_logo[450] = {
+const uint8_t image_logo[] = {
 60, 60
 ,  0,  0,  3,  0,  0,  0,  0,  0,  0,  0,112
 ,  0,  0,  0,  0,  0,  0, 14,  0,  0,  0,  0
