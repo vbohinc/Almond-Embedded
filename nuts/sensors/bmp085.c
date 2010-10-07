@@ -53,11 +53,11 @@ uint16_t get_word(const uint8_t word)
   uint8_t temp;
   uint16_t result;
   twi_read(&temp,ACK);
-  byte_to_hex(temp);
+  //byte_to_hex(temp);
   result = (((uint16_t)temp)<<8);
 
   twi_read(&temp,NACK);
-  byte_to_hex(temp);
+  //byte_to_hex(temp);
   result += temp;
 
 //debug_pgm(PSTR("twi_stop"));
