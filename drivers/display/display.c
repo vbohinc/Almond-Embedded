@@ -14,11 +14,11 @@
 #define DISPLAY_COL_OFFSET 1
 
 // DISPLAY PORTS
-#define DISPLAY_CS  PE0	// chip select
-#define DISPLAY_RST PC7	// reset
-#define DISPLAY_RS  PB3	//Register Select input
-#define DISPLAY_RD  PB2	//read
-#define DISPLAY_WR  PE1	//write
+#define DISPLAY_CS  PH6 // chip select
+#define DISPLAY_RST PH7 // reset
+#define DISPLAY_RS  PH5 //Register Select input
+#define DISPLAY_RD  PH3 //read
+#define DISPLAY_WR  PH4 //write
 
 // Backbuffer
 // FIXME: Make consts
@@ -33,27 +33,27 @@ display_init(void)
 	//According to the init routine in the manual
 
 	//User system setup by external pins
-	DDRA = 0xFF;
-	set_bit(DDRB, DDB3);
-	set_bit(DDRC, DDC7);
-	set_bit(DDRE, DDE0);
-	set_bit(DDRE, DDE1);
+	PORTA.DIR = 0xFF;
+	set_bit(PORTH.DIR, DISPLAY_RS);
+	set_bit(PORTH.DIR, DISPLAY_RST);
+	set_bit(PORTH.DIR, DISPLAY_CS);
+	set_bit(PORTH.DIR, DISPLAY_WR);
 
-	set_bit(PORTE, DISPLAY_CS);
+	set_bit(PORTH.OUT, DISPLAY_CS);
 
 	//RST Low
-	clear_bit(PORTC, DISPLAY_RST);
+	clear_bit(PORTH.OUT, DISPLAY_RST);
 
 	//System setup by external pins
-	set_bit(PORTB, DISPLAY_RS);
-	set_bit(PORTE, DISPLAY_WR);
-	set_bit(PORTB, DISPLAY_RD);
+	set_bit(PORTH.OUT, DISPLAY_RS);
+	set_bit(PORTH.OUT, DISPLAY_WR);
+	set_bit(PORTH.OUT, DISPLAY_RD);
 
 	//Waiting for stabilizing power
 	_delay_ms(100);
 
 	//RST high
-	set_bit(PORTC, DISPLAY_RST);
+	set_bit(PORTH.OUT, DISPLAY_RST);
 
 	//ADC SELECT
 	//normal: 0xA0, reverse: 0xA1
@@ -106,7 +106,7 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 {
 	uint8_t page = y / 8;
 	uint8_t col = x;
-	uint8_t bit_index = y % 8;
+	uint8_t bit_index = 7 - (y % 8);
 	
 	if(value)
 		// Black pixel
@@ -120,17 +120,17 @@ inline static void
 display_cmd(uint8_t value, bool data)
 {	
 	if(data){
-		set_bit(PORTB, DISPLAY_RS);		
+		set_bit(PORTH.OUT, DISPLAY_RS);		
 	}else{
-		clear_bit(PORTB, DISPLAY_RS);
+		clear_bit(PORTH.OUT, DISPLAY_RS);
 	}
 	// FIXME: Check interface
-	clear_bit(PORTE, DISPLAY_CS);
-	clear_bit(PORTE, DISPLAY_WR);
-	set_bit(PORTB, DISPLAY_RD);
-	PORTA = value;
-	set_bit(PORTE, DISPLAY_WR);
-	set_bit(PORTE, DISPLAY_CS);
+	clear_bit(PORTH.OUT, DISPLAY_CS);
+	clear_bit(PORTH.OUT, DISPLAY_WR);
+	set_bit(PORTH.OUT, DISPLAY_RD);
+	PORTA.OUT = value;
+	set_bit(PORTH.OUT, DISPLAY_WR);
+	set_bit(PORTH.OUT, DISPLAY_CS);
 }
 
 inline static void 
