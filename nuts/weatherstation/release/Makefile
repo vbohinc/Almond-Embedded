@@ -1,5 +1,5 @@
 MCU = atmega8535
-F_CPU = 16000000
+F_CPU = 11059200
 TARGET = main
 BASE = ../../..
 #ALMONDLIBS = twi error
