@@ -110,27 +110,41 @@ void set_value(uint8_t id, uint16_t value)
     }
 }
 
-void blue_sky (void)
+void disable_bt (void)
+{
+  cli ();
+#ifndef DEBUG
+  set_bit(PORTB, 0);
+#endif
+}
+
+void enable_bt (void)
 {
   sei ();
+#ifndef DEBUG
+  set_bit(DDRB, 0);
+  clear_bit(PORTB, 0);
+#endif
   bt_init ();
   bt_set_mode (BLUETOOTH_SLAVE);
 }
 
 int main (void)
 {
+#ifdef DEBUG
   /* FTDI */
   error_init ();
+#endif
 
   /* Initialize Bluetooth */
-  blue_sky ();
+  enable_bt ();
 
   /* Initialize Sensors */
   init_bmp085_sensor ();
 
   /* Initialize Actors */
   LED1_DDR |= (1<<LED1_PIN);
-  LED1_PORT |= (1<<LED1_PIN);
+
 
   while (true)
     {
@@ -138,15 +152,21 @@ int main (void)
       uint8_t length = DOWNLINK_PACKAGE_LENGTH;
       
       if (bt_receive (data, &length, 0))
-        downlink_process_pkg (data, length);
+        {
+          LED1_PORT |= (1<<LED1_PIN);
+          downlink_process_pkg (data, length);
+          LED1_PORT &= ~(1<<LED1_PIN);
+        }
       
       if (sleep > BLUETOOTH_START_TIME)
         {
           LED1_PORT &= ~(1<<LED1_PIN);
+          
+          disable_bt ();
           for (; sleep > BLUETOOTH_START_TIME; sleep--)
             _delay_ms(1000);
-
-          blue_sky();
+          enable_bt ();
+          
           LED1_PORT |= (1<<LED1_PIN);
         }
     }
