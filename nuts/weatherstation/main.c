@@ -73,13 +73,19 @@ uint16_t get_value(uint8_t id)
       d = bmp085_get_data();
       return (uint16_t) d.pressure;
 
-    case 2: // LIGHT
+    case 2:{// LIGHT
       init_adc (0,(1<<ADPS1) | (1<<ADPS0));
-      return read_adc (0);
+      double a = (double)read_adc(0);
+      a = (226.383*(a-468.995)*(a-88.086)*(a-9.53595))/(a*a*a);
+      return (uint16_t)a; // adc value to lux (from 0.1 to 1000)
+    }
 
-    case 3: // HUMIDITY
+    case 3:{// HUMIDITY
       init_adc (1,(1<<ADPS1) | (1<<ADPS0));
-      return read_adc (1);
+      double a = (double)read_adc(1);
+      a = (125*a)/768-26.6667;
+      return (uint16_t)a; // adc value to percent (from 0 to 100)
+    }
 
     default:
       debug_pgm(PSTR("UNK:SEN"));
