@@ -25,13 +25,17 @@
 #define DISPLAY_BACKBUFFER_COLUMNS 128
 #define DISPLAY_BACKBUFFER_LINES 8
 
+// Display command type
+enum {
+  DISPLAY_CMD,
+  DISPLAY_DATA 
+}
+
 static uint8_t backbuffer[DISPLAY_BACKBUFFER_LINES][DISPLAY_BACKBUFFER_COLUMNS];
 
 void 
 display_init(void)
 {
-	//According to the init routine in the manual
-
 	//User system setup by external pins
 	PORTA.DIR = 0xFF;
 	set_bit(PORTH.DIR, DISPLAY_RS);
@@ -41,64 +45,35 @@ display_init(void)
 
 	set_bit(PORTH.OUT, DISPLAY_CS);
 
-	//RST Low
+
 	clear_bit(PORTH.OUT, DISPLAY_RST);
 
-	//System setup by external pins
+
 	set_bit(PORTH.OUT, DISPLAY_RS);
 	set_bit(PORTH.OUT, DISPLAY_WR);
 	set_bit(PORTH.OUT, DISPLAY_RD);
 
-	//Waiting for stabilizing power
-	_delay_ms(100);
-
-	//RST high
+	_delay_ms(100);						//Waiting for stabilizing power
 	set_bit(PORTH.OUT, DISPLAY_RST);
 
-	//ADC SELECT
-	//normal: 0xA0, reverse: 0xA1
-	display_command(0xA0);
 
-	//SHL Select
-	//normal: 0xC0, reverse: 0xC8
-	display_command(0xC0);
 
-	//LCD Bias Select
-	display_command(0xA2);
+	display_send(0xA0, DISPLAY_DATA);	//ADC SELECT
+	display_send(0xC0, DISPLAY_DATA);	//SHL Select
+	display_send(0xA2, DISPLAY_DATA);	//LCD Bias Select
+	display_send(0x25, DISPLAY_DATA);	//Regulator resistor select
 
-	//Regulator resistor select
-	display_command(0x25);
+	display_send(0x81, DISPLAY_DATA);	//Set reference voltage mode
+	display_send(0x30, DISPLAY_DATA);	//Set reference voltage register
 
-	//------------
+	display_send(0x2F, DISPLAY_DATA);	//PowerControl
 
-	//Set reference voltage mode
-	display_command(0x81);
-	//Set reference voltage register
-	display_command(0x30);
-
-	//------------
-
-	//PowerControl
-	display_command(0x2F);
-
-	//DATA DISPLAY PART
-
-	//Initial Display line to 0
-	display_command(0x40);
-	// SET PAGE ADDRESS 0
-	display_command(0xB0);
-	//SET COLUMN ADDRESS MSB 0
-	display_command(0x10);
-	//SET COLUMN ADRESS LSB 0
-	display_command(0x00);
-
-	//REVERSE DISPLAY OFF
-	display_command(0xA6);
-	// Display ON
-	display_command(0xAF);
-
-	//Clean Display
-	display_clean();
+	display_send(0x40, DISPLAY_DATA);	//Initial Display line to 0
+	display_send(0xB0, DISPLAY_DATA);	// SET PAGE ADDRESS 0
+	display_send(0x10, DISPLAY_DATA);	//SET COLUMN ADDRESS MSB 0
+	display_send(0x00, DISPLAY_DATA);	//SET COLUMN ADRESS LSB 0
+	display_send(0xA6, DISPLAY_DATA);	//REVERSE DISPLAY OFF
+	display_send(0xAF, DISPLAY_DATA);	// Display ON
 }
 
 void
@@ -117,7 +92,7 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 }
 
 inline static void 
-display_cmd(uint8_t value, bool data)
+display_send (uint8_t value, bool data)
 {	
 	if(data){
 		set_bit(PORTH.OUT, DISPLAY_RS);		
@@ -136,8 +111,8 @@ display_cmd(uint8_t value, bool data)
 inline static void 
 display_set_col(uint8_t col)
 {
-	display_command(0x10 + (col >> 4));		// MSB
-	display_command(0x00 + (col & 0x0F));	// LSB
+	display_send(0x10 + (col >> 4));		// MSB
+	display_send(0x00 + (col & 0x0F));	// LSB
 }
 
 inline static void 
@@ -145,7 +120,7 @@ display_set_page(uint8_t page)
 {
 	//Top down instead of bottom up
 	uint8_t inverted_page = DISPLAY_PAGE_NUMBER - page;
-	display_command(0xB0 + inverted_page);
+	display_send(0xB0 + inverted_page);
 }
 
 void

@@ -2,7 +2,7 @@
 #include "display.h"
 #include "display_data.h"
 
-static void
+void
 display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char* asciiIndex)
 {
 	uint8_t PROGMEM font;

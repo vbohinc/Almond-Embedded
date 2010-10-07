@@ -6,7 +6,7 @@
 #define FONT_CHAR_ASCII_OFFSET 32
 
 // FONT SIZE: 0 (6x8)
-static PROGMEM uint8_t font_0[96] = {6,8,
+PROGMEM uint8_t font_0[96] = {6,8,
     {  0,  0,  0,  0,  0,  0}, //   (ASCII 32)
     {  0,  2,  8, 32,  2,  0}, // ! (ASCII 33)
     {  1, 69,  0,  0,  0,  0}, // " (ASCII 34)
@@ -105,7 +105,7 @@ static PROGMEM uint8_t font_0[96] = {6,8,
 };
 
 // FONT SIZE: 1 (7x13)
-static PROGMEM uint8_t font_1[96] = {7,13,
+PROGMEM uint8_t font_1[96] = {7,13,
     {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}, //   (ASCII 32)
     {  0,  0,  1,  2,  4,  8, 16, 32,  0,128,  0,  0}, // ! (ASCII 33)
     {  0,  0,  2,133, 10,  0,  0,  0,  0,  0,  0,  0}, // " (ASCII 34)
@@ -204,7 +204,7 @@ static PROGMEM uint8_t font_1[96] = {7,13,
 };
 
 // FONT SIZE: 2 (9x15)
-static PROGMEM uint8_t font_2[96] = {9,15,
+PROGMEM uint8_t font_2[96] = {9,15,
     {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}, //   (ASCII 32)
     {  0,  0,  0,  3,  1,128,192, 96, 48, 24, 12,  6,  0,  1,128,  0,  0}, // ! (ASCII 33)
     {  0,  0,  0,  6,195, 97,176,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}, // " (ASCII 34)
