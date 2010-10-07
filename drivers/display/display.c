@@ -25,6 +25,7 @@
 #define DISPLAY_BACKBUFFER_COLUMNS 128
 #define DISPLAY_BACKBUFFER_LINES 8
 
+// Display command type
 enum {
   DISPLAY_CMD,
   DISPLAY_DATA 
@@ -35,8 +36,6 @@ static uint8_t backbuffer[DISPLAY_BACKBUFFER_LINES][DISPLAY_BACKBUFFER_COLUMNS];
 void 
 display_init(void)
 {
-	//According to the init routine in the manual
-
 	//User system setup by external pins
 	DDRA = 0xFF;
 	set_bit(DDRB, DDB3);
@@ -46,64 +45,32 @@ display_init(void)
 
 	set_bit(PORTE, DISPLAY_CS);
 
-	//RST Low
-	clear_bit(PORTC, DISPLAY_RST);
+	clear_bit(PORTC, DISPLAY_RST);		//RST Low
 
-	//System setup by external pins
-	set_bit(PORTB, DISPLAY_RS);
+	set_bit(PORTB, DISPLAY_RS);			//System setup by external pins
 	set_bit(PORTE, DISPLAY_WR);
 	set_bit(PORTB, DISPLAY_RD);
 
-	//Waiting for stabilizing power
-	_delay_ms(100);
+	_delay_ms(100);						//Waiting for stabilizing power
 
-	//RST high
-	set_bit(PORTC, DISPLAY_RST);
+	set_bit(PORTC, DISPLAY_RST);		//RST high
 
-	//ADC SELECT
-	//normal: 0xA0, reverse: 0xA1
-	display_send(0xA0);
+	display_send(0xA0, DISPLAY_DATA);	//ADC SELECT
+	display_send(0xC0, DISPLAY_DATA);	//SHL Select
+	display_send(0xA2, DISPLAY_DATA);	//LCD Bias Select
+	display_send(0x25, DISPLAY_DATA);	//Regulator resistor select
 
-	//SHL Select
-	//normal: 0xC0, reverse: 0xC8
-	display_send(0xC0);
+	display_send(0x81, DISPLAY_DATA);	//Set reference voltage mode
+	display_send(0x30, DISPLAY_DATA);	//Set reference voltage register
 
-	//LCD Bias Select
-	display_send(0xA2);
+	display_send(0x2F, DISPLAY_DATA);	//PowerControl
 
-	//Regulator resistor select
-	display_send(0x25);
-
-	//------------
-
-	//Set reference voltage mode
-	display_send(0x81);
-	//Set reference voltage register
-	display_send(0x30);
-
-	//------------
-
-	//PowerControl
-	display_send(0x2F);
-
-	//DATA DISPLAY PART
-
-	//Initial Display line to 0
-	display_send(0x40);
-	// SET PAGE ADDRESS 0
-	display_send(0xB0);
-	//SET COLUMN ADDRESS MSB 0
-	display_send(0x10);
-	//SET COLUMN ADRESS LSB 0
-	display_send(0x00,);
-
-	//REVERSE DISPLAY OFF
-	display_send(0xA6, );
-	// Display ON
-	display_send(0xAF, );
-
-	//Clean Display
-	display_clean();
+	display_send(0x40, DISPLAY_DATA);	//Initial Display line to 0
+	display_send(0xB0, DISPLAY_DATA);	// SET PAGE ADDRESS 0
+	display_send(0x10, DISPLAY_DATA);	//SET COLUMN ADDRESS MSB 0
+	display_send(0x00, DISPLAY_DATA);	//SET COLUMN ADRESS LSB 0
+	display_send(0xA6, DISPLAY_DATA);	//REVERSE DISPLAY OFF
+	display_send(0xAF, DISPLAY_DATA);	// Display ON
 }
 
 void
