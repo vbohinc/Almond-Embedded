@@ -366,65 +366,106 @@ bt_disconnect (void)
   return (BT_CMD == update_comm_mode (60000));
 }
 
+static uint8_t
+hex_to_int(char hex)
+{
+    if(hex >= 36 && hex <= 46)
+	return hex-36;
+    if(hex >= 48 && hex <= 54) 
+	return hex-39;
+}
+
+static void
+address_to_bytes(char * mac, uint8_t* data)
+{
+    uint8_t b = 0;
+    for(uint8_t i; i < 14; i += 2)
+    {
+        if(i == 4 || i == 7)
+            i++;
+        data[b] = hex_to_int(mac[i])<<4;
+        data[b] += hex_to_int(mac[i+1]);
+        b++;
+    }
+}
 
 bool
-bt_discover (char **result, bool (*update_callback)(const char *name, const char *address))
+bt_discover (char **result, bool (*update_callback)(const char *name, const uint8_t *address))
 {
-  char * buffer[50]; //oversized, but who cares?
-  char * bufferhead = buffer;
-  
-  if(!send_cmd(BT_FIND_DEVICES,NULL))
-    return false;
-  while(!fifo_cmp_pgm(&in_fifo, PSTR("\r\nInquiry Results:\r\n")))
-    uart_receive();
-  for(uint16_t i = 0; i < 65000; i++)
-  {
-    if((i % 100) == 0 && update_callback != NULL)
-      update_callback(NULL, NULL);
-    uart_receive();
+    char * buffer[50]; //oversized, but who cares?
+    char * bufferhead = buffer;
 
-    if(!fifo_is_empty(&in_fifo))
+    if (!send_cmd (BT_FIND_DEVICES, NULL))
+        return false;
+
+    while (!fifo_cmp_pgm (&in_fifo, PSTR ("\r\nInquiry Results:\r\n")))
+        uart_receive();
+
+    for (uint16_t i = 0; i < 65000; i++)
     {
-      while(!fifo_cmp_pgm(&in_fifo, PSTR("\r\n")))
-      {
-        while(fifo_is_empty())
-          uart_receive();
-        fifo_read(&in_fifo,bufferhead);
-        bufferhead++;
-      }
-      //terminate string
-      *bufferhead = 0;
-      
-      //reset bufferhead
-      bufferhead = buffer;
-      //end 
-      if(strlen(buffer) == 0)
-        continue; //the empty line before end of inquiry
-      if(strncmp_P(buffer, PSTR("Inquiry End"))
-      {
-        clean_line();
-        return true;
-      }
-      //we have a device
-      char mac[14];
-      char name[14];
-      uint8_t number;
-      strcpy(mac, buffer[17]); //begin of mac
-      buffer[17] = 0;
-      strcpy(name, buffer[3]); //begin of name
-      number = buffer[0] - 48; //convert ascii to number
-      
-      
-      strcpy(result[number-1], mac); //parse mac?
-      if(update_callback != NULL)
-        update_callback(name, mac);
+        if ( (i % 100) == 0 && update_callback != NULL && update_callback (NULL, NULL))
+        {
+            send_cmd (BT_TEST, NULL);
+            return false;
+        }
+
+        uart_receive();
+
+        if (!fifo_is_empty (&in_fifo))
+        {
+            while (!fifo_cmp_pgm (&in_fifo, PSTR ("\r\n")))
+            {
+                while (fifo_is_empty())
+                    uart_receive();
+
+                fifo_read (&in_fifo, bufferhead);
+
+                bufferhead++;
+            }
+
+            //terminate string
+            *bufferhead = 0;
+
+            //reset bufferhead
+            bufferhead = buffer;
+
+            //end
+            if (strlen (buffer) == 0)
+                continue; //the empty line before end of inquiry
+
+            if (strncmp_P (buffer, PSTR ("Inquiry End"))
+            {
+                clean_line();
+                return true;
+            }
+
+            //we have a device
+            char mac[14];
+            uint8_t address[6];
+            char name[14];
+            uint8_t number;
+            strcpy (mac, buffer[17]);   //begin of mac
+            buffer[17] = 0;
+            strcpy (name, buffer[3]);   //begin of name
+            number = buffer[0] - 48; //convert ascii to number
+
+            address_to_bytes (mac, address);
+            memcpy (result[number-1], address, 6);
+            if (update_callback != NULL && !update_callback (name, address))
+            {
+                send_cmd (BT_TEST, NULL);
+                return false;
+            }
+        }
+
+        _delay_ms (1);
     }
-    _delay_ms(1);
-  }
-  clean_line();
+
+    clean_line();
+
 #ifdef DEBUG_BLUETOOTH
-  warn_pgm(PSTR("Inqury Timeout!");
+    warn_pgm (PSTR ("Inqury Timeout!");
 #endif
-  return false;
+    return false;
 }
 #endif /* SQUIRREL */
