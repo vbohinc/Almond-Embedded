@@ -71,25 +71,20 @@ static inline bool uplink_handle_set_package (uplink_package *p)
     }
 }
 
-void uplink_bluetooth_callback_handler (char *data_package, const uint8_t callback_type, const uint8_t data_length)
+bool uplink_process_pkg (uint8_t * data, uint8_t length)
 {
   bool error;
   uplink_package *p;
 
-  if (callback_type != 0)
-    return;
-
-
-  if (data_length != UPLINK_PACKAGE_LENGTH)
+  if (length != UPLINK_PACKAGE_LENGTH)
     {
-      byte_to_hex (data_length);
-      error_pgm (PSTR (" <-- Length - Malformed Uplink package"));
-      return;
+      error_pgm (PSTR ("Length doesnt match"));
+      return false;
     }
 
   squirrel_state_set (SLAVE_BUSY);
 
-  p = (uplink_package *) data_package;
+  p = (uplink_package *) data;
 
   switch (p->opcode & 0xF0)
     {
@@ -117,7 +112,7 @@ void uplink_bluetooth_callback_handler (char *data_package, const uint8_t callba
   
   p->opcode |= error ? ERROR : RET;
 
-  bluetooth_send_data_package (&(p->opcode), UPLINK_PACKAGE_LENGTH);
+  return bt_send ((void *) p, UPLINK_PACKAGE_LENGTH);
 }
 
 #endif
