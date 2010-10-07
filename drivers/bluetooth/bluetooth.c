@@ -96,25 +96,29 @@ uart_receive (void)
 }
 
 static void
-uart_send (const char *data, const uint8_t length, const uint16_t delay)
+uart_send (const char *data, const uint8_t length)
 {
+  char echo;
+          
   for (uint8_t i = 0; i < length; i++)
     {
-      while (uart_putc (data[i]) == 0)
+      if (uart_putc (data[i]) == 0)
         {
           warn_pgm (PSTR ("UART: Remote not ready"));
-          _delay_ms (1);
+          return;
         }
-      if(comm_mode == BT_CMD)
+        
+      /* Check for echo */
+      if (comm_mode == BT_CMD)
         {
-	  while_timeout(!fifo_is_empty(&in_fifo), 100)
+	        while_timeout (fifo_is_empty(&in_fifo), 100)
             uart_receive();
-          char echo;
-          fifo_read(&in_fifo, &echo);
-          if(echo != data[i])
-            error_pgm(PSTR("BT: WRONG ECHO"));
+          
+          fifo_read (&in_fifo, &echo);
+
+          if (echo != data[i])
+            error_pgm (PSTR ("BT: WRONG ECHO"));
         }
-      _delay_ms (delay);
     }
 }
 
@@ -175,7 +179,7 @@ send_cmd (const bt_cmd_t command, const char *data)
   fifo_clear (&in_fifo);
 
   // send command
-  uart_send (full_command, strlen (full_command), 0);
+  uart_send (full_command, strlen (full_command));
 
   // get response
   for (uint16_t i = 0; i < BT_CMD_TIMEOUT_MS; i++)
@@ -330,8 +334,8 @@ bt_send (void *data, const uint8_t length)
   if (update_comm_mode (0) == BT_CMD)
     return false;
 
-  uart_send ((const char *) &length, 1, 1);
-  uart_send ((char *)data, length, 1);
+  uart_send ((const char *) &length, 1);
+  uart_send ((char *)data, length);
   return (update_comm_mode (0) == BT_DATA);
 }
 
@@ -355,7 +359,7 @@ bt_disconnect (void)
   for (uint8_t i = 0; i < 4; i++)
     {
       const char plus = '+';
-      uart_send (&plus, 1, 1);
+      uart_send (&plus, 1);
       _delay_ms (1500);
     }
     
