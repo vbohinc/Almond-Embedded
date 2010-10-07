@@ -25,6 +25,11 @@
 #define DISPLAY_BACKBUFFER_COLUMNS 128
 #define DISPLAY_BACKBUFFER_LINES 8
 
+enum {
+  DISPLAY_CMD,
+  DISPLAY_DATA 
+}
+
 static uint8_t backbuffer[DISPLAY_BACKBUFFER_LINES][DISPLAY_BACKBUFFER_COLUMNS];
 
 void 
@@ -57,45 +62,45 @@ display_init(void)
 
 	//ADC SELECT
 	//normal: 0xA0, reverse: 0xA1
-	display_command(0xA0);
+	display_send(0xA0);
 
 	//SHL Select
 	//normal: 0xC0, reverse: 0xC8
-	display_command(0xC0);
+	display_send(0xC0);
 
 	//LCD Bias Select
-	display_command(0xA2);
+	display_send(0xA2);
 
 	//Regulator resistor select
-	display_command(0x25);
+	display_send(0x25);
 
 	//------------
 
 	//Set reference voltage mode
-	display_command(0x81);
+	display_send(0x81);
 	//Set reference voltage register
-	display_command(0x30);
+	display_send(0x30);
 
 	//------------
 
 	//PowerControl
-	display_command(0x2F);
+	display_send(0x2F);
 
 	//DATA DISPLAY PART
 
 	//Initial Display line to 0
-	display_command(0x40);
+	display_send(0x40);
 	// SET PAGE ADDRESS 0
-	display_command(0xB0);
+	display_send(0xB0);
 	//SET COLUMN ADDRESS MSB 0
-	display_command(0x10);
+	display_send(0x10);
 	//SET COLUMN ADRESS LSB 0
-	display_command(0x00);
+	display_send(0x00,);
 
 	//REVERSE DISPLAY OFF
-	display_command(0xA6);
+	display_send(0xA6, );
 	// Display ON
-	display_command(0xAF);
+	display_send(0xAF, );
 
 	//Clean Display
 	display_clean();
@@ -117,7 +122,7 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 }
 
 inline static void 
-display_cmd(uint8_t value, bool data)
+display_send (uint8_t value, bool data)
 {	
 	if(data){
 		set_bit(PORTB, DISPLAY_RS);		
@@ -136,8 +141,8 @@ display_cmd(uint8_t value, bool data)
 inline static void 
 display_set_col(uint8_t col)
 {
-	display_command(0x10 + (col >> 4));		// MSB
-	display_command(0x00 + (col & 0x0F));	// LSB
+	display_send(0x10 + (col >> 4));		// MSB
+	display_send(0x00 + (col & 0x0F));	// LSB
 }
 
 inline static void 
@@ -145,7 +150,7 @@ display_set_page(uint8_t page)
 {
 	//Top down instead of bottom up
 	uint8_t inverted_page = DISPLAY_PAGE_NUMBER - page;
-	display_command(0xB0 + inverted_page);
+	display_send(0xB0 + inverted_page);
 }
 
 void
