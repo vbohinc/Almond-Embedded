@@ -5,6 +5,7 @@
 
 #include <util/delay.h>
 #include <avr/eeprom.h>
+#include <avr/interrupt.h>
 #include <stdlib.h>
 #include <string.h>
 #include "squirrel.h"
@@ -159,70 +160,47 @@ static void update_values (uint8_t num)
     }
 }
 
-static bool update_device_entry (const char *address)
+static void update_device_entry (const char *address)
 {
   bool err;
 
   for (uint8_t k = 0; k < NUTS_LIST; k++)
     {
-      if (!valid (k) || bt_cmp (device_list[k].mac, address))
+      if (!valid (k))
+        memcpy (&device_list[k], (void *) address, 6);
+      else if (!bt_cmp (device_list[k].mac, address))
+        break;
+        
+      if (!bt_connect (device_list[k].mac)) 
         {
-          // We haven't found the MAC, time to create a new entry
-          if (!valid (k))
-            memcpy (&device_list[k], (void *) address, 6);
-          
-          if (!bluetooth_connect (device_list[k].mac)) 
-            {
-              error_pgm (PSTR("Connection couldn't be established"));
-              return false;
-            }
-          
-          update_id (k);
-          update_values (k);
-          downlink_bye (POLL_INTERVALL, &err);
-          
-          // WARNING: RACE!!!
-          bluetooth_process_data ();
-          
-          if (!bluetooth_disconnect(3) != 1) 
-            {
-              error_pgm(PSTR("Connection couldn't be closed"));
-              // Hard reset module!
-            }
-           
-          return true;
+           error_pgm (PSTR("Connection couldn't be established"));
+           return;
         }
+          
+      update_id (k);
+      update_values (k);
+      downlink_bye (POLL_INTERVALL, &err);
+           
+      if (!bt_disconnect()) 
+        {
+          error_pgm(PSTR("Connection couldn't be closed"));
+          // Hard reset module!
+        }
+       
+      return;
     }
 
   error_pgm (PSTR("Out of Memory"));
-  return false;
 }
 
 void downlink_update(void)
 {
-  char *found = bluetooth_cmd_search_devices ();
+  char result[8][6];
 
-  assert (found != NULL, "Malformed search result");
-
-  uint8_t count = found[0];
-  
-  debug_pgm(PSTR("Num Found:"));
-  error_putc(count+48);
-  error_putc(13);
-
-  char arr[20];
-
-  for (uint8_t i = 0; i < count; i++)
-    {
-      debug_pgm(PSTR("Device found"));
-      
-      bluetooth_array_to_address(found + 1 + i * (16 + 6) + 16, arr, 1);
-      
-      debug(arr);
-         
-      // Data Structure COUNT (1) | NAME (16) | MAC (6) | ...
-      for (uint8_t j = 0; j < 3 && !update_device_entry (&found[1 + i * (16 + 6) + 16]); j++);
-    }
+  // FIXME: UI
+  if (bt_discover (result, NULL))
+    for (uint8_t i = 0; i < 8; i++)
+      update_device_entry (result[i]);
 }
 
 /* -----------------------------------------------------------------------
@@ -231,14 +209,7 @@ void downlink_update(void)
 
 void init_bluetooth (void)
 {
-  for (uint8_t i = 0; i < NUTS_LIST; i++)
-    for (uint8_t j = 0; j < 6; j++)
-      device_list[i].mac[j] = 0;
 
-  bluetooth_init (uplink_bluetooth_callback_handler);
-    debug_pgm(PSTR("Test connection")); 
-  uint8_t result = bluetooth_test_connection(4);
-  assert (result == 1, "Could not test the connection");
 }
 
 void init_display (void)
@@ -292,7 +263,12 @@ int main (void)
   sei ();
 
   debug_pgm(PSTR("Bluetooth Init"));          
-  init_bluetooth ();
+  
+  for (uint8_t i = 0; i < NUTS_LIST; i++)
+    for (uint8_t j = 0; j < 6; j++)
+      device_list[i].mac[j] = 0;
+
+  bt_init();
   
   debug_pgm(PSTR("Display Init"));          
   init_display ();
@@ -314,17 +290,23 @@ int main (void)
 
       if (state == MASTER)
         {
-          assert (bluetooth_set_as_master() == 1, "Could not set master mode");
+          assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
           downlink_update ();
           dump ();
-          assert (bluetooth_set_as_slave() == 1, "Could not set slave mode");
-          //squirrel_state_set (SLAVE);
+          assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");
+          squirrel_state_set (SLAVE);
         }
-      else if (state == SLAVE)
+      else if (state == SLAVE || state == SLAVE_BUSY)
         {
           // We wait for connections from the backend...
-          bluetooth_process_data ();
-          //squirrel_state_set (MASTER);
+          uint8_t data[UPLINK_PACKAGE_LENGTH];
+          uint8_t length = UPLINK_PACKAGE_LENGTH;
+      
+          if (bt_receive (data, &length, 0))
+            uplink_process_pkg (data, length);
+            
+          //if (state == SLAVE)
+          //  squirrel_state_set (MASTER);
         }
     }
 }

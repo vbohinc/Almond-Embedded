@@ -11,8 +11,8 @@ typedef enum {
 
 extern bool bt_init (void);
 extern bool bt_set_mode (const bt_mode_t);
-extern bool bt_receive (void* data, uint8_t* length, uint16_t timeout_ms);
-extern bool bt_send (void* data, const uint8_t length);
+extern bool bt_receive (void * data, uint8_t *length, uint16_t timeout_ms);
+extern bool bt_send (void * data, const uint8_t length);
 
 #ifdef SQUIRREL
 
