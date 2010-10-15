@@ -9,7 +9,7 @@
 
 #define FONT_CHAR_MIN 2
 #define FONT_CHAR_MAX 95
-#define FONT_CHAR_ASCII_OFFSET 32
+#define FONT_CHAR_ASCII_OFFSET 31
 
 // FONT SIZE: 0 (6x8)
 const uint8_t font_0[][6] 

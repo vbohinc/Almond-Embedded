@@ -2,8 +2,10 @@
 #include <avr/pgmspace.h>
 #endif
 
-#include "display.h"
+
 #include "display_draw.h"
+#include "display.h"
+
 #include "display_data.h"
 
 // Text buffer
@@ -48,27 +50,31 @@ void
 display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 {
 	
-	printf("1\n");
+	printf("Print Char: %d, %c\n",asciiIndex,asciiIndex);
 	uint8_t char_width = display_get_font_value(font_size, 0, 0);
 	uint8_t char_height = display_get_font_value(font_size, 0, 1);
 	printf("2\n");
 	uint8_t bit_index = 0;
 	uint8_t byte_index = 0;
 	uint8_t char_index = asciiIndex - FONT_CHAR_ASCII_OFFSET;
+	printf("Ascii idx: %d\n", char_index);
 	// Fall back to '?' for characters out of range
-	if(char_index <= FONT_CHAR_MIN || char_index >= FONT_CHAR_MAX)
+	if(char_index < FONT_CHAR_MIN || char_index > FONT_CHAR_MAX)
 	  char_index = 31;
+
+	printf("Ascii idx 2: %d\n", char_index);
 	
-	for(uint8_t cy = y; cy <= y + char_height; cy++){
-		for(uint8_t cx = x; cx <= x + char_width; cx++){
+	for(uint8_t cy = y; cy < y + char_height; cy++){
+		for(uint8_t cx = x; cx < x + char_width; cx++){
 			display_set_pixel(cx, cy, display_get_font_value(font_size,char_index,byte_index) >>(7-bit_index) & 1);
-			
+			printf("%d",display_get_font_value(font_size,char_index,byte_index) >>(7-bit_index) & 1);
 			bit_index++;
 			if(bit_index >= 8){
 				bit_index = 0; 
 				byte_index++;
 			}
 		}
+		printf("\n");
 	}
 }
 
@@ -160,6 +166,7 @@ display_textbuffer_shiftup(void){
 				text_buffer[line][column] = ' ';
 			}
 		}
+
 	}
 }
 
@@ -191,14 +198,18 @@ void
 display_draw_image(uint8_t topx, uint8_t topy, uint8_t* image_array){
 	uint8_t image_width = image_array[0];
 	uint8_t image_height = image_array[1];
-	uint8_t byte_index = 2;
+	printf("width %d\n",image_width);
+	printf("height %d\n",image_height);
+
+	uint16_t byte_index = 2;
 	uint8_t bit_index = 0;
 	for(uint8_t y = 0; y < image_height; y++){
-		for(uint8_t x = 0; y < image_width; x++){
+		for(uint8_t x = 0; x < image_width; x++){
 			#ifndef X86
 			display_set_pixel(topx + x, topy + y, pgm_read_byte(&image_array[byte_index]) >>(7-bit_index) & 1);
 			#else
 			display_set_pixel(topx + x, topy + y, image_array[byte_index] >>(7-bit_index) & 1);
+			//printf("%d",image_array[byte_index] >>(7-bit_index) & 1);
 			#endif
 			bit_index++;
 			if(bit_index >= 8){
@@ -206,5 +217,6 @@ display_draw_image(uint8_t topx, uint8_t topy, uint8_t* image_array){
 				byte_index++;
 			}
 		}
+		//printf("\n");
 	}
 }

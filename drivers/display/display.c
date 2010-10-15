@@ -223,7 +223,7 @@ void display_init(void) {
 }
 
 void display_set_pixel (uint8_t x, uint8_t y, bool value) {
-	printf("PIX[%3d|%3d]=%d\n",x,y,value);
+	//printf("PIX[%3d|%3d]=%d\n",x,y,value);
 
   if(value)
   set_pixel(tux,x,y,0x00000000);

@@ -3,6 +3,7 @@
 #ifndef __DISPLAY_DRAW_H__
 #define __DISPLAY_DRAW_H__
 
+
 // Draw a character at a given (top,left) position
 void display_draw_char (uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex);
 // Draw a whole string at a given (top,left) position
