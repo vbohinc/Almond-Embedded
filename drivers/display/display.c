@@ -214,6 +214,9 @@ void display_init(void) {
   int res = 0; //Results
   if (InitVideo() == false) exit(-1);
   
+	SDL_WM_SetCaption("Awesome Almond Display", NULL);
+
+
   tux = SDL_CreateRGBSurface(SDL_SWSURFACE, 128, 64, 32,0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
   for(int x=0; x<128;x++) {
   	for(int y=0; y<64;y++){
