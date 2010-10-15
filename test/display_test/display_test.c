@@ -52,6 +52,9 @@ int main(void)
 			switch(keyevent.type){
 				case SDL_KEYDOWN:
 					printf("Oh! Key press\n");
+
+					//SEE: http://www.libsdl.org/docs/html/sdlkey.html
+
      					switch(keyevent.key.keysym.sym){
 						case SDLK_a:
 							display_draw_char(10,10,0,'a');
@@ -68,6 +71,9 @@ int main(void)
 						case SDLK_l:
 							display_draw_image(0,0,(uint8_t*)image_logo);
 							printf("Logo 't' pressed\n");
+							break;
+						case SDLK_x:
+							exit(0);
 							break;
 						default:
 							break;
