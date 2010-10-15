@@ -25,12 +25,12 @@ void
 display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 {
 	// FIXME: Use actual font size
-	//const uint8_t *font;
-	/*if(font_size <= 0) font = &font_0;
-	if(font_size == 1) font = &font_1;
-	if(font_size >= 2) font = &font_2;*/
-	uint8_t char_width = pgm_read_byte(&font_0[0][0]);
-	uint8_t char_height = pgm_read_byte(&font_0[0][1]);
+	const uint8_t **font;
+	if(font_size <= 0) font = font_0;
+	if(font_size == 1) font = font_1;
+	if(font_size >= 2) font = font_2;
+	uint8_t char_width = pgm_read_byte(font[0][0]);
+	uint8_t char_height = pgm_read_byte(font[0][1]);
 	uint8_t bit_index = 0;
 	uint8_t byte_index = 0;
 	uint8_t char_index = asciiIndex - FONT_CHAR_ASCII_OFFSET;
@@ -40,7 +40,7 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 	
 	for(uint8_t cy = y; cy <= y + char_height; cy++){
 		for(uint8_t cx = x; cx <= x + char_width; cx++){
-			display_set_pixel(x, y, pgm_read_byte(&font_0[char_index][byte_index]) >>(7-bit_index) & 1);
+			display_set_pixel(x, y, pgm_read_byte(font[char_index][byte_index]) >>(7-bit_index) & 1);
 			bit_index++;
 			if(bit_index >= 8){
 				bit_index = 0; 
