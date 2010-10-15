@@ -4,8 +4,8 @@
 #include <avr/interrupt.h>
 #endif
 
-#include "../drivers/display/display.h"
-#include "../drivers/display/display_draw.h"
+#include "../../drivers/display/display.h"
+#include "../../drivers/display/display_draw.h"
 
 #define UART_BAUD_RATE      9600ul
 
