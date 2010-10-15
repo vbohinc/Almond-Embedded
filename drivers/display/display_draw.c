@@ -23,25 +23,34 @@ sgn(int x)
 	return (x > 0) ? 1 : (x < 0) ? -1 : 0;
 }
 
+uint8_t display_get_font_value(uint8_t font_size, int idx, int byte)
+{
+
+	#ifndef X86
+	if(font_size <= 0) 
+		return pgm_read_byte(font_0[idx][byte]);
+	if(font_size == 1)
+		return pgm_read_byte(font_1[idx][byte]);
+	if(font_size >= 2)
+		return pgm_read_byte(font_2[idx][byte]);
+
+	#else
+	if(font_size <= 0) 
+		return font_0[idx][byte];
+	if(font_size == 1)
+		return font_1[idx][byte];
+	if(font_size >= 2)
+		return font_2[idx][byte];
+	#endif
+}
+
 void
 display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 {
-	// FIXME: Use actual font size
-	const uint8_t **font;
-	if(font_size <= 0) font = font_0;
-	if(font_size == 1) font = font_1;
-	if(font_size >= 2) font = font_2;
 	
-	printf("%p",font);
-	printf("%p",font_0);
 	printf("1\n");
-	#ifndef X86
-	uint8_t char_width = pgm_read_byte(font[0][0]);
-	uint8_t char_height = pgm_read_byte(font[0][1]);
-	#else
-	uint8_t char_width =  *(*font+0);//[0][0];
-	uint8_t char_height = *(*font+1);//[0][1];
-	#endif
+	uint8_t char_width = display_get_font_value(font_size, 0, 0);
+	uint8_t char_height = display_get_font_value(font_size, 0, 1);
 	printf("2\n");
 	uint8_t bit_index = 0;
 	uint8_t byte_index = 0;
@@ -52,11 +61,7 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 	
 	for(uint8_t cy = y; cy <= y + char_height; cy++){
 		for(uint8_t cx = x; cx <= x + char_width; cx++){
-			#ifndef X86
-			display_set_pixel(x, y, pgm_read_byte(font[char_index][byte_index]) >>(7-bit_index) & 1);
-			#else
-			display_set_pixel(x, y, font[char_index][byte_index] >>(7-bit_index) & 1);
-			#endif
+			display_set_pixel(x, y, display_get_font_value(font_size,char_index,byte_index) >>(7-bit_index) & 1);
 			
 			bit_index++;
 			if(bit_index >= 8){
@@ -70,12 +75,8 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 void
 display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, char* char_array)
 {
-	// FIXME: Use actual font size
-	#ifndef X86
-	uint8_t char_width = pgm_read_byte(&font_0[0][0]);
-	#else
-	uint8_t char_width = &font_0[0][0];
-	#endif
+	
+	uint8_t char_width = display_get_font_value(font_size, 0, 0);
 	uint8_t index = 0;
 	uint8_t current_x = x;
 	while(char_array[index] != '\0'){

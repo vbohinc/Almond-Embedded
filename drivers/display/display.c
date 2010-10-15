@@ -212,7 +212,7 @@ SDL_Surface* tux;
 
 void display_init(void) {
   int res = 0; //Results
-  if (InitVideo() == false) close(-1);
+  if (InitVideo() == false) exit(-1);
   
   tux = SDL_CreateRGBSurface(SDL_SWSURFACE, 128, 64, 32,0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
   for(int x=0; x<128;x++) {
@@ -233,8 +233,8 @@ void display_set_pixel (uint8_t x, uint8_t y, bool value) {
 SDL_Surface *sur;
 
 void display_flip (void) {
-  //sur = zoomSurface(tux, 5, 5, SMOOTHING_OFF);
-  DrawImage(tux, 0,0, tux->w, tux->h, screen, 0, 0, 128);
+  sur = zoomSurface(tux, 5, 5, SMOOTHING_OFF);
+  DrawImage(sur, 0,0, sur->w, sur->h, screen, 0, 0, 128);
   SDL_Flip(screen); //Refresh the screen
   //SDL_FreeSurface(sur);
   SDL_Delay(1000);
