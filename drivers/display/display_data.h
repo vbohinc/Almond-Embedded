@@ -1,4 +1,7 @@
+#ifndef X86
 #include <avr/pgmspace.h>
+#endif
+
 #include "../../shared/common.h"
 
 #ifndef __DISPLAY_DATA_H__
@@ -9,7 +12,11 @@
 #define FONT_CHAR_ASCII_OFFSET 32
 
 // FONT SIZE: 0 (6x8)
-const uint8_t font_0[][6] PROGMEM = { 
+const uint8_t font_0[][6] 
+#ifndef X86
+PROGMEM
+#endif
+ = { 
     {  6,  8,  0,  0,  0,  0}, // TYPO INFO
     {  0,  0,  0,  0,  0,  0}, //   (ASCII 32)
     {  0,  2,  8, 32,  2,  0}, // ! (ASCII 33)
@@ -109,7 +116,11 @@ const uint8_t font_0[][6] PROGMEM = {
 };
 
 // FONT SIZE: 1 (7x13)
-const uint8_t font_1[][12] PROGMEM = {
+const uint8_t font_1[][12] 
+#ifndef X86
+PROGMEM
+#endif
+ = {
 	{  7, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
     {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}, //   (ASCII 32)
     {  0,  0,  1,  2,  4,  8, 16, 32,  0,128,  0,  0}, // ! (ASCII 33)
@@ -209,7 +220,11 @@ const uint8_t font_1[][12] PROGMEM = {
 };
 
 // FONT SIZE: 2 (9x15)
-const uint8_t font_2[][17] PROGMEM = {
+const uint8_t font_2[][17] 
+#ifndef X86
+PROGMEM
+#endif
+ = {
 	{  9, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
     {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}, //   (ASCII 32)
     {  0,  0,  0,  3,  1,128,192, 96, 48, 24, 12,  6,  0,  1,128,  0,  0}, // ! (ASCII 33)
@@ -309,7 +324,11 @@ const uint8_t font_2[][17] PROGMEM = {
 };
 
 // Almond logo
-const uint8_t image_logo[] = {
+const uint8_t image_logo[]
+#ifndef X86
+PROGMEM
+#endif
+ = {
 	 60, 60,
 	  0,  0,  3,  0,  0,  0,  0,  0,  0,  0, 112,  0,  0,  0,  0,  0,  0, 14,  0,  0,  0,  0,
 	  0,  0,  1,192,  0,  0,  0,  0,  0,  0,  57,128,  0,  0,  0,  0,  0,  7, 56,  0,  0,  0,
@@ -334,7 +353,11 @@ const uint8_t image_logo[] = {
 	  0,  0,  0,  0,  0,  0,  0,192,  0,  0
 };
 
-const uint8_t testimg[] = {
+const uint8_t testimg[] 
+#ifndef X86
+PROGMEM
+#endif
+= {
 	128, 64
 	,  9, 81,103, 64,  0,  0,  0,  0, 12,  0,  0,  0,  0,  0,  0,  0,102, 90,122,128,  0
 	,  0,  0,  0,  2, 32,  0,  0,  0,  0,  0,  0, 41, 37,157,128,  0,  0,  0,  0, 23,  0

@@ -1,4 +1,6 @@
+#ifndef X86
 #include <avr/pgmspace.h>
+#endif
 
 #include "display.h"
 #include "display_draw.h"
@@ -29,8 +31,18 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 	if(font_size <= 0) font = font_0;
 	if(font_size == 1) font = font_1;
 	if(font_size >= 2) font = font_2;
+	
+	printf("%p",font);
+	printf("%p",font_0);
+	printf("1\n");
+	#ifndef X86
 	uint8_t char_width = pgm_read_byte(font[0][0]);
 	uint8_t char_height = pgm_read_byte(font[0][1]);
+	#else
+	uint8_t char_width =  *(*font+0);//[0][0];
+	uint8_t char_height = *(*font+1);//[0][1];
+	#endif
+	printf("2\n");
 	uint8_t bit_index = 0;
 	uint8_t byte_index = 0;
 	uint8_t char_index = asciiIndex - FONT_CHAR_ASCII_OFFSET;
@@ -40,7 +52,12 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 	
 	for(uint8_t cy = y; cy <= y + char_height; cy++){
 		for(uint8_t cx = x; cx <= x + char_width; cx++){
+			#ifndef X86
 			display_set_pixel(x, y, pgm_read_byte(font[char_index][byte_index]) >>(7-bit_index) & 1);
+			#else
+			display_set_pixel(x, y, font[char_index][byte_index] >>(7-bit_index) & 1);
+			#endif
+			
 			bit_index++;
 			if(bit_index >= 8){
 				bit_index = 0; 
@@ -54,7 +71,11 @@ void
 display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, char* char_array)
 {
 	// FIXME: Use actual font size
+	#ifndef X86
 	uint8_t char_width = pgm_read_byte(&font_0[0][0]);
+	#else
+	uint8_t char_width = &font_0[0][0];
+	#endif
 	uint8_t index = 0;
 	uint8_t current_x = x;
 	while(char_array[index] != '\0'){
@@ -173,7 +194,11 @@ display_draw_image(uint8_t topx, uint8_t topy, uint8_t* image_array){
 	uint8_t bit_index = 0;
 	for(uint8_t y = 0; y < image_height; y++){
 		for(uint8_t x = 0; y < image_width; x++){
+			#ifndef X86
 			display_set_pixel(topx + x, topy + y, pgm_read_byte(&image_array[byte_index]) >>(7-bit_index) & 1);
+			#else
+			display_set_pixel(topx + x, topy + y, image_array[byte_index] >>(7-bit_index) & 1);
+			#endif
 			bit_index++;
 			if(bit_index >= 8){
 				bit_index = 0; 
