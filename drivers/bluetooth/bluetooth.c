@@ -17,6 +17,7 @@
 
 typedef enum
 {
+  BT_RAW,
   BT_DATA,
   BT_CMD
 } communication_mode_t;
@@ -108,6 +109,9 @@ uart_send (const char *data, const uint8_t length)
             return;
         }
 
+        if (comm_mode == BT_RAW)
+          _delay_ms (50);
+        
         /* Check for echo */
         if (comm_mode == BT_CMD)
         {
@@ -237,6 +241,17 @@ bt_init (void)
 {
     uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
     fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
+
+    _delay_ms (50);
+    // Enable ECHO
+    comm_mode = BT_RAW;
+    uart_send ("ATE1\r", 5);
+
+    // throw away your television
+    uart_receive ();
+    fifo_clear (&in_fifo);
+
+    comm_mode = BT_CMD;
 
     for (uint8_t i = 0; i < 5; i++)
         if (send_cmd (BT_TEST, NULL))
