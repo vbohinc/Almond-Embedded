@@ -42,6 +42,34 @@ int main(void)
 	display_draw_image(0,0,(uint8_t*)image_logo);
 //	display_draw_char(10,10,0,'#');
 	display_flip();
-	
+
+	SDL_Event keyevent;    //The SDL event that we will poll to get events.
+	 
+
+	while(1)
+	{	
+		while (SDL_PollEvent(&keyevent))   //Poll our SDL key event for any keystrokes.
+		{
+			switch(keyevent.type){
+				case SDL_KEYDOWN:
+					printf("Oh! Key press\n");
+     					switch(keyevent.key.keysym.sym){
+						case SDLK_a:
+							printf("a pressed\n");
+							break;
+						default:
+							break;
+					}
+					break;
+
+					
+				case SDL_QUIT:
+					exit(0);
+					break;
+			}
+		}
+	}
+
+
 }
 

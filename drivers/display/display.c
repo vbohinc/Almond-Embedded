@@ -242,7 +242,6 @@ void display_flip (void) {
   DrawImage(sur, 0,0, sur->w, sur->h, screen, 0, 0, 128);
   SDL_Flip(screen); //Refresh the screen
   //SDL_FreeSurface(sur);
-  SDL_Delay(5000);
 }
 // Clear display
 void display_clear(void) {
