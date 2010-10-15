@@ -65,12 +65,20 @@ display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, char* char_array)
 }
 
 void
-display_draw_rect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
+display_draw_rect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, bool filled)
 {
-	display_draw_line(x1, y1, x2, y1);
-	display_draw_line(x2, y1, x2, y2);
-	display_draw_line(x1, y2, x2, y2);
-	display_draw_line(x1, y1, x1, y2);
+	if(!filled){
+		display_draw_line(x1, y1, x2, y1);
+		display_draw_line(x2, y1, x2, y2);
+		display_draw_line(x1, y2, x2, y2);
+		display_draw_line(x1, y1, x1, y2);
+	}else{
+		for(uint8_t y = y1; y <= y2; y++){
+			for(uint8_t x = x1; x <= x2; x++){
+				display_set_pixel(x, y, 1);
+			}
+		}
+	}
 }
 
 void 
