@@ -223,6 +223,8 @@ void display_init(void) {
 }
 
 void display_set_pixel (uint8_t x, uint8_t y, bool value) {
+	printf("PIX[%3d|%3d]=%d\n",x,y,value);
+
   if(value)
   set_pixel(tux,x,y,0x00000000);
   else
@@ -237,7 +239,7 @@ void display_flip (void) {
   DrawImage(sur, 0,0, sur->w, sur->h, screen, 0, 0, 128);
   SDL_Flip(screen); //Refresh the screen
   //SDL_FreeSurface(sur);
-  SDL_Delay(1000);
+  SDL_Delay(5000);
 }
 // Clear display
 void display_clear(void) {
