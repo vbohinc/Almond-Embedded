@@ -58,8 +58,6 @@ display_init(void)
 	_delay_ms(100);						//Waiting for stabilizing power
 	set_bit(PORTH.OUT, DISPLAY_RST);
 
-
-
 	display_send(0xA0, DISPLAY_DATA);	//ADC SELECT
 	display_send(0xC0, DISPLAY_DATA);	//SHL Select
 	display_send(0xA2, DISPLAY_DATA);	//LCD Bias Select
@@ -84,6 +82,9 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 	uint8_t page = y / 8;
 	uint8_t col = x;
 	uint8_t bit_index = 7 - (y % 8);
+	
+	if(x >= DISPLAY_BACKBUFFER_COLUMNS) x = DISPLAY_BACKBUFFER_COLUMNS - 1;
+	if(y >= 64) x = 63;
 	
 	if(value)
 		// Black pixel
