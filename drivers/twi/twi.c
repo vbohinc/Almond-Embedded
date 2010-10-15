@@ -12,7 +12,6 @@
 #if __AVR_ARCH__ <= 6
 void twi_wait(void)
 {
-debug_pgm(PSTR("twi waiting"));
    while (!(TWCR & (1<<TWINT)));
 }
 #endif
