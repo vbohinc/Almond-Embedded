@@ -5,7 +5,6 @@
 
 #include "display_draw.h"
 #include "display.h"
-
 #include "display_data.h"
 
 // Text buffer
@@ -198,8 +197,6 @@ void
 display_draw_image(uint8_t topx, uint8_t topy, uint8_t* image_array){
 	uint8_t image_width = image_array[0];
 	uint8_t image_height = image_array[1];
-	printf("width %d\n",image_width);
-	printf("height %d\n",image_height);
 
 	uint16_t byte_index = 2;
 	uint8_t bit_index = 0;
@@ -209,7 +206,6 @@ display_draw_image(uint8_t topx, uint8_t topy, uint8_t* image_array){
 			display_set_pixel(topx + x, topy + y, pgm_read_byte(&image_array[byte_index]) >>(7-bit_index) & 1);
 			#else
 			display_set_pixel(topx + x, topy + y, image_array[byte_index] >>(7-bit_index) & 1);
-			//printf("%d",image_array[byte_index] >>(7-bit_index) & 1);
 			#endif
 			bit_index++;
 			if(bit_index >= 8){
@@ -217,6 +213,5 @@ display_draw_image(uint8_t topx, uint8_t topy, uint8_t* image_array){
 				byte_index++;
 			}
 		}
-		//printf("\n");
 	}
 }
