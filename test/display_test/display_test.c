@@ -26,6 +26,7 @@ void display_test2(void)
 	}
 }
 
+
 int main(void)
 {
 	display_init();
@@ -34,3 +35,4 @@ int main(void)
 	display_flip();
 	
 }
+
