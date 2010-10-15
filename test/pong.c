@@ -15,8 +15,8 @@ static rectangle pad_left;
 static rectangle pad_right;
 static rectangle ball;
 
-static int8_t ball_x_speed;
-static int8_t ball_y_speed;
+static int16_t ball_x_speed;
+static int16_t ball_y_speed;
 
 void pong() { 
 	pad_left.top_left.x = 1;
