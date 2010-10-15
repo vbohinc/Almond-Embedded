@@ -82,6 +82,7 @@ int main(void)
 		}
 
 		display_flip();
+		SDL_Delay(100);
 	}
 
 

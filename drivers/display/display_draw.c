@@ -66,14 +66,12 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 	for(uint8_t cy = y; cy < y + char_height; cy++){
 		for(uint8_t cx = x; cx < x + char_width; cx++){
 			display_set_pixel(cx, cy, display_get_font_value(font_size,char_index,byte_index) >>(7-bit_index) & 1);
-			printf("%d",display_get_font_value(font_size,char_index,byte_index) >>(7-bit_index) & 1);
 			bit_index++;
 			if(bit_index >= 8){
 				bit_index = 0; 
 				byte_index++;
 			}
 		}
-		printf("\n");
 	}
 }
 
