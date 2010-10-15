@@ -41,7 +41,6 @@ int main(void)
 //	display_draw_string(10,10,2,"Hallo");
 	display_draw_image(0,0,(uint8_t*)image_logo);
 //	display_draw_char(10,10,0,'#');
-	display_flip();
 
 	SDL_Event keyevent;    //The SDL event that we will poll to get events.
 	 
@@ -55,7 +54,20 @@ int main(void)
 					printf("Oh! Key press\n");
      					switch(keyevent.key.keysym.sym){
 						case SDLK_a:
+							display_draw_char(10,10,0,'a');
 							printf("a pressed\n");
+							break;
+						case SDLK_HASH:
+							display_draw_char(10,10,0,'#');
+							printf("# pressed\n");
+							break;
+						case SDLK_t:
+							display_draw_image(0,0,(uint8_t*)testimg);
+							printf("SuperKey 't' pressed\n");
+							break;
+						case SDLK_l:
+							display_draw_image(0,0,(uint8_t*)image_logo);
+							printf("Logo 't' pressed\n");
 							break;
 						default:
 							break;
@@ -68,6 +80,8 @@ int main(void)
 					break;
 			}
 		}
+
+		display_flip();
 	}
 
 
