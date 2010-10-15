@@ -30,6 +30,7 @@ enum {
   DISPLAY_CMD,
   DISPLAY_DATA 
 };
+void display_test(void);
 
 inline static void display_send (uint8_t value, bool data);
 
@@ -39,7 +40,7 @@ void
 display_init(void)
 {
 	//User system setup by external pins
-	PORTA.DIR = 0xFF;
+	PORTF.DIR = 0xFF;
 	set_bit(PORTH.DIR, DISPLAY_RS);
 	set_bit(PORTH.DIR, DISPLAY_RST);
 	set_bit(PORTH.DIR, DISPLAY_CS);
@@ -55,7 +56,7 @@ display_init(void)
 	set_bit(PORTH.OUT, DISPLAY_WR);
 	set_bit(PORTH.OUT, DISPLAY_RD);
 
-	_delay_ms(100);						//Waiting for stabilizing power
+	_delay_ms(100);				//Waiting for stabilizing power
 	set_bit(PORTH.OUT, DISPLAY_RST);
 
 	display_send(0xA0, DISPLAY_DATA);	//ADC SELECT
@@ -81,7 +82,7 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 {
 	uint8_t page = y / 8;
 	uint8_t col = x;
-	uint8_t bit_index = 7 - (y % 8);
+	uint8_t bit_index = (y % 8);
 	
 	if(x >= DISPLAY_BACKBUFFER_COLUMNS) x = DISPLAY_BACKBUFFER_COLUMNS - 1;
 	if(y >= 64) x = 63;
@@ -106,7 +107,12 @@ display_send (uint8_t value, bool data)
 	clear_bit(PORTH.OUT, DISPLAY_CS);
 	clear_bit(PORTH.OUT, DISPLAY_WR);
 	set_bit(PORTH.OUT, DISPLAY_RD);
-	PORTA.OUT = value;
+	value = (value & 0x55) << 1 | ((value >> 1) & 0x55); 
+	value = (value & 0x33) << 2 | ((value >> 2) & 0x33); 
+	PORTF.OUT = (value & 0x0F) << 4 | ((value >> 4) & 0x0F); 
+	//PORTF.OUT = ((value&0x01)<<7)|((value&0x02)<<5)|((value&0x04)<<3)|
+	//		((value&0x08)<<1)|((value&0x10)>>1)|((value&0x20)>>3)|
+	//		((value&0x40)>>5)|((value&0x80)>>7);
 	set_bit(PORTH.OUT, DISPLAY_WR);
 	set_bit(PORTH.OUT, DISPLAY_CS);
 }
