@@ -5,7 +5,7 @@ use POSIX;
 my $image = GD::Image->new(@ARGV[0]) or die $!;
 
 my $image_array_length = POSIX::ceil(($image->height() * $image->width()) / 8);
-my $image_array = "const uint8_t image[".$image_array_length."] = {\n";
+my $image_array = "const uint8_t image[] = {\n";
 $image_array .= $image->width().", ".$image->height()."\n";
 
 my @bits = ();
@@ -23,7 +23,7 @@ for(my $y = 0; $y < $image->height(); $y++){
 		if($#bits == 7){
 			$image_array .= ",".bits_to_byte(@bits);
 			$byte_counter++;
-			if($byte_counter > 10){
+			if($byte_counter > 20){
 				$image_array .= "\n";
 				$byte_counter = 0;
 			}
