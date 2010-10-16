@@ -110,7 +110,10 @@ ifeq (spi, $(findstring spi,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/spi/spi.c
 endif
 
-
+#display
+ifeq (display, $(findstring display, $(ALMONDLIBS)))
+SRC += $(BASE)/drivers/display.c $(BASE)/drivers/display_draw.c
+endif
 
 
 ##################### END OF ALMOND LIBLIST ##############################
@@ -208,6 +211,7 @@ CFLAGS += -funsigned-bitfields
 CFLAGS += -fpack-struct
 CFLAGS += -fshort-enums
 CFLAGS += -Wall
+CFLAGS += -Wno-main
 CFLAGS += -Wstrict-prototypes
 #CFLAGS += -mshort-calls
 #CFLAGS += -fno-unit-at-a-time
