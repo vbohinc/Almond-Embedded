@@ -21,11 +21,6 @@
 #define DISPLAY_RD  3 //read
 #define DISPLAY_WR  4 //write
 
-// Backbuffer
-// FIXME: Make consts
-#define DISPLAY_BACKBUFFER_COLUMNS 128
-#define DISPLAY_BACKBUFFER_LINES 8
-
 #ifndef X86
 // Display command type
 enum {
@@ -192,6 +187,12 @@ int InitVideo() {
 
 void set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
+	if (x>=128 || y>=64)
+	{
+		//printf("Coorinate out of range: %d|%d\n",x,y);
+		return;
+	}
+
     int bpp = surface->format->BytesPerPixel;
     Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
     //*(Uint32 *)target_pixel = pixel;

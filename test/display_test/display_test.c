@@ -6,6 +6,7 @@
 
 #include "../../drivers/display/display.h"
 #include "../../drivers/display/display_draw.h"
+#include "../../drivers/display/display_gui.h"
 
 #include "../../drivers/display/display_data.h"
 
@@ -40,11 +41,34 @@ int main(void)
 	
 	//display_test2();
 	//display_draw_string(10,10,2,"Hallo");
-	display_draw_image(0,0,(uint8_t*)image_logo);
+	//display_draw_image(0,0,(uint8_t*)image_logo);
+	
+	//display_draw_line(12,12,20,60);
+
 	//display_draw_char(10,10,0,'#');
+	for (int8_t i=-64; i<0; i+=1)
+	{
+		display_draw_image(0,i,tum_logo_f1);
+		if (i<-32)
+			i+=1;
+		if (i<-15)
+			i+=1;
+		SDL_Delay(10);
+	}
+
+	display_draw_image(0,0,(uint8_t*)testimg);
+	SDL_Delay(25);
+
+	const uint8_t *imgArr[] = {tum_logo_f1,tum_logo_f2,tum_logo_f3,tum_logo_f4,tum_logo_f5,tum_logo_f6,tum_logo_f7,tum_logo_f8, NULL};
+
+	display_animated_image(0,0,imgArr,3,100);
 
 	SDL_Event keyevent;    //The SDL event that we will poll to get events.
 	 
+
+	char arr[2000];
+		int line = 1;
+	int prog = 0;
 
 	while(1)
 	{	
@@ -73,6 +97,18 @@ int main(void)
 						case SDLK_l:
 							display_draw_image(0,0,(uint8_t*)image_logo);
 							printf("Logo 't' pressed\n");
+							break;
+						case SDLK_b:
+							display_gui_progress_bar(10,5,100,20,prog);
+							prog+=10;
+							printf("ProgressBar pressed\n");
+							break;
+
+						case SDLK_p:
+							sprintf(arr,"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra arcu quis augue pulvinar adipiscing. Quisque ac est tortor. Duis dapibus fringilla nunc a aliquet. Praesent nulla quam, dignissim at fringilla et, suscipit iaculis turpis. Integer fringilla, leo id luctus feugiat, lacus nunc congue torto%d",line);
+							line++;
+							display_print(arr);
+							printf("text pressed\n");
 							break;
 						case SDLK_x:
 							exit(0);
