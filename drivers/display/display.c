@@ -172,7 +172,7 @@ display_clear(void)
 SDL_Surface *screen; //This pointer will reference the backbuffer
  
 int InitVideo() {
-  Uint32 flags = SDL_DOUBLEBUF;
+  Uint32 flags = SDL_HWSURFACE|SDL_DOUBLEBUF;
   // Load SDL
   if (SDL_Init(SDL_INIT_VIDEO) != 0) {
     fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
@@ -182,7 +182,7 @@ int InitVideo() {
  
   // fullscreen can be toggled at run time :) any you might want to change the flags with params?
   //set the main screen to SCREEN_WIDTHxSCREEN_HEIGHT with a colour depth of 16:
-  screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 16, flags);
+  screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 32, flags);//flags);
   if (!screen) {
     fprintf(stderr, "Unable to set video mode: %s\n", SDL_GetError());
     return false;
@@ -192,8 +192,35 @@ int InitVideo() {
 
 void set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
-    Uint8 *target_pixel = (Uint8 *)surface->pixels + y * surface->pitch + x * 4;
-    *(Uint32 *)target_pixel = pixel;
+    int bpp = surface->format->BytesPerPixel;
+    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+    //*(Uint32 *)target_pixel = pixel;
+    
+    switch(bpp) {
+    case 1:
+        *p = pixel;
+        break;
+
+    case 2:
+        *(Uint16 *)p = pixel;
+        break;
+
+    case 3:
+        if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {
+            p[0] = (pixel >> 16) & 0xff;
+            p[1] = (pixel >> 8) & 0xff;
+            p[2] = pixel & 0xff;
+        } else {
+            p[0] = pixel & 0xff;
+            p[1] = (pixel >> 8) & 0xff;
+            p[2] = (pixel >> 16) & 0xff;
+        }
+        break;
+
+    case 4:
+        *(Uint32 *)p = pixel;
+        break;
+    }
 } 
 
 void DrawImage(SDL_Surface *srcimg, int sx, int sy, int sw, int sh, SDL_Surface *dstimg, int dx, int dy, int alpha) {
@@ -217,7 +244,7 @@ void display_init(void) {
 	SDL_WM_SetCaption("Awesome Almond Display", NULL);
 
 
-  tux = SDL_CreateRGBSurface(SDL_SWSURFACE, 128, 64, 32,0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+  tux = SDL_CreateRGBSurface(SDL_HWSURFACE, 128, 64, 32,0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
   for(int x=0; x<128;x++) {
   	for(int y=0; y<64;y++){
   		set_pixel(tux,x,y,0xffffffff);
@@ -226,22 +253,20 @@ void display_init(void) {
 }
 
 void display_set_pixel (uint8_t x, uint8_t y, bool value) {
-	//printf("PIX[%3d|%3d]=%d\n",x,y,value);
-
   if(value)
-  set_pixel(tux,x,y,0x00000000);
+    set_pixel(tux,x,y,0x000000ff); //Black
   else
-  set_pixel(tux,x,y,0xffffffff);
-  //SDL_ScaleSurface(tux, 512,256);
+    set_pixel(tux,x,y,0xffffffff); //White
 }
 
 SDL_Surface *sur;
 
 void display_flip (void) {
   sur = zoomSurface(tux, 5, 5, SMOOTHING_OFF);
+  
   DrawImage(sur, 0,0, sur->w, sur->h, screen, 0, 0, 128);
   SDL_Flip(screen); //Refresh the screen
-  //SDL_FreeSurface(sur);
+  SDL_FreeSurface(sur);
 }
 // Clear display
 void display_clear(void) {
