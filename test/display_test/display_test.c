@@ -9,6 +9,7 @@
 #include "../../drivers/display/display_gui.h"
 
 #include "../../drivers/display/display_data.h"
+#include "../pong.h"
 
 #define UART_BAUD_RATE      9600ul
 
@@ -110,6 +111,15 @@ int main (int argc, char *argv[])
 							display_print(arr);
 							printf("text pressed\n");
 							break;
+						case SDLK_q:
+							
+								sprintf(arr, "Boom!\n");
+								line++;
+								display_print(arr);
+								printf("'P' pressed\n");
+								pong();
+								break;
+							
 						case SDLK_x:
 							exit(0);
 							break;
