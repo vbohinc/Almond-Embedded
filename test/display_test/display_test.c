@@ -30,12 +30,12 @@ void display_test2(void)
 }
 
 #include <stdbool.h>
-#include "SDL.h" // main SDL header
+#include <SDL.h> // main SDL header
 #include <SDL_gfxPrimitives.h>
 #include <SDL_rotozoom.h>
 
 
-int main(void)
+int main (int argc, char *argv[])
 {
 	display_init();
 	
