@@ -5,7 +5,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "error.h"
+#ifndef X86
 #include <util/delay.h>
+#endif
 
 // X = Port, Y = Bit
 
