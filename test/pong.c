@@ -34,20 +34,14 @@ static char right_score_string[3];
 static void draw_rectangle(rectangle *rect);
 static void move_pad(rectangle *pad, int8_t *input);
 static void ball_reset(void);
-static void draw_center_line(void); 
+static void pad_reset(void);
+static void draw_center_line(void);
+static void draw_ui(void); 
 
 void pong() { 
-	pad_left.top_left.x = 1;
-	pad_left.top_left.y = 1;
-	pad_left.bottom_right.x = 3;
-	pad_left.bottom_right.y = 17;
-	
-	pad_right.top_left.x = 124;
-	pad_right.top_left.y = 46;
-	pad_right.bottom_right.x = 126;
-	pad_right.bottom_right.y = 62;
 	
 	ball_reset();
+	pad_reset();
 	
 	right_score = 0;
 	left_score = 0;
@@ -55,19 +49,7 @@ void pong() {
 	left_pad_input = 0;
 	right_pad_input = 0;
 	
-	// display_clear()?
-	display_clear();
-	display_flip();
-	
-	draw_rectangle(&pad_left);
-	draw_rectangle(&pad_right);
-	draw_rectangle(&ball);
-	draw_center_line();
-	sprintf(left_score_string,"%d",left_score);
-	sprintf(right_score_string,"%d",right_score);
-	display_draw_string(28,1,2,left_score_string);
-	display_draw_string(100,1,2,right_score_string);
-	display_flip();
+	draw_ui();
 	
 	while(1==1) {
 		
@@ -80,11 +62,16 @@ void pong() {
 			if (ball.top_left.y >= (pad_left.top_left.y-2) && ball.bottom_right.y <= (pad_left.bottom_right.y+2) ) {
 				ball_x_speed--;
 				ball_x_speed = -ball_x_speed;
-				//uint8_t dist_from_pad_centre = fabs (ball.top_left.y - (pad_left.bottom_right.y + 8));
-				ball_y_speed = ball_y_speed < 0 ? (ball_y_speed-1) : (ball_y_speed+1);
+				int8_t dist_from_pad_centre = 8 + (ball.top_left.y - pad_left.bottom_right.y );
+				printf("%d\n", dist_from_pad_centre);
+				ball_y_speed = 
+					dist_from_pad_centre > 0 ?
+						(ball_y_speed < 0 ? (ball_y_speed-1) : (ball_y_speed+1))
+					:
+						(ball_y_speed < 0 ? -(ball_y_speed-1) : -(ball_y_speed+1));
 			} else {
 				// Paddle missed. Game over.
-				left_score++;
+				right_score++;
 				ball_reset();
 				//printf("Left scores: %d", left_score);
 			}
@@ -93,11 +80,17 @@ void pong() {
 			if (ball.top_left.y >= (pad_right.top_left.y-2) && ball.bottom_right.y <= (pad_right.bottom_right.y+2) ) {
 				ball_x_speed--;
 				ball_x_speed = -ball_x_speed;
-				uint8_t dist_from_pad_centre = fabs (ball.top_left.y - (pad_left.bottom_right.y + 8));
-				ball_y_speed = ball_y_speed < 0 ? (ball_y_speed-1) : (ball_y_speed+1);
+				int8_t dist_from_pad_centre = 8 + (ball.top_left.y - pad_right.bottom_right.y );
+				printf("%d\n", dist_from_pad_centre);
+				ball_y_speed = 
+					dist_from_pad_centre > 0 ?
+						(ball_y_speed < 0 ? (ball_y_speed-1) : (ball_y_speed+1))
+					:
+						(ball_y_speed < 0 ? -(ball_y_speed-1) : -(ball_y_speed+1));
+				//dist_from_pad_centre > 0 ? (ball_y_speed < 0 ? -(ball_y_speed-1) : -(ball_y_speed+1)) : (ball_y_speed < 0 ? -(ball_y_speed+1) : -(ball_y_speed-1));
 			} else {
 				// Paddle missed. Game over.
-				right_score++;
+				left_score++;
 				ball_reset();
 				//printf("Right scores: %d", right_score);
 			}
@@ -153,16 +146,7 @@ void pong() {
 		}
 		
 		usleep(100);
-		display_clear();
-		draw_rectangle(&pad_left);
-		draw_rectangle(&pad_right);
-		draw_rectangle(&ball);
-		draw_center_line();
-		sprintf(left_score_string,"%d",left_score);
-		sprintf(right_score_string,"%d",right_score);
-		display_draw_string(28,1,2,left_score_string);
-		display_draw_string(100,1,2,right_score_string);
-		display_flip();
+		draw_ui();
 	
 	}
 }
@@ -180,6 +164,31 @@ static void draw_center_line() {
 	for (int i = 0; i < 16; i += 2) {
 		display_draw_line(66,i*4,66,(i*4)+4);
 	}
+}
+
+static void draw_ui() {
+	display_clear();
+	draw_rectangle(&pad_left);
+	draw_rectangle(&pad_right);
+	draw_rectangle(&ball);
+	draw_center_line();
+	sprintf(left_score_string,"%d",left_score);
+	sprintf(right_score_string,"%d",right_score);
+	display_draw_string(28,1,2,left_score_string);
+	display_draw_string(100,1,2,right_score_string);
+	display_flip();
+}
+
+static void pad_reset() {
+	pad_left.top_left.x = 1;
+	pad_left.top_left.y = 1;
+	pad_left.bottom_right.x = 3;
+	pad_left.bottom_right.y = 17;
+	
+	pad_right.top_left.x = 124;
+	pad_right.top_left.y = 46;
+	pad_right.bottom_right.x = 126;
+	pad_right.bottom_right.y = 62;
 }
 
 static void draw_rectangle(rectangle *rect) {
