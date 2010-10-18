@@ -4,7 +4,7 @@
 #include "../drivers/display/display_draw.h"
 #include <math.h>
 #include <unistd.h>
-
+#include <SDL.h>
 
 typedef struct {
 	uint8_t x;
@@ -37,8 +37,6 @@ static void ball_reset(void);
 static void draw_center_line(void); 
 
 void pong() { 
-	//left_score_string = "000";
-	//right_score_string = "000";
 	pad_left.top_left.x = 1;
 	pad_left.top_left.y = 1;
 	pad_left.bottom_right.x = 3;
@@ -50,15 +48,12 @@ void pong() {
 	pad_right.bottom_right.y = 62;
 	
 	ball_reset();
-
-	ball_x_speed = 3;
-	ball_y_speed = 0;
 	
 	right_score = 0;
 	left_score = 0;
 	
-	left_pad_input = 1;
-	right_pad_input = -1;
+	left_pad_input = 0;
+	right_pad_input = 0;
 	
 	// display_clear()?
 	display_clear();
@@ -79,25 +74,27 @@ void pong() {
 		//get_input(); // FIXME!
 		move_pad(&pad_left, &left_pad_input);
 		move_pad(&pad_right, &right_pad_input);
-		if (ball.top_left.x + ball_x_speed < 0)  { // FIXME!
-			if (ball.top_left.y >= pad_left.top_left.y && ball.bottom_right.y <= pad_left.bottom_right.y ) {
-				ball_x_speed++;
+		left_pad_input = 0;
+		right_pad_input = 0;
+		if (ball.top_left.x + ball_x_speed < 2)  { // FIXME!
+			if (ball.top_left.y >= (pad_left.top_left.y-2) && ball.bottom_right.y <= (pad_left.bottom_right.y+2) ) {
+				ball_x_speed--;
 				ball_x_speed = -ball_x_speed;
-				uint8_t dist_from_pad_centre = pad_left.bottom_right.y - ball.top_left.y;
-				ball_y_speed += dist_from_pad_centre;
+				//uint8_t dist_from_pad_centre = fabs (ball.top_left.y - (pad_left.bottom_right.y + 8));
+				ball_y_speed = ball_y_speed < 0 ? (ball_y_speed-1) : (ball_y_speed+1);
 			} else {
 				// Paddle missed. Game over.
 				left_score++;
 				ball_reset();
 				//printf("Left scores: %d", left_score);
 			}
-		} else if (ball.bottom_right.x + ball_x_speed > 128) {
+		} else if (ball.bottom_right.x + ball_x_speed > 126) {
 			//printf("Ball: Right edge test. %d %d %d %d vs. %d %d\n", ball.top_left.x, ball.top_left.y, ball.bottom_right.x, ball.bottom_right.y, pad_right.top_left.y, pad_right.bottom_right.y);
-			if (ball.top_left.y >= pad_right.top_left.y && ball.bottom_right.y <= pad_right.bottom_right.y ) {
-				ball_x_speed++;
+			if (ball.top_left.y >= (pad_right.top_left.y-2) && ball.bottom_right.y <= (pad_right.bottom_right.y+2) ) {
+				ball_x_speed--;
 				ball_x_speed = -ball_x_speed;
-				uint8_t dist_from_pad_centre = pad_right.bottom_right.y - ball.top_left.y;
-				ball_y_speed += dist_from_pad_centre;
+				uint8_t dist_from_pad_centre = fabs (ball.top_left.y - (pad_left.bottom_right.y + 8));
+				ball_y_speed = ball_y_speed < 0 ? (ball_y_speed-1) : (ball_y_speed+1);
 			} else {
 				// Paddle missed. Game over.
 				right_score++;
@@ -125,6 +122,36 @@ void pong() {
 			ball.bottom_right.x += ball_x_speed;
 		}
 		
+		SDL_Event keyevent;
+		SDL_PollEvent(&keyevent);
+		switch(keyevent.type){
+			case SDL_KEYDOWN:
+				switch(keyevent.key.keysym.sym){
+					case SDLK_w:
+						printf("Left Up pressed.\n");
+						left_pad_input = -1;
+						break;
+					case SDLK_s:
+						printf("Left Down pressed.\n");
+						left_pad_input = 1;
+						break;
+					case SDLK_UP:
+						printf("Right Up pressed.\n");
+						right_pad_input = -1;
+						break;
+					case SDLK_DOWN:
+						printf("Right Down pressed.\n");
+						right_pad_input = 1;
+						break;
+					case SDLK_x:
+						exit(0);
+						break;
+					default:
+						left_pad_input = 0;
+						right_pad_input = 0;
+				}
+		}
+		
 		usleep(100);
 		display_clear();
 		draw_rectangle(&pad_left);
@@ -136,6 +163,7 @@ void pong() {
 		display_draw_string(28,1,2,left_score_string);
 		display_draw_string(100,1,2,right_score_string);
 		display_flip();
+	
 	}
 }
 
@@ -144,7 +172,7 @@ static void ball_reset() {
 	ball.top_left.y = 32;
 	ball.bottom_right.x = 67;
 	ball.bottom_right.y = 34;
-	ball_x_speed = 1;
+	ball_x_speed = 3;
 	ball_y_speed = 0;
 }
 
