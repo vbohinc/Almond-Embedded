@@ -55,6 +55,8 @@ uint8_t display_get_font_value(uint8_t font_size, int idx, int byte)
 void
 display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 {
+	bool old_trans = display_get_transparency();
+	display_set_transparency(true);
 	uint8_t char_width = display_get_font_value(font_size, 0, 0);
 	uint8_t char_height = display_get_font_value(font_size, 0, 1);;
 	uint8_t bit_index = 0;
@@ -75,6 +77,9 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 			}
 		}
 	}
+	
+	if(old_trans != true)
+		display_set_transparency(false);
 }
 
 void

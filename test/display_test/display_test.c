@@ -70,6 +70,7 @@ int main (int argc, char *argv[])
 	char arr[2000];
 		int line = 1;
 	int prog = 0;
+	display_set_transparency(true);
 
 	while(1)
 	{	
@@ -83,7 +84,6 @@ int main (int argc, char *argv[])
 
      					switch(keyevent.key.keysym.sym){
 						case SDLK_a:
-							display_clear();
 							display_draw_char(10,10,0,'a');
 							printf("a pressed\n");
 							break;
