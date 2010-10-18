@@ -21,6 +21,22 @@
 #define DISPLAY_RD  3 //read
 #define DISPLAY_WR  4 //write
 
+bool transparency;
+bool previous_transparency;
+
+
+bool
+display_get_transparency()
+{
+	return transparency;
+}
+
+void
+display_set_transparency(bool value) 
+{	
+	transparency=value;
+}
+
 #ifndef X86
 // Display command type
 enum {
@@ -36,6 +52,8 @@ static uint8_t backbuffer[DISPLAY_BACKBUFFER_LINES][DISPLAY_BACKBUFFER_COLUMNS];
 void 
 display_init(void)
 {
+	transparency=false;
+	
 	//User system setup by external pins
 	PORTF.DIR = 0xFF;
 	set_bit(PORTH.DIR, DISPLAY_RS);
@@ -87,7 +105,7 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 	if(value)
 		// Black pixel
 		backbuffer[page][col] |= 1<<bit_index;
-	else
+	else if(!transparency)
 		// White pixel
 		backbuffer[page][col] &= ~(1<<bit_index);
 }
@@ -160,13 +178,15 @@ display_clear(void)
 #include <SDL_rotozoom.h>
 
  
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 320
-#define COLORKEY 255, 0, 255 //Your Transparent colour
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 320
  
 SDL_Surface *screen; //This pointer will reference the backbuffer
- 
-int InitVideo() {
+SDL_Surface *tux;
+SDL_Surface *sur;
+
+int
+InitVideo() {
   Uint32 flags = SDL_HWSURFACE|SDL_DOUBLEBUF;
   // Load SDL
   if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -175,9 +195,7 @@ int InitVideo() {
   }
   atexit(SDL_Quit); // Clean it up nicely :)
  
-  // fullscreen can be toggled at run time :) any you might want to change the flags with params?
-  //set the main screen to SCREEN_WIDTHxSCREEN_HEIGHT with a colour depth of 16:
-  screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 32, flags);//flags);
+  screen = SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 32, flags);//flags);
   if (!screen) {
     fprintf(stderr, "Unable to set video mode: %s\n", SDL_GetError());
     return false;
@@ -185,7 +203,8 @@ int InitVideo() {
   return true;
 }
 
-void set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
+void
+set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
 	if (x>=128 || y>=64)
 	{
@@ -195,7 +214,7 @@ void set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 
     int bpp = surface->format->BytesPerPixel;
     Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
-    //*(Uint32 *)target_pixel = pixel;
+    
     
     switch(bpp) {
     case 1:
@@ -224,21 +243,21 @@ void set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
     }
 } 
 
-void DrawImage(SDL_Surface *srcimg, int sx, int sy, int sw, int sh, SDL_Surface *dstimg, int dx, int dy, int alpha) {
-  //if ((!srcimg) || (alpha == 0)) return; //If theres no image, or its 100% transparent.
+void
+DrawImage(SDL_Surface *srcimg, int sx, int sy, int sw, int sh, SDL_Surface *dstimg, int dx, int dy, int alpha) {
+  
   SDL_Rect src, dst;
   
   src.x = sx;  src.y = sy;  src.w = sw;  src.h = sh;
   dst.x = dx;  dst.y = dy;  dst.w = src.w;  dst.h = src.h;
-  //if (alpha != 255) SDL_SetAlpha(srcimg, SDL_SRCALPHA, alpha);
-  // - This is incorrect, if alpha is 10, then set to 255, the image alpha will still be 10.
+  
   SDL_SetAlpha(srcimg, SDL_SRCALPHA, alpha);
   SDL_BlitSurface(srcimg, &src, dstimg, &dst);
 }
 
-SDL_Surface* tux;
-
-void display_init(void) {
+void
+display_init(void) {
+  transparency = false;
   int res = 0; //Results
   if (InitVideo() == false) exit(-1);
   
@@ -253,16 +272,17 @@ void display_init(void) {
   }
 }
 
-void display_set_pixel (uint8_t x, uint8_t y, bool value) {
+void
+display_set_pixel (uint8_t x, uint8_t y, bool value) {
   if(value)
     set_pixel(tux,x,y,0x000000ff); //Black
-  else
+  else if(!transparency)
     set_pixel(tux,x,y,0xffffffff); //White
 }
 
-SDL_Surface *sur;
 
-void display_flip (void) {
+void
+display_flip (void) {
   sur = zoomSurface(tux, 5, 5, SMOOTHING_OFF);
   
   DrawImage(sur, 0,0, sur->w, sur->h, screen, 0, 0, 128);
@@ -270,7 +290,8 @@ void display_flip (void) {
   SDL_FreeSurface(sur);
 }
 // Clear display
-void display_clear(void) {
+void
+display_clear(void) {
   for(int x=0; x<128;x++) {
   	for(int y=0; y<64;y++){
   		set_pixel(tux,x,y,0xffffffff);
