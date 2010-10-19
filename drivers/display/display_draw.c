@@ -50,6 +50,7 @@ uint8_t display_get_font_value(uint8_t font_size, int idx, int byte)
 	if(font_size >= 2)
 		return font_2[idx][byte];
 	#endif
+	return 0;
 }
 
 void
@@ -245,7 +246,7 @@ display_animated_image(int8_t posX, int8_t posY, const uint8_t** image_pointer_a
 				p = image_pointer_array[currImg];
 				display_draw_image(posX, posY,p);
 				display_flip();
-				SDL_Delay(sleep);
+				//SDL_Delay(sleep);
 			} else {
 				adder *= -1;
 			}

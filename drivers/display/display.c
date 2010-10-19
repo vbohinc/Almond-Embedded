@@ -75,10 +75,10 @@ display_init(void)
 	_delay_ms(1000);				//Waiting for stabilizing power
 	set_bit(PORTH.OUT, DISPLAY_RST);
 
-	/*display_send(0xA2, DISPLAY_CMD);	//LCD Bias Select
+	display_send(0xA2, DISPLAY_CMD);	//LCD Bias Select
 
-	display_send(0xA1, DISPLAY_CMD);	//ADC SELECT
-	display_send(0xC8, DISPLAY_CMD);	//SHL Direction 0-64
+	//display_send(0xA1, DISPLAY_CMD);	//ADC SELECT
+	//display_send(0xC8, DISPLAY_CMD);	//SHL Direction 0-64
 
 
 
@@ -91,23 +91,23 @@ display_init(void)
 	display_send(0xA6, DISPLAY_CMD);	//REVERSE DISPLAY OFF
 	display_send(0xAF, DISPLAY_CMD);	// Display ON
 
-	//display_send(0xA0, DISPLAY_CMD);	//ADC SELECT
-	//display_send(0xC0, DISPLAY_CMD);	//SHL Select
+	display_send(0xA0, DISPLAY_CMD);	//ADC SELECT
+	display_send(0xC0, DISPLAY_CMD);	//SHL Select
 
 	display_send(0xB0, DISPLAY_CMD);	// SET PAGE ADDRESS 0
 	display_send(0x10, DISPLAY_CMD);	//SET COLUMN ADDRESS MSB 0
-	display_send(0x00, DISPLAY_CMD);	//SET COLUMN ADRESS LSB 0*/
+	display_send(0x00, DISPLAY_CMD);	//SET COLUMN ADRESS LSB 0
 
-
+/*
 	display_send(0xA0, DISPLAY_CMD);	//ADC SELECT
 	display_send(0xC0, DISPLAY_CMD);	//SHL Select
 	display_send(0xA2, DISPLAY_CMD);	//LCD Bias Select
-	display_send(0x26, DISPLAY_CMD);	//Regulator resistor select
+	display_send(0x25, DISPLAY_CMD);	//Regulator resistor select
 
 	display_send(0x81, DISPLAY_CMD);	//Set reference voltage mode
-	display_send(0x1F, DISPLAY_CMD);	//Set reference voltage register
+	display_send(0x30, DISPLAY_CMD);	//Set reference voltage register
 
-	display_send(0x2B, DISPLAY_CMD);	//PowerControl
+	display_send(0x2F, DISPLAY_CMD);	//PowerControl
 
 	display_send(0x40, DISPLAY_CMD);	//Initial Display line to 0
 	display_send(0xB0, DISPLAY_CMD);	// SET PAGE ADDRESS 0
@@ -115,8 +115,8 @@ display_init(void)
 	display_send(0x00, DISPLAY_CMD);	//SET COLUMN ADRESS LSB 0
 	display_send(0xA6, DISPLAY_CMD);	//REVERSE DISPLAY OFF
 	display_send(0xAF, DISPLAY_CMD);	// Display ON
-	//display_send(0xA5, DISPLAY_CMD); // all pixel on
-
+	display_send(0xA5, DISPLAY_CMD); // all pixel on
+*/
 
    //display_send(0x10 + (5  >> 4), DISPLAY_DATA);
     //display_send(0x00 + (5  & 0x0F), DISPLAY_DATA);
@@ -134,7 +134,7 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 {
 	uint8_t page = y / 8;
 	uint8_t col = x;
-	uint8_t bit_index = (y % 8);
+	uint8_t bit_index = 7 - (y % 8);
 	
 	if(x >= DISPLAY_BACKBUFFER_COLUMNS) x = DISPLAY_BACKBUFFER_COLUMNS - 1;
 	if(y >= 64) x = 63;

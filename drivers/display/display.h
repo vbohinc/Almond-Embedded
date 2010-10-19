@@ -18,5 +18,5 @@ void display_clear(void);
 // Set transparency
 void display_set_transparency(bool value);
 // Get current transparency option value
-bool display_get_transparency();
+bool display_get_transparency(void);
 #endif

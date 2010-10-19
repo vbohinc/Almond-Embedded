@@ -1,11 +1,12 @@
 MCU = atxmega128a1
-F_CPU = 2000000
-TARGET = display
-SRC = $(TARGET).c
+F_CPU = 32000000
+TARGET = main
+SRC = ../../../drivers/display/display.c ../../../drivers/display/display_draw.c ./main.c
+EXTRAINCDIRS = ../
 BASE = ../../..
 ALMONDLIBS = display
 TARGETTYPE = SQUIRREL
 ENABLE_DEBUG = 0
-include $(BASE)/make/base.makefile
+include ../../../make/base.makefile
 
 
