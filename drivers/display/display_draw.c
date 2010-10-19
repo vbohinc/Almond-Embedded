@@ -2,7 +2,6 @@
 #include <avr/pgmspace.h>
 #endif
 
-
 #include "display_draw.h"
 #include "display.h"
 #include "display_data.h"
@@ -36,11 +35,11 @@ uint8_t display_get_font_value(uint8_t font_size, int idx, int byte)
 
 	#ifndef X86
 	if(font_size <= 0) 
-		return pgm_read_byte(font_0[idx][byte]);
+		return pgm_read_byte(&font_0[idx][byte]);
 	if(font_size == 1)
-		return pgm_read_byte(font_1[idx][byte]);
+		return pgm_read_byte(&font_1[idx][byte]);
 	if(font_size >= 2)
-		return pgm_read_byte(font_2[idx][byte]);
+		return pgm_read_byte(&font_2[idx][byte]);
 
 	#else
 	if(font_size <= 0) 
@@ -56,8 +55,6 @@ uint8_t display_get_font_value(uint8_t font_size, int idx, int byte)
 void
 display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 {
-	bool old_trans = display_get_transparency();
-	display_set_transparency(true);
 	uint8_t char_width = display_get_font_value(font_size, 0, 0);
 	uint8_t char_height = display_get_font_value(font_size, 0, 1);;
 	uint8_t bit_index = 0;
@@ -78,15 +75,11 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 			}
 		}
 	}
-	
-	if(old_trans != true)
-		display_set_transparency(false);
 }
 
 void
-display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, char* char_array)
+display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, const char* char_array)
 {
-	
 	uint8_t char_width = display_get_font_value(font_size, 0, 0);
 	uint8_t index = 0;
 	uint8_t current_x = x;
@@ -227,16 +220,12 @@ display_draw_image(int16_t topx, int16_t topy, const uint8_t* image_array){
 	display_flip();
 }
 
-
-/*
-Takes an array of image pointers and prints the given images in forward direction and then backwards round times
-*/
 void
 display_animated_image(int8_t posX, int8_t posY, const uint8_t** image_pointer_array, uint8_t rounds, uint8_t sleep){
 	
 	for (uint8_t r = 0; r<rounds; r++)
 	{
-		uint8_t currImg = 0;
+		int16_t currImg = 0;
 		int adder = 1;
 		const uint8_t *p;
 		do	

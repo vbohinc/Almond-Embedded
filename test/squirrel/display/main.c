@@ -37,7 +37,8 @@ int main(void)
 
 	display_init();
 
-	display_test();
+	display_gui_menu("Hallo", options, 1, &did_select_menu);
+	//display_test();
 }
 
 void display_test(void)

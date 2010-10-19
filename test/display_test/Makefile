@@ -1,5 +1,5 @@
 MCU = atxmega128a1
-F_CPU = 2000000
+F_CPU = 32000000
 TARGET = display_test.c
 SRC =  ../../drivers/display/display.c ../../drivers/display/display_draw.c display_test.c
 BASE = ../..

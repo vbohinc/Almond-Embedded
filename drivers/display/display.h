@@ -7,6 +7,13 @@
 #define DISPLAY_BACKBUFFER_COLUMNS 128
 #define DISPLAY_BACKBUFFER_LINES 8
 
+#define DISPLAY_WIDTH 128
+#define DISPLAY_HEIGHT 64
+
+
+bool display_transparency;	// Don't draw white pixels
+bool display_inverted;		// Invert pixel color
+
 // Initialize display
 void display_init(void);
 // Set pixel at x, y position, value = 1 = black, value = 0 = black
