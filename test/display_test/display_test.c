@@ -51,9 +51,18 @@ int main ()
 
 #else
 // Display test for X86
+void
+did_select_menu(int option)
+{
+	printf("OPTION SELECTED: %i\n", option);
+}
+
+
 int main (int argc, char *argv[])
 {
 	display_init();
+	const char *options[] = {"Foo", "Bar", "blub", NULL};
+ 	display_gui_menu("Hallo", options, 1, &did_select_menu);
 //	display_funhouse();
 //	display_set_transparency(true);
 	
@@ -63,55 +72,44 @@ int main (int argc, char *argv[])
 		while (SDL_PollEvent(&keyevent)) {
 			switch(keyevent.type){
 				case SDL_KEYDOWN:
+					// Handle key events
 					printf("Key pressed: ");
      					switch(keyevent.key.keysym.sym){
 						case SDLK_UP:
-							display_gui_keypress(gui_key_up)
-							printf("a pressed\n");
+							printf("UP");
+							display_gui_keypress(display_gui_key_up);
 							break;
-						case SDLK_HASH:
-							display_draw_char(10,10,0,'#');
-							printf("# pressed\n");
+						case SDLK_DOWN:
+							printf("DOWN");
+							display_gui_keypress(display_gui_key_down);
 							break;
-						case SDLK_t:
-							display_draw_image(0,0,(uint8_t*)testimg);
-							printf("SuperKey 't' pressed\n");
+						case SDLK_LEFT:
+							printf("LEFT");
+							display_gui_keypress(display_gui_key_left);
 							break;
-						case SDLK_l:
-							display_draw_image(0,0,(uint8_t*)image_logo);
-							printf("Logo 't' pressed\n");
+						case SDLK_RIGHT:
+							printf("RIGHT");
+							display_gui_keypress(display_gui_key_right);
 							break;
-						case SDLK_b:
-							display_gui_progress_bar(10,5,100,20,prog);
-							prog+=10;
-							printf("ProgressBar pressed\n");
+						case SDLK_a:
+							printf("A");
+							display_gui_keypress(display_gui_key_a);
 							break;
-
-						case SDLK_p:
-							sprintf(arr,"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra arcu quis augue pulvinar adipiscing. Quisque ac est tortor. Duis dapibus fringilla nunc a aliquet. Praesent nulla quam, dignissim at fringilla et, suscipit iaculis turpis. Integer fringilla, leo id luctus feugiat, lacus nunc congue torto%d",line);
-							line++;
-							display_print(arr);
-							printf("text pressed\n");
+						case SDLK_s:
+							printf("B");
+							display_gui_keypress(display_gui_key_b);
 							break;
-						case SDLK_q:
-							
-								sprintf(arr, "Boom!\n");
-								line++;
-								display_print(arr);
-								printf("'P' pressed\n");
-								pong();
-								break;
-							
 						case SDLK_x:
+							printf("(X) SDL quit escape key");
 							exit(0);
 							break;
 						default:
 							break;
 					}
+					printf("\n");
 					break;
-
-					
 				case SDL_QUIT:
+					printf("Quitting...\n");
 					exit(0);
 					break;
 			}
@@ -147,7 +145,6 @@ display_funhouse()
 	char arr[2000];
 		int line = 1;
 	int prog = 0;
-	display_set_transparency(true);
 
 	while(1)
 	{	
