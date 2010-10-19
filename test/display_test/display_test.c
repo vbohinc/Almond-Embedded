@@ -32,11 +32,12 @@ void display_test2(void)
 {	
 	bool value = true;
 	for(int i = 0; i < 10;i++){
+      for(uint8_t x = 0; x <= 128; x++){
 		for(uint8_t y = 0; y <= 64; y++){
-			for(uint8_t x = 0; x <= 128; x++){
 				display_set_pixel(x,y,value);
 				display_flip();
 			}
+			_delay_ms(1000);
 		}
 		value = !value;
 	}
@@ -70,10 +71,21 @@ int main (void)
 	set_bit(PORTH.OUT,2);
 
 	display_init();
-	display_draw_image(0,0,(uint8_t*)tum_logo_f1);
-	_delay_ms(1000);
-	display_flip();
+//	display_test2();
+//	_delay_ms(1000);
+//	display_flip();
 	display_draw_image(0,0,(uint8_t*)tum_logo_f2);
+	display_flip();
+	display_set_pixel(0,0,true);
+	display_set_pixel(0,1,true);
+	display_set_pixel(0,2,true);
+	display_set_pixel(0,3,true);
+	display_set_pixel(0,4,true);
+	display_set_pixel(0,5,true);
+	//display_set_pixel(0,6,true);
+//	display_draw_string(0,0,0,"hallo Sebi!");
+//	display_flip();*/
+//	display_draw_string(0,0,0,"1111111111111111111111111111111111");
 	display_flip();
 	while(true) _delay_ms(1);
 }

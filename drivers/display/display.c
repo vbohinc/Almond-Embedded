@@ -153,14 +153,14 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 	if(display_inverted) value = !value;
 	//if((!value && display_transparency && !display_inverted) || (value && display_transparency && display_inverted)) return;
 	#ifndef X86
-	
+	if(x >= DISPLAY_BACKBUFFER_COLUMNS) return;
+	if(y >= 64) return;
+		
 	uint8_t page = y / 8;
 	uint8_t col = x;
 	uint8_t bit_index = 7 - (y % 8);
 	
-	if(x >= DISPLAY_BACKBUFFER_COLUMNS) x = DISPLAY_BACKBUFFER_COLUMNS - 1;
-	if(y >= 64) x = 63;
-	
+
 	if(value)
 		// Black pixel
 		backbuffer[page][col] |= 1<<bit_index;

@@ -198,9 +198,13 @@ display_print(char* char_array)
 
 void
 display_draw_image(int16_t topx, int16_t topy, const uint8_t* image_array){
+	#ifndef X86
+	uint8_t image_width = pgm_read_byte(&image_array[0]);
+	uint8_t image_height = pgm_read_byte(&image_array[1]);
+	#else
 	uint8_t image_width = image_array[0];
 	uint8_t image_height = image_array[1];
-
+	#endif
 	uint16_t byte_index = 2;
 	uint8_t bit_index = 0;
 	for(uint8_t y = 0; y < image_height; y++){
