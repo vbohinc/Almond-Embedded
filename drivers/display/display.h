@@ -15,4 +15,8 @@ void display_set_pixel (uint8_t x, uint8_t y, bool value);
 void display_flip (void);
 // Clear display
 void display_clear(void);
+// Set transparency
+void display_set_transparency(bool value);
+// Get current transparency option value
+bool display_get_transparency();
 #endif

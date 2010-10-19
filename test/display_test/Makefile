@@ -8,4 +8,3 @@ EXTRAINCDIRS = ../../drivers/ ../../protocols/ ../../shared/
 TARGETTYPE = SQUIRREL
 ENABLE_DEBUG = 0
 include ../../make/base.makefile 
-
