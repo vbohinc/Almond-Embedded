@@ -102,12 +102,12 @@ display_init(void)
 	display_send(0xA0, DISPLAY_CMD);	//ADC SELECT
 	display_send(0xC0, DISPLAY_CMD);	//SHL Select
 	display_send(0xA2, DISPLAY_CMD);	//LCD Bias Select
-	display_send(0x25, DISPLAY_CMD);	//Regulator resistor select
+	display_send(0x26, DISPLAY_CMD);	//Regulator resistor select
 
 	display_send(0x81, DISPLAY_CMD);	//Set reference voltage mode
-	display_send(0x30, DISPLAY_CMD);	//Set reference voltage register
+	display_send(0x1F, DISPLAY_CMD);	//Set reference voltage register
 
-	display_send(0x2F, DISPLAY_CMD);	//PowerControl
+	display_send(0x2B, DISPLAY_CMD);	//PowerControl
 
 	display_send(0x40, DISPLAY_CMD);	//Initial Display line to 0
 	display_send(0xB0, DISPLAY_CMD);	// SET PAGE ADDRESS 0
