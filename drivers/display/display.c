@@ -1,7 +1,8 @@
 #include "display.h"
+#ifndef X86
 #include <avr/io.h>
 #include <util/delay.h>
-
+#endif
 // LINES
 #define DISPLAY_PAGE_NUMBER 7  	//Starts with Page 0, here: 8 pages overall
 #define DISPLAY_PAGE_INIT 0
@@ -20,11 +21,23 @@
 #define DISPLAY_RD  3 //read
 #define DISPLAY_WR  4 //write
 
-// Backbuffer
-// FIXME: Make consts
-#define DISPLAY_BACKBUFFER_COLUMNS 128
-#define DISPLAY_BACKBUFFER_LINES 8
+bool transparency;
+bool previous_transparency;
 
+
+bool
+display_get_transparency()
+{
+	return transparency;
+}
+
+void
+display_set_transparency(bool value) 
+{	
+	transparency=value;
+}
+
+#ifndef X86
 // Display command type
 enum {
   DISPLAY_CMD,
@@ -39,6 +52,8 @@ static uint8_t backbuffer[DISPLAY_BACKBUFFER_LINES][DISPLAY_BACKBUFFER_COLUMNS];
 void 
 display_init(void)
 {
+	transparency=false;
+	
 	//User system setup by external pins
 	PORTF.DIR = 0xFF;
 	set_bit(PORTH.DIR, DISPLAY_RS);
@@ -127,7 +142,7 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 	if(value)
 		// Black pixel
 		backbuffer[page][col] |= 1<<bit_index;
-	else
+	else if(!transparency)
 		// White pixel
 		backbuffer[page][col] &= ~(1<<bit_index);
 }
@@ -193,3 +208,134 @@ display_clear(void)
 		}
 	}
 }
+
+#else
+#include <stdbool.h>
+#include "SDL.h" // main SDL header
+#include <SDL_gfxPrimitives.h>
+#include <SDL_rotozoom.h>
+
+ 
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 320
+ 
+SDL_Surface *screen; //This pointer will reference the backbuffer
+SDL_Surface *tux;
+SDL_Surface *sur;
+
+int
+InitVideo() {
+  Uint32 flags = SDL_HWSURFACE|SDL_DOUBLEBUF;
+  // Load SDL
+  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
+    return false;
+  }
+  atexit(SDL_Quit); // Clean it up nicely :)
+ 
+  screen = SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 32, flags);//flags);
+  if (!screen) {
+    fprintf(stderr, "Unable to set video mode: %s\n", SDL_GetError());
+    return false;
+  }
+  return true;
+}
+
+void
+set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
+{
+	if (x>=128 || y>=64)
+	{
+		//printf("Coorinate out of range: %d|%d\n",x,y);
+		return;
+	}
+
+    int bpp = surface->format->BytesPerPixel;
+    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+    
+    
+    switch(bpp) {
+    case 1:
+        *p = pixel;
+        break;
+
+    case 2:
+        *(Uint16 *)p = pixel;
+        break;
+
+    case 3:
+        if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {
+            p[0] = (pixel >> 16) & 0xff;
+            p[1] = (pixel >> 8) & 0xff;
+            p[2] = pixel & 0xff;
+        } else {
+            p[0] = pixel & 0xff;
+            p[1] = (pixel >> 8) & 0xff;
+            p[2] = (pixel >> 16) & 0xff;
+        }
+        break;
+
+    case 4:
+        *(Uint32 *)p = pixel;
+        break;
+    }
+} 
+
+void
+DrawImage(SDL_Surface *srcimg, int sx, int sy, int sw, int sh, SDL_Surface *dstimg, int dx, int dy, int alpha) {
+  
+  SDL_Rect src, dst;
+  
+  src.x = sx;  src.y = sy;  src.w = sw;  src.h = sh;
+  dst.x = dx;  dst.y = dy;  dst.w = src.w;  dst.h = src.h;
+  
+  SDL_SetAlpha(srcimg, SDL_SRCALPHA, alpha);
+  SDL_BlitSurface(srcimg, &src, dstimg, &dst);
+}
+
+void
+display_init(void) {
+  transparency = false;
+  int res = 0; //Results
+  if (InitVideo() == false) exit(-1);
+  
+	SDL_WM_SetCaption("Awesome Almond Display", NULL);
+
+
+  tux = SDL_CreateRGBSurface(SDL_HWSURFACE, 128, 64, 32,0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+  for(int x=0; x<128;x++) {
+  	for(int y=0; y<64;y++){
+  		set_pixel(tux,x,y,0xffffffff);
+  	}
+  }
+}
+
+void
+display_set_pixel (uint8_t x, uint8_t y, bool value) {
+  if(value)
+    set_pixel(tux,x,y,0x000000ff); //Black
+  else if(!transparency)
+    set_pixel(tux,x,y,0xffffffff); //White
+}
+
+
+void
+display_flip (void) {
+  sur = zoomSurface(tux, 5, 5, SMOOTHING_OFF);
+  
+  DrawImage(sur, 0,0, sur->w, sur->h, screen, 0, 0, 128);
+  SDL_Flip(screen); //Refresh the screen
+  SDL_FreeSurface(sur);
+}
+// Clear display
+void
+display_clear(void) {
+  for(int x=0; x<128;x++) {
+  	for(int y=0; y<64;y++){
+  		set_pixel(tux,x,y,0xffffffff);
+  	}
+  }
+}
+#endif
+
+

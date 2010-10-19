@@ -3,6 +3,7 @@
 #ifndef __DISPLAY_DRAW_H__
 #define __DISPLAY_DRAW_H__
 
+
 // Draw a character at a given (top,left) position
 void display_draw_char (uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex);
 // Draw a whole string at a given (top,left) position
@@ -14,6 +15,9 @@ void display_draw_line (uint8_t xstart, uint8_t ystart, uint8_t xend, uint8_t ye
 // Print to the console
 void display_print(char* char_array);
 // Draw image array to screen
-void display_draw_image(uint8_t topx, uint8_t topy, uint8_t* image_array);
+void display_draw_image(int16_t topx, int16_t topy, const uint8_t* image_array);
+
+void
+display_animated_image(int8_t offsetx, int8_t offsety, const uint8_t *image_pointer_array[], uint8_t rounds, uint8_t sleep);
 
 #endif

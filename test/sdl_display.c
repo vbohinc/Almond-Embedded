@@ -70,12 +70,13 @@ void display_set_pixel (uint8_t x, uint8_t y, bool value) {
   else
   set_pixel(tux,x,y,0xffffffff);
   //SDL_ScaleSurface(tux, 512,256);
-  SDL_Surface *sur = zoomSurface(tux, 5, 5, SMOOTHING_OFF);
-  DrawImage(sur, 0,0, sur->w, sur->h, screen, 0, 0, 128);
 }
 
 void display_flip (void) {
+  SDL_Surface *sur = zoomSurface(tux, 5, 5, SMOOTHING_OFF);
+  DrawImage(sur, 0,0, sur->w, sur->h, screen, 0, 0, 128);
   SDL_Flip(screen); //Refresh the screen
+  SDL_FreeSurface(sur);
 }
 // Clear display
 void display_clear(void) {
