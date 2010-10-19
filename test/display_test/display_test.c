@@ -1,7 +1,17 @@
 #ifndef X86
+
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#define UART_BAUD_RATE      9600ul
+
+#else
+
+#include <stdbool.h>
+#include <SDL.h> // main SDL header
+#include <SDL_gfxPrimitives.h>
+#include <SDL_rotozoom.h>
+
 #endif
 
 #include "../../drivers/display/display.h"
@@ -10,8 +20,6 @@
 
 #include "../../drivers/display/display_data.h"
 #include "../pong.h"
-
-#define UART_BAUD_RATE      9600ul
 
 /*! Define that selects the Usart used in example. */
 #define USART USARTC0
@@ -34,23 +42,88 @@ void display_test2(void)
 	}
 }
 
-#include <stdbool.h>
-#include <SDL.h> // main SDL header
-#include <SDL_gfxPrimitives.h>
-#include <SDL_rotozoom.h>
+#ifndef X86
+// Display test for AVR
+int main ()
+{
+	
+}
 
-
+#else
+// Display test for X86
 int main (int argc, char *argv[])
 {
 	display_init();
+//	display_funhouse();
+//	display_set_transparency(true);
 	
-	//display_test2();
-	//display_draw_string(10,10,2,"Hallo");
-	//display_draw_image(0,0,(uint8_t*)image_logo);
-	
-	//display_draw_line(12,12,20,60);
+	SDL_Event keyevent;
 
-	//display_draw_char(10,10,0,'#');
+	while(1) {
+		while (SDL_PollEvent(&keyevent)) {
+			switch(keyevent.type){
+				case SDL_KEYDOWN:
+					printf("Key pressed: ");
+     					switch(keyevent.key.keysym.sym){
+						case SDLK_UP:
+							display_gui_keypress(gui_key_up)
+							printf("a pressed\n");
+							break;
+						case SDLK_HASH:
+							display_draw_char(10,10,0,'#');
+							printf("# pressed\n");
+							break;
+						case SDLK_t:
+							display_draw_image(0,0,(uint8_t*)testimg);
+							printf("SuperKey 't' pressed\n");
+							break;
+						case SDLK_l:
+							display_draw_image(0,0,(uint8_t*)image_logo);
+							printf("Logo 't' pressed\n");
+							break;
+						case SDLK_b:
+							display_gui_progress_bar(10,5,100,20,prog);
+							prog+=10;
+							printf("ProgressBar pressed\n");
+							break;
+
+						case SDLK_p:
+							sprintf(arr,"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pharetra arcu quis augue pulvinar adipiscing. Quisque ac est tortor. Duis dapibus fringilla nunc a aliquet. Praesent nulla quam, dignissim at fringilla et, suscipit iaculis turpis. Integer fringilla, leo id luctus feugiat, lacus nunc congue torto%d",line);
+							line++;
+							display_print(arr);
+							printf("text pressed\n");
+							break;
+						case SDLK_q:
+							
+								sprintf(arr, "Boom!\n");
+								line++;
+								display_print(arr);
+								printf("'P' pressed\n");
+								pong();
+								break;
+							
+						case SDLK_x:
+							exit(0);
+							break;
+						default:
+							break;
+					}
+					break;
+
+					
+				case SDL_QUIT:
+					exit(0);
+					break;
+			}
+		}
+		display_flip();
+		SDL_Delay(100);
+	}
+}
+
+void
+display_funhouse()
+{
 	for (int8_t i=-64; i<0; i+=1)
 	{
 		display_draw_image(0,i,tum_logo_f1);
@@ -142,7 +215,7 @@ int main (int argc, char *argv[])
 		display_flip();
 		SDL_Delay(100);
 	}
-
-
 }
 
+
+#endif
