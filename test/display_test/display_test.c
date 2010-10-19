@@ -15,6 +15,10 @@ int main(void)
 {
 	set_bit(PORTC.DIR,4);
 	clear_bit(PORTC.OUT,4);
+
+	//set_bit(PORTH.DIR,2);
+	//set_bit(PORTH.OUT,2);
+
 	display_init();
 	display_test();
 }
