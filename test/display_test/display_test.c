@@ -37,7 +37,7 @@ void display_test2(void)
 				display_set_pixel(x,y,value);
 				display_flip();
 			}
-			_delay_ms(1000);
+		//	_delay_ms(1000);
 		}
 		value = !value;
 	}
