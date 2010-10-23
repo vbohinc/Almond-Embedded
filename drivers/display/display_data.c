@@ -858,3 +858,38 @@ PROGMEM
 ,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
+const uint8_t arrow_left[] 
+#ifndef X86
+PROGMEM
+#endif
+= {
+8, 8,
+  4, 12, 28, 60, 60, 28, 12,  4
+};
+
+const uint8_t arrow_up[] 
+#ifndef X86
+PROGMEM
+#endif
+= {
+8, 8,
+  0,  0, 24, 60,126,255,  0,  0
+};
+
+const uint8_t arrow_down[] 
+#ifndef X86
+PROGMEM
+#endif
+= {
+8, 8,
+  0,  0,255,126, 60, 24,  0,  0
+};
+
+const uint8_t arrow_right[] 
+#ifndef X86
+PROGMEM
+#endif
+= {
+8, 8,
+ 32, 48, 56, 60, 60, 56, 48, 32
+};

@@ -21,26 +21,7 @@
 #include "../../drivers/display/display_data.h"
 #include "../pong.h"
 
-/*! Define that selects the Usart used in example. */
 #define USART USARTC0
-
-void display_test2(void)
-
-	//set_bit(PORTH.DIR,2);
-	//set_bit(PORTH.OUT,2);
-
-{	
-	bool value = true;
-	for(int i = 0; i < 10;i++){
-		for(uint8_t y = 0; y <= 64; y++){
-			for(uint8_t x = 0; x <= 128; x++){
-				display_set_pixel(x,y,value);
-				display_flip();
-			}
-		}
-		value = !value;
-	}
-}
 
 #ifndef X86
 // Display test for AVR
@@ -52,7 +33,7 @@ int main ()
 #else
 // Display test for X86
 void
-did_select_menu(int option)
+did_select_menu(int8_t option)
 {
 	printf("OPTION SELECTED: %i\n", option);
 }
@@ -61,10 +42,9 @@ did_select_menu(int option)
 int main (int argc, char *argv[])
 {
 	display_init();
-	const char *options[] = {"Foo", "Bar", "blub", NULL};
- 	display_gui_menu("Hallo", options, 1, &did_select_menu);
+	const char *options[] = {"Eins", "Zwei", "Drei", NULL};
+ 	display_gui_menu("Menue", options, 1, &did_select_menu);
 //	display_funhouse();
-//	display_set_transparency(true);
 	
 	SDL_Event keyevent;
 
@@ -76,19 +56,19 @@ int main (int argc, char *argv[])
 					printf("Key pressed: ");
      					switch(keyevent.key.keysym.sym){
 						case SDLK_UP:
-							printf("UP");
+							printf("^");
 							display_gui_keypress(display_gui_key_up);
 							break;
 						case SDLK_DOWN:
-							printf("DOWN");
+							printf("v");
 							display_gui_keypress(display_gui_key_down);
 							break;
 						case SDLK_LEFT:
-							printf("LEFT");
+							printf(">");
 							display_gui_keypress(display_gui_key_left);
 							break;
 						case SDLK_RIGHT:
-							printf("RIGHT");
+							printf("<");
 							display_gui_keypress(display_gui_key_right);
 							break;
 						case SDLK_a:
@@ -114,11 +94,14 @@ int main (int argc, char *argv[])
 					break;
 			}
 		}
-		display_flip();
+		display_gui_refresh();	// Refresh gui drawings
+		display_flip();			// Flip backbuffer
 		SDL_Delay(100);
 	}
 }
 
+
+/*
 void
 display_funhouse()
 {
@@ -214,5 +197,5 @@ display_funhouse()
 	}
 }
 
-
+*/
 #endif
