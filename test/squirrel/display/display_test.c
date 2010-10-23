@@ -29,6 +29,12 @@
 
 void test_menu(void);
 
+void
+test_alert_callback(bool option)
+{
+	test_menu();
+}
+
 // Display test for X86
 void
 test_menu_selected(int8_t option)
@@ -36,11 +42,13 @@ test_menu_selected(int8_t option)
 	switch (option)
 	{
 		case 0:
-			display_gui_image(image_logo, &test_menu); break;
+			display_gui_about(&test_menu); break;
 		case 1:
 			display_gui_image(testimg, &test_menu); break;
 		case 2:
 			pong(); break;
+		case 3:
+			display_gui_alert("Hey you!", "Do you like nuts?", "Yeah", "Nope", &test_alert_callback); break;
 		default:
 			test_menu(); break;
 	}
@@ -50,7 +58,7 @@ void
 test_menu(void)
 {
 	// Main menu for the test
- 	static const char *options[] = {"Almond Logo", "Nipples", "Pong", NULL};
+ 	static const char *options[] = {"About", "Nipples", "Pong", "Alert", NULL};
  	display_gui_menu("Pick a test", options, 0, &test_menu_selected);
 }
 
@@ -137,7 +145,7 @@ int main (int argc, char *argv[])
 					break;
 			}
 		}
-#else		
+#else
 		uint8_t button = button_pressed();
 #endif
 		if (button != display_gui_key_none)	{

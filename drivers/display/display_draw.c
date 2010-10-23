@@ -78,7 +78,7 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 }
 
 void
-display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, const char* char_array)
+display_draw_string_delayed(uint8_t x, uint8_t y, uint8_t font_size, const char* char_array, uint16_t delay)
 {
 	uint8_t char_width = display_get_font_value(font_size, 0, 0);
 	uint8_t index = 0;
@@ -87,8 +87,24 @@ display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, const char* char_ar
 		display_draw_char(current_x, y, font_size, char_array[index]);
 		index++;
 		current_x += char_width;
+		if(delay > 0){
+			#ifdef X86
+			SDL_Delay(delay);
+			#else
+			_delay_ms(delay);
+			#endif
+			display_flip();
+		}
 	}
 }
+
+void
+display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, const char* char_array)
+{
+	display_draw_string_delayed(x, y, font_size, char_array, 0);
+}
+
+
 
 void
 display_draw_rect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, bool filled)

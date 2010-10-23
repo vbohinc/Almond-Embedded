@@ -10,6 +10,8 @@
 void display_draw_char (uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex);
 // Draw a whole string at a given (top,left) position
 void display_draw_string (uint8_t x, uint8_t y, uint8_t font_size, const char* char_array);
+// Draw a whole string with a delay between each character
+void display_draw_string_delayed(uint8_t x, uint8_t y, uint8_t font_size, const char* char_array, uint16_t delay);
 // Draw a (not filled) rectangle (x1,y1 = top/left-corner, x2,y2 = bottom/right-corner)
 void display_draw_rect (uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, bool filled);
 // Draw a line from xstart, ystart to xend, yend

@@ -26,7 +26,8 @@ enum display_gui_screens{
 	display_gui_screen_menu,
 	display_gui_screen_fullscreenimage,
 	display_gui_screen_alert,
-	display_gui_screen_game
+	display_gui_screen_game,
+	display_gui_screen_about
 };
 
 
@@ -68,6 +69,11 @@ void display_gui_bootup_line(const char* string, uint16_t wait);
 void display_gui_alert(const char* title, const char* message, const char* button1, const char* button2, void(*callback)(bool));
 // Handle keypress events for the alert
 void display_gui_alert_keypress(enum display_gui_keys key);
+
+// Display the about screen with credits
+void display_gui_about(void(*callback)(void));
+// Handle keypress events for the credits
+void display_gui_keypress_about(enum display_gui_keys key);
 
 // Draw a progress bar
 void display_gui_progress_bar(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t progress);

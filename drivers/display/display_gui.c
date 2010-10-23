@@ -17,6 +17,8 @@ bool display_gui_button_bar_visible = true;
 const char* display_gui_a_function;
 const char* display_gui_b_function;
 
+void display_gui_sleep(uint16_t ms);
+
 void
 display_gui_keypress(enum display_gui_keys key)
 {
@@ -34,6 +36,8 @@ display_gui_keypress(enum display_gui_keys key)
 			display_gui_alert_keypress(key); break;
 		case display_gui_screen_game:
 			pong_keypress(key); break;
+		case display_gui_screen_about:
+			display_gui_keypress_about(key); break;
 		default:
 			break;
 	}
@@ -130,10 +134,10 @@ display_gui_bootup_screen(void)
 	display_draw_rect(0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT, true);
 	display_inverted = true;
 	display_gui_bootup_line("ALMOND Squirrel v0.1 prealpha\n", 500);
-	display_gui_bootup_line("Initializing storage\n", 200);
-	display_gui_bootup_line("Detecting tits...\n", 400);
+	display_gui_bootup_line("Initializing storage\n", 100);
+	display_gui_bootup_line("Detecting tits...\n", 100);
 	display_gui_bootup_line("Destroying 'pong'...\n", 100);
-	display_gui_bootup_line("Freaking out...\n", 600);
+	display_gui_bootup_line("Freaking out...\n", 100);
 	display_inverted = false;
 	display_clear();
 	
@@ -184,14 +188,74 @@ void(*gui_alert_callback)(bool);
 void
 display_gui_alert(const char* title, const char* message, const char* button1, const char* button2, void(*callback)(bool))
 {
-	display_inverted = true;
-	display_draw_rect(20, 20, DISPLAY_WIDTH - 20, DISPLAY_HEIGHT - 40, true);
-	display_inverted = false;
-	display_draw_rect(20, 20, DISPLAY_WIDTH - 20, DISPLAY_HEIGHT - 40, false);
+	current_screen = display_gui_screen_alert;
+	gui_alert_callback = callback;
+	display_gui_a_function = button1;
+	display_gui_b_function = button2;
+	display_gui_left_available = false;
+	display_gui_up_available = false;
+	display_gui_right_available = false;
+	display_gui_down_available = false;
+	display_gui_button_bar_visible = true;
+		
+	display_clear();
+	display_draw_rect(0, DISPLAY_FONT0_HEIGHT, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT - 2, false);
+	
+	display_draw_string(0,0,0,title);
+	display_draw_string(3,DISPLAY_FONT0_HEIGHT + 3,0, message);
 }
 
 void
 display_gui_alert_keypress(enum display_gui_keys key)
+{
+	if(key == display_gui_key_a) gui_alert_callback(true);
+	if(key == display_gui_key_b) gui_alert_callback(false);
+}
+
+// CREDITS ============================================================================================
+
+#define CREDITS_CHARACTER_DELAY 60
+#define CREDITS_DELAY 2000
+
+void(*gui_about_callback)(void) = NULL;
+
+void
+display_gui_about(void(*callback)(void))
+{
+	gui_about_callback = callback;
+	current_screen = display_gui_screen_about;
+	display_gui_button_bar_visible = false;
+	display_clear();
+	display_draw_image(0, 0, image_logo);
+	display_draw_string_delayed(62, 5, 2, "ALMOND", 400);
+	display_draw_string_delayed(62, 25, 0, "Autonomous", 100);
+	display_draw_string_delayed(62, 33, 0, "Logging And", 100);
+	display_draw_string_delayed(62, 41, 0, "Management", 100);
+	display_draw_string_delayed(62, 49, 0, "Of Networked", 100);
+	display_draw_string_delayed(62, 57, 0, "Devices", 100);
+	display_gui_sleep(2000);
+	display_clear();
+	display_draw_string_delayed(30, 30, 0, "starring", 100);
+	display_gui_sleep(1000);
+	
+	static const uint8_t *images[] = {team_salomon, team_linus, team_maximilian, team_sean, team_stefan, team_matthias, team_pascal, team_thomas, team_christian, NULL};
+	static const char *names[] = {"Salomon", "Linus", "Maximilian", "Sean", "Stefan", "Matthias", "Pascal", "Thomas", "Christian", NULL};
+	static const char *assignments[] = {"The Boss!", "Rumgeloete", "Grinsemaxi", "Schon", "Ultrafanta", "Display", "Rumgammeln", "Gar gar nix", "Keine Ahnung", NULL};
+
+	uint8_t current_person = 0;
+	while(images[current_person] != NULL){
+		display_clear();
+		display_draw_image(0, 0, images[current_person]);
+		display_draw_string_delayed(45, 20, 2, names[current_person], CREDITS_CHARACTER_DELAY);
+		display_draw_string_delayed(45, 38, 0, assignments[current_person], CREDITS_CHARACTER_DELAY);
+		display_gui_sleep(CREDITS_DELAY);	
+		current_person++;
+	}
+	
+}
+
+void
+display_gui_keypress_about(enum display_gui_keys key)
 {
 	
 }
@@ -215,17 +279,23 @@ display_gui_draw_button_bar(void)
 	display_draw_rect(0, BUTTON_INFO_BAR_TOP - 1, DISPLAY_WIDTH, DISPLAY_HEIGHT - 1, true);
 	display_inverted = false;
 	// Arrows panel
-	display_draw_rect(0, BUTTON_INFO_BAR_TOP, 29, DISPLAY_HEIGHT, true);
-	display_set_pixel(0, BUTTON_INFO_BAR_TOP, false);
-	display_set_pixel(29, BUTTON_INFO_BAR_TOP, false);
+	if(display_gui_right_available || display_gui_left_available || display_gui_up_available || display_gui_down_available){
+		display_draw_rect(0, BUTTON_INFO_BAR_TOP, 29, DISPLAY_HEIGHT, true);
+		display_set_pixel(0, BUTTON_INFO_BAR_TOP, false);
+		display_set_pixel(29, BUTTON_INFO_BAR_TOP, false);
+	}
 	// A-Button panel
-	display_draw_rect(31, BUTTON_INFO_BAR_TOP, 31+48, DISPLAY_HEIGHT, true);
-	display_set_pixel(31, BUTTON_INFO_BAR_TOP, false);
-	display_set_pixel(31+48, BUTTON_INFO_BAR_TOP, false);
+	if(strcmp(display_gui_a_function,"")){
+		display_draw_rect(31, BUTTON_INFO_BAR_TOP, 31+48, DISPLAY_HEIGHT, true);
+		display_set_pixel(31, BUTTON_INFO_BAR_TOP, false);
+		display_set_pixel(31+48, BUTTON_INFO_BAR_TOP, false);
+	}
 	// B-Button panel
-	display_draw_rect(81, BUTTON_INFO_BAR_TOP, 127, DISPLAY_HEIGHT, true);
-	display_set_pixel(81, BUTTON_INFO_BAR_TOP, false);
-	display_set_pixel(127, BUTTON_INFO_BAR_TOP, false);
+	if(strcmp(display_gui_b_function, "")){
+		display_draw_rect(81, BUTTON_INFO_BAR_TOP, 127, DISPLAY_HEIGHT, true);
+		display_set_pixel(81, BUTTON_INFO_BAR_TOP, false);
+		display_set_pixel(127, BUTTON_INFO_BAR_TOP, false);
+	}
 	// A/B Functions
 	display_inverted = true;
 	display_draw_string(32, BUTTON_INFO_BAR_TOP + 1, 0, display_gui_a_function);
