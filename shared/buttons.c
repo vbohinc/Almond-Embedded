@@ -12,7 +12,7 @@ uint8_t debounce(uint8_t pin)
         /* Pin wurde auf Masse gezogen, 100ms warten   */
         _delay_ms(50);   // Maximalwert des Parameters an _delay_ms 
         _delay_ms(50);   // beachten, vgl. Dokumentation der avr-libc
-        if ( BUTTONS_PORT.IN  & (1 << pin) )
+        if ( !(BUTTONS_PORT.IN  & (1 << pin)) )
         {
             /* Anwender Zeit zum Loslassen des Tasters geben */
             _delay_ms(50);
