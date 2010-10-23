@@ -142,7 +142,6 @@ int main (int argc, char *argv[])
 #endif
 		if (button != display_gui_key_none)	{
 			display_gui_keypress(button);
-			debug("DEBUG!!!");
 		}
 		
 		display_gui_refresh();	// Refresh gui drawings

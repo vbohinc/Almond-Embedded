@@ -23,19 +23,28 @@ void sd_disable(void)
 
 void sd_init(void)
 {
+	debug("Init spi ...\n");
+	display_flip();
 	spi_init();
+	debug("SPI initialized\n");
+	display_flip();
 
 	//_delay_ms(100);
 
 	sd_disable();
 
-	debug_pgm(PSTR("SD: warming up chip"));
-	for (uint8_t i = 0; i < 10; ++i)
+	debug_pgm(PSTR("SD: warming up chip\n"));
+	display_flip();
+	/*for (uint8_t i = 0; i < 10; ++i)
 	{
-		spi_receive_byte();//spi_send_byte(0x0F);
-	}
+		spi_receive_byte();
+		//spi_send_byte(0x0F);
+	}*/
 
 	sd_enable();
+
+	debug("SPI initialized\n");
+	display_flip();
 
 	/* reset card */
 	uint8_t response;
@@ -43,6 +52,7 @@ void sd_init(void)
 	{
 		response = sd_send_command(CMD0, NULL); //sd_raw_send_command(CMD_GO_IDLE_STATE, 0);
 		byte_to_hex(response);
+	display_flip();
 		if (response == (1 << R1_IDLE_STATE))
 			break;
 
@@ -50,11 +60,13 @@ void sd_init(void)
 		{
 			sd_disable();
 			debug_pgm(PSTR("sd: failed (CMD0)"));
+	display_flip();
 			return;
 		}
 	}
 
 	debug_pgm(PSTR("SD: SPI Init Succeeded"));
+	display_flip();
 	// Place SD Card into Idle State
 	sd_send_command(CMD0, NULL);
 	sd_get_response(R1);
@@ -67,6 +79,7 @@ void sd_init(void)
 	sd_send_command(CMD8, NULL);
 	sd_get_response(R1);
 	debug_pgm(PSTR("SD: Switch to SPI Mode Succeeded. Voltage queried"));
+	display_flip();
 	if (sd_response_buffer[0] == 0x04)
 	{ // CMD8 is illegal, Version 1 card
 		do
@@ -79,6 +92,7 @@ void sd_init(void)
 			sd_get_response(R1);
 		} while (sd_response_buffer[0] != 0x00);
 		debug_pgm(PSTR("SD: Type 1 Initialization complete"));
+	display_flip();
 	}
 	else
 	{ // Version 2
@@ -95,6 +109,7 @@ void sd_init(void)
 		sd_send_command(CMD58, NULL);
 		sd_get_response(R3);
 		debug_pgm(PSTR("SD: Type 2 Initialization complete"));
+	display_flip();
 	}
 	// Set block size to 32 bytes
 	//sd_send_command(CMD16, NULL);
