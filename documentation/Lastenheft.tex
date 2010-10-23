@@ -85,7 +85,7 @@ Die einzelnen Projektteile werden im Folgenden genauer erläutert.
 
 Der Controller (``Squirrel'') basiert auf einem Atmel XMega 128a1 AVR Mikroprozessor. \\
 Er dient als Zentrale für das System, welches autark vom Rechner arbeitet und auch als Schnittstelle zum Rechner. \\
-Am Controller selbst befindet sich zusätzlich ein SD-Kartenleser für die Speicherung von Logdaten, ein Display mit Tasten für Statusüberprüfung und ggf. Konfigurationsänderungen.
+Am Controller selbst befindet sich zusätzlich ein SD-Kartenleser für die Speicherung von Logdaten, ein Display mit Tasten für Statusüberprüfung.
 Wie alle Client-Geräte (``Nuts'') besitzt der Controller ein Bluetooth Modul.
 
 \subsection{Features}
@@ -95,17 +95,14 @@ Mit dem Uplink-Protokoll kommuniziert der Controller mit dem Backend. Hiermit we
 
 \subsection{Display}
 
-Die grafische Benutzeroberfläche (GUI) des Controllers wird durch einen zweiten Mikroprozessor realisiert. \\
-Das Display wird durch einen Mikroprozessor angesteuert, sodass hier eine zusätzliche Abstraktionsschicht zwischen Display-Controller und Controller eingeführt wird. Dies trennt die GUI Funktion von der Grundfunktion des Contollers. \\
+Die grafische Benutzeroberfläche (GUI) des Controllers wird ebenfalls vom Atmel XMega 128a1 AVR Mikroprozessor berechnet und stellt somit eine der Grundfunktionen des Controllerboards dar.
 
 \subsection{Speicherung (SD-Karte)}
 
 Der Controller besitzt folgende Zugriffsmöglichkeiten auf SD-Karten:
 
 \begin{enumerate}
-	\item SD-Karte mit FAT-32 formatieren
 	\item Log-Datei schreiben/lesen
-	\item Konfigurationsdatei schreiben/lesen
 	\item beliebige Textdatei schreiben/lesen
 \end{enumerate}
 
@@ -132,6 +129,7 @@ Die Wetterstation basiert auf der Aktor/Sensor Grundplatine mit zusätzlichen fo
 	\item Windrichtungssensor (Eigenbau, optische Dekodierung)
 	\item Windgeschwindigkeitssensor (Eigenbau, Dynamo)
 	\item Lichtstärke (Fotowiderstand)
+	\item Fechtigkeitssensor
 \end{itemize}
 
 Sie besitzt keine Aktoren und ist batteriebetrieben.
@@ -168,13 +166,13 @@ Sobald der Controller mit einem Aktor/Sensor oder dem PC verbunden ist, wird das
 
 Das Backend ist ein Softwarepaket für Linux, Windows oder Mac OS X basierte Computer. Mit dem Backend ist es möglich über eine webbasierte Oberfläche auf die Sensordaten der vernetzten Geräte zuzugreifen. \\
 Der Vorteil der Weboberfläche ist, dass der Backend Server so von jedem Browser aus bedient werden kann (inklusive mobiler Endgeräte) und so eine bestmögliche Integration des Systems ermöglicht wird. \\
-Als Webserver kommt der {\bf lighttpd} zum Einsatz. Zusätzlich wird eine lokale {\bf MySQL} Datenbank zur Speicherung von Einstellungen und Daten auf der Backend-Seite verwendet.\\
-Die Software zur Kommunikation mit dem Backend wird in C++ entwickelt und schreibt empfangene Daten direkt in die Datenbank.
+Als Webserver kommt der {\bf lighttpd} zum Einsatz. Zusätzlich wird eine lokale {\bf SQLite} Datenbank zur Speicherung von Einstellungen und Daten auf der Backend-Seite verwendet.\\
+Die Software zur Kommunikation mit dem Controller wird in Java entwickelt und schreibt empfangene Daten direkt in die Datenbank.
 
 \subsection{Backend Bluetooth Interface}
 \label{subsec:BTBackend}
 
-Das Backend Bluetooth Interface lädt regelmäßig neue Logdaten vom Controller und speichert diese in die MySQL Datenbank.\\
+Das Backend Bluetooth Interface lädt regelmäßig neue Logdaten vom Controller und speichert diese in die SQLite Datenbank.\\
 Außerdem werden geänderten Einstellungen oder Aktionen für Aktoren sofort wieder per Bluetooth in das Netz eingespielt.
 
 \subsubsection{mögliche Erweiterungen}

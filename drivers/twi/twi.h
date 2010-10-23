@@ -51,9 +51,9 @@ enum twi_access_mode { READ=1, WRITE=0};
 enum twi_send_ack { ACK=1, NACK=0};
 
 /**
- Send START (or RESTART) on the twi bus
+ Send RESTART on the twi bus
  */
-uint8_t twi_start(void);
+uint8_t twi_restart(void);
 
 /**
  Send STOP on the twi bus
@@ -61,7 +61,7 @@ uint8_t twi_start(void);
 void twi_stop(void);
 
 /**
- connect to specific slave
+ connect to specific slave will send start and address
  @param mode access mode to use
  @param address address of the slave (a 7 bit number)
  @return either 0 for success or 1 when faild (don't now if this actually happens)
@@ -88,6 +88,8 @@ uint8_t twi_read(uint8_t * data, enum twi_send_ack ack);
  @return the status code
  */
 uint8_t twi_status(void);
+
+void twi_accept(void);
 
 #endif // TWI_H_INCLUDED
 

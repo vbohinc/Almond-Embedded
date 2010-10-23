@@ -1,29 +1,4 @@
- /*
-      ___                         ___           ___           ___          _____    
-     /  /\                       /__/\         /  /\         /__/\        /  /::\   
-    /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\  
-   /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\ 
-  /  /:/~/::\  /__/\   /  /\  __|__|:|\:\   /  /:/  \:\   _____\__\:\  /__/:/ \__\:|
- /__/:/ /:/\:\ \  \:\ /  /:/ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\ \  \:\ /  /:/
- \  \:\/:/__\/  \  \:\  /:/  \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/  \  \:\  /:/ 
-  \  \::/        \  \:\/:/    \  \:\        \  \:\  /:/   \  \:\  ~~~    \  \:\/:/  
-   \  \:\         \  \::/      \  \:\        \  \:\/:/     \  \:\         \  \::/   
-    \  \:\         \__\/        \  \:\        \  \::/       \  \:\         \__\/    
-     \__\/                       \__\/         \__\/         \__\/                  
-      ___           ___           ___           ___           ___           ___     
-     /  /\         /  /\         /__/\         /__/\         /  /\         /__/\    
-    /  /:/        /  /::\       |  |::\       |  |::\       /  /::\        \  \:\   
-   /  /:/        /  /:/\:\      |  |:|:\      |  |:|:\     /  /:/\:\        \  \:\  
-  /  /:/  ___   /  /:/  \:\   __|__|:|\:\   __|__|:|\:\   /  /:/  \:\   _____\__\:\ 
- /__/:/  /  /\ /__/:/ \__\:\ /__/::::| \:\ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\
- \  \:\ /  /:/ \  \:\ /  /:/ \  \:\~~\__\/ \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/
-  \  \:\  /:/   \  \:\  /:/   \  \:\        \  \:\        \  \:\  /:/   \  \:\  ~~~ 
-   \  \:\/:/     \  \:\/:/     \  \:\        \  \:\        \  \:\/:/     \  \:\     
-    \  \::/       \  \::/       \  \:\        \  \:\        \  \::/       \  \:\    
-     \__\/         \__\/         \__\/         \__\/         \__\/         \__\/    
-
- 
- **
+/**
  * Error handling functions
  */
 
@@ -53,6 +28,30 @@ void send_pgm(const prog_char *msg)
 	}
 }
 
+uint8_t char_to_hex(uint8_t chr)
+{
+	//convert char number to int
+	if (chr>='0' && chr <='9')
+		return chr-'0';
+	else if (chr>='A' && chr<='F')
+		return chr-'A'+10;
+	else if (chr>='a' && chr<='f')
+		return chr-'a'+10;
+	else
+		return 255;
+}
+
+uint8_t hex_to_char(uint8_t hex)
+{
+	if (hex<=9)
+		return hex+'0';
+	else if (hex>9 && hex <= 15)
+		return hex+'A'-10;
+	else
+		return 0;
+}
+
+
 #ifdef DEBUG
 
 void error_init(void)
@@ -68,54 +67,34 @@ void error_putc(const char c)
 
 
 void assert (bool condition, const char *msg) {
-  if (condition) {
-#ifdef SERIAL
-    exit(1);
-#else
+  if (!condition) {
     send_pgm(PSTR("ASS:"));
     _send_msg(msg);
-#endif
   }
 }
 
 void info (const char *msg)
 {
-#ifdef SERIAL
-	printf("[INFO]: %s\n", msg);
-#else
     send_pgm(PSTR("INF:"));
     _send_msg(msg);
-#endif
 }
 
 void warn (const char *msg)
 {
-#ifdef SERIAL
-	printf("[WARN]: %s\n", msg);
-#else
     send_pgm(PSTR("WARN:"));
     _send_msg(msg);
-#endif
 }
 
 void debug (const char *msg)
 {
-#ifdef SERIAL
-	printf("[DEBUG]: %s\n", msg);
-#else
     send_pgm(PSTR("DBG:"));
     _send_msg(msg);
-#endif
 }
 
 void error (const char *msg)
 {
-#ifdef SERIAL
-	printf("[ERROR]: %s\n", msg);
-#else
     send_pgm(PSTR("ERR:"));
     _send_msg(msg);
-#endif
 }
 #endif
 
@@ -156,5 +135,23 @@ void debug_pgm(const prog_char *msg)
 	send_pgm(msg);
 	error_driver_write_c('\n');
 }
+
+void print_hex(uint8_t num)
+{
+	uint8_t chr = hex_to_char(num);
+
+	if (chr == 0)
+		error_putc('#');
+	else
+		error_putc(chr);
+}
+
+void byte_to_hex(uint8_t byte){
+	uint8_t b2 = (byte & 0x0F);
+	uint8_t b1 = ((byte & 0xF0)>>4);
+	print_hex(b1);
+	print_hex(b2);
+}
+
 #endif
 

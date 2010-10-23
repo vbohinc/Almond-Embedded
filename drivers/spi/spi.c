@@ -25,52 +25,79 @@
 #include "spi.h"
 #include <util/delay.h>
 
+#define SCK  5  // USART XCK
+#define MISO 6  // USART RxD
+#define MOSI 7  // USART TxD
+#define CS   7  // just an output pin
+
+uint8_t sd_raw_xmit_byte(uint8_t b)
+{
+   while (! (USARTE1.STATUS & USART_DREIF_bm)); //debug_pgm(PSTR("Warten bis Datenregister leer")); // Warten bis Datenregister leer
+   USARTE1.DATA = b; //debug_pgm(PSTR("Byte in Datenregister schreiben (Setup: steigende Flanken)")); // Byte in Datenregister schreiben (Setup: steigende Flanken)
+   while (! (USARTE1.STATUS & USART_RXCIF_bm)); //debug_pgm(PSTR("Warten bis Antwortbyte empfangen (Sample: fallende Flanken)")); // Warten bis Antwortbyte empfangen (Sample: fallende Flanken)
+   return USARTE1.DATA; //debug_pgm(PSTR("Antwortbyte")); // Antwortbyte
+}
+
 void spi_init() {
-
-	/* set port directions, and initial values*/
-	// Assert low on SS - SPI connected to PORTD
-	set_bit(PORTD.DIR, 4);
-	set_bit(PORTD.DIR, 3); // Sets Slave Select (SS) (on atxmega) as Output
-	set_bit(PORTD.OUT, 4);
-	set_bit(PORTD.OUT, 3);
-
-	set_bit(PORTD.DIR, 5); // Set MOSI and SCK as Output and MISO as Output
-	clear_bit(PORTD.DIR, 6);
-	set_bit(PORTD.DIR, 7);
-
-	for( int a=0; a<2000; a++); // waits a short time
-
-	/* init spi*/
+debug_pgm(PSTR("spi_init"));
+	/*// Assert low on SS - SPI connected to PORTD
+	//clear_bit(PORTD_OUT, 4);
+	set_bit(PORTD.OUT, 4); // Sets Slave Select (SS) as Output
+	set_bit(PORTD.OUT, 5); // Set MOSI and SCK as Output
+	set_bit(PORTD.OUT, 7);
 	set_bit(SPID.CTRL, 6); // Enable SPI
-	//set_bit(SPID.CTRL, 5); // Flip DORD
 	set_bit(SPID.CTRL, 4); // Set to Master
 	set_bit(SPID.CTRL, 7); // CLK2X
-	set_bit(SPID.CTRL, 1); // Prescaler to 11
-	set_bit(SPID.CTRL, 0); // Results in SCK frequency = clk_PER/128
+	//clear_bit(SPID.CTRL, 0); // Prescaler to 00 (by default)
+	//clear_bit(SPID.CTRL, 1); // Results in SCK frequency = clk_PER/2*/
+
+   // CS und MOSI High
+	set_bit(PORTD.OUT, CS); // nicht aktiv
+	set_bit(PORTE.OUT, MOSI);
+	// CLK Low
+	clear_bit(PORTE.OUT, SCK);
+
+	// CS, CLK und MOSI als Ausgänge
+	set_bit(PORTE.DIRSET, MOSI);
+	set_bit(PORTE.DIRSET, SCK);
+	set_bit(PORTD.DIRSET, CS);
+
+	// MISO als Eingang
+	set_bit(PORTE.DIRCLR, MISO);
+
+	// 100Khz SPI Frequenz zur Initialisierung
+	// BSEL = 32e6 / (2 * Baudrate) - 1
+	// BSEL = 2e6 / (2 * Baudrate) - 1
+	USARTE1.BAUDCTRLA = 159;
+	USARTE1.BAUDCTRLB = 0;
+
+	// Frameformat (MSB first), SPI Mode 0
+	USARTE1.CTRLC = USART_CMODE_MSPI_gc;
+
+	USARTE1.CTRLA = 0;
+
+	// enable RX und TX
+	USARTE1.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
+
+
 }
 
 void spi_send_byte(uint8_t byte_to_send) {
-	//clear_bit(PORTD.OUT, 3); // Pulls Slave Select (SS) low
-	SPID.DATA = byte_to_send;
-	while (!check_bit(SPID.STATUS,7));
-        //{
-            //debug_pgm(PSTR("SPI: Waiting"));
-        //    _delay_ms(100);
-        //    error_putc(SPID.STATUS);
-        //}// Wait until IF is set to signal end of Tx
+	/*SPID.DATA = byte_to_send;
+	while (!check_bit(SPID.STATUS,7)); // Wait until IF is set to signal end of Tx*/
+	sd_raw_xmit_byte(byte_to_send);
 	//debug_pgm(PSTR("SPI: Byte Sent"));
-	//set_bit(PORTD.OUT, 3); // Sets Slave Select (SS) high
-	return;
+	/*return;*/
 }
+
 uint8_t spi_receive_byte() {
-	//clear_bit(PORTD.OUT, 3); // Pulls Slave Select (SS) low
-	SPID.DATA = 0xFF;
-	//_delay_ms(10);
-	//for( int a=0; a<2000; a++); // waits a short time
-	while (!check_bit(SPID.STATUS,7)); // Wait until IF is set to signal end of Rx
-	debug_pgm(PSTR("SPI: Byte Received"));
-	//set_bit(PORTD.OUT, 3); // Sets Slave Select (SS) high
-	uint8_t retval = SPID.DATA;
-	return retval;
+
+	/*SPID.DATA = 0xFF;
+	_delay_ms(10);
+
+	while (!check_bit(SPID.STATUS,7)); // Wait until IF is set to signal end of Rx*/
+	//debug_pgm(PSTR("SPI: Byte Receiving"));
+	return sd_raw_xmit_byte(0xFF);
+	/*return SPID.DATA;*/
 }
 

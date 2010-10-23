@@ -79,6 +79,12 @@ SRC += $(BASE)/drivers/uart/usart_driver.c
 endif
 endif
 
+#rtc
+ifeq (rtc, $(findstring rtc,$(ALMONDLIBS)))
+ALMONDLIBS += twi
+SRC += $(BASE)/drivers/rtc/rtc.c
+endif
+
 #twi
 ifeq (twi, $(findstring twi,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/twi/twi.c
@@ -104,7 +110,15 @@ ifeq (spi, $(findstring spi,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/spi/spi.c
 endif
 
+#display
+ifeq (display, $(findstring display,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/display/display.c $(BASE)/drivers/display/display_draw.c $(BASE)/drivers/display/display_gui.c $(BASE)/drivers/display/display_data.c
+endif
 
+#button
+ifeq (button, $(findstring button,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/platform/buttons.c
+endif
 
 
 ##################### END OF ALMOND LIBLIST ##############################
@@ -125,7 +139,7 @@ endif
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC += $(TARGET).c
+#SRC += $(TARGET).c
 
 
 
@@ -170,6 +184,11 @@ CDEFS = -DF_CPU=$(F_CPU)UL
 
 ifeq ($(ENABLE_DEBUG),1)
 CDEFS += -DDEBUG
+
+ifeq (display, $(findstring display,$(ALMONDLIBS)))
+CDEFS += -DDEBUG_TO_DISPLAY
+endif
+
 endif
 
 #For nuts only:
@@ -202,6 +221,7 @@ CFLAGS += -funsigned-bitfields
 CFLAGS += -fpack-struct
 CFLAGS += -fshort-enums
 CFLAGS += -Wall
+CFLAGS += -Wno-main
 CFLAGS += -Wstrict-prototypes
 #CFLAGS += -mshort-calls
 #CFLAGS += -fno-unit-at-a-time
@@ -328,7 +348,7 @@ AVRDUDE_PROGRAMMER = stk500
 AVRDUDE_PORT = usb
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
-#AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
+AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
 
 
 # Uncomment the following if you want avrdude's erase cycle counter.
@@ -482,7 +502,7 @@ sizebefore:
 	2>/dev/null; echo; fi
 
 sizeafter:
-	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE);  echo; echo "---------"; echo; $(BASE)/make/checksize "$(TARGET).elf" "$(BASE)/make/size.awk" $(CODELIMIT) $(DATALIMIT) $(EEPROMLIMIT) \
+	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE);  echo; echo "---------"; echo; bash $(BASE)/make/checksize "$(TARGET).elf" "$(BASE)/make/size.awk" $(CODELIMIT) $(DATALIMIT) $(EEPROMLIMIT) \
 	2>/dev/null; echo; fi
 
 

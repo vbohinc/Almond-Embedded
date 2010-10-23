@@ -1,28 +1,3 @@
-/*
-      ___                         ___           ___           ___          _____    
-     /  /\                       /__/\         /  /\         /__/\        /  /::\   
-    /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\  
-   /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\ 
-  /  /:/~/::\  /__/\   /  /\  __|__|:|\:\   /  /:/  \:\   _____\__\:\  /__/:/ \__\:|
- /__/:/ /:/\:\ \  \:\ /  /:/ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\ \  \:\ /  /:/
- \  \:\/:/__\/  \  \:\  /:/  \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/  \  \:\  /:/ 
-  \  \::/        \  \:\/:/    \  \:\        \  \:\  /:/   \  \:\  ~~~    \  \:\/:/  
-   \  \:\         \  \::/      \  \:\        \  \:\/:/     \  \:\         \  \::/   
-    \  \:\         \__\/        \  \:\        \  \::/       \  \:\         \__\/    
-     \__\/                       \__\/         \__\/         \__\/                  
-     _____          ___           ___           ___                                     ___           ___     
-    /  /::\        /  /\         /__/\         /__/\                      ___          /__/\         /__/|    
-   /  /:/\:\      /  /::\       _\_ \:\        \  \:\                    /  /\         \  \:\       |  |:|    
-  /  /:/  \:\    /  /:/\:\     /__/\ \:\        \  \:\    ___     ___   /  /:/          \  \:\      |  |:|    
- /__/:/ \__\:|  /  /:/  \:\   _\_ \:\ \:\   _____\__\:\  /__/\   /  /\ /__/::\      _____\__\:\   __|  |:|    
- \  \:\ /  /:/ /__/:/ \__\:\ /__/\ \:\ \:\ /__/::::::::\ \  \:\ /  /:/ \__\/\:\__  /__/::::::::\ /__/\_|:|____
-  \  \:\  /:/  \  \:\ /  /:/ \  \:\ \:\/:/ \  \:\~~\~~\/  \  \:\  /:/     \  \:\/\ \  \:\~~\~~\/ \  \:\/:::::/
-   \  \:\/:/    \  \:\  /:/   \  \:\ \::/   \  \:\  ~~~    \  \:\/:/       \__\::/  \  \:\  ~~~   \  \::/~~~~ 
-    \  \::/      \  \:\/:/     \  \:\/:/     \  \:\         \  \::/        /__/:/    \  \:\        \  \:\     
-     \__\/        \  \::/       \  \::/       \  \:\         \__\/         \__\/      \  \:\        \  \:\    
-                   \__\/         \__\/         \__\/                                   \__\/         \__\/    
-*/
-
 /**
  * downlink.h
  *
@@ -33,8 +8,9 @@
  * const uint8_t class_id_nut;
  * const uint8_t class_id_extensions[];
  * const uint8_t class_id_extensions_length;
- * extern uint16_t get_value(uint8_t id);
- * extern void set_value(uint8_t id, uint16_t value);
+ * uint16_t sleep;
+ * uint16_t get_value(uint8_t id);
+ * void set_value(uint8_t id, uint16_t value);
  */
 
 #ifndef __DOWNLINK_H__
@@ -50,7 +26,7 @@
 #define DOWNLINK_PACKAGE_LENGTH 4
 
 /**
- * Every ID identifies a sensor/actor, but can also be used for config access with special flags.
+ * Every ID identifies a sensor/actor.
  *
  * Package format:
  * | OPCODE (1) | ID (1) | VALUE (2) |
@@ -67,12 +43,11 @@ struct _downlink_package
 
 #ifdef SQUIRREL
 
-extern uint16_t downlink_get_sensor_value (uint8_t id, bool *err);
-extern uint16_t downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err);
-extern uint8_t  downlink_get_nut_class (bool *err);
-extern uint8_t  downlink_get_actuator_class (uint8_t id, bool *err);
-extern uint8_t  downlink_get_sensor_class (uint8_t id, bool *err);
-extern uint16_t downlink_bye (uint16_t time_ms, bool *err);
+uint16_t downlink_get_sensor_value (uint8_t id, bool *err);
+void     downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err);
+uint8_t  downlink_get_nut_class (bool *err);
+uint8_t  downlink_get_extension_class (uint8_t id, bool *err);
+void     downlink_bye (uint16_t time_sec, bool *err);
 
 #endif
 
@@ -81,14 +56,16 @@ extern uint16_t downlink_bye (uint16_t time_ms, bool *err);
 /**
  * MUST BE IMPLEMENTED IN YOUR FILES
  */
+
 extern const uint8_t class_id_nut;
 extern const uint8_t class_id_extensions[];
 extern const uint8_t class_id_extensions_length;
-extern uint16_t get_value(uint8_t id);
-extern void set_value(uint8_t id, uint16_t value);
+extern uint16_t get_value (uint8_t id);
+extern void set_value (uint8_t id, uint16_t value);
+extern uint16_t sleep;
 
 /* Callback handler */
-extern void downlink_bluetooth_callback_handler (char *data_package, const uint8_t callback_type, const uint8_t data_length);
+bool downlink_process_pkg (uint8_t * data, uint8_t length);
 
 #endif
 
