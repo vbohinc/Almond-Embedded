@@ -24,7 +24,8 @@
 	void error_driver_write_c(uint8_t c)
 	{
 		#ifdef DEBUG_TO_DISPLAY
-		display_print(&c);
+		char *s = {c,'0'};
+		display_print(s);
 		#endif
 		
 		#ifndef DEBUG_TO_DISPLAY
