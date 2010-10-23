@@ -153,11 +153,12 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 	if(display_inverted) value = !value;
 	//if((!value && display_transparency && !display_inverted) || (value && display_transparency && display_inverted)) return;
 	#ifndef X86
-	if(x >= DISPLAY_BACKBUFFER_COLUMNS) return;
-	if(y >= 64) return;
+	if(x >= DISPLAY_WIDTH) return;
+	if(y >= DISPLAY_HEIGHT) return;
 		
 	uint8_t page = y / 8;
-	uint8_t col = x;
+//	uint8_t col = x;
+	uint8_t col = DISPLAY_WIDTH - x -1;
 	uint8_t bit_index = (y % 8);
 	
 
@@ -210,8 +211,8 @@ inline static void
 display_set_page(uint8_t page)
 {
 	//Top down instead of bottom up
-	uint8_t inverted_page = DISPLAY_PAGE_NUMBER - page;
-	display_send(0xB0 + inverted_page, DISPLAY_CMD);
+	//uint8_t inverted_page = DISPLAY_PAGE_NUMBER - page;
+	display_send(0xB0 + page, DISPLAY_CMD);
 }
 #endif
 
