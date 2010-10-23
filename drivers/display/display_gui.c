@@ -251,7 +251,7 @@ display_gui_about(void(*callback)(void))
 		display_gui_sleep(CREDITS_DELAY);	
 		current_person++;
 	}
-	
+	gui_about_callback();
 }
 
 void
