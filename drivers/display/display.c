@@ -62,6 +62,11 @@ display_init(void)
 	
 	#ifndef X86
 	// Display init for AVR
+
+	//Background light
+	set_bit(PORTH.DIR,2);
+	set_bit(PORTH.OUT,2);
+
 	//User system setup by external pins
 	PORTF.DIR = 0xFF;
 	set_bit(PORTH.DIR, DISPLAY_RS);
