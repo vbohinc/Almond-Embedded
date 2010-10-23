@@ -20,6 +20,7 @@
 
 #include "../../drivers/display/display_data.h"
 #include "../pong.h"
+#include "buttons.h"
 
 /*! Define that selects the Usart used in example. */
 #define USART USARTC0
@@ -71,6 +72,7 @@ int main (void)
 	set_bit(PORTH.OUT,2);
 
 	display_init();
+	button_init();
 //	display_test2();
 //	_delay_ms(1000);
 //	display_flip();
@@ -87,7 +89,35 @@ int main (void)
 //	display_flip();*/
 //	display_draw_string(0,0,0,"1111111111111111111111111111111111");
 	display_flip();
-	while(true) _delay_ms(1);
+	while(true) 
+	{
+/*	display_gui_key_up = 1,
+	display_gui_key_down,
+	display_gui_key_left,
+	display_gui_key_right,
+	display_gui_key_a,
+	display_gui_key_b,
+	display_gui_key_none*/
+		switch (button_pressed())
+		{
+			case display_gui_key_up:
+				display_print("UP Pressed"); break;
+			case display_gui_key_down:
+				display_print("DOWN Pressed"); break;
+			case display_gui_key_left:
+				display_print("LEFT Pressed"); break;
+			case display_gui_key_right:
+				display_print("RIGHT Pressed"); break;
+			case display_gui_key_a:
+				display_print("A Pressed"); break;
+			case display_gui_key_b:
+				display_print("B Pressed"); break;
+			default:
+				break;
+
+		}
+		_delay_ms(1);
+	}
 }
 #else
 // Display test for X86

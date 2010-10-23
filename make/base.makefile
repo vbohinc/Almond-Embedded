@@ -115,6 +115,11 @@ ifeq (display, $(findstring display,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/display/display.c $(BASE)/drivers/display/display_draw.c $(BASE)/drivers/display/display_gui.c $(BASE)/drivers/display/display_data.c
 endif
 
+#button
+ifeq (button, $(findstring button,$(ALMONDLIBS)))
+SRC += $(BASE)/shared/buttons.c
+endif
+
 
 ##################### END OF ALMOND LIBLIST ##############################
 

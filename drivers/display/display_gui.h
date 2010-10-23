@@ -7,12 +7,13 @@
 #define BUTTON_INFO_BAR_HEIGHT 10;
 
 enum display_gui_keys{
-	display_gui_key_up,
+	display_gui_key_up = 1,
 	display_gui_key_down,
 	display_gui_key_left,
 	display_gui_key_right,
 	display_gui_key_a,
-	display_gui_key_b
+	display_gui_key_b,
+	display_gui_key_none
 };
 
 enum display_gui_screens{
