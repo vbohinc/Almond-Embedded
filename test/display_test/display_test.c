@@ -20,18 +20,45 @@
 
 #include "../../drivers/display/display_data.h"
 #include "../pong.h"
+
+#ifndef X86
 #include <platform/buttons.h>
+#endif
 
 #define USART USARTC0
-
-
 
 // Display test for X86
 void
 did_select_menu(int8_t option)
 {
-	printf("OPTION SELECTED: %i\n", option);
+	display_gui_left_available = false;
+	display_gui_up_available = false;
+	display_gui_right_available = false;
+	display_gui_down_available = false;
+	display_gui_a_available = true;
+	display_gui_b_available = true;
+	display_gui_a_function = "Awesome";
+	switch (option)
+	{
+		case 0:
+			current_screen = display_gui_screen_none; display_draw_image(0,0,(uint8_t*)image_logo); display_flip(); break;
+		case 1:
+			current_screen = display_gui_screen_none; display_draw_image(0,0,(uint8_t*)testimg); display_flip(); break;
+		case 2:
+			current_screen = display_gui_screen_none; pong(); break;
+		//default:
+		//	draw_menu(); break;
+
+	}
 }
+
+
+void draw_menu()
+{
+ 	static const char *options[] = {"Logo", "Titten", "Pong", NULL};
+ 	display_gui_menu("Testmenue", options, 1, &did_select_menu);
+}
+
 
 #ifndef X86
 int main (void)
@@ -65,10 +92,12 @@ int main (int argc, char *argv[])
 #endif
 
 	display_init();
-	button_init();
 
-	const char *options[] = {"Eins", "Zwei", "Drei", NULL};
- 	display_gui_menu("Menue", options, 1, &did_select_menu);
+#ifndef X86
+	button_init();
+#endif
+
+	draw_menu();
 
 	//display_draw_image(0,0,(uint8_t*)tum_logo_f2);
 

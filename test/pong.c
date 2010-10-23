@@ -2,11 +2,14 @@
 #include "../shared/common.h"
 #include "../drivers/display/display.h"
 #include "../drivers/display/display_draw.h"
+#include "../drivers/display/display_gui.h"
 #include <math.h>
 //#include <unistd.h>
 
 #ifdef X86
 #include <SDL.h>
+#else
+#include <platform/buttons.h>
 #endif
 
 typedef struct {
@@ -155,9 +158,33 @@ void pong() {
 						right_pad_input = 0;
 				}
 		}
+		SDL_Delay(10);
+		#else
+		uint8_t button = button_pressed();
+		switch (button)
+		{
+			case display_gui_key_up:
+				left_pad_input = -1;
+				break;
+			case display_gui_key_down:
+				left_pad_input = 1; break;
+			case display_gui_key_left:
+				 break;
+			case display_gui_key_right:
+				 break;
+			case display_gui_key_a:
+				right_pad_input = 1; break;
+			case display_gui_key_b:
+				right_pad_input = -1; break;
+			default:
+				left_pad_input = 0;
+				right_pad_input = 0;
+
+		}
+		_delay_ms(10);
 		#endif
 		#ifndef X86
-		if (pad_left.top_left.y < 2) {
+		/*if (pad_left.top_left.y < 2) {
 		left_pad_input = 1;
 		} else if (pad_left.bottom_right.y > 62){
 			left_pad_input = -1;
@@ -171,9 +198,9 @@ void pong() {
 			right_pad_input = -1;
 		} else {
 			right_pad_input = 0;
-		}
+		}*/
 		#endif
-		_delay_ms(100);
+		
 		draw_ui();
 	
 	}
@@ -190,7 +217,7 @@ static void ball_reset() {
 
 static void draw_center_line() {
 	for (int i = 0; i < 16; i += 2) {
-		display_draw_line(66,i*4,66,(i*4)+4);
+		display_draw_line(63,i*4,63,(i*4)+4);
 	}
 }
 
@@ -202,8 +229,8 @@ static void draw_ui() {
 	draw_center_line();
 	sprintf(left_score_string,"%d",left_score);
 	sprintf(right_score_string,"%d",right_score);
-	display_draw_string(28,1,2,left_score_string);
-	display_draw_string(100,1,2,right_score_string);
+	display_draw_string(25,1,2,left_score_string);
+	display_draw_string(95,1,2,right_score_string);
 	display_flip();
 }
 

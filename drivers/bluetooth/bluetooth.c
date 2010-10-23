@@ -242,10 +242,11 @@ bt_init (void)
     uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
     fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
 
-    _delay_ms (50);
     // Enable ECHO
     comm_mode = BT_RAW;
     uart_send ("ATE1\r", 5);
+
+    _delay_ms (50);
 
     // throw away your television
     uart_receive ();
