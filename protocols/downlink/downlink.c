@@ -63,7 +63,7 @@ uint8_t downlink_get_extension_class (uint8_t id, bool *err)
 
 bool downlink_is_nut (bool *err)
 {
-  return 42 == downlink_request (ECHO, STANDARD, 0, 42, *err);
+  return 42 == downlink_request (ECHO, STANDARD, 0, 42, err);
 }
 
 void downlink_bye (uint16_t time_sec, bool *err)
