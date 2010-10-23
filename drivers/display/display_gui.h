@@ -63,6 +63,11 @@ void display_gui_bootup_screen(void);
 // Draw a fake bootup line
 void display_gui_bootup_line(const char* string, uint16_t wait);
 
+// Draw an alert with 2 options
+void display_gui_alert(const char* title, const char* message, const char* button1, const char* button2, void(*callback)(bool));
+// Handle keypress events for the alert
+void display_gui_alert_keypress(enum display_gui_keys key);
+
 // Draw a progress bar
 void display_gui_progress_bar(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t progress);
 // Draw button functions line

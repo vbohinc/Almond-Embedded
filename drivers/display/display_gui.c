@@ -29,6 +29,8 @@ display_gui_keypress(enum display_gui_keys key)
 			display_gui_menu_keypress(key);	break;
 		case display_gui_screen_fullscreenimage:
 			display_gui_image_keypress(key); break;
+		case display_gui_screen_alert:
+			display_gui_alert_keypress(key); break;
 		default:
 			break;
 	}
@@ -164,6 +166,25 @@ void
 display_gui_image_keypress(enum display_gui_keys key)
 {
 	if(key == display_gui_key_a) gui_image_callback();
+}
+
+// ALTERT =============================================================================================
+
+void(*gui_alert_callback)(bool);
+
+void
+display_gui_alert(const char* title, const char* message, const char* button1, const char* button2, void(*callback)(bool))
+{
+	display_inverted = true;
+	display_draw_rect(20, 20, DISPLAY_WIDTH - 20, DISPLAY_HEIGHT - 40, true);
+	display_inverted = false;
+	display_draw_rect(20, 20, DISPLAY_WIDTH - 20, DISPLAY_HEIGHT - 40, false);
+}
+
+void
+display_gui_alert_keypress(enum display_gui_keys key)
+{
+	
 }
 
 // UTILITIES ==========================================================================================
