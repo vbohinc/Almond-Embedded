@@ -1,6 +1,10 @@
 #include "display_gui.h"
 #include "display_draw.h"
 
+#ifdef X86
+#include <SDL.h>
+#endif
+
 enum display_gui_screens current_screen = display_gui_screen_none;
 bool display_gui_left_available = true;
 bool display_gui_up_available = true;
@@ -8,6 +12,7 @@ bool display_gui_right_available = true;
 bool display_gui_down_available = true;
 bool display_gui_a_available = true;
 bool display_gui_b_available = true;
+bool display_gui_button_bar_visible = true;
 const char* display_gui_a_function;
 const char* display_gui_b_function;
 
@@ -17,13 +22,13 @@ display_gui_keypress(enum display_gui_keys key)
 	// Dispatch key press to currently active screen
 	switch(current_screen){
 		case display_gui_screen_none:
-			// Omit key press
-			break;
+			/* Omit key press */ break;
 		case display_gui_screen_bootup:
 			break;
 		case display_gui_screen_menu: 
-			display_gui_menu_keypress(key);
-			break;
+			display_gui_menu_keypress(key);	break;
+		case display_gui_screen_fullscreenimage:
+			display_gui_image_keypress(key); break;
 		default:
 			break;
 	}
@@ -32,10 +37,10 @@ display_gui_keypress(enum display_gui_keys key)
 void 
 display_gui_refresh(void)
 {
-	display_gui_draw_button_bar();
+	if(display_gui_button_bar_visible) display_gui_draw_button_bar();
 }
 
-// SELECTION MENU ========================================================
+// SELECTION MENU ===============================================================================================
 
 const char* gui_menu_title;					// Menu title
 const char** gui_menu_current_options;		// Array of strings of option titles
@@ -57,9 +62,10 @@ display_gui_menu(const char* title, const char** options, const uint8_t default_
 	display_gui_up_available = true;
 	display_gui_right_available = false;
 	display_gui_down_available = true;
+	display_gui_button_bar_visible = true;
 	
 	display_clear();
-	display_draw_rect(0, DISPLAY_FONT0_HEIGHT, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1, false);
+	display_draw_rect(0, DISPLAY_FONT0_HEIGHT, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT - 2, false);
 	display_draw_string(0, 0, 0, title);
 	
 	uint8_t option_index = 0;
@@ -79,7 +85,7 @@ display_gui_menu(const char* title, const char** options, const uint8_t default_
 }
 
 void
-display_gui_menu_keypress(uint8_t key)
+display_gui_menu_keypress(enum display_gui_keys key)
 {
 	switch(key){
 		case display_gui_key_up:
@@ -104,7 +110,63 @@ display_gui_menu_keypress(uint8_t key)
 		display_gui_menu(gui_menu_title, gui_menu_current_options, gui_menu_selection, gui_menu_callback);
 }
 
-// UTILITIES =====================================================
+// BOOTUP SCREEN ======================================================================================
+
+void
+display_gui_bootup_screen(void)
+{
+	display_gui_button_bar_visible = false;
+	display_draw_rect(0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT, true);
+	display_inverted = true;
+	display_gui_bootup_line("ALMOND Squirrel v0.1 prealpha\n", 500);
+	display_gui_bootup_line("Initializing storage\n", 200);
+	display_gui_bootup_line("Detecting tits...\n", 400);
+	display_gui_bootup_line("Destroying 'pong'...\n", 100);
+	display_gui_bootup_line("Freaking out...\n", 600);
+	display_inverted = false;
+	display_clear();
+	
+	display_draw_string(40, DISPLAY_HEIGHT - 15, 1, "ALMOND");
+	const uint8_t *almond_logo_frames[] = {almond_logo_f1, almond_logo_f2, almond_logo_f3, almond_logo_f4, NULL};
+	display_draw_animated_image(39, 0, almond_logo_frames, 2, 300);
+}
+
+void
+display_gui_bootup_line(const char* string, uint16_t wait)
+{
+	display_print(string);
+	display_flip();
+	display_gui_sleep(wait);
+}
+
+// FULLSCREEN IMAGE ===================================================================================
+
+void(*gui_image_callback)(void) = NULL;	// Callback function for image dismissal
+
+void
+display_gui_image(const uint8_t* image, void(*callback)(void))
+{
+	current_screen = display_gui_screen_fullscreenimage;
+	gui_image_callback = callback;
+	display_gui_a_function = "Dismiss";
+	display_gui_b_function = "";
+	display_gui_left_available = false;
+	display_gui_up_available = false;
+	display_gui_right_available = false;
+	display_gui_down_available = false;
+	display_gui_button_bar_visible = true;
+	
+	display_clear();
+	display_draw_image(0, 0, image);
+}
+
+void
+display_gui_image_keypress(enum display_gui_keys key)
+{
+	if(key == display_gui_key_a) gui_image_callback();
+}
+
+// UTILITIES ==========================================================================================
 
 void
 display_gui_progress_bar(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t progress)
@@ -118,6 +180,10 @@ display_gui_progress_bar(uint8_t x, uint8_t y, uint8_t width, uint8_t height, ui
 void
 display_gui_draw_button_bar(void)
 {
+	// Clear background
+	display_inverted = true;
+	display_draw_rect(0, BUTTON_INFO_BAR_TOP - 1, DISPLAY_WIDTH, DISPLAY_HEIGHT - 1, true);
+	display_inverted = false;
 	// Arrows panel
 	display_draw_rect(0, BUTTON_INFO_BAR_TOP, 29, DISPLAY_HEIGHT, true);
 	display_set_pixel(0, BUTTON_INFO_BAR_TOP, false);
@@ -153,4 +219,15 @@ display_gui_draw_button_bar(void)
 	}
 	
 	display_inverted = false;
+}
+
+
+void
+display_gui_sleep(uint16_t ms)
+{
+	#ifdef X86
+	SDL_Delay(ms);
+	#else
+	_delay_ms(ms);
+	#endif
 }

@@ -19,6 +19,6 @@ void display_print(char* char_array);
 // Draw image array to screen
 void display_draw_image(int16_t topx, int16_t topy, const uint8_t* image_array);
 // Draw image with frames
-void display_animated_image(int8_t offsetx, int8_t offsety, const uint8_t *image_pointer_array[], uint8_t rounds, uint8_t sleep);
+void display_draw_animated_image(int8_t x, int8_t y, const uint8_t** frames_array, uint8_t rounds, uint16_t sleep);
 
 #endif

@@ -32,4 +32,10 @@ extern const uint8_t arrow_right[];
 extern const uint8_t arrow_up[];
 extern const uint8_t arrow_down[];
 
+// Frames for animated almonf logo
+extern const uint8_t almond_logo_f1[];
+extern const uint8_t almond_logo_f2[];
+extern const uint8_t almond_logo_f3[];
+extern const uint8_t almond_logo_f4[];
+
 #endif

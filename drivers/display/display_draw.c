@@ -225,27 +225,18 @@ display_draw_image(int16_t topx, int16_t topy, const uint8_t* image_array){
 }
 
 void
-display_animated_image(int8_t posX, int8_t posY, const uint8_t** image_pointer_array, uint8_t rounds, uint8_t sleep){
-	
-	for (uint8_t r = 0; r<rounds; r++)
-	{
-		int16_t currImg = 0;
-		int adder = 1;
-		const uint8_t *p;
-		do	
-		{
-			if (currImg >= 0 && image_pointer_array[currImg]!= NULL)
-			{
-				p = image_pointer_array[currImg];
-				display_draw_image(posX, posY,p);
-				display_flip();
-				//SDL_Delay(sleep);
-			} else {
-				adder *= -1;
-			}
-			currImg += adder;
-
-		} while (currImg > 0);
+display_draw_animated_image(int8_t x, int8_t y, const uint8_t** frames_array, uint8_t rounds, uint16_t sleep){
+	for (uint8_t repetition = 0; repetition < rounds; repetition++){
+		int16_t current_frame = 0;
+		while(frames_array[current_frame] != NULL){
+			display_draw_image(x, y, frames_array[current_frame]);
+			display_flip();
+			current_frame++;
+			#ifdef X86
+			SDL_Delay(sleep);
+			#else
+			_delay_ms(sleep);
+			#endif
+		}
 	}
-	display_draw_image(posX, posY,image_pointer_array[0]);
 }

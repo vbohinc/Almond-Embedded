@@ -27,38 +27,32 @@
 
 #define USART USARTC0
 
+void test_menu(void);
+
 // Display test for X86
 void
-did_select_menu(int8_t option)
+test_menu_selected(int8_t option)
 {
-	display_gui_left_available = false;
-	display_gui_up_available = false;
-	display_gui_right_available = false;
-	display_gui_down_available = false;
-	display_gui_a_available = true;
-	display_gui_b_available = true;
-	display_gui_a_function = "Awesome";
 	switch (option)
 	{
 		case 0:
-			current_screen = display_gui_screen_none; display_draw_image(0,0,(uint8_t*)image_logo); display_flip(); break;
+			display_gui_image(image_logo, &test_menu); break;
 		case 1:
-			current_screen = display_gui_screen_none; display_draw_image(0,0,(uint8_t*)testimg); display_flip(); break;
+			display_gui_image(testimg, &test_menu); break;
 		case 2:
 			current_screen = display_gui_screen_none; pong(); break;
-		//default:
-		//	draw_menu(); break;
-
+		default:
+			test_menu(); break;
 	}
 }
 
-
-void draw_menu()
+void 
+test_menu(void)
 {
- 	static const char *options[] = {"Logo", "Titten", "Pong", NULL};
- 	display_gui_menu("Testmenue", options, 1, &did_select_menu);
+	// Main menu for the test
+ 	static const char *options[] = {"Almond Logo", "Nipples", "Pong", NULL};
+ 	display_gui_menu("Pick a test", options, 0, &test_menu_selected);
 }
-
 
 #ifndef X86
 int main (void)
@@ -68,21 +62,11 @@ int main (int argc, char *argv[])
 {
 
 #ifndef X86
-	/* Behold the MAGIC Clock! */
-
-	/* Internen 32Mhz Oszillator einschalten */
-	OSC.CTRL = OSC_RC32MEN_bm;
-
-	/* Warten bis Oszillator stabil ist */
-	while ((OSC.STATUS & OSC_RC32MRDY_bm) == 0);
-
-	/* System Clock selection */
-	CCP = CCP_IOREG_gc;
+	OSC.CTRL = OSC_RC32MEN_bm;						// Internen 32Mhz Oszillator einschalten
+	while ((OSC.STATUS & OSC_RC32MRDY_bm) == 0);	// Warten bis Oszillator stabil ist
+	CCP = CCP_IOREG_gc;								// System Clock selection
 	CLK.CTRL = CLK_SCLKSEL_RC32M_gc;
-
-	/* DFLL ein (Auto Kalibrierung) */
-	DFLLRC32M.CTRL = DFLL_ENABLE_bm;
-
+	DFLLRC32M.CTRL = DFLL_ENABLE_bm;				// DFLL ein (Auto Kalibrierung)
 
 	set_bit(PORTC.DIR,4);
 	clear_bit(PORTC.OUT,4);
@@ -91,13 +75,14 @@ int main (int argc, char *argv[])
 	set_bit(PORTH.OUT,2);
 #endif
 
-	display_init();
+	display_init();		// Initialize display
 
 #ifndef X86
 	button_init();
 #endif
 
-	draw_menu();
+	display_gui_bootup_screen();
+	test_menu();
 
 	//display_draw_image(0,0,(uint8_t*)tum_logo_f2);
 
@@ -153,31 +138,9 @@ int main (int argc, char *argv[])
 			}
 		}
 #else		
-
 		uint8_t button = button_pressed();
-		/*switch (button)
-		{
-			case display_gui_key_up:
-				display_print("UP Pressed\n");
-				break;
-			case display_gui_key_down:
-				display_print("DOWN Pressed\n"); break;
-			case display_gui_key_left:
-				display_print("LEFT Pressed\n"); break;
-			case display_gui_key_right:
-				display_print("RIGHT Pressed\n"); break;
-			case display_gui_key_a:
-				display_print("A Pressed\n"); break;
-			case display_gui_key_b:
-				display_print("B Pressed\n"); break;
-			default:
-				break;
-
-		}*/
 #endif
-
-		if (button != display_gui_key_none)
-		{
+		if (button != display_gui_key_none)	{
 			display_gui_keypress(button);
 		}
 		
