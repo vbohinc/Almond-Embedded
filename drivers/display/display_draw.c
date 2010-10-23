@@ -170,7 +170,7 @@ display_textbuffer_shiftup(void){
 }
 
 void 
-display_print(char* char_array)
+display_print(const char* char_array)
 {
 	uint32_t char_index = 0;
 	while(char_array[char_index] != '\0'){
