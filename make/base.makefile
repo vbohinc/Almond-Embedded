@@ -95,12 +95,13 @@ ifeq (error, $(findstring error,$(ALMONDLIBS)))
 SRC += $(BASE)/shared/error.c $(BASE)/shared/ftdi.c $(BASE)/shared/error_driver.c 
 endif
 
-#sd
+#storage
 ifeq (storage, $(findstring storage,$(ALMONDLIBS)))
 ALMONDLIBS += spi fat16
 SRC += $(BASE)/drivers/storage/sd.c
 endif
 
+#fat16
 ifeq (fat16, $(findstring fat16,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/fat16/fat16.c
 endif

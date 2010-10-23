@@ -3,9 +3,9 @@
 #include <avr/interrupt.h>
 #define UART_BAUD_RATE      9600ul
 
-#include "common.h"
-#include <drivers/spi/spi.h>
-#include <drivers/storage/sd.h>
+#include <common.h>
+#include "../../../drivers/storage/sd.h"
+#include "../../../drivers/display/display.h"
 
 #define USART USARTC0
 
@@ -35,10 +35,39 @@ int main (void)
 	set_bit(PORTH.DIR,2);
 	set_bit(PORTH.OUT,2);
 
-	spi_init();
+	display_init();
+	button_init();
 
+	debug("-- SD Test --\n");
+	display_flip();
 	sd_init();
+	debug("SD Initialized\n");
+	display_flip();	
+	
 
+
+
+	uint8_t arr[5] = {1,2,3,4,5};
+
+
+
+	uint8_t arr_ret[5];
+
+	if (!sd_write_bytes(0,arr,sizeof(arr)))
+		error("Couldn't write\n");
+
+	display_flip();
+	if (!sd_read_bytes(0,arr_ret,sizeof(arr_ret)))
+		error("Couldn't read\n");
+
+	display_flip();
+	for (uint8_t i=0; i<5; i++)
+	{
+		debug("Read: ");
+		error_putc('0'+arr_ret[i]);
+		display_print("\n");
+		display_flip();
+	}
 	while (1)
 	{
 		

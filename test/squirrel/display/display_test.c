@@ -40,7 +40,7 @@ test_menu_selected(int8_t option)
 		case 1:
 			display_gui_image(testimg, &test_menu); break;
 		case 2:
-			current_screen = display_gui_screen_none; pong(); break;
+			pong(); break;
 		default:
 			test_menu(); break;
 	}
@@ -142,7 +142,6 @@ int main (int argc, char *argv[])
 #endif
 		if (button != display_gui_key_none)	{
 			display_gui_keypress(button);
-			debug("DEBUG!!!");
 		}
 		
 		display_gui_refresh();	// Refresh gui drawings

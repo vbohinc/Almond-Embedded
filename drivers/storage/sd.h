@@ -1,7 +1,7 @@
 #ifndef __SD_H__
 #define __SD_H__
-#include "../spi/spi.h"
-#include "../shared/common.h"
+#include <spi/spi.h>
+#include <common.h>
 
 #define CMD0 0
 #define CMD8 1

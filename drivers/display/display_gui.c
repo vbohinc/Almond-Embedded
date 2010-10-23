@@ -1,5 +1,6 @@
 #include "display_gui.h"
 #include "display_draw.h"
+#include "../../test/pong.h"
 
 #ifdef X86
 #include <SDL.h>
@@ -31,6 +32,8 @@ display_gui_keypress(enum display_gui_keys key)
 			display_gui_image_keypress(key); break;
 		case display_gui_screen_alert:
 			display_gui_alert_keypress(key); break;
+		case display_gui_screen_game:
+			pong_keypress(key); break;
 		default:
 			break;
 	}
@@ -39,7 +42,13 @@ display_gui_keypress(enum display_gui_keys key)
 void 
 display_gui_refresh(void)
 {
-	if(display_gui_button_bar_visible) display_gui_draw_button_bar();
+	switch(current_screen) {
+		case display_gui_screen_game:
+			pong_update(); break;
+		default:
+			if(display_gui_button_bar_visible) display_gui_draw_button_bar();
+	}
+	
 }
 
 // SELECTION MENU ===============================================================================================
