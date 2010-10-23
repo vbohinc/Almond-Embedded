@@ -27,8 +27,11 @@ uint8_t debounce(uint8_t pin)
 
 void button_init(void)
 {
+	PORTCFG.MPCMASK=0xFF;	// Maske für Pinkonfiguration, hier werden alle pins maskiert
+	BUTTONS_PORT.PIN0CTRL=PORT_OPC_PULLUP_gc;	// Für die maskierten Pins wird der Pullup Widerstand aktiviert
+
 	BUTTONS_PORT.DIR = 0x00; /*Hier werden alle Bits von PORT als Eingang gesetzt*/
-	BUTTONS_PORT.OUT = 0xFF; //Pullup widerstand setzen
+	//BUTTONS_PORT.OUT = 0xFF; //Pullup widerstand setzen
 }
 
 uint8_t button_pressed(void)
