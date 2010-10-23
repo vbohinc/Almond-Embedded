@@ -14,12 +14,12 @@
 
 #endif
 
-#include "../../drivers/display/display.h"
-#include "../../drivers/display/display_draw.h"
-#include "../../drivers/display/display_gui.h"
+#include "../../../drivers/display/display.h"
+#include "../../../drivers/display/display_draw.h"
+#include "../../../drivers/display/display_gui.h"
 
-#include "../../drivers/display/display_data.h"
-#include "../pong.h"
+#include "../../../drivers/display/display_data.h"
+#include "../../pong.h"
 
 #ifndef X86
 #include <platform/buttons.h>
@@ -179,6 +179,7 @@ int main (int argc, char *argv[])
 		if (button != display_gui_key_none)
 		{
 			display_gui_keypress(button);
+			debug("DEBUG!!!");
 		}
 		
 		display_gui_refresh();	// Refresh gui drawings
