@@ -76,6 +76,7 @@ int main (int argc, char *argv[])
 	while(true) 
 	{
 #ifdef X86
+		uint8_t button = display_gui_key_none;
 		SDL_Event keyevent;
 		while (SDL_PollEvent(&keyevent)) {
 			switch(keyevent.type){
@@ -85,27 +86,27 @@ int main (int argc, char *argv[])
      					switch(keyevent.key.keysym.sym){
 						case SDLK_UP:
 							printf("^");
-							display_gui_keypress(display_gui_key_up);
+							button = display_gui_key_up;
 							break;
 						case SDLK_DOWN:
 							printf("v");
-							display_gui_keypress(display_gui_key_down);
+							button = display_gui_key_down;
 							break;
 						case SDLK_LEFT:
 							printf("<");
-							display_gui_keypress(display_gui_key_left);
+							button = display_gui_key_left;
 							break;
 						case SDLK_RIGHT:
 							printf(">");
-							display_gui_keypress(display_gui_key_right);
+							button = display_gui_key_right;
 							break;
 						case SDLK_a:
 							printf("A");
-							display_gui_keypress(display_gui_key_a);
+							button = display_gui_key_a;
 							break;
 						case SDLK_s:
 							printf("B");
-							display_gui_keypress(display_gui_key_b);
+							button = display_gui_key_b;
 							break;
 						case SDLK_x:
 							printf("(X) SDL quit escape key");
@@ -123,10 +124,13 @@ int main (int argc, char *argv[])
 			}
 		}
 #else		
-		switch (button_pressed())
+
+		uint8_t button = button_pressed();
+		/*switch (button)
 		{
 			case display_gui_key_up:
-				display_print("UP Pressed\n"); break;
+				display_print("UP Pressed\n");
+				break;
 			case display_gui_key_down:
 				display_print("DOWN Pressed\n"); break;
 			case display_gui_key_left:
@@ -140,7 +144,14 @@ int main (int argc, char *argv[])
 			default:
 				break;
 
+		}*/
+#endif
+
+		if (button != display_gui_key_none)
+		{
+			display_gui_keypress(button);
 		}
+		
 
 #endif
 		display_gui_refresh();	// Refresh gui drawings

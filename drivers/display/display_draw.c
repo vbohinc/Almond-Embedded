@@ -156,6 +156,7 @@ display_draw_line(uint8_t xstart ,uint8_t ystart ,uint8_t xend ,uint8_t yend)
 
 static void
 display_textbuffer_shiftup(void){
+	display_clear();
 	for(uint8_t line = 0; line < DISPLAY_TEXTBUFFER_HEIGHT; line++){
 		for(uint8_t column = 0; column < DISPLAY_TEXTBUFFER_WIDTH; column++){
 			if(line < DISPLAY_TEXTBUFFER_HEIGHT - 1){
