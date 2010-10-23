@@ -1,6 +1,7 @@
 #ifndef X86
 
 #include <avr/io.h>
+#include "../pong.h"
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #define UART_BAUD_RATE      9600ul
@@ -20,27 +21,14 @@
 
 #include "../../drivers/display/display_data.h"
 #include "../pong.h"
-#include "../../shared/buttons.h"
+#include <platform/buttons.h>
 
 #define USART USARTC0
 
-
-
-// Display test for X86
-void
-did_select_menu(int8_t option)
-{
-	printf("OPTION SELECTED: %i\n", option);
-}
-
 #ifndef X86
+// Display test for AVR
 int main (void)
-#else
-int main (int argc, char *argv[])
-#endif
 {
-
-#ifndef X86
 	/* Behold the MAGIC Clock! */
 
 	/* Internen 32Mhz Oszillator einschalten */
@@ -62,21 +50,53 @@ int main (int argc, char *argv[])
 
 	set_bit(PORTH.DIR,2);
 	set_bit(PORTH.OUT,2);
-#endif
 
 	display_init();
 	button_init();
-
-	const char *options[] = {"Eins", "Zwei", "Drei", NULL};
- 	display_gui_menu("Menue", options, 1, &did_select_menu);
-
-	//display_draw_image(0,0,(uint8_t*)tum_logo_f2);
-
-	display_flip();
+	//pong();
 	while(true) 
 	{
-#ifdef X86
-		SDL_Event keyevent;
+		switch (button_pressed())
+		{
+			case display_gui_key_up:
+				display_print("UP Pressed\n"); break;
+			case display_gui_key_down:
+				display_print("DOWN Pressed\n"); break;
+			case display_gui_key_left:
+				display_print("LEFT Pressed\n"); break;
+			case display_gui_key_right:
+				display_print("RIGHT Pressed\n"); break;
+			case display_gui_key_a:
+				display_print("A Pressed\n"); break;
+			case display_gui_key_b:
+				display_print("B Pressed\n"); break;
+			default:
+				break;
+
+		}
+		_delay_ms(1);
+		display_flip();
+	}
+}
+#else
+// Display test for X86
+void
+did_select_menu(int8_t option)
+{
+	printf("OPTION SELECTED: %i\n", option);
+}
+
+
+int main (int argc, char *argv[])
+{
+	display_init();
+	const char *options[] = {"Eins", "Zwei", "Drei", NULL};
+ 	display_gui_menu("Menue", options, 1, &did_select_menu);
+//	display_funhouse();
+	
+	SDL_Event keyevent;
+
+	while(1) {
 		while (SDL_PollEvent(&keyevent)) {
 			switch(keyevent.type){
 				case SDL_KEYDOWN:
@@ -122,33 +142,9 @@ int main (int argc, char *argv[])
 					break;
 			}
 		}
-#else		
-		switch (button_pressed())
-		{
-			case display_gui_key_up:
-				display_print("UP Pressed\n"); break;
-			case display_gui_key_down:
-				display_print("DOWN Pressed\n"); break;
-			case display_gui_key_left:
-				display_print("LEFT Pressed\n"); break;
-			case display_gui_key_right:
-				display_print("RIGHT Pressed\n"); break;
-			case display_gui_key_a:
-				display_print("A Pressed\n"); break;
-			case display_gui_key_b:
-				display_print("B Pressed\n"); break;
-			default:
-				break;
-
-		}
-
-#endif
 		display_gui_refresh();	// Refresh gui drawings
-		display_flip();
-#ifndef X86
-		_delay_ms(1);
-#else
+		display_flip();			// Flip backbuffer
 		SDL_Delay(100);
-#endif
 	}
 }
+#endif

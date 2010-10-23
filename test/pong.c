@@ -3,7 +3,7 @@
 #include "../drivers/display/display.h"
 #include "../drivers/display/display_draw.h"
 #include <math.h>
-#include <unistd.h>
+//#include <unistd.h>
 
 #ifdef X86
 #include <SDL.h>
@@ -55,7 +55,6 @@ void pong() {
 	draw_ui();
 	
 	while(1==1) {
-		
 		//get_input(); // FIXME!
 		move_pad(&pad_left, &left_pad_input);
 		move_pad(&pad_right, &right_pad_input);
@@ -171,7 +170,7 @@ void pong() {
 			right_pad_input = 0;
 		}
 		#endif
-		usleep(100);
+		_delay_ms(100);
 		draw_ui();
 	
 	}

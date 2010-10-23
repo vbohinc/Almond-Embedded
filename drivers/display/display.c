@@ -245,10 +245,8 @@ display_clear(void)
 	#ifndef X86
 	
 	for(uint8_t page = 0; page < DISPLAY_BACKBUFFER_LINES; page++){
-		display_set_page(page);
-		display_set_col(0);
 		for(uint8_t col = 0; col < DISPLAY_BACKBUFFER_COLUMNS; col++){
-			display_send (0, DISPLAY_DATA);
+			backbuffer[page][col] = 0;
 		}
 	}
 	
