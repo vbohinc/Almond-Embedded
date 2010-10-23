@@ -1,7 +1,7 @@
 #ifndef __BUTTONS_H__
 #define __BUTTONS_H__
 
-#include "common.h"
+#include "../../shared/common.h"
 
 //Port J, Pin 0 bis 7
 
