@@ -20,7 +20,7 @@
 
 #include "../../drivers/display/display_data.h"
 #include "../pong.h"
-#include "../../shared/buttons.h"
+#include <platform/buttons.h>
 
 #define USART USARTC0
 
@@ -152,8 +152,6 @@ int main (int argc, char *argv[])
 			display_gui_keypress(button);
 		}
 		
-
-#endif
 		display_gui_refresh();	// Refresh gui drawings
 		display_flip();
 #ifndef X86
