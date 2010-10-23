@@ -1,10 +1,10 @@
 MCU = atxmega128a1
 F_CPU = 32000000
 TARGET = display_test.c
-SRC =  ../../drivers/display/display.c ../../drivers/display/display_draw.c display_test.c
+SRC =  display_test.c
 BASE = ../..
-ALMONDLIBS = display button
+ALMONDLIBS = display error button
 EXTRAINCDIRS = ../../drivers/ ../../protocols/ ../../shared/
 TARGETTYPE = SQUIRREL
-ENABLE_DEBUG = 0
+ENABLE_DEBUG = 1
 include ../../make/base.makefile 
