@@ -15,7 +15,7 @@ void display_draw_rect (uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, bool fil
 // Draw a line from xstart, ystart to xend, yend
 void display_draw_line (uint8_t xstart, uint8_t ystart, uint8_t xend, uint8_t yend);
 // Print to the console
-void display_print(char* char_array);
+void display_print(const char* char_array);
 // Draw image array to screen
 void display_draw_image(int16_t topx, int16_t topy, const uint8_t* image_array);
 // Draw image with frames
