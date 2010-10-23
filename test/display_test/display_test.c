@@ -25,44 +25,24 @@
 /*! Define that selects the Usart used in example. */
 #define USART USARTC0
 
-void display_test2(void)
-
-	//set_bit(PORTH.DIR,2);
-	//set_bit(PORTH.OUT,2);
-
-{	
-	bool value = true;
-	for(int i = 0; i < 10;i++){
-      for(uint8_t x = 0; x <= 128; x++){
-		for(uint8_t y = 0; y <= 64; y++){
-				display_set_pixel(x,y,value);
-				display_flip();
-			}
-		//	_delay_ms(1000);
-		}
-		value = !value;
-	}
-}
-
-
 #ifndef X86
 // Display test for AVR
 int main (void)
 {
-  /* Behold the MAGIC Clock! */
+	/* Behold the MAGIC Clock! */
 
-  /* Internen 32Mhz Oszillator einschalten */
-  OSC.CTRL = OSC_RC32MEN_bm;
+	/* Internen 32Mhz Oszillator einschalten */
+	OSC.CTRL = OSC_RC32MEN_bm;
 
-  /* Warten bis Oszillator stabil ist */
-  while ((OSC.STATUS & OSC_RC32MRDY_bm) == 0);
+	/* Warten bis Oszillator stabil ist */
+	while ((OSC.STATUS & OSC_RC32MRDY_bm) == 0);
 
-  /* System Clock selection */
-  CCP = CCP_IOREG_gc;
-  CLK.CTRL = CLK_SCLKSEL_RC32M_gc;
+	/* System Clock selection */
+	CCP = CCP_IOREG_gc;
+	CLK.CTRL = CLK_SCLKSEL_RC32M_gc;
 
-  /* DFLL ein (Auto Kalibrierung) */
-  DFLLRC32M.CTRL = DFLL_ENABLE_bm;
+	/* DFLL ein (Auto Kalibrierung) */
+	DFLLRC32M.CTRL = DFLL_ENABLE_bm;
 
 
 	set_bit(PORTC.DIR,4);
@@ -73,31 +53,10 @@ int main (void)
 
 	display_init();
 	button_init();
-//	display_test2();
-//	_delay_ms(1000);
-//	display_flip();
 	display_draw_image(0,0,(uint8_t*)tum_logo_f2);
-	display_flip();
-	display_set_pixel(0,0,true);
-	display_set_pixel(0,1,true);
-	display_set_pixel(0,2,true);
-	display_set_pixel(0,3,true);
-	display_set_pixel(0,4,true);
-	display_set_pixel(0,5,true);
-	//display_set_pixel(0,6,true);
-//	display_draw_string(0,0,0,"hallo Sebi!");
-//	display_flip();*/
-//	display_draw_string(0,0,0,"1111111111111111111111111111111111");
 	display_flip();
 	while(true) 
 	{
-/*	display_gui_key_up = 1,
-	display_gui_key_down,
-	display_gui_key_left,
-	display_gui_key_right,
-	display_gui_key_a,
-	display_gui_key_b,
-	display_gui_key_none*/
 		switch (button_pressed())
 		{
 			case display_gui_key_up:
