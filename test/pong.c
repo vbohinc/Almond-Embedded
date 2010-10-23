@@ -194,6 +194,7 @@ void pong_update() {
 			default:
 				left_pad_input = 0;
 				right_pad_input = 0;
+				_delay_ms(50);
 
 		}
 		_delay_ms(10);
