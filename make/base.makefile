@@ -53,11 +53,6 @@ EXTRAINCDIRS += $(BASE)/drivers/ $(BASE)/protocols/ $(BASE)/shared/
 
 ##################### DEFINE ALMOND LIBS HERE ############################
 
-#display
-ifeq (display, $(findstring display,$(ALMONDLIBS)))
-SRC += $(BASE)/drivers/display/display.c $(BASE)/drivers/display/display_draw.c
-endif
-
 #downlink 
 ifeq (downlink, $(findstring downlink,$(ALMONDLIBS)))
 ALMONDLIBS += bluetooth
@@ -115,7 +110,15 @@ ifeq (spi, $(findstring spi,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/spi/spi.c
 endif
 
+#display
+ifeq (display, $(findstring display,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/display/display.c $(BASE)/drivers/display/display_draw.c $(BASE)/drivers/display/display_gui.c $(BASE)/drivers/display/display_data.c
+endif
 
+#button
+ifeq (button, $(findstring button,$(ALMONDLIBS)))
+SRC += $(BASE)/shared/buttons.c
+endif
 
 
 ##################### END OF ALMOND LIBLIST ##############################
@@ -181,6 +184,11 @@ CDEFS = -DF_CPU=$(F_CPU)UL
 
 ifeq ($(ENABLE_DEBUG),1)
 CDEFS += -DDEBUG
+
+ifeq (display, $(findstring display,$(ALMONDLIBS)))
+CDEFS += -DDEBUG_TO_DISPLAY
+endif
+
 endif
 
 #For nuts only:
@@ -213,6 +221,7 @@ CFLAGS += -funsigned-bitfields
 CFLAGS += -fpack-struct
 CFLAGS += -fshort-enums
 CFLAGS += -Wall
+CFLAGS += -Wno-main
 CFLAGS += -Wstrict-prototypes
 #CFLAGS += -mshort-calls
 #CFLAGS += -fno-unit-at-a-time

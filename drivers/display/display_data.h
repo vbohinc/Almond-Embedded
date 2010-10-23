@@ -23,16 +23,13 @@ extern const uint8_t font_2[][17];
 // Almond logo
 extern const uint8_t image_logo[];
 
+// Unknown test image
 extern const uint8_t testimg[];
 
-
-extern const uint8_t tum_logo_f1[];
-extern const uint8_t tum_logo_f2[];
-extern const uint8_t tum_logo_f3[];
-extern const uint8_t tum_logo_f4[];
-extern const uint8_t tum_logo_f5[];
-extern const uint8_t tum_logo_f6[];
-extern const uint8_t tum_logo_f7[];
-extern const uint8_t tum_logo_f8[];
+// Arrows for button bar
+extern const uint8_t arrow_left[];
+extern const uint8_t arrow_right[];
+extern const uint8_t arrow_up[];
+extern const uint8_t arrow_down[];
 
 #endif

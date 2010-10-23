@@ -1,0 +1,84 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[german]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[pdftex]{graphicx}
+\usepackage{fancyhdr,lastpage}
+\usepackage{enumerate}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage[top=3cm, bottom=3cm, left=2cm, right=2cm]{geometry}
+\usepackage{minitoc}
+\pagestyle{fancy}
+
+% Header
+\lhead{Projekt Almond}
+\chead{Aschlussbericht}
+\rhead{Seite \thepage /\pageref{LastPage} }
+
+\begin{document}
+
+\begin{titlepage}
+	\begin{center}
+		\includegraphics[height=15cm]{./logo.pdf}\\
+		{\LARGE \bf Abschlussbericht}\\[0.3cm]
+	\end{center}
+\end{titlepage}
+
+\tableofcontents
+
+\newpage
+
+% Inhalt
+
+\section{Übersicht}
+Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein System aus vernetzten Aktoren und Sensoren: Nuts ({\bf N}etworked {\bf Ut}ilities and {\bf S}ensors), die über einen zentralen Controller (Squirrel) gesteuert werden. Zusätzlich gibt es ein Backend für PCs, welches über eine Weboberfläche Zugriff auf Gerätedaten gibt und die Steuerung der Aktoren sowie Konfigurationsänderungen erlaubt.\\
+Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls über Bluetooth mit dem auf einem Linux/Windows/Mac laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensor-Werte) mit übermittelt, die dann später auf dem Rechner ausgewertet werden können.
+
+\section{Protokolle}
+Um die Kommunikation zwischen den Nuts und dem Squirrel, sowie des Squirrels zum Backend zu gewährleisten sind zwei Protokolle entworfen worden.
+	\subsection{Downlink}  
+Das Downlinkprotokoll dient zur Kommunikation der Nuts mit dem Squirrel.
+	\subsection{Uplink}
+Das Uplinkprotokoll dient zur Kommunikation zwischen dem Squirrel und dem Backend.
+	\subsection{UART}
+	\subsection{SPI}
+
+\section{Hardware}
+	\subsection{Squirrel}
+%realtimeclock erwähnen und tasten
+	\subsubsection{Bluetooth}
+	\subsubsection{Display}
+	\subsubsection{SD-Kartenleser}
+	\subsubsection{}
+	\subsection{Nut}
+
+
+\section{Wetterstation}
+	\subsection{Funktionen}
+	\subsection{Hardware}
+		\subsubsection Drucksensor (BMP085)
+		\subsubsection Temperatursensor (BMP085)
+		\subsubsection Windrichtungssensor (Eigenbau, optische Dekodierung)
+		\subsubsection Windgeschwindigkeitssensor (Eigenbau, Dynamo)
+		\subsubsection Lichtstärke (Fotowiderstand)
+		\subsubsection Fechtigkeitssensor
+
+\section{Team}
+
+\section{Entwicklungeschichte}
+\subsection{Display}
+Zunächst wurde zum Entwickeln des Display-Treibers auf eine Test-Hardware zurückgegriffen, in der ebenfalls ein 13BB0-Display verbaut worden war.\\
+Das ursprünglich in einem DVB-T Receiver eingesetzte Board verfügt jedoch nur nur über den schwächeren ATMEGA 8515, welcher über weniger Speicher verfügt.\\
+Daher wurde zunächst ein Programm entwickelt, das nur wenig Platz verbraucht und trotzdem die notwendige Flexibilität bietet, beliebige Inhalte anzuzeigen.\\
+Um Buchstaben komfortabel für dieses Programm codieren zu können, wurde ein Hilfsprogramm in Java erstellt, welches eine Grafische Oberfläche bietet zum Entwerfen der Buchstaben.\\
+Im Laufe der Entwicklung stellte sich jedoch heraus, dass nicht nur eine Darstellung von Buchstaben an bestimmten fixen Plätzen auf dem Display benötigt wird, sondern eine noch flexiblere bitweise Ansteuerung.\\
+Da die endültige Hardware des Squirrels über mehr Speicher verfügt, war dies durch eine Neuschreiben weiter Teile des Display Treibers möglich. Um das den weitgehen neuen Display Treiber mit verschiedenen Schriftarten versorgen zu können, wurde ein Perl-Skript geschrieben, welches die Standardfonts der GD-Libary konvertieren kann.\\
+
+
+
+\subsection{Bluetooth}
+
+\section{Quellenverzeichnis}
+
+
+\end{document}

@@ -35,11 +35,11 @@ uint8_t display_get_font_value(uint8_t font_size, int idx, int byte)
 
 	#ifndef X86
 	if(font_size <= 0) 
-		return pgm_read_byte(font_0[idx][byte]);
+		return pgm_read_byte(&font_0[idx][byte]);
 	if(font_size == 1)
-		return pgm_read_byte(font_1[idx][byte]);
+		return pgm_read_byte(&font_1[idx][byte]);
 	if(font_size >= 2)
-		return pgm_read_byte(font_2[idx][byte]);
+		return pgm_read_byte(&font_2[idx][byte]);
 
 	#else
 	if(font_size <= 0) 
@@ -49,6 +49,7 @@ uint8_t display_get_font_value(uint8_t font_size, int idx, int byte)
 	if(font_size >= 2)
 		return font_2[idx][byte];
 	#endif
+	return 0;
 }
 
 void
@@ -197,9 +198,13 @@ display_print(char* char_array)
 
 void
 display_draw_image(int16_t topx, int16_t topy, const uint8_t* image_array){
+	#ifndef X86
+	uint8_t image_width = pgm_read_byte(&image_array[0]);
+	uint8_t image_height = pgm_read_byte(&image_array[1]);
+	#else
 	uint8_t image_width = image_array[0];
 	uint8_t image_height = image_array[1];
-
+	#endif
 	uint16_t byte_index = 2;
 	uint8_t bit_index = 0;
 	for(uint8_t y = 0; y < image_height; y++){
@@ -234,7 +239,7 @@ display_animated_image(int8_t posX, int8_t posY, const uint8_t** image_pointer_a
 				p = image_pointer_array[currImg];
 				display_draw_image(posX, posY,p);
 				display_flip();
-				SDL_Delay(sleep);
+				//SDL_Delay(sleep);
 			} else {
 				adder *= -1;
 			}

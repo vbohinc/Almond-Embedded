@@ -3,7 +3,7 @@
 
 uint8_t current_screen = display_gui_screen_none;
 bool display_gui_left_available = true;
-bool display_gui_top_available = true;
+bool display_gui_up_available = true;
 bool display_gui_right_available = true;
 bool display_gui_down_available = true;
 bool display_gui_a_available = true;
@@ -53,6 +53,10 @@ display_gui_menu(const char* title, const char** options, const uint8_t default_
 	gui_menu_title = title;
 	display_gui_a_function = "Select";
 	display_gui_b_function = "Cancel";
+	display_gui_left_available = false;
+	display_gui_up_available = true;
+	display_gui_right_available = false;
+	display_gui_down_available = true;
 	
 	display_clear();
 	display_draw_rect(0, DISPLAY_FONT0_HEIGHT, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1, false);
@@ -125,9 +129,27 @@ display_gui_draw_button_bar(void)
 	display_draw_rect(81, BUTTON_INFO_BAR_TOP, 127, DISPLAY_HEIGHT, true);
 	display_set_pixel(81, BUTTON_INFO_BAR_TOP, false);
 	display_set_pixel(127, BUTTON_INFO_BAR_TOP, false);
-	
+	// A/B Functions
 	display_inverted = true;
 	display_draw_string(32, BUTTON_INFO_BAR_TOP + 1, 0, display_gui_a_function);
 	display_draw_string(82, BUTTON_INFO_BAR_TOP + 1, 0, display_gui_b_function);
+	// Arrows
+	uint8_t current_x = 0;
+	if(display_gui_left_available){
+		display_draw_image(current_x, BUTTON_INFO_BAR_TOP + 1, arrow_left);
+		current_x += 8;
+	}
+	if(display_gui_right_available){
+		display_draw_image(current_x, BUTTON_INFO_BAR_TOP + 1, arrow_right);
+		current_x += 8;
+	}
+	if(display_gui_up_available){
+		display_draw_image(current_x, BUTTON_INFO_BAR_TOP + 1, arrow_up);
+		current_x += 8;
+	}
+	if(display_gui_down_available){
+		display_draw_image(current_x, BUTTON_INFO_BAR_TOP + 1, arrow_down);
+	}
+	
 	display_inverted = false;
 }

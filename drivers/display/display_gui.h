@@ -1,5 +1,6 @@
 #include "../../shared/common.h"
 #include "display.h"
+#include "display_data.h"
 
 #ifndef __DISPLAY_GUI_H__
 #define __DISPLAY_GUI_H__
@@ -8,12 +9,13 @@
 #define BUTTON_INFO_BAR_TOP DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT
 
 enum display_gui_keys{
-	display_gui_key_up,
+	display_gui_key_up = 1,
 	display_gui_key_down,
 	display_gui_key_left,
 	display_gui_key_right,
 	display_gui_key_a,
-	display_gui_key_b
+	display_gui_key_b,
+	display_gui_key_none
 };
 
 enum display_gui_screens{

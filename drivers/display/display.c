@@ -83,10 +83,10 @@ display_init(void)
 	_delay_ms(1000);				//Waiting for stabilizing power
 	set_bit(PORTH.OUT, DISPLAY_RST);
 
-	/*display_send(0xA2, DISPLAY_CMD);	//LCD Bias Select
+	display_send(0xA2, DISPLAY_CMD);	//LCD Bias Select
 
-	display_send(0xA1, DISPLAY_CMD);	//ADC SELECT
-	display_send(0xC8, DISPLAY_CMD);	//SHL Direction 0-64
+	//display_send(0xA1, DISPLAY_CMD);	//ADC SELECT
+	//display_send(0xC8, DISPLAY_CMD);	//SHL Direction 0-64
 
 
 
@@ -99,14 +99,14 @@ display_init(void)
 	display_send(0xA6, DISPLAY_CMD);	//REVERSE DISPLAY OFF
 	display_send(0xAF, DISPLAY_CMD);	// Display ON
 
-	//display_send(0xA0, DISPLAY_CMD);	//ADC SELECT
-	//display_send(0xC0, DISPLAY_CMD);	//SHL Select
+	display_send(0xA0, DISPLAY_CMD);	//ADC SELECT
+	display_send(0xC0, DISPLAY_CMD);	//SHL Select
 
 	display_send(0xB0, DISPLAY_CMD);	// SET PAGE ADDRESS 0
 	display_send(0x10, DISPLAY_CMD);	//SET COLUMN ADDRESS MSB 0
-	display_send(0x00, DISPLAY_CMD);	//SET COLUMN ADRESS LSB 0*/
+	display_send(0x00, DISPLAY_CMD);	//SET COLUMN ADRESS LSB 0
 
-
+/*
 	display_send(0xA0, DISPLAY_CMD);	//ADC SELECT
 	display_send(0xC0, DISPLAY_CMD);	//SHL Select
 	display_send(0xA2, DISPLAY_CMD);	//LCD Bias Select
@@ -123,8 +123,8 @@ display_init(void)
 	display_send(0x00, DISPLAY_CMD);	//SET COLUMN ADRESS LSB 0
 	display_send(0xA6, DISPLAY_CMD);	//REVERSE DISPLAY OFF
 	display_send(0xAF, DISPLAY_CMD);	// Display ON
-	//display_send(0xA5, DISPLAY_CMD); // all pixel on
-
+	display_send(0xA5, DISPLAY_CMD); // all pixel on
+*/
 
    	//display_send(0x10 + (5  >> 4), DISPLAY_DATA);
     //display_send(0x00 + (5  & 0x0F), DISPLAY_DATA);
@@ -153,18 +153,19 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 	if(display_inverted) value = !value;
 	//if((!value && display_transparency && !display_inverted) || (value && display_transparency && display_inverted)) return;
 	#ifndef X86
-	
+	if(x >= DISPLAY_WIDTH) return;
+	if(y >= DISPLAY_HEIGHT) return;
+		
 	uint8_t page = y / 8;
-	uint8_t col = x;
-	uint8_t bit_index = 7 - (y % 8);
+//	uint8_t col = x;
+	uint8_t col = DISPLAY_WIDTH - x -1;
+	uint8_t bit_index = (y % 8);
 	
-	if(x >= DISPLAY_BACKBUFFER_COLUMNS) x = DISPLAY_BACKBUFFER_COLUMNS - 1;
-	if(y >= 64) x = 63;
-	
+
 	if(value)
 		// Black pixel
 		backbuffer[page][col] |= 1<<bit_index;
-	else if(!transparency)
+	else
 		// White pixel
 		backbuffer[page][col] &= ~(1<<bit_index);
 		
@@ -180,23 +181,20 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 #ifndef X86
 inline static void 
 display_send (uint8_t value, bool data)
-{	
-	if(data==DISPLAY_DATA){
-		set_bit(PORTH.OUT, DISPLAY_RS);		
-	}else{
-		clear_bit(PORTH.OUT, DISPLAY_RS);
-	}
-	// FIXME: Check interface
+{
 	clear_bit(PORTH.OUT, DISPLAY_CS);
 	clear_bit(PORTH.OUT, DISPLAY_WR);
 	set_bit(PORTH.OUT, DISPLAY_RD);
-	/*value = (value & 0x55) << 1 | ((value >> 1) & 0x55); 
-	value = (value & 0x33) << 2 | ((value >> 2) & 0x33); 
-	PORTF.OUT = (value & 0x0F) << 4 | ((value >> 4) & 0x0F); */
-	//PORTF.OUT = value;	
-	PORTF.OUT = ((value&0x01)<<7)|((value&0x02)<<5)|((value&0x04)<<3)|
+
+	if(data==DISPLAY_DATA){
+		set_bit(PORTH.OUT, DISPLAY_RS);
+		PORTF.OUT = value;
+	}else{
+		clear_bit(PORTH.OUT, DISPLAY_RS);
+		PORTF.OUT = ((value&0x01)<<7)|((value&0x02)<<5)|((value&0x04)<<3)|
 			((value&0x08)<<1)|((value&0x10)>>1)|((value&0x20)>>3)|
 			((value&0x40)>>5)|((value&0x80)>>7);
+	}
 	set_bit(PORTH.OUT, DISPLAY_WR);
 	set_bit(PORTH.OUT, DISPLAY_CS);
 }
@@ -213,8 +211,8 @@ inline static void
 display_set_page(uint8_t page)
 {
 	//Top down instead of bottom up
-	uint8_t inverted_page = DISPLAY_PAGE_NUMBER - page;
-	display_send(0xB0 + inverted_page, DISPLAY_CMD);
+	//uint8_t inverted_page = DISPLAY_PAGE_NUMBER - page;
+	display_send(0xB0 + page, DISPLAY_CMD);
 }
 #endif
 

@@ -4,7 +4,10 @@
 #include "../drivers/display/display_draw.h"
 #include <math.h>
 #include <unistd.h>
+
+#ifdef X86
 #include <SDL.h>
+#endif
 
 typedef struct {
 	uint8_t x;
@@ -27,9 +30,9 @@ static int8_t left_pad_input;
 static int8_t right_pad_input;
 
 static uint8_t left_score;
-static char left_score_string[3];
+static char left_score_string[4];
 static uint8_t right_score;
-static char right_score_string[3];
+static char right_score_string[4];
 
 static void draw_rectangle(rectangle *rect);
 static void move_pad(rectangle *pad, int8_t *input);
@@ -56,8 +59,14 @@ void pong() {
 		//get_input(); // FIXME!
 		move_pad(&pad_left, &left_pad_input);
 		move_pad(&pad_right, &right_pad_input);
+		#ifndef X86
+		left_pad_input = 1;
+		right_pad_input = -1;
+		#endif
+		#ifdef X86
 		left_pad_input = 0;
 		right_pad_input = 0;
+		#endif
 		if (ball.top_left.x + ball_x_speed < 2)  { // FIXME!
 			if (ball.top_left.y >= (pad_left.top_left.y-2) && ball.bottom_right.y <= (pad_left.bottom_right.y+2) ) {
 				ball_x_speed--;
@@ -114,7 +123,7 @@ void pong() {
 			ball.top_left.x += ball_x_speed;
 			ball.bottom_right.x += ball_x_speed;
 		}
-		
+		#ifdef X86
 		SDL_Event keyevent;
 		SDL_PollEvent(&keyevent);
 		switch(keyevent.type){
@@ -144,7 +153,24 @@ void pong() {
 						right_pad_input = 0;
 				}
 		}
+		#endif
+		#ifndef X86
+		if (pad_left.top_left.y < 2) {
+		left_pad_input = 1;
+		} else if (pad_left.bottom_right.y > 62){
+			left_pad_input = -1;
+		} else {
+			left_pad_input = 0;
+		}
 		
+		if (pad_right.top_left.y < 2) {
+		right_pad_input = 1;
+		} else if (pad_right.bottom_right.y > 62){
+			right_pad_input = -1;
+		} else {
+			right_pad_input = 0;
+		}
+		#endif
 		usleep(100);
 		draw_ui();
 	

@@ -3,6 +3,8 @@
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 
+#include "display_draw.h"
+
 // Backbuffer
 #define DISPLAY_BACKBUFFER_COLUMNS 128
 #define DISPLAY_BACKBUFFER_LINES 8
@@ -25,5 +27,5 @@ void display_clear(void);
 // Set transparency
 void display_set_transparency(bool value);
 // Get current transparency option value
-bool display_get_transparency();
+bool display_get_transparency(void);
 #endif

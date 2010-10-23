@@ -2,6 +2,9 @@
 
 #ifdef DEBUG
 
+#ifdef DEBUG_TO_DISPLAY
+#include <display/display.h>
+#endif
 
 #ifdef __AVR_ATmega8535__
 	#include "ftdi.h"
@@ -23,17 +26,24 @@
 
 	void error_driver_write_c(uint8_t c)
 	{
+		#ifdef DEBUG_TO_DISPLAY
+		char s[] = {c,'0'};
+		display_print(s);
+		#endif
+		
+		#ifndef DEBUG_TO_DISPLAY
 		/* Send one char. */
 				do{
 		/* Wait until it is possible to put data into TX data register.
 		 * NOTE: If TXDataRegister never becomes empty this will be a DEADLOCK. */
 		}while(!USART_IsTXDataRegisterEmpty(&USART));
 		USART_PutChar(&USART, c);
-
+		#endif
 	}
 
 	inline void error_driver_init(void)
 	{
+		#ifndef DEBUG_TO_DISPLAY
 		/* This PORT setting is only valid to USARTC0 if other USARTs is used a
 		 * different PORT and/or pins is used. */
 		/* PIN3 (TXD0) as output. */
@@ -57,6 +67,7 @@
 		/* Enable both RX and TX. */
 		USART_Rx_Enable(&USART);
 		USART_Tx_Enable(&USART);
+		#endif
 	}
 
 #else
