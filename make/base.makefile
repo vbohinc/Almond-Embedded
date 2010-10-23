@@ -117,7 +117,7 @@ endif
 
 #button
 ifeq (button, $(findstring button,$(ALMONDLIBS)))
-SRC += $(BASE)/shared/buttons.c
+SRC += $(BASE)/drivers/platform/buttons.c
 endif
 
 

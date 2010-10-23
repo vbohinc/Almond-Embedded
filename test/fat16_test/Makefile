@@ -1,9 +1,9 @@
 MCU = atxmega128a1
 F_CPU = 32000000
-TARGET = display_test.c
-SRC =  display_test.c ../pong.c
+TARGET = fat16_test.c
+SRC =  fat16_test.c
 BASE = ../..
-ALMONDLIBS = display error button
+ALMONDLIBS = display sd error button
 EXTRAINCDIRS = ../../drivers/ ../../protocols/ ../../shared/
 TARGETTYPE = SQUIRREL
 ENABLE_DEBUG = 1
