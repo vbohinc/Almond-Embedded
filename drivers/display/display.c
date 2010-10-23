@@ -159,7 +159,7 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 	uint8_t page = y / 8;
 //	uint8_t col = x;
 	uint8_t col = DISPLAY_WIDTH - x -1;
-	uint8_t bit_index = (y % 8);
+	uint8_t bit_index = 7 - (y % 8);
 	
 
 	if(value)
