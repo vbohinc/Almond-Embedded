@@ -25,7 +25,8 @@ enum display_gui_screens{
 	display_gui_screen_bootup,
 	display_gui_screen_menu,
 	display_gui_screen_fullscreenimage,
-	display_gui_screen_alert
+	display_gui_screen_alert,
+	display_gui_screen_game
 };
 
 

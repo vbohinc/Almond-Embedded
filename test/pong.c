@@ -1,9 +1,5 @@
 #include "pong.h"
-#include "../shared/common.h"
-#include "../drivers/display/display.h"
-#include "../drivers/display/display_draw.h"
-#include "../drivers/display/display_gui.h"
-#include <math.h>
+
 //#include <unistd.h>
 
 #ifdef X86
@@ -57,18 +53,37 @@ void pong() {
 	
 	draw_ui();
 	
+	current_screen = display_gui_screen_game; 
+}
+
+void pong_keypress(enum display_gui_keys key) {
+	switch (key) {
+		case display_gui_key_left:
+		left_pad_input = -1; break;
+		case display_gui_key_right:
+		left_pad_input = 1; break;
+		case display_gui_key_a:
+		right_pad_input = -1; break;
+		case display_gui_key_b:
+		right_pad_input = 1; break;
+		case display_gui_key_down:
+		current_screen = display_gui_screen_menu; break;
+	}
+}
+
+void pong_update() {	
 	while(1==1) {
 		//get_input(); // FIXME!
 		move_pad(&pad_left, &left_pad_input);
 		move_pad(&pad_right, &right_pad_input);
-		#ifndef X86
+		/*#ifndef X86
 		left_pad_input = 1;
 		right_pad_input = -1;
 		#endif
-		#ifdef X86
+		#ifdef X86*/
 		left_pad_input = 0;
 		right_pad_input = 0;
-		#endif
+		/*#endif*/
 		if (ball.top_left.x + ball_x_speed < 2)  { // FIXME!
 			if (ball.top_left.y >= (pad_left.top_left.y-2) && ball.bottom_right.y <= (pad_left.bottom_right.y+2) ) {
 				if (ball_x_speed == 1 || ball_x_speed == -1) break;
