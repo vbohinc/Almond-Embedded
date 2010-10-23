@@ -179,6 +179,11 @@ CDEFS = -DF_CPU=$(F_CPU)UL
 
 ifeq ($(ENABLE_DEBUG),1)
 CDEFS += -DDEBUG
+
+ifeq (display, $(findstring display,$(ALMONDLIBS)))
+CDEFS += -DDEBUG_TO_DISPLAY
+endif
+
 endif
 
 #For nuts only:
