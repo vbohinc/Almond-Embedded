@@ -185,7 +185,7 @@ display_print(const char* char_array)
 			text_buffer_column = 0;
 			text_buffer_line++;
 		}
-		if(text_buffer_line >= DISPLAY_TEXTBUFFER_HEIGHT && char_array[char_index] != '\0'){
+		if(text_buffer_line >= DISPLAY_TEXTBUFFER_HEIGHT){
 			// Bounced to bottom
 			display_textbuffer_shiftup();
 			text_buffer_line--;
