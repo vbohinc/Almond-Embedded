@@ -1,6 +1,7 @@
 #ifndef X86
 
 #include <avr/io.h>
+#include "../pong.h"
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #define UART_BAUD_RATE      9600ul
@@ -20,7 +21,7 @@
 
 #include "../../drivers/display/display_data.h"
 #include "../pong.h"
-#include "../../drivers/display/buttons.h"
+#include <platform/buttons.h>
 
 #define USART USARTC0
 
@@ -52,29 +53,29 @@ int main (void)
 
 	display_init();
 	button_init();
-	display_draw_image(0,0,(uint8_t*)tum_logo_f2);
-	display_flip();
+	//pong();
 	while(true) 
 	{
 		switch (button_pressed())
 		{
 			case display_gui_key_up:
-				display_print("UP Pressed"); break;
+				display_print("UP Pressed\n"); break;
 			case display_gui_key_down:
-				display_print("DOWN Pressed"); break;
+				display_print("DOWN Pressed\n"); break;
 			case display_gui_key_left:
-				display_print("LEFT Pressed"); break;
+				display_print("LEFT Pressed\n"); break;
 			case display_gui_key_right:
-				display_print("RIGHT Pressed"); break;
+				display_print("RIGHT Pressed\n"); break;
 			case display_gui_key_a:
-				display_print("A Pressed"); break;
+				display_print("A Pressed\n"); break;
 			case display_gui_key_b:
-				display_print("B Pressed"); break;
+				display_print("B Pressed\n"); break;
 			default:
 				break;
 
 		}
 		_delay_ms(1);
+		display_flip();
 	}
 }
 #else

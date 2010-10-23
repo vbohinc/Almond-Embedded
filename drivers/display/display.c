@@ -159,7 +159,7 @@ display_set_pixel(uint8_t x, uint8_t y, bool value)
 	uint8_t page = y / 8;
 //	uint8_t col = x;
 	uint8_t col = DISPLAY_WIDTH - x -1;
-	uint8_t bit_index = (y % 8);
+	uint8_t bit_index = 7 - (y % 8);
 	
 
 	if(value)
@@ -245,10 +245,8 @@ display_clear(void)
 	#ifndef X86
 	
 	for(uint8_t page = 0; page < DISPLAY_BACKBUFFER_LINES; page++){
-		display_set_page(page);
-		display_set_col(0);
 		for(uint8_t col = 0; col < DISPLAY_BACKBUFFER_COLUMNS; col++){
-			display_send (0, DISPLAY_DATA);
+			backbuffer[page][col] = 0;
 		}
 	}
 	
