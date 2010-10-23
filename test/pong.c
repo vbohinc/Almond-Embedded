@@ -85,7 +85,7 @@ void pong_update() {
 		/*#endif*/
 		if (ball.top_left.x + ball_x_speed < 2)  { // FIXME!
 			if (ball.top_left.y >= (pad_left.top_left.y-2) && ball.bottom_right.y <= (pad_left.bottom_right.y+2) ) {
-				if (ball_x_speed == 1 || ball_x_speed == -1) break;
+				if (ball_x_speed == 1 || ball_x_speed == -1) {} else {
 				ball_x_speed--;
 				ball_x_speed = -ball_x_speed;
 				
@@ -96,6 +96,7 @@ void pong_update() {
 						(ball_y_speed < 0 ? (ball_y_speed-1) : (ball_y_speed+1))
 					:
 						(ball_y_speed < 0 ? -(ball_y_speed-1) : -(ball_y_speed+1));
+					}
 			} else {
 				// Paddle missed. Game over.
 				right_score++;
@@ -105,7 +106,7 @@ void pong_update() {
 		} else if (ball.bottom_right.x + ball_x_speed > 126) {
 			//printf("Ball: Right edge test. %d %d %d %d vs. %d %d\n", ball.top_left.x, ball.top_left.y, ball.bottom_right.x, ball.bottom_right.y, pad_right.top_left.y, pad_right.bottom_right.y);
 			if (ball.top_left.y >= (pad_right.top_left.y-2) && ball.bottom_right.y <= (pad_right.bottom_right.y+2) ) {
-				if (ball_x_speed == 1 || ball_x_speed == -1) break;
+				if (ball_x_speed == 1 || ball_x_speed == -1) {} else {
 				ball_x_speed--;
 				ball_x_speed = -ball_x_speed;
 				int8_t dist_from_pad_centre = 8 + (ball.top_left.y - pad_right.bottom_right.y );
@@ -115,6 +116,7 @@ void pong_update() {
 						(ball_y_speed < 0 ? (ball_y_speed-1) : (ball_y_speed+1))
 					:
 						(ball_y_speed < 0 ? -(ball_y_speed-1) : -(ball_y_speed+1));
+					}
 				//dist_from_pad_centre > 0 ? (ball_y_speed < 0 ? -(ball_y_speed-1) : -(ball_y_speed+1)) : (ball_y_speed < 0 ? -(ball_y_speed+1) : -(ball_y_speed-1));
 			} else {
 				// Paddle missed. Game over.
