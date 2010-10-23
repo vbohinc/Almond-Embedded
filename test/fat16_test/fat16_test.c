@@ -104,13 +104,40 @@ int main (void)
         buffer[i] = 0;
     }
 
+    int32_t seek = 0;
+
+    if(fat16_seek_file(test_file,&seek, FAT16_SEEK_SET)) {
+        logmsg("ERR: seekt to 0 faile in test/testfile");
+    }
+
     if(fat16_read_file(test_file_fd,buffer,sizeof(buffer)) == 0) {
-        logmsg("ERR: failed to write file test/testfile");
+        logmsg("ERR: failed to read file test/testfile");
         return -1;
     }
 
     for(int i = 0; i<128; i++) {
         if(buffer[i] != i) {
+            logmsg("ERR: write/read data mismatch!");
+            return -1;
+        }
+    }
+
+
+    uint8_t buffer2[64];
+
+    seek = 512;
+
+    if(fat16_seek_file(test_file_fd,&seek,FAT16_SEEK_SET) == 0) {
+        logmsg("ERR: seekt to 512 faile in test/testfile");
+    }
+
+    if(fat16_read_file(test_file_fd,buffer2,sizeof(buffer2)) == 0) {
+        logmsg("ERR: failed to read file test/testfile");
+        return -1;
+    }
+
+    for(int i = 0; i<64; i++) {
+        if(buffer2[i] != i+64) {
             logmsg("ERR: write/read data mismatch!");
             return -1;
         }
