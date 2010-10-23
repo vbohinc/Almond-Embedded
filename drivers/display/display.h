@@ -3,6 +3,8 @@
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 
+#include "display_draw.h"
+
 // Backbuffer
 #define DISPLAY_BACKBUFFER_COLUMNS 128
 #define DISPLAY_BACKBUFFER_LINES 8
