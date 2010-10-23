@@ -115,6 +115,11 @@ ifeq (display, $(findstring display,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/display/display.c $(BASE)/drivers/display/display_draw.c $(BASE)/drivers/display/display_gui.c $(BASE)/drivers/display/display_data.c
 endif
 
+#button
+ifeq (button, $(findstring button,$(ALMONDLIBS)))
+SRC += $(BASE)/drivers/platform/buttons.c
+endif
+
 
 ##################### END OF ALMOND LIBLIST ##############################
 
@@ -179,6 +184,11 @@ CDEFS = -DF_CPU=$(F_CPU)UL
 
 ifeq ($(ENABLE_DEBUG),1)
 CDEFS += -DDEBUG
+
+ifeq (display, $(findstring display,$(ALMONDLIBS)))
+CDEFS += -DDEBUG_TO_DISPLAY
+endif
+
 endif
 
 #For nuts only:

@@ -156,6 +156,7 @@ display_draw_line(uint8_t xstart ,uint8_t ystart ,uint8_t xend ,uint8_t yend)
 
 static void
 display_textbuffer_shiftup(void){
+	display_clear();
 	for(uint8_t line = 0; line < DISPLAY_TEXTBUFFER_HEIGHT; line++){
 		for(uint8_t column = 0; column < DISPLAY_TEXTBUFFER_WIDTH; column++){
 			if(line < DISPLAY_TEXTBUFFER_HEIGHT - 1){
@@ -221,7 +222,6 @@ display_draw_image(int16_t topx, int16_t topy, const uint8_t* image_array){
 			}
 		}
 	}
-	display_flip();
 }
 
 void
@@ -248,5 +248,4 @@ display_animated_image(int8_t posX, int8_t posY, const uint8_t** image_pointer_a
 		} while (currImg > 0);
 	}
 	display_draw_image(posX, posY,image_pointer_array[0]);
-	display_flip();
 }
