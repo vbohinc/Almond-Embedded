@@ -72,7 +72,6 @@ void pong_keypress(enum display_gui_keys key) {
 }
 
 void pong_update() {	
-	while(1==1) {
 		//get_input(); // FIXME!
 		move_pad(&pad_left, &left_pad_input);
 		move_pad(&pad_right, &right_pad_input);
@@ -219,7 +218,6 @@ void pong_update() {
 		
 		draw_ui();
 	
-	}
 }
 
 static void ball_reset() {
