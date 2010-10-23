@@ -1,7 +1,7 @@
 #include "display_gui.h"
 #include "display_draw.h"
 
-uint8_t current_screen = display_gui_screen_none;
+enum display_gui_screens current_screen = display_gui_screen_none;
 bool display_gui_left_available = true;
 bool display_gui_up_available = true;
 bool display_gui_right_available = true;
@@ -100,7 +100,8 @@ display_gui_menu_keypress(uint8_t key)
 	if(gui_menu_selection < 0) gui_menu_selection = gui_menu_option_count - 1;
 	if(gui_menu_selection > gui_menu_option_count - 1) gui_menu_selection = 0;
 	// Redraw menu
-	display_gui_menu(gui_menu_title, gui_menu_current_options, gui_menu_selection, gui_menu_callback);
+	if (key != display_gui_key_a && key != display_gui_key_b)
+		display_gui_menu(gui_menu_title, gui_menu_current_options, gui_menu_selection, gui_menu_callback);
 }
 
 // UTILITIES =====================================================
