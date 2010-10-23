@@ -196,12 +196,12 @@ display_print(const char* char_array)
 			text_buffer_column++;
 		}
 		char_index++;
-		if(text_buffer_column >= DISPLAY_TEXTBUFFER_WIDTH || char_array[char_index]=='\n'){
+		if(text_buffer_column >= DISPLAY_TEXTBUFFER_WIDTH || char_array[char_index]=='\n' || (char_index == 1 && char_array[0]=='\n')){
 			text_buffer[text_buffer_line][text_buffer_column]='\0';
 			text_buffer_column = 0;
 			text_buffer_line++;
 		}
-		if(text_buffer_line >= DISPLAY_TEXTBUFFER_HEIGHT && char_array[char_index] != '\0'){
+		if(text_buffer_line >= DISPLAY_TEXTBUFFER_HEIGHT){
 			// Bounced to bottom
 			display_textbuffer_shiftup();
 			text_buffer_line--;

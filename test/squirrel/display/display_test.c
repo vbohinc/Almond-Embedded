@@ -79,8 +79,7 @@ int main (int argc, char *argv[])
 	set_bit(PORTC.DIR,4);
 	clear_bit(PORTC.OUT,4);
 
-	set_bit(PORTH.DIR,2);
-	set_bit(PORTH.OUT,2);
+
 #endif
 
 	display_init();		// Initialize display

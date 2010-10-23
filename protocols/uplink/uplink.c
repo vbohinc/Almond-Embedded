@@ -47,7 +47,7 @@ static inline bool uplink_handle_get_package (uplink_package *p)
       return squirrel_list (p->id, &(p->payload.list));
 
     case LOG:
-      return false;
+      return squirrel_log (p);
 
     case TIME:
       p->payload.time.time = time_get ();
