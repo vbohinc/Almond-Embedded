@@ -25,17 +25,17 @@
 #include "spi.h"
 #include <util/delay.h>
 
-#define SCK  5  // USART XCK
-#define MISO 6  // USART RxD
-#define MOSI 7  // USART TxD
-#define CS   7  // just an output pin
+#define SCK  1  // USART XCK
+#define MISO 2  // USART RxD
+#define MOSI 3  // USART TxD
+#define CS   0  // just an output pin
 
 uint8_t sd_raw_xmit_byte(uint8_t b)
 {
-   while (! (USARTE1.STATUS & USART_DREIF_bm)); //debug_pgm(PSTR("Warten bis Datenregister leer")); // Warten bis Datenregister leer
-   USARTE1.DATA = b; //debug_pgm(PSTR("Byte in Datenregister schreiben (Setup: steigende Flanken)")); // Byte in Datenregister schreiben (Setup: steigende Flanken)
-   while (! (USARTE1.STATUS & USART_RXCIF_bm)); //debug_pgm(PSTR("Warten bis Antwortbyte empfangen (Sample: fallende Flanken)")); // Warten bis Antwortbyte empfangen (Sample: fallende Flanken)
-   return USARTE1.DATA; //debug_pgm(PSTR("Antwortbyte")); // Antwortbyte
+   while (! (USARTD1.STATUS & USART_DREIF_bm)); //debug_pgm(PSTR("Warten bis Datenregister leer")); // Warten bis Datenregister leer
+   USARTD1.DATA = b; //debug_pgm(PSTR("Byte in Datenregister schreiben (Setup: steigende Flanken)")); // Byte in Datenregister schreiben (Setup: steigende Flanken)
+   while (! (USARTD1.STATUS & USART_RXCIF_bm)); //debug_pgm(PSTR("Warten bis Antwortbyte empfangen (Sample: fallende Flanken)")); // Warten bis Antwortbyte empfangen (Sample: fallende Flanken)
+   return USARTD1.DATA; //debug_pgm(PSTR("Antwortbyte")); // Antwortbyte
 }
 
 void spi_init() {
@@ -53,31 +53,31 @@ debug_pgm(PSTR("spi_init"));
 
    // CS und MOSI High
 	set_bit(PORTD.OUT, CS); // nicht aktiv
-	set_bit(PORTE.OUT, MOSI);
+	set_bit(PORTD.OUT, MOSI);
 	// CLK Low
-	clear_bit(PORTE.OUT, SCK);
+	clear_bit(PORTD.OUT, SCK);
 
 	// CS, CLK und MOSI als Ausgänge
-	set_bit(PORTE.DIRSET, MOSI);
-	set_bit(PORTE.DIRSET, SCK);
+	set_bit(PORTD.DIRSET, MOSI);
+	set_bit(PORTD.DIRSET, SCK);
 	set_bit(PORTD.DIRSET, CS);
 
 	// MISO als Eingang
-	set_bit(PORTE.DIRCLR, MISO);
+	set_bit(PORTD.DIRCLR, MISO);
 
 	// 100Khz SPI Frequenz zur Initialisierung
 	// BSEL = 32e6 / (2 * Baudrate) - 1
 	// BSEL = 2e6 / (2 * Baudrate) - 1
-	USARTE1.BAUDCTRLA = 159;
-	USARTE1.BAUDCTRLB = 0;
+	USARTD1.BAUDCTRLA = 159;
+	USARTD1.BAUDCTRLB = 0;
 
 	// Frameformat (MSB first), SPI Mode 0
-	USARTE1.CTRLC = USART_CMODE_MSPI_gc;
+	USARTD1.CTRLC = USART_CMODE_MSPI_gc;
 
-	USARTE1.CTRLA = 0;
+	USARTD1.CTRLA = 0;
 
 	// enable RX und TX
-	USARTE1.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
+	USARTD1.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
 
 
 }

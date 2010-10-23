@@ -24,6 +24,19 @@ enum display_gui_screens{
 	display_gui_screen_menu
 };
 
+
+extern enum display_gui_screens current_screen;
+extern bool display_gui_left_available;
+extern bool display_gui_up_available;
+extern bool display_gui_right_available;
+extern bool display_gui_down_available;
+extern bool display_gui_a_available;
+extern bool display_gui_b_available;
+extern const char* display_gui_a_function;
+extern const char* display_gui_b_function;
+
+
+
 // Refresh stuff before redrawing
 void display_gui_refresh(void);
 // Handle key press events

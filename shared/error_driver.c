@@ -27,7 +27,7 @@
 	void error_driver_write_c(uint8_t c)
 	{
 		#ifdef DEBUG_TO_DISPLAY
-		char s[] = {c,'0'};
+		char s[] = {c,'\0'};
 		display_print(s);
 		#endif
 		
