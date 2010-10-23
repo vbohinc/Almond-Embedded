@@ -46,7 +46,7 @@ uint16_t read_adc(uint8_t pin)
 {
 	// wandlung starten
 	ADCSRA |= (1<<ADSC);
-	// warten bis ergebniss
+	// warten bis ergebnis
 	while(ADCSRA & (1<<ADSC));
 	
 	return ADCW;
