@@ -10,9 +10,9 @@
 #include <string.h>
 #include "squirrel.h"
 #include "../drivers/bluetooth/bluetooth.h"
+#include "../drivers/display/display.h"
+#include "../drivers/platform/buttons.h"
 //#include "../drivers/storage/storage.h"
-//#include "../drivers/display/display.h"
-//#include "../drivers/platform/platform.h"
 #include "../protocols/downlink/downlink.h"
 #include "../protocols/uplink/uplink.h"
 #include "../protocols/package_types.h"
@@ -105,14 +105,14 @@ static void dump (void)
 
 #define valid(num) (num < NUTS_LIST && (device_list[num].mac[0] != 0 || device_list[num].mac[1] != 0 || device_list[num].mac[2] != 0 || device_list[num].mac[3] != 0 || device_list[num].mac[4] != 0 || device_list[num].mac[5] != 0))
 
-inline bool bt_cmp (const char *add1, const char *add2)
+bool bt_cmp (const char *add1, const char *add2)
 {
-  int i;
+  uint8_t i;
   for (i = 0; i < 6 && add1[i] == add2[i]; i++);
   return (i == 6);
 }
 
-extern bool squirrel_list (uint8_t num, uplink_payload_list *p)
+bool squirrel_list (uint8_t num, uplink_payload_list *p)
 {
   if (valid (num))
     {
@@ -130,6 +130,19 @@ extern bool squirrel_list (uint8_t num, uplink_payload_list *p)
     {
       return false;
     }
+}
+
+bool squirrel_log (uplink_package *p) 
+{
+  uplink_payload_log *log = &(p->payload.log);
+
+  for (uint8_t i = 0; i < 9; i++)
+    {
+      log->entries[i].time = i;
+      log->entries[i].value = 42;
+    }
+
+  return true;
 }
 
 static void update_id (uint8_t num) 
@@ -171,7 +184,7 @@ static void update_device_entry (const char *address)
       else if (!bt_cmp (device_list[k].mac, address))
         break;
         
-      if (!bt_connect (device_list[k].mac)) 
+      if (!bt_connect (device_list[k].mac) && downlink_is_nut (&err)) 
         {
            error_pgm (PSTR("Connection couldn't be established"));
            return;
@@ -207,41 +220,6 @@ void downlink_update(void)
  * Init
  * ----------------------------------------------------------------------- */
 
-void init_bluetooth (void)
-{
-
-}
-
-void init_display (void)
-{
-
-}
-
-void init_storage (void)
-{
-  //fat16_init (0);
-}
-
-void draw_ui (uint8_t device, uint8_t page)
-{
-  const char *heading;
-
-  switch (device_list[device].class)
-    {
-      // FIXME: Move to EEPROM!!
-    case WEATHERSTATION:
-      heading = "Wetterstation";
-      break;
-
-    default:
-      heading = "Unbekannt";
-      break;
-    }
-
-  // call display.h / widgets.c
-}
-
-
 int main (void)
 {
   /* Behold the MAGIC Clock! */
@@ -274,32 +252,21 @@ int main (void)
   error_init ();
   sei ();
 
-  debug_pgm(PSTR("Bluetooth Init"));          
+  debug_pgm(PSTR("Display Init"));          
+  display_init ();
   
+  debug_pgm(PSTR("Bluetooth Init"));          
   for (uint8_t i = 0; i < NUTS_LIST; i++)
     for (uint8_t j = 0; j < 6; j++)
       device_list[i].mac[j] = 0;
-
   bt_init();
-  
-  debug_pgm(PSTR("Display Init"));          
-  init_display ();
-  
-  debug_pgm(PSTR("Storage Init"));          
-  init_storage ();
   
   squirrel_state_set (MASTER);
   debug_pgm(PSTR("Mainloop"));
             
   while (true)
     {
-      // Check for input events...
-      // redraw UI
-      // TIMER events!
-
-      // if (something changed)
-      draw_ui (0, 0);
-
+      display_flip ();
       if (state == MASTER)
         {
           assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");

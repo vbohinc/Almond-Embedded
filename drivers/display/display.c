@@ -15,14 +15,14 @@ static uint8_t backbuffer[DISPLAY_BACKBUFFER_LINES][DISPLAY_BACKBUFFER_COLUMNS];
 #else
 
 #include <stdbool.h>
-#include "SDL.h" // main SDL header
+#include "SDL.h" 
 #include <SDL_gfxPrimitives.h>
 #include <SDL_rotozoom.h>
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 320
  
-SDL_Surface *screen; //This pointer will reference the backbuffer
+SDL_Surface *screen; 	//This pointer will reference the backbuffer
 SDL_Surface *tux;
 SDL_Surface *sur;
 
@@ -62,6 +62,11 @@ display_init(void)
 	
 	#ifndef X86
 	// Display init for AVR
+
+	//Background light
+	set_bit(PORTH.DIR,2);
+	set_bit(PORTH.OUT,2);
+
 	//User system setup by external pins
 	PORTF.DIR = 0xFF;
 	set_bit(PORTH.DIR, DISPLAY_RS);
@@ -88,8 +93,6 @@ display_init(void)
 	//display_send(0xA1, DISPLAY_CMD);	//ADC SELECT
 	//display_send(0xC8, DISPLAY_CMD);	//SHL Direction 0-64
 
-
-
 	display_send(0x25, DISPLAY_CMD);	//Regulator resistor select
 	display_send(0x81, DISPLAY_CMD);	//Set reference voltage mode        contrast
 	display_send(0x30, DISPLAY_CMD);	//Set reference voltage register    contrast value
@@ -106,37 +109,12 @@ display_init(void)
 	display_send(0x10, DISPLAY_CMD);	//SET COLUMN ADDRESS MSB 0
 	display_send(0x00, DISPLAY_CMD);	//SET COLUMN ADRESS LSB 0
 
-/*
-	display_send(0xA0, DISPLAY_CMD);	//ADC SELECT
-	display_send(0xC0, DISPLAY_CMD);	//SHL Select
-	display_send(0xA2, DISPLAY_CMD);	//LCD Bias Select
-	display_send(0x25, DISPLAY_CMD);	//Regulator resistor select
-
-	display_send(0x81, DISPLAY_CMD);	//Set reference voltage mode
-	display_send(0x30, DISPLAY_CMD);	//Set reference voltage register
-
-	display_send(0x2F, DISPLAY_CMD);	//PowerControl
-
-	display_send(0x40, DISPLAY_CMD);	//Initial Display line to 0
-	display_send(0xB0, DISPLAY_CMD);	// SET PAGE ADDRESS 0
-	display_send(0x10, DISPLAY_CMD);	//SET COLUMN ADDRESS MSB 0
-	display_send(0x00, DISPLAY_CMD);	//SET COLUMN ADRESS LSB 0
-	display_send(0xA6, DISPLAY_CMD);	//REVERSE DISPLAY OFF
-	display_send(0xAF, DISPLAY_CMD);	// Display ON
-	display_send(0xA5, DISPLAY_CMD); // all pixel on
-*/
-
-   	//display_send(0x10 + (5  >> 4), DISPLAY_DATA);
-    //display_send(0x00 + (5  & 0x0F), DISPLAY_DATA);
-
-    //display_send(0xB0 + 7, DISPLAY_DATA);
-
 	#else
 	// Display init for X86
   	int res = 0; //Results
 	if (InitVideo() == false) atexit(SDL_Quit);
 
-	SDL_WM_SetCaption("Awesome Almond Display", NULL);
+	SDL_WM_SetCaption("Almond Squirrel Emulator", NULL);
 
 	tux = SDL_CreateRGBSurface(SDL_HWSURFACE, 128, 64, 32,0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
 	for(int x=0; x<128;x++) {
@@ -326,14 +304,13 @@ set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 } 
 
 void
-DrawImage(SDL_Surface *srcimg, int sx, int sy, int sw, int sh, SDL_Surface *dstimg, int dx, int dy, int alpha) {
-  
-  SDL_Rect src, dst;
-  
-  src.x = sx;  src.y = sy;  src.w = sw;  src.h = sh;
-  dst.x = dx;  dst.y = dy;  dst.w = src.w;  dst.h = src.h;
-  
-  SDL_SetAlpha(srcimg, SDL_SRCALPHA, alpha);
-  SDL_BlitSurface(srcimg, &src, dstimg, &dst);
+DrawImage(SDL_Surface *srcimg, int sx, int sy, int sw, int sh, SDL_Surface *dstimg, int dx, int dy, int alpha) {  
+	SDL_Rect src, dst;
+
+	src.x = sx;  src.y = sy;  src.w = sw;  src.h = sh;
+	dst.x = dx;  dst.y = dy;  dst.w = src.w;  dst.h = src.h;
+
+	SDL_SetAlpha(srcimg, SDL_SRCALPHA, alpha);
+	SDL_BlitSurface(srcimg, &src, dstimg, &dst);
 }
 #endif

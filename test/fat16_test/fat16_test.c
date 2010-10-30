@@ -27,7 +27,7 @@
 #define USART USARTC0
 
 
-void log(const char* msg) {
+void logmsg(const char* msg) {
     display_print(msg);
     display_print("\n");
 }
@@ -61,7 +61,7 @@ int main (void)
 	//END NEEDED?---------------------------------------
 
 	if(fat16_init(0) != 1) {
-	    log("ERROR: FAT16 init failed!");
+	    logmsg("ERR: FAT16 init failed!");
 	    return -1;
 	}
 
@@ -69,7 +69,7 @@ int main (void)
 
 	if(fat16_get_dir_entry_of_path("test", test_dir) == 0) {
 	    if(fat16_write_dir_entry(test_dir) == 0) {
-	        log("ERROR: creation failed test/");
+	        logmsg("ERR: creation failed test/");
 	        return -1;
 	    }
 	}
@@ -77,14 +77,14 @@ int main (void)
 	fat16_dir_entry* test_file;
 
     if(fat16_create_file(test_dir,"testfile",test_file)) {
-        log("ERROR: creation failed test/testfile");
+        logmsg("ERR: creation failed test/testfile");
         return -1;
     }
 
     fat16_file* test_file_fd;
 
     if(fat16_open_file(test_file_fd,test_file) == 0) {
-        log("ERROR: opening file test/testfile");
+        logmsg("ERR: opening file test/testfile");
         return -1;
     }
 
@@ -95,8 +95,8 @@ int main (void)
         buffer[i] = i;
     }
 
-    if(fat16_write_file(test_file_fd,&buffer,128) == 0) {
-        log("ERROR: writing to file");
+    if(fat16_write_file(test_file_fd,buffer,sizeof(buffer)) == 0) {
+        logmsg("ERR: writing to file");
         return -1;
     }
 
@@ -104,14 +104,41 @@ int main (void)
         buffer[i] = 0;
     }
 
-    if(fat16_read_file(test_file_fd,&buffer,128) == 0) {
-        log("ERROR: failed to write file test/testfile");
+    int32_t seek = 0;
+
+    if(fat16_seek_file(test_file,&seek, FAT16_SEEK_SET)) {
+        logmsg("ERR: seekt to 0 faile in test/testfile");
+    }
+
+    if(fat16_read_file(test_file_fd,buffer,sizeof(buffer)) == 0) {
+        logmsg("ERR: failed to read file test/testfile");
         return -1;
     }
 
     for(int i = 0; i<128; i++) {
         if(buffer[i] != i) {
-            log("ERROR: write/read data mismatch!");
+            logmsg("ERR: write/read data mismatch!");
+            return -1;
+        }
+    }
+
+
+    uint8_t buffer2[64];
+
+    seek = 512;
+
+    if(fat16_seek_file(test_file_fd,&seek,FAT16_SEEK_SET) == 0) {
+        logmsg("ERR: seekt to 512 faile in test/testfile");
+    }
+
+    if(fat16_read_file(test_file_fd,buffer2,sizeof(buffer2)) == 0) {
+        logmsg("ERR: failed to read file test/testfile");
+        return -1;
+    }
+
+    for(int i = 0; i<64; i++) {
+        if(buffer2[i] != i+64) {
+            logmsg("ERR: write/read data mismatch!");
             return -1;
         }
     }
@@ -119,35 +146,35 @@ int main (void)
     fat16_dir* test_dir_dd;
 
     if(fat16_open_dir(test_dir_dd,test_dir) == 0) {
-        log("ERROR:failed to open dir test");
+        logmsg("ERR:failed to open dir test");
         return -1;
     }
 
     fat16_dir_entry* entry;
 
     if(fat16_read_dir(test_dir_dd,entry) == 0) {
-        log("ERROR: failed to read dir entrys");
+        logmsg("ERR: failed to read dir entrys");
         return -1;
     }
 
-    log("Content of test folder:");
-    log(entry->long_name);
+    logmsg("Content of test folder:");
+    logmsg(entry->long_name);
 
     if(fat16_reset_dir(test_dir_dd) == 0) {
-        log("ERROR: failed to reset dir test");
+        logmsg("ERR: failed to reset dir test");
     }
 
     if(fat16_delete_file(test_file) == 0) {
-        log("ERROR: deleting file test/festfile");
+        logmsg("ERR: deleting file test/festfile");
         return -1;
     }
 
     if(fat16_delete_file(test_dir) == 0) {
-        log("ERROR: deleting folder test");
+        logmsg("ERR: deleting folder test");
         return -1;
     }
 
-    log("FINISHED WITHOUT ERROR!");
+    logmsg("FINISHED WITHOUT ERROR!");
     return 1;
 }
 

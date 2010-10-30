@@ -78,7 +78,7 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 }
 
 void
-display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, const char* char_array)
+display_draw_string_delayed(uint8_t x, uint8_t y, uint8_t font_size, const char* char_array, uint16_t delay)
 {
 	uint8_t char_width = display_get_font_value(font_size, 0, 0);
 	uint8_t index = 0;
@@ -87,8 +87,24 @@ display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, const char* char_ar
 		display_draw_char(current_x, y, font_size, char_array[index]);
 		index++;
 		current_x += char_width;
+		if(delay > 0){
+			#ifdef X86
+			SDL_Delay(delay);
+			#else
+			_delay_ms(delay);
+			#endif
+			display_flip();
+		}
 	}
 }
+
+void
+display_draw_string(uint8_t x, uint8_t y, uint8_t font_size, const char* char_array)
+{
+	display_draw_string_delayed(x, y, font_size, char_array, 0);
+}
+
+
 
 void
 display_draw_rect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, bool filled)
@@ -170,7 +186,7 @@ display_textbuffer_shiftup(void){
 }
 
 void 
-display_print(char* char_array)
+display_print(const char* char_array)
 {
 	uint32_t char_index = 0;
 	while(char_array[char_index] != '\0'){
@@ -180,12 +196,12 @@ display_print(char* char_array)
 			text_buffer_column++;
 		}
 		char_index++;
-		if(text_buffer_column >= DISPLAY_TEXTBUFFER_WIDTH || char_array[char_index]=='\n'){
+		if(text_buffer_column >= DISPLAY_TEXTBUFFER_WIDTH || char_array[char_index]=='\n' || (char_index == 1 && char_array[0]=='\n')){
 			text_buffer[text_buffer_line][text_buffer_column]='\0';
 			text_buffer_column = 0;
 			text_buffer_line++;
 		}
-		if(text_buffer_line >= DISPLAY_TEXTBUFFER_HEIGHT && char_array[char_index] != '\0'){
+		if(text_buffer_line >= DISPLAY_TEXTBUFFER_HEIGHT){
 			// Bounced to bottom
 			display_textbuffer_shiftup();
 			text_buffer_line--;
@@ -225,27 +241,18 @@ display_draw_image(int16_t topx, int16_t topy, const uint8_t* image_array){
 }
 
 void
-display_animated_image(int8_t posX, int8_t posY, const uint8_t** image_pointer_array, uint8_t rounds, uint8_t sleep){
-	
-	for (uint8_t r = 0; r<rounds; r++)
-	{
-		int16_t currImg = 0;
-		int adder = 1;
-		const uint8_t *p;
-		do	
-		{
-			if (currImg >= 0 && image_pointer_array[currImg]!= NULL)
-			{
-				p = image_pointer_array[currImg];
-				display_draw_image(posX, posY,p);
-				display_flip();
-				//SDL_Delay(sleep);
-			} else {
-				adder *= -1;
-			}
-			currImg += adder;
-
-		} while (currImg > 0);
+display_draw_animated_image(int8_t x, int8_t y, const uint8_t** frames_array, uint8_t rounds, uint16_t sleep){
+	for (uint8_t repetition = 0; repetition < rounds; repetition++){
+		int16_t current_frame = 0;
+		while(frames_array[current_frame] != NULL){
+			display_draw_image(x, y, frames_array[current_frame]);
+			display_flip();
+			current_frame++;
+			#ifdef X86
+			SDL_Delay(sleep);
+			#else
+			_delay_ms(sleep);
+			#endif
+		}
 	}
-	display_draw_image(posX, posY,image_pointer_array[0]);
 }

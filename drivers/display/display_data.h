@@ -32,4 +32,21 @@ extern const uint8_t arrow_right[];
 extern const uint8_t arrow_up[];
 extern const uint8_t arrow_down[];
 
+// Frames for animated almonf logo
+extern const uint8_t almond_logo_f1[];
+extern const uint8_t almond_logo_f2[];
+extern const uint8_t almond_logo_f3[];
+extern const uint8_t almond_logo_f4[];
+
+// Credits portraits
+extern const uint8_t team_matthias[];
+extern const uint8_t team_sean[];
+extern const uint8_t team_stefan[];
+extern const uint8_t team_linus[];
+extern const uint8_t team_pascal[];
+extern const uint8_t team_salomon[];
+extern const uint8_t team_thomas[];
+extern const uint8_t team_christian[];
+extern const uint8_t team_maximilian[];
+
 #endif
