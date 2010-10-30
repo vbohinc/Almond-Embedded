@@ -3,6 +3,7 @@
  */
 
 #include <rtc/rtc.h>
+#include <error.h>
 #include <twi/twi.h>
 #define RTC_DEV_ADDRESS 0x50
 
@@ -23,6 +24,7 @@ uint8_t get_value(uint8_t address)
   twi_connect(RTC_DEV_ADDRESS,READ);
   uint8_t result;
   twi_read(&result, ACK);
+  byte_to_hex(result);
   twi_stop();
   return result;
 }
@@ -32,6 +34,7 @@ void set_value(uint8_t address, uint8_t value)
   twi_connect(RTC_DEV_ADDRESS,WRITE);
   twi_write(address);
   twi_write(value);
+  byte_to_hex(value);
   twi_stop();
 }
 
@@ -62,7 +65,7 @@ void set_time(time_t* time)
   data[4]    = int_to_bcd(time->month) + ((time->wday)<<5);
   for(int i = 0; i < 5; i++)
     set_value(i+2,data[i]);
-  set_value(0xff,((time->year)>>2));
+  set_value(0xff,((time->year-(time->year%4))>>2));
 }
 
 
