@@ -1,4 +1,0 @@
-The display driver is splited in two sections. 
-A low level part, which does basic operations on attached display. 
-The high level part provides a rich API for dialogs and menus. 
-Additionally there is a eclipse project in order to paint the chars.

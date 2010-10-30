@@ -86,15 +86,15 @@ display_gui_menu(const char* title, const char** options, const uint8_t default_
 	uint8_t option_index = 0;
 	uint8_t current_y = DISPLAY_FONT0_HEIGHT + 2;
 	while(options[option_index] != NULL){
-		display_inverted = option_index != gui_menu_selection;
+		display_set_inverted (option_index != gui_menu_selection);
 		display_draw_rect(2, current_y, DISPLAY_WIDTH - 3, current_y + DISPLAY_FONT0_HEIGHT, true);	
-		display_transparency = true;
-		display_inverted = !display_inverted;
+		//display_transparency = true;
+		display_set_inverted (!display_get_inverted());
 		display_draw_string(3, current_y, 0, options[option_index]);
-		display_transparency = false;
+		//display_transparency = false;
 		current_y += DISPLAY_FONT0_HEIGHT + 1;
 		option_index++;
-		display_inverted = false;
+		display_set_inverted (false);
 	}
 	gui_menu_option_count = option_index;
 }
@@ -132,13 +132,13 @@ display_gui_bootup_screen(void)
 {
 	display_gui_button_bar_visible = false;
 	display_draw_rect(0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT, true);
-	display_inverted = true;
+	display_set_inverted (true);
 	display_gui_bootup_line("ALMOND Squirrel v0.1 prealpha\n", 500);
 	display_gui_bootup_line("Initializing storage\n", 100);
 	display_gui_bootup_line("Detecting tits...\n", 100);
 	display_gui_bootup_line("Destroying 'pong'...\n", 100);
 	display_gui_bootup_line("Freaking out...\n", 100);
-	display_inverted = false;
+	display_set_inverted (false);
 	display_clear();
 	
 	display_draw_string(40, DISPLAY_HEIGHT - 15, 1, "ALMOND");
@@ -275,9 +275,9 @@ void
 display_gui_draw_button_bar(void)
 {
 	// Clear background
-	display_inverted = true;
+	display_set_inverted (true);
 	display_draw_rect(0, BUTTON_INFO_BAR_TOP - 1, DISPLAY_WIDTH, DISPLAY_HEIGHT - 1, true);
-	display_inverted = false;
+	display_set_inverted (false);
 	// Arrows panel
 	if(display_gui_right_available || display_gui_left_available || display_gui_up_available || display_gui_down_available){
 		display_draw_rect(0, BUTTON_INFO_BAR_TOP, 29, DISPLAY_HEIGHT, true);
@@ -297,7 +297,7 @@ display_gui_draw_button_bar(void)
 		display_set_pixel(127, BUTTON_INFO_BAR_TOP, false);
 	}
 	// A/B Functions
-	display_inverted = true;
+	display_set_inverted (true);
 	display_draw_string(32, BUTTON_INFO_BAR_TOP + 1, 0, display_gui_a_function);
 	display_draw_string(82, BUTTON_INFO_BAR_TOP + 1, 0, display_gui_b_function);
 	// Arrows
@@ -318,7 +318,7 @@ display_gui_draw_button_bar(void)
 		display_draw_image(current_x, BUTTON_INFO_BAR_TOP + 1, arrow_down);
 	}
 	
-	display_inverted = false;
+	display_set_inverted (false);
 }
 
 
