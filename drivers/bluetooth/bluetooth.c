@@ -8,7 +8,7 @@
  * Baudrate for the UART-connection to the BTM-222 on SQUIRREL
  */
 #ifdef SQUIRREL
-#define UART_BAUD_RATE      9600
+#define UART_BAUD_RATE      19200
 #endif
 
 #ifdef NUT
@@ -244,22 +244,25 @@ bt_init (void)
 
     // Enable ECHO
     comm_mode = BT_RAW;
+
+    _delay_ms (2000);
     uart_send ("ATE1\r", 5);
 
-    _delay_ms (50);
 
+    _delay_ms (50);
     // throw away your television
     uart_receive ();
     fifo_clear (&in_fifo);
 
     comm_mode = BT_CMD;
 
+
     for (uint8_t i = 0; i < 5; i++)
         if (send_cmd (BT_TEST, NULL))
-            return true;
+            break;
 
-    error_pgm (PSTR ("BT: Init failed"));
-    return false;
+    send_cmd (BT_SET_SLAVE, NULL);
+    return true;
 }
 
 bool
@@ -403,13 +406,14 @@ address_to_bytes(char * mac, uint8_t* data)
 }
 
 bool
-bt_discover (char **result, bool (*update_callback)(const char *name, const uint8_t *address))
+bt_discover (char result[8][6], bool (*update_callback)(const char *name, const uint8_t *address))
 {
+	bt_set_mode(BLUETOOTH_MASTER);
     char buffer[50]; //oversized, but who cares?
     char * bufferhead = buffer;
 
     if (!send_cmd (BT_FIND_DEVICES, NULL))
-        return false;
+		return false;
 
     while_timeout (!fifo_cmp_pgm (&in_fifo, PSTR ("\r\nInquiry Results:\r\n")), 2000)
         uart_receive();

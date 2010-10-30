@@ -222,8 +222,6 @@ void downlink_update(void)
 
 int main (void)
 {
-  /* Behold the MAGIC Clock! */
-
   /* Internen 32Mhz Oszillator einschalten */
   //OSC.CTRL = OSC_RC32MEN_bm;
 
@@ -231,23 +229,28 @@ int main (void)
   OSC.XOSCCTRL = OSC_FRQRANGE1_bm | OSC_XOSCSEL3_bm | OSC_XOSCSEL1_bm | OSC_XOSCSEL0_bm;
 
   OSC.CTRL = OSC_XOSCEN_bm;
-  while ((OSC.STATUS & (OSC_XOSCRDY_bm) == 0);
+  while ((OSC.STATUS & OSC_XOSCRDY_bm) == 0);
 
-  OSC.PLLCTRL = OSC_PLLSRC1_bm|OSC_PLLSRC1_bm|OSC_PLLFAC1_bm;
+//  OSC.PLLCTRL = OSC_PLLSRC1_bm|OSC_PLLSRC1_bm|OSC_PLLFAC1_bm;
 
   /*external clock aktivieren */
 
-  OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;
+//  OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;
 
   /* Warten bis Oszillator/PLL stabil ist */
-  while ((OSC.STATUS & (OSC_PLLRDY_bm) == 0);
+//  while ((OSC.STATUS & (OSC_PLLRDY_bm)) == 0);
 
   /* System Clock selection */
   CCP = CCP_IOREG_gc;
-  CLK.CTRL = CLK_SCLKSEL_PLL_gc;
+  CLK.CTRL = CLK_SCLKSEL_XOSC_gc;
 
   /* DFLL ein (Auto Kalibrierung) */
   //DFLLRC32M.CTRL = DFLL_ENABLE_bm;
+
+/* Behold the MAGIC Clock! */
+    set_bit(PORTC.DIR,4);
+    clear_bit(PORTC.OUT,4);
+
 
   error_init ();
   sei ();
@@ -261,7 +264,7 @@ int main (void)
       device_list[i].mac[j] = 0;
   bt_init();
   
-  squirrel_state_set (MASTER);
+  squirrel_state_set (SLAVE);
   debug_pgm(PSTR("Mainloop"));
             
   while (true)
@@ -270,6 +273,7 @@ int main (void)
       if (state == MASTER)
         {
           assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
+		  _delay_ms(2000);
           downlink_update ();
           dump ();
           assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");

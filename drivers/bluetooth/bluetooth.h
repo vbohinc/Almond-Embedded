@@ -18,7 +18,7 @@ extern bool bt_send (void * data, const uint8_t length);
 
 extern bool bt_connect (const char *address);
 extern bool bt_disconnect (void);
-extern bool bt_discover (char **result, bool (*update_callback)(const char *name, const uint8_t *address));
+extern bool bt_discover (char result[8][6], bool (*update_callback)(const char *name, const uint8_t *address));
 #endif /* SQUIRREL */
 
 
