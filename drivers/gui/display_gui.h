@@ -43,7 +43,7 @@ extern const char* display_gui_a_function;
 extern const char* display_gui_b_function;
 
 //found  devices in bootup
-uint8_t bootup_device_count;
+uint8_t bootup_current_frame;
 
 // Refresh stuff before redrawing
 void display_gui_refresh(void);
@@ -62,14 +62,10 @@ void display_gui_image(const uint8_t* image, void(*callback)(void));
 void display_gui_image_keypress(enum display_gui_keys key);
 
 
-// Draw number of found devices
-void display_gui_bootup_num_devices(uint8_t devices);
 // Set Bootup Progress bar
 void display_gui_bootup_progress(uint16_t progress);
-// Print found BT device name
-void display_gui_bootup_found_device(const char* device);
 // Updates the bootup screen callback for BT discover
-bool display_gui_bootup_update_callback(const char *name, const uint8_t *address);
+void display_gui_bootup_update_callback(uint16_t percentage);
 // Draw the bootup screen
 void display_gui_bootup_screen(void);
 
