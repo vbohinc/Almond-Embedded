@@ -89,6 +89,7 @@ uart_receive (void)
                 return;
 
             default:
+				error_putc(uart_data);
                 fifo_write (&in_fifo, uart_data);
         }
     }
@@ -100,9 +101,11 @@ static void
 uart_send (const char *data, const uint8_t length)
 {
     char echo;
+	error_putc('>');
 
     for (uint8_t i = 0; i < length; i++)
     {
+		error_putc(data[i]);
         if (uart_putc (data[i]) == 0)
         {
             warn_pgm (PSTR ("UART: Remote not ready"));
@@ -189,7 +192,8 @@ send_cmd (const bt_cmd_t command, const char *data)
     while_timeout (true, BT_CMD_TIMEOUT_MS)
     {
         uart_receive ();
-
+		if (fifo_cmp_pgm (&in_fifo, PSTR ("\r\n")))
+			continue;
         if (fifo_strstr_pgm (&in_fifo, PSTR ("OK\r\n")))
             return true;
         if (fifo_strstr_pgm (&in_fifo, PSTR ("ERROR\r\n")))
@@ -246,12 +250,10 @@ bt_init (void)
     comm_mode = BT_RAW;
 
     _delay_ms (2000);
-	char* tmpstring[6];
-	strcpy_P(PSTR("ATE1\r"),tmpstring);
-    uart_send (tmpstring, 5);
+    //uart_send ("ATZ0\r", 5);
 
 
-    _delay_ms (50);
+    //_delay_ms (50);
     // throw away your television
     uart_receive ();
     fifo_clear (&in_fifo);
@@ -263,6 +265,7 @@ bt_init (void)
         if (send_cmd (BT_TEST, NULL))
             break;
 
+    send_cmd (BT_CLEAR_ADDRESS, NULL);
     send_cmd (BT_SET_SLAVE, NULL);
     return true;
 }
@@ -278,12 +281,16 @@ bt_set_mode (const bt_mode_t mode)
 
     if (mode == BLUETOOTH_MASTER)
         if (send_cmd (BT_SET_MASTER, NULL))
+		{
             bt_mode = BLUETOOTH_MASTER;
+			send_cmd (BT_DISABLE_AUTOCONNECT, NULL);
+		}
 
     if (mode == BLUETOOTH_SLAVE)
         if (send_cmd (BT_SET_SLAVE, NULL))
             bt_mode = BLUETOOTH_SLAVE;
 
+	_delay_ms(2000);
     return mode == bt_mode;
 }
 
