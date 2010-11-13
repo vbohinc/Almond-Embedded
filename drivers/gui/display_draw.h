@@ -22,5 +22,7 @@ void display_print(const char* char_array);
 void display_draw_image(int16_t topx, int16_t topy, const uint8_t* image_array);
 // Draw image with frames
 void display_draw_animated_image(int8_t x, int8_t y, const uint8_t** frames_array, uint8_t rounds, uint16_t sleep);
+// Draws a frame (round_counter) of an animation array if round_counter > number of frames draws frame 0. return value is next frame
+uint8_t display_draw_animation_frame(int8_t x, int8_t y, const uint8_t** frames_array, uint8_t round_counter);
 
 #endif
