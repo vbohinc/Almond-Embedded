@@ -213,7 +213,13 @@ void downlink_update(void)
   // FIXME: UI
   if (bt_discover (result, NULL))
     for (uint8_t i = 0; i < 8; i++)
-      update_device_entry (result[i]);
+      {
+        for (uint8_t j = 0; j < 6; j++)
+          error_putc (result[i][j] + 48);
+        update_device_entry (result[i]);
+      }
+  else
+    debug_pgm (PSTR("FAIL!!!"));
 }
 
 /* -----------------------------------------------------------------------
