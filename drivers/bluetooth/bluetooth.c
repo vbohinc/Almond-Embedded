@@ -373,13 +373,17 @@ bt_send (void *data, const uint8_t length)
 bool
 bt_connect (const char *address)
 {
+    debug_pgm (PSTR ("CONNECT"));
+    
     if (!send_cmd (BT_SET_ADDRESS, address))
         return false;
 
     if (!send_cmd (BT_CONNECT, NULL))
         return false;
 
-    return (BT_DATA == update_comm_mode (60000));
+    debug_pgm (PSTR ("WAIT FOR COMM"));
+
+    return (BT_DATA == update_comm_mode (30000));
 }
 
 bool
@@ -401,43 +405,33 @@ bt_disconnect (void)
     return (BT_CMD == update_comm_mode (60000));
 }
 
-static uint8_t
-hex_to_int(char hex)
+void
+copy_address (const char *src, char *dst)
 {
-    if (hex >= 36 && hex <= 46)
-        return hex-36;
-    else if (hex >= 48 && hex <= 54)
-        return hex-39;
-    else
-        return 0;
-}
+  uint8_t off = 0;
 
-static void
-address_to_bytes(char * mac, uint8_t* data)
-{
-    uint8_t b = 0;
-    for(uint8_t i; i < 14; i += 2)
+  error_putc('>');
+  
+  for (uint8_t i = 0; i < 14; i++)
     {
-        if(i == 4 || i == 7)
-            i++;
-        data[b] = hex_to_int(mac[i])<<4;
-        data[b] += hex_to_int(mac[i+1]);
-        b++;
+      if (src[i+off] == '-')
+          off++;
+      
+      dst[i] = src[i+off];
+      error_putc (dst[i]);
     }
+
+  error_putc('\n'); 
 }
 
 bool
-bt_discover (char result[8][6], void (*update_callback)(const uint8_t progress))
+bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress))
 {
 	if (!bt_set_mode(BLUETOOTH_MASTER)) return false;
   if (!send_cmd (BT_FIND_DEVICES, NULL)) return false;
 
-
-
   char buffer[100]; //oversized, but who cares?
   char *bufferhead = buffer;
-	char mac[14];
-	uint8_t address[6];  
   uint8_t pos = 0; 
 
   while_timeout (!fifo_strstr_pgm (&in_fifo, PSTR ("Inquiry Results:\r\n")), 12000)
@@ -461,7 +455,7 @@ bt_discover (char result[8][6], void (*update_callback)(const uint8_t progress))
       while (!fifo_cmp_pgm (&in_fifo, PSTR ("\r\n")))
     		{
     			fifo_read (&in_fifo, bufferhead);
-     			error_putc(*bufferhead);
+     			//error_putc(*bufferhead);
      			bufferhead++;
     		}
   		//terminate string
@@ -479,12 +473,8 @@ bt_discover (char result[8][6], void (*update_callback)(const uint8_t progress))
     			return true;
     		}
 
-		  //we have a device
-		  debug_pgm(PSTR("Juhuuu"));
-
-		  strcpy (mac, &buffer[17]);
-		  address_to_bytes (mac, address);
-		  memcpy (result[pos], address, 6);
+      debug (&buffer[21]);
+		  copy_address (&buffer[21], result[pos]);      
       pos++;
 	}
   
