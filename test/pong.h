@@ -3,8 +3,8 @@
 
 #include "../shared/common.h"
 #include "../drivers/display/display.h"
-#include "../drivers/display/display_draw.h"
-#include "../drivers/display/display_gui.h"
+#include "../drivers/gui/display_draw.h"
+#include "../drivers/gui/display_gui.h"
 #include <math.h>
 
 void pong(void);
