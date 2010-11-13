@@ -158,6 +158,7 @@ display_gui_bootup_screen(void)
     display_gui_bootup_found_device("LALAL_DEVICE");
     display_flip();
 
+    //FIXME DELETE ME FOR REAL TESTING
     display_gui_sleep(2000);
     //display_clear();
     //display_draw_string(40,DISPLAY_HEIGHT-15,1,"ALMOND");
