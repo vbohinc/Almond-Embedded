@@ -379,6 +379,15 @@ AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
 
 
 
+ifeq ($(MCU),atxmega128a1)
+RPROG_FILENAME = ~/Dropbox/ALMOND/remoteprogrammer/xmega
+endif
+ifeq ($(MCU),atmega8535)
+RPROG_FILENAME = ~/Dropbox/ALMOND/remoteprogrammer/xmega
+endif
+
+
+
 #---------------- Debugging Options ----------------
 
 # For simulavr only - target MCU frequency.
@@ -524,6 +533,9 @@ gccversion :
 program: $(TARGET).hex $(TARGET).eep
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
 
+rprogram: $(TARGET).hex $(TARGET).eep
+	cp $(TARGET).hex $(RPROG_FILENAME).hex
+	cp $(TARGET).eep $(RPROG_FILENAME).eep
 
 # Generate avr-gdb config/init file which does the following:
 #     define the reset signal, load the target file, connect to target, and set 

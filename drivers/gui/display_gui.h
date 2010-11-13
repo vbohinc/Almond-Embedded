@@ -1,5 +1,5 @@
 #include "../../shared/common.h"
-#include "display.h"
+#include "../display/display.h"
 #include "display_data.h"
 
 #ifndef __DISPLAY_GUI_H__
