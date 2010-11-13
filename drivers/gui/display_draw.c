@@ -34,7 +34,7 @@ uint8_t display_get_font_value(uint8_t font_size, int idx, int byte)
 {
 
 	#ifndef X86
-	if(font_size <= 0) 
+	if(font_size <= 0)
 		return pgm_read_byte(&font_0[idx][byte]);
 	if(font_size == 1)
 		return pgm_read_byte(&font_1[idx][byte]);
@@ -42,7 +42,7 @@ uint8_t display_get_font_value(uint8_t font_size, int idx, int byte)
 		return pgm_read_byte(&font_2[idx][byte]);
 
 	#else
-	if(font_size <= 0) 
+	if(font_size <= 0)
 		return font_0[idx][byte];
 	if(font_size == 1)
 		return font_1[idx][byte];
@@ -64,13 +64,13 @@ display_draw_char(uint8_t x, uint8_t y, uint8_t font_size, char asciiIndex)
 	if(char_index < FONT_CHAR_MIN || char_index > FONT_CHAR_MAX)
 	  char_index = 32;
 
-	
+
 	for(uint8_t cy = y; cy < y + char_height; cy++){
 		for(uint8_t cx = x; cx < x + char_width; cx++){
 			display_set_pixel(cx, cy, display_get_font_value(font_size,char_index,byte_index) >>(7-bit_index) & 1);
 			bit_index++;
 			if(bit_index >= 8){
-				bit_index = 0; 
+				bit_index = 0;
 				byte_index++;
 			}
 		}
@@ -123,7 +123,7 @@ display_draw_rect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, bool filled)
 	}
 }
 
-void 
+void
 display_draw_line(uint8_t xstart ,uint8_t ystart ,uint8_t xend ,uint8_t yend)
 {
 	int16_t x, y, t, dx, dy, incx, incy, pdx, pdy, ddx, ddy, es, el, err;
@@ -157,7 +157,7 @@ display_draw_line(uint8_t xstart ,uint8_t ystart ,uint8_t xend ,uint8_t yend)
 	display_set_pixel(x,y,1);
 
 	for(t=0; t<el; ++t){
-		err -= es; 
+		err -= es;
 		if(err<0){
 			 err += el;
 			 x += ddx;
@@ -185,7 +185,7 @@ display_textbuffer_shiftup(void){
 	}
 }
 
-void 
+void
 display_print(const char* char_array)
 {
 	uint32_t char_index = 0;
@@ -207,7 +207,7 @@ display_print(const char* char_array)
 			text_buffer_line--;
 		}
 	}
-	
+
 	for(uint8_t line = 0; line < DISPLAY_TEXTBUFFER_HEIGHT; line++){
 		display_draw_string(0, line * DISPLAY_TEXTBUFFER_HEIGHT, 0, text_buffer[line]);
 	}
@@ -233,7 +233,7 @@ display_draw_image(int16_t topx, int16_t topy, const uint8_t* image_array){
 			#endif
 			bit_index++;
 			if(bit_index >= 8){
-				bit_index = 0; 
+				bit_index = 0;
 				byte_index++;
 			}
 		}
@@ -255,4 +255,14 @@ display_draw_animated_image(int8_t x, int8_t y, const uint8_t** frames_array, ui
 			#endif
 		}
 	}
+}
+
+uint8_t
+display_draw_animation_frame(int8_t x, int8_t y, const uint8_t** frames_array, uint8_t round_counter){
+        if(frames_array[round_counter] == NULL)
+            round_counter = 0;
+
+        display_draw_image(x, y, frames_array[round_counter]);
+        display_flip();
+        return ++round_counter;
 }
