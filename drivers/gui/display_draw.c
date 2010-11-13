@@ -3,7 +3,7 @@
 #endif
 
 #include "display_draw.h"
-#include "display.h"
+#include "../display/display.h"
 #include "display_data.h"
 
 #ifdef X86
