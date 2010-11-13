@@ -1,7 +1,7 @@
 #include "buttons.h"
 
 
-#include "display/display_gui.h"
+#include <gui/display_gui.h>
 #include <util/delay.h>
  
 /* Einfache Funktion zum Entprellen eines Tasters */
