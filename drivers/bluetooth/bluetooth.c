@@ -250,6 +250,13 @@ bt_init (void)
     comm_mode = BT_RAW;
 
     _delay_ms (2000);
+
+	char tmpstring[6];
+	//strcpy_P(PSTR("ATE1\r"),tmpstring);
+   // uart_send (tmpstring, 5);
+	//strcpy_P(PSTR("ATH1\r"),tmpstring); //discoverable
+    //uart_send (tmpstring, 5);
+
     //uart_send ("ATZ0\r", 5);
 
 
@@ -260,14 +267,18 @@ bt_init (void)
 
     comm_mode = BT_CMD;
 
+uint8_t i;
 
-    for (uint8_t i = 0; i < 5; i++)
+    for (i = 0; i < 5; i++)
         if (send_cmd (BT_TEST, NULL))
             break;
+	if (i==5)
+		//Test failed!!
+		return false;
 
-    send_cmd (BT_CLEAR_ADDRESS, NULL);
-    send_cmd (BT_SET_SLAVE, NULL);
-    return true;
+	if (!send_cmd (BT_CLEAR_ADDRESS, NULL))
+		return false;
+    return send_cmd (BT_SET_SLAVE, NULL);
 }
 
 bool

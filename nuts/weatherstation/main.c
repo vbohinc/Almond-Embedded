@@ -118,15 +118,14 @@ void disable_bt (void)
 #endif
 }
 
-void enable_bt (void)
+bool enable_bt (void)
 {
   sei ();
 #ifndef DEBUG
   set_bit(DDRB, 0);
   clear_bit(PORTB, 0);
 #endif
-  bt_init ();
-  bt_set_mode (BLUETOOTH_SLAVE);
+  return bt_init ();
 }
 
 int main (void)
@@ -136,18 +135,50 @@ int main (void)
   error_init ();
 #endif
 
+	disable_bt(); //Reset bluetooth module
+
   /* Initialize Actors */
   LED1_DDR |= (1<<LED1_PIN);
 
   /* Switch on actor Led */
   //set_value(LED,1);
 
+	for (uint8_t i=0; i<5; i++)
+	{
+		set_value(LED,1);
+		_delay_ms(100);
+		set_value(LED,0);
+		_delay_ms(100);
+	}
+	for (uint8_t i=0; i<5; i++)
+	{
+		set_value(LED,1);
+		_delay_ms(50);
+		set_value(LED,0);
+		_delay_ms(50);
+	}
+
+
 
   /* Initialize Bluetooth */
-  enable_bt ();
+  if (!enable_bt ())
+	//switch led on on error
+	{
+		set_value(LED,1);
+	}
+		else
+	{
+		for (uint8_t i=0; i<5; i++)
+		{
+			set_value(LED,1);
+			_delay_ms(500);
+			set_value(LED,0);
+			_delay_ms(50);
+		}
+	}
 
   /* Initialize Sensors */
-  init_bmp085_sensor ();
+  //init_bmp085_sensor (); //Don't enable, causes BT to not working
 
   while (true)
     {
@@ -156,22 +187,25 @@ int main (void)
       
       if (bt_receive (data, &length, 0))
         {
-          //set_value(LED,1);
+         set_value(LED,1);
+	_delay_ms(10);
+          set_value(LED,0);
+	_delay_ms(10);
           downlink_process_pkg (data, length);
-          //set_value(LED,0);
 
         }
       
       if (sleep > BLUETOOTH_START_TIME)
         {
-          LED1_PORT &= ~(1<<LED1_PIN);
           
+	 /*set_value(LED,1);
           disable_bt ();
           for (; sleep > BLUETOOTH_START_TIME; sleep--)
             _delay_ms(1000);
           enable_bt ();
           
-          LED1_PORT |= (1<<LED1_PIN);
+         
+          set_value(LED,0);*/
         }
     }
 }
