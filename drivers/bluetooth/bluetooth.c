@@ -409,8 +409,6 @@ void
 copy_address (const char *src, char *dst)
 {
   uint8_t off = 0;
-
-  error_putc('>');
   
   for (uint8_t i = 0; i < 14; i++)
     {
@@ -418,10 +416,7 @@ copy_address (const char *src, char *dst)
           off++;
       
       dst[i] = src[i+off];
-      error_putc (dst[i]);
     }
-
-  error_putc('\n'); 
 }
 
 bool
@@ -455,7 +450,6 @@ bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress)
       while (!fifo_cmp_pgm (&in_fifo, PSTR ("\r\n")))
     		{
     			fifo_read (&in_fifo, bufferhead);
-     			//error_putc(*bufferhead);
      			bufferhead++;
     		}
   		//terminate string
@@ -473,7 +467,6 @@ bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress)
     			return true;
     		}
 
-      debug (&buffer[21]);
 		  copy_address (&buffer[21], result[pos]);      
       pos++;
 	}
