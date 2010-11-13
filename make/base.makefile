@@ -113,7 +113,7 @@ endif
 
 #gui
 ifeq (gui, $(findstring gui,$(ALMONDLIBS)))
-ALMONDLIBS += display pong
+ALMONDLIBS += display button pong
 SRC += $(BASE)/drivers/gui/display_draw.c $(BASE)/drivers/gui/display_gui.c $(BASE)/drivers/gui/display_data.c
 endif
 

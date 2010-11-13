@@ -97,7 +97,7 @@ void set_value(uint8_t id, uint16_t value)
 {
   switch (id)
     {
-    case 4: // LED
+    case LED: // LED
       if (value == 0)
         LED1_PORT &= ~(1<<LED1_PIN);
       else
@@ -136,15 +136,18 @@ int main (void)
   error_init ();
 #endif
 
+  /* Initialize Actors */
+  LED1_DDR |= (1<<LED1_PIN);
+
+  /* Switch on actor Led */
+  //set_value(LED,1);
+
+
   /* Initialize Bluetooth */
   enable_bt ();
 
   /* Initialize Sensors */
   init_bmp085_sensor ();
-
-  /* Initialize Actors */
-  LED1_DDR |= (1<<LED1_PIN);
-
 
   while (true)
     {
@@ -153,9 +156,10 @@ int main (void)
       
       if (bt_receive (data, &length, 0))
         {
-          LED1_PORT |= (1<<LED1_PIN);
+          //set_value(LED,1);
           downlink_process_pkg (data, length);
-          LED1_PORT &= ~(1<<LED1_PIN);
+          //set_value(LED,0);
+
         }
       
       if (sleep > BLUETOOTH_START_TIME)
