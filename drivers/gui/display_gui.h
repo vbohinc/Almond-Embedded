@@ -9,6 +9,7 @@
 #define BUTTON_INFO_BAR_TOP DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
+#define MENU_OPTION_LENGHT 20
 
 enum display_gui_keys{
 	display_gui_key_up = 1,
@@ -52,9 +53,11 @@ void display_gui_keypress(enum display_gui_keys key);
 
 
 // Draw a menu
-void display_gui_menu(const char* title, const char** options, const uint8_t default_option, void(*callback)(int8_t));
+void display_gui_menu(const char* title, const char* options,uint8_t option_count, const uint8_t default_option, void(*callback)(int8_t));
 // Handle keypress events for the menu
 void display_gui_menu_keypress(enum display_gui_keys key);
+// Draw scrollbar if not enough space on screen
+void display_gui_draw_scrollbar();
 
 // Display a full screen image
 void display_gui_image(const uint8_t* image, void(*callback)(void));

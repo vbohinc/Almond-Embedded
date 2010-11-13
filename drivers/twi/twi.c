@@ -7,7 +7,7 @@
 #include <util/twi.h>
 #include <error.h>
 
-#define TWI TWIC
+#define TWI TWIE
 
 #if __AVR_ARCH__ <= 6
 void twi_wait(void)
@@ -40,9 +40,13 @@ void twi_init(void) {
   //this will give us 1000000/16 Hz clock for the twi interface
   TWCR = (1<<TWEN);
 #elif __AVR_ARCH__ >= 100
+  debug_pgm(PSTR("twi_init sez herro. Setting CTRL\n"));
   TWI.CTRL = 0;
+  debug_pgm(PSTR("twi_init sez herro. Setting BAUD\n"));
   TWI.MASTER.BAUD = 0;           // maximum performance
+  debug_pgm(PSTR("twi_init sez herro. Setting CTRLA\n"));
   TWI.MASTER.CTRLA = 0 | (1<<3); // enable master, but disable interrupts
+  debug_pgm(PSTR("twi_init sez herro. Setting CTRLB\n"));
   TWI.MASTER.CTRLB = 0 | (1<<0); // enable smart mode
 #endif
 }

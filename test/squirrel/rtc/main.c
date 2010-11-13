@@ -4,11 +4,13 @@
 #include <string.h>
 
 int main(int argc, char *argv) {
-	twi_init();
 	display_init();
 	display_clear();
 	display_flip();
 	debug_pgm(PSTR("Start\n"));
+	twi_init();
+	
+	
 	time_t my_time = {59,59,23,31,12,100,6};
 	set_time (&my_time);
 	debug_pgm(PSTR("wayne!\n"));

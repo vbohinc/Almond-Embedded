@@ -13,12 +13,12 @@ void sd_get_response(uint8_t response_type);
 
 void sd_enable(void)
 {
-	clear_bit(PORTD.OUT, 0);
+	clear_bit(PORTC.OUT, 0);
 }
 
 void sd_disable(void)
 {
-	set_bit(PORTD.OUT, 0);
+	set_bit(PORTC.OUT, 0);
 }
 
 void sd_init(void)
@@ -72,7 +72,7 @@ debug("sending CMD0\n");
 	sd_send_command(CMD0, NULL);
 	sd_get_response(R1);
 	// Chip Select Low
-	//clear_bit(PORTD.OUT, 3); // Redundant if CS == SS?
+	//clear_bit(PORTC.OUT, 3); // Redundant if CS == SS?
 	// Place SD Card into Idle State (again). Transition to SPI mode 
 	sd_send_command(CMD0, NULL);
 	sd_get_response(R1);

@@ -65,7 +65,7 @@ int main (void)
 	{
 		debug("Read: ");
 		error_putc('0'+arr_ret[i]);
-		display_print("\n");
+		//display_print("\n");
 		display_flip();
 	}
 	while (1)

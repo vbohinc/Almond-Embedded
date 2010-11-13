@@ -19,7 +19,7 @@
 #include "../../../drivers/gui/display_gui.h"
 
 #include "../../../drivers/gui/display_data.h"
-#include "../../pong.h"
+#include "../../../squirrel/squirrel.h"
 
 #ifndef X86
 #include <platform/buttons.h>
@@ -27,39 +27,168 @@
 
 #define USART USARTC0
 
-void test_menu(void);
+void menu_devices();
+void menu_device_extension();
 
-void
-test_alert_callback(bool option)
+uint8_t menu_selected_device = -1;
+
+uint8_t menu_devices_count = 0;
+uint8_t menu_extensions_count = 0;
+
+#ifdef X86
+static uint8_t
+hex_to_int(char hex)
 {
-	test_menu();
+    if (hex >= 36 && hex <= 46)
+        return hex-36;
+    else if (hex >= 48 && hex <= 54)
+        return hex-39;
+    else
+        return 0;
+}
+void
+address_to_bytes(const char * mac, uint8_t* data)
+{
+    uint8_t b = 0;
+    for(uint8_t i; i < 14; i += 2)
+    {
+        if(i == 4 || i == 7)
+            i++;
+        data[b] = hex_to_int(mac[i])<<4;
+        data[b] += hex_to_int(mac[i+1]);
+        b++;
+    }
 }
 
-// Display test for X86
-void
-test_menu_selected(int8_t option)
+device_info device_list [NUTS_LIST];
+
+void createFakeDevices()
 {
-	switch (option)
+	address_to_bytes("0123-45-6789AB",device_list[0].mac);
+	for (int i=0; i<5;i++)
 	{
-		case 0:
-			display_gui_about(&test_menu); break;
-		case 1:
-			display_gui_image(testimg, &test_menu); break;
-		case 2:
-			pong(); break;
-		case 3:
-			display_gui_alert("Hey you!", "Do you like nuts?", "Yeah", "Nope", &test_alert_callback); break;
-		default:
-			test_menu(); break;
+		device_list[0].extension_types[i]=i;
+		device_list[0].values_cache[i]=i;
 	}
 }
+#endif
+
+uint8_t hex_to_char(uint8_t hex)
+{
+	if (hex<=9)
+		return hex+'0';
+	else if (hex>9 && hex <= 15)
+		return hex+'A'-10;
+	else
+		return 0;
+}
+
+void
+menu_entity_selected(int8_t option)
+{
+	if (option == menu_extensions_count-1)
+		menu_devices(); //Back
+	else
+		menu_device_extension();
+}
+
+static void
+bytes_to_address(uint8_t* data, char *mac)
+{
+    uint8_t b = 0;
+    for(uint8_t i; i < 6; i ++)
+    {
+		uint8_t b1 = ((data[i]&0xF0)>>4);
+		uint8_t b2 = (data[i]&0x0F);
+		mac[i*2]=hex_to_char(b1);
+		mac[i*2+1]=hex_to_char(b2);
+    }
+}
+
+
+static char menu_extension_options[EXTENSIONS_LIST+2][MENU_OPTION_LENGHT];
+
+void
+menu_device_extension()
+{
+	uint8_t i;
+	for (i=0; i<EXTENSIONS_LIST; i++)
+	{
+		if (device_list[menu_selected_device].extension_types[i] == INVALID)
+			break;
+		switch (device_list[menu_selected_device].extension_types[i])
+		{
+			case GENERIC_SENSOR:
+				sprintf(menu_extension_options[i],"Generic: %d", device_list[menu_selected_device].values_cache[i]); break;
+			case TEMPERATURE:
+				sprintf(menu_extension_options[i],"Temp: %d C", device_list[menu_selected_device].values_cache[i]); break;
+			case PRESSURE:
+				sprintf(menu_extension_options[i],"Press: %d hPa", device_list[menu_selected_device].values_cache[i]); break;
+			case LIGHT:
+				sprintf(menu_extension_options[i],"Light: %d cd", device_list[menu_selected_device].values_cache[i]); break;
+			case HUMIDITY:
+				sprintf(menu_extension_options[i],"Humi: %d %%", device_list[menu_selected_device].values_cache[i]); break;
+			default:
+				sprintf(menu_extension_options[i],"UNK: %d", device_list[menu_selected_device].values_cache[i]);
+		}
+	}
+	sprintf(menu_extension_options[i],"MAC: ");
+	bytes_to_address(device_list[menu_selected_device].mac,menu_extension_options[i]+5);
+	sprintf(menu_extension_options[i+1],"-- BACK --");
+	menu_extensions_count = i+2;
+display_gui_menu("Values", menu_extension_options[0], menu_extensions_count, 0, &menu_entity_selected);
+}
+
+
+void
+menu_devices_selected(int8_t option)
+{
+	
+	if (option < 0)
+	{
+		menu_devices();
+		return;
+	}
+	menu_selected_device = option;
+	menu_device_extension();
+}
+
+
+static char menu_device_options[NUTS_LIST+1][MENU_OPTION_LENGHT];
 
 void 
-test_menu(void)
+menu_devices(void)
 {
-	// Main menu for the test
- 	static const char *options[] = {"About", "Nipples", "Pong", "Alert", NULL};
- 	display_gui_menu("Pick a test", options, 0, &test_menu_selected);
+	// Create menu for all found devices
+	menu_selected_device = -1;
+	uint8_t i;
+	for (i=0; i<NUTS_LIST; i++)
+	{
+		if (valid(i))
+		{
+			switch (device_list[i].class)
+			{
+				case GENERIC_CLASS:
+					sprintf(menu_device_options[i],"Generic"); break;
+				case WEATHERSTATION:
+					sprintf(menu_device_options[i],"Weatherstation"); break;
+				default:
+				sprintf(menu_device_options[i],"UNKNOWN");
+			}
+		} else {
+			break;
+		}
+		
+	}
+	if (i==0)
+	{
+		sprintf(menu_device_options[i],"FOUND SHIT");
+	}
+	
+	//sprintf(menu_device_options[i+1],"-- BACK --");
+	//menu_devices_count = i+2;
+	menu_devices_count = i+1;
+	display_gui_menu("Pick a device", menu_device_options[0],menu_devices_count, 0, &menu_devices_selected);
 }
 
 #ifndef X86
@@ -88,8 +217,12 @@ int main (int argc, char *argv[])
 	button_init();
 #endif
 
+#ifdef X86
+	createFakeDevices();
+#endif
+
 	display_gui_bootup_screen();
-	test_menu();
+	menu_devices();
 
 	//display_draw_image(0,0,(uint8_t*)tum_logo_f2);
 

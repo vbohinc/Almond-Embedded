@@ -56,21 +56,9 @@ extern void squirrel_state_set (uint8_t s)
  * Nut Handling
  * ----------------------------------------------------------------------- */
 
-#define NUTS_LIST 16
-#define EXTENSIONS_LIST 16
 #define POLL_INTERVALL 5
 
-typedef struct _device_info device_info;
-
-struct _device_info
-{
-  char mac[6];
-  uint8_t class;
-  uint8_t extension_types[EXTENSIONS_LIST];
-  uint16_t values_cache[EXTENSIONS_LIST];
-};
-
-static device_info device_list [NUTS_LIST];
+device_info device_list [NUTS_LIST];
 
 static void dump (void) 
 {
@@ -102,8 +90,6 @@ static void dump (void)
     }
 
 }
-
-#define valid(num) (num < NUTS_LIST && (device_list[num].mac[0] != 0 || device_list[num].mac[1] != 0 || device_list[num].mac[2] != 0 || device_list[num].mac[3] != 0 || device_list[num].mac[4] != 0 || device_list[num].mac[5] != 0))
 
 bool bt_cmp (const char *add1, const char *add2)
 {

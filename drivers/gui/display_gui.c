@@ -6,6 +6,8 @@
 #include <SDL.h>
 #endif
 
+#define MAX_MENU_ENTRIES 4
+
 enum display_gui_screens current_screen = display_gui_screen_none;
 bool display_gui_left_available = true;
 bool display_gui_up_available = true;
@@ -58,17 +60,21 @@ display_gui_refresh(void)
 // SELECTION MENU ===============================================================================================
 
 const char* gui_menu_title;					// Menu title
-const char** gui_menu_current_options;		// Array of strings of option titles
+const char* gui_menu_current_options;		// Array of strings of option titles
 int8_t gui_menu_selection;					// Index of currently selected object
 uint8_t gui_menu_option_count;				// Total number of available options
+uint8_t gui_menu_first_option_shown;		// Index of option which is currently shown at position 0 (used for scrolling)
 void(*gui_menu_callback)(int8_t) = NULL;	// Callback function for menu selection or cancellation
 
 void
-display_gui_menu(const char* title, const char** options, const uint8_t default_option, void(*callback)(int8_t))
+display_gui_menu(const char* title, const char* options,uint8_t option_count, const uint8_t default_option, void(*callback)(int8_t))
 {
 	current_screen = display_gui_screen_menu;
+	if (gui_menu_current_options != options)
+		gui_menu_first_option_shown = 0;
 	gui_menu_current_options = options;
 	gui_menu_selection = default_option;
+	gui_menu_option_count = option_count;
 	gui_menu_callback = callback;
 	gui_menu_title = title;
 	display_gui_a_function = "Select";
@@ -82,21 +88,34 @@ display_gui_menu(const char* title, const char** options, const uint8_t default_
 	display_clear();
 	display_draw_rect(0, DISPLAY_FONT0_HEIGHT, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT - 2, false);
 	display_draw_string(0, 0, 0, title);
+	
+	if (default_option<gui_menu_first_option_shown)
+		gui_menu_first_option_shown = default_option;
+	if (default_option>=gui_menu_first_option_shown+MAX_MENU_ENTRIES)
+		gui_menu_first_option_shown=default_option-(MAX_MENU_ENTRIES-1);
 
-	uint8_t option_index = 0;
 	uint8_t current_y = DISPLAY_FONT0_HEIGHT + 2;
-	while(options[option_index] != NULL){
-		display_set_inverted (option_index != gui_menu_selection);
-		display_draw_rect(2, current_y, DISPLAY_WIDTH - 3, current_y + DISPLAY_FONT0_HEIGHT, true);
-		//display_transparency = true;
-		display_set_inverted (!display_get_inverted());
-		display_draw_string(3, current_y, 0, options[option_index]);
-		//display_transparency = false;
-		current_y += DISPLAY_FONT0_HEIGHT + 1;
-		option_index++;
-		display_set_inverted (false);
+	for (uint8_t option_index=gui_menu_first_option_shown;option_index<gui_menu_first_option_shown+4;option_index++)
+	{
+			display_set_inverted (option_index != gui_menu_selection);
+			display_draw_rect(2, current_y, DISPLAY_WIDTH - 3, current_y + DISPLAY_FONT0_HEIGHT, true);
+			//display_transparency = true;
+			display_set_inverted (!display_get_inverted());
+			display_draw_string(3, current_y, 0, options+option_index*MENU_OPTION_LENGHT);
+			//display_transparency = false;
+			current_y += DISPLAY_FONT0_HEIGHT + 1;
+			display_set_inverted (false);
 	}
-	gui_menu_option_count = option_index;
+	display_gui_draw_scrollbar();
+}
+
+void
+display_gui_draw_scrollbar()
+{
+	//if (gui_menu_option_count <=MAX_MENU_ENTRIES)
+	//	return;
+	display_draw_rect(DISPLAY_WIDTH-12, DISPLAY_FONT0_HEIGHT + 3, DISPLAY_WIDTH-2, DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT - 3, true);
+
 }
 
 void
@@ -122,7 +141,7 @@ display_gui_menu_keypress(enum display_gui_keys key)
 	if(gui_menu_selection > gui_menu_option_count - 1) gui_menu_selection = 0;
 	// Redraw menu
 	if (key != display_gui_key_a && key != display_gui_key_b)
-		display_gui_menu(gui_menu_title, gui_menu_current_options, gui_menu_selection, gui_menu_callback);
+		display_gui_menu(gui_menu_title, gui_menu_current_options,gui_menu_option_count, gui_menu_selection, gui_menu_callback);
 }
 
 // BOOTUP SCREEN ======================================================================================

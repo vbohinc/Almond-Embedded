@@ -8,8 +8,8 @@
 #define MOSI 5  // USART TxD
 #define CS   0  // just an output pin
 
-#define SPIPORT PORTD
-#define SPIMOD  SPID
+#define SPIPORT PORTC
+#define SPIMOD  SPIC
 
 uint8_t sd_raw_xmit_byte(uint8_t b)
 {
