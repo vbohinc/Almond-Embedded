@@ -111,10 +111,15 @@ ifeq (spi, $(findstring spi,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/spi/spi.c
 endif
 
+#gui
+ifeq (gui, $(findstring gui,$(ALMONDLIBS)))
+ALMONDLIBS += display pong
+SRC += $(BASE)/drivers/gui/display_draw.c $(BASE)/drivers/gui/display_gui.c $(BASE)/drivers/gui/display_data.c
+endif
+
 #display
 ifeq (display, $(findstring display,$(ALMONDLIBS)))
-ALMONDLIBS += pong
-SRC += $(BASE)/drivers/display/display.c $(BASE)/drivers/display/display_draw.c $(BASE)/drivers/display/display_gui.c $(BASE)/drivers/display/display_data.c
+SRC += $(BASE)/drivers/display/display.c
 endif
 
 #pong
