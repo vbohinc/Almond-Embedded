@@ -231,18 +231,18 @@ int main (void)
   OSC.CTRL = OSC_XOSCEN_bm;
   while ((OSC.STATUS & OSC_XOSCRDY_bm) == 0);
 
-//  OSC.PLLCTRL = OSC_PLLSRC1_bm|OSC_PLLSRC1_bm|OSC_PLLFAC1_bm;
+  OSC.PLLCTRL = OSC_PLLSRC0_bm|OSC_PLLSRC1_bm|OSC_PLLFAC1_bm;
 
   /*external clock aktivieren */
 
-//  OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;
+  OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;
 
   /* Warten bis Oszillator/PLL stabil ist */
-//  while ((OSC.STATUS & (OSC_PLLRDY_bm)) == 0);
+  while ((OSC.STATUS & (OSC_PLLRDY_bm)) == 0);
 
   /* System Clock selection */
   CCP = CCP_IOREG_gc;
-  CLK.CTRL = CLK_SCLKSEL_XOSC_gc;
+  CLK.CTRL = CLK_SCLKSEL_PLL_gc;
 
   /* DFLL ein (Auto Kalibrierung) */
   //DFLLRC32M.CTRL = DFLL_ENABLE_bm;

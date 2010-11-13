@@ -129,6 +129,9 @@ uart_send (const char *data, const uint8_t length)
     }
 }
 
+
+void test (void);
+
 static bool
 send_cmd (const bt_cmd_t command, const char *data)
 {
@@ -200,8 +203,19 @@ send_cmd (const bt_cmd_t command, const char *data)
             return false;
     }
 
-    warn_pgm (PSTR ("CMD SEND: TIMEOUT"));
+	if(command != BT_TEST)
+	    warn_pgm (PSTR ("CMD SEND: TIMEOUT"));
+
     return false;
+}
+
+void test ()
+{
+    comm_mode = BT_RAW;
+    for (uint8_t i = 0; i < 5; i++)
+        if (send_cmd (BT_TEST, NULL))
+            break;
+    comm_mode = BT_CMD;
 }
 
 static void
@@ -260,15 +274,15 @@ bt_init (void)
 
     comm_mode = BT_CMD;
 
-
-    for (uint8_t i = 0; i < 5; i++)
-        if (send_cmd (BT_TEST, NULL))
-            break;
+	test();
 
     send_cmd (BT_CLEAR_ADDRESS, NULL);
+	test();
     send_cmd (BT_SET_SLAVE, NULL);
+	test();
     return true;
 }
+
 
 bool
 bt_set_mode (const bt_mode_t mode)
@@ -283,14 +297,17 @@ bt_set_mode (const bt_mode_t mode)
         if (send_cmd (BT_SET_MASTER, NULL))
 		{
             bt_mode = BLUETOOTH_MASTER;
+			test();
 			send_cmd (BT_DISABLE_AUTOCONNECT, NULL);
 		}
 
     if (mode == BLUETOOTH_SLAVE)
         if (send_cmd (BT_SET_SLAVE, NULL))
+		{
             bt_mode = BLUETOOTH_SLAVE;
+		}
 
-	_delay_ms(2000);
+	test();
     return mode == bt_mode;
 }
 
