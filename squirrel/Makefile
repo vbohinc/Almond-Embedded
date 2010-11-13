@@ -1,5 +1,6 @@
 MCU = atxmega128a1
-F_CPU = 11059200
+#F_CPU = 11059200
+F_CPU = 22118400
 #F_CPU = 2000000
 TARGET = squirrel
 SRC =  squirrel.c util.c ../test/pong.c ../drivers/platform/buttons.c 
