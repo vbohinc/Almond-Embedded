@@ -129,7 +129,7 @@ display_gui_menu_keypress(enum display_gui_keys key)
 
 void
 display_gui_bootup_num_devices(uint8_t devices) {
-    display_draw_char(100,22,0,devices+48);
+    display_draw_char(105,22,0,devices+48);
 }
 
 void
@@ -148,32 +148,33 @@ display_gui_bootup_found_device(const char* device) {
 void
 display_gui_bootup_screen(void)
 {
+    bootup_device_count = 0;
 	display_gui_button_bar_visible = false;
 
 	display_clear();
-    display_gui_bootup_progress(0);
+    display_gui_bootup_progress(bootup_device_count);
     display_draw_string(14,22,0,"Devices Found:");
     display_gui_bootup_num_devices(0);
     display_gui_bootup_found_device("LALAL_DEVICE");
     display_flip();
 
     display_gui_sleep(2000);
-    display_clear();
-    display_draw_string(40,DISPLAY_HEIGHT-15,1,"ALMOND");
-	const uint8_t *almond_logo_frames[] = {almond_logo_f1, almond_logo_f2, almond_logo_f3, almond_logo_f4, NULL};
-	display_draw_animated_image(39, 0, almond_logo_frames, 2, 300);
+    //display_clear();
+    //display_draw_string(40,DISPLAY_HEIGHT-15,1,"ALMOND");
+	//const uint8_t *almond_logo_frames[] = {almond_logo_f1, almond_logo_f2, almond_logo_f3, almond_logo_f4, NULL};
+	//display_draw_animated_image(39, 0, almond_logo_frames, 2, 300);
 
 }
 
 
 bool
 display_gui_bootup_update_callback(const char *name, const uint8_t *address) {
-    display_gui_bootup_num_devices(bootup_device_count)
+    display_gui_bootup_num_devices(bootup_device_count);
     display_gui_bootup_found_device(name);
     //FIXME gimme percentage
     display_gui_bootup_progress(100);
     display_flip();
-    return TRUE;
+    return true;
 }
 
 void
