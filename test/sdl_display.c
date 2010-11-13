@@ -3,7 +3,7 @@
 #include <SDL_gfxPrimitives.h>
 #include <SDL_rotozoom.h>
 
-#include "../drivers/display/display_draw.h"
+#include "../drivers/gui/display_draw.h"
  
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 320

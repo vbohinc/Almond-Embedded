@@ -1,9 +1,10 @@
 MCU = atxmega128a1
-F_CPU = 32000000
+F_CPU = 11059200
+#F_CPU = 2000000
 TARGET = squirrel
-SRC =  squirrel.c util.c 
+SRC =  squirrel.c util.c ../test/pong.c ../drivers/platform/buttons.c 
 BASE = ..
-ALMONDLIBS = display downlink uplink storage rtc
+ALMONDLIBS = gui downlink uplink storage rtc
 EXTRAINCDIRS = ../drivers/ ../protocols/ ../shared/
 TARGETTYPE = SQUIRREL
 ENABLE_DEBUG = 1

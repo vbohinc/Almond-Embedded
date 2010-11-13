@@ -15,10 +15,10 @@
 #endif
 
 #include "../../../drivers/display/display.h"
-#include "../../../drivers/display/display_draw.h"
-#include "../../../drivers/display/display_gui.h"
+#include "../../../drivers/gui/display_draw.h"
+#include "../../../drivers/gui/display_gui.h"
 
-#include "../../../drivers/display/display_data.h"
+#include "../../../drivers/gui/display_data.h"
 #include "../../pong.h"
 
 #ifndef X86

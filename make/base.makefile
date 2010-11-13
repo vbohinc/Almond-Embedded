@@ -111,9 +111,20 @@ ifeq (spi, $(findstring spi,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/spi/spi.c
 endif
 
+#gui
+ifeq (gui, $(findstring gui,$(ALMONDLIBS)))
+ALMONDLIBS += display button pong
+SRC += $(BASE)/drivers/gui/display_draw.c $(BASE)/drivers/gui/display_gui.c $(BASE)/drivers/gui/display_data.c
+endif
+
 #display
 ifeq (display, $(findstring display,$(ALMONDLIBS)))
-SRC += $(BASE)/drivers/display/display.c $(BASE)/drivers/display/display_draw.c $(BASE)/drivers/display/display_gui.c $(BASE)/drivers/display/display_data.c
+SRC += $(BASE)/drivers/display/display.c
+endif
+
+#pong
+ifeq (pong, $(findstring pong,$(ALMONDLIBS)))
+SRC += $(BASE)/test/pong.c
 endif
 
 #button
@@ -373,6 +384,15 @@ AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
 
 
 
+ifeq ($(MCU),atxmega128a1)
+RPROG_FILENAME = ~/Dropbox/ALMOND/remoteprogrammer/xmega
+endif
+ifeq ($(MCU),atmega8535)
+RPROG_FILENAME = ~/Dropbox/ALMOND/remoteprogrammer/mega
+endif
+
+
+
 #---------------- Debugging Options ----------------
 
 # For simulavr only - target MCU frequency.
@@ -518,6 +538,9 @@ gccversion :
 program: $(TARGET).hex $(TARGET).eep
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
 
+rprogram: $(TARGET).hex $(TARGET).eep
+	cp $(TARGET).hex $(RPROG_FILENAME).hex
+	cp $(TARGET).eep $(RPROG_FILENAME).eep
 
 # Generate avr-gdb config/init file which does the following:
 #     define the reset signal, load the target file, connect to target, and set 

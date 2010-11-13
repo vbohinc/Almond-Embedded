@@ -42,25 +42,18 @@ const uint8_t oversampling_setting = 0;
 
 uint16_t get_word(const uint8_t word)
 {
-  //debug_pgm(PSTR("twi_connect"));
   twi_connect(WRITE,0x77);
-  //debug_pgm(PSTR("twi_write"));
   twi_write(word);
-  //debug_pgm(PSTR("twi_start"));
   twi_restart();
-  //debug_pgm(PSTR("twi_connect"));
   twi_connect(READ,0x77);
   uint8_t temp;
   uint16_t result;
   twi_read(&temp,ACK);
-  //byte_to_hex(temp);
   result = (((uint16_t)temp)<<8);
 
   twi_read(&temp,NACK);
-  //byte_to_hex(temp);
   result += temp;
 
-//debug_pgm(PSTR("twi_stop"));
   twi_stop();
 
   return result;
@@ -76,7 +69,6 @@ void start_converison(const uint8_t register_value)
 
 void get_conversion_data(void)
 {
-  //debug_pgm(PSTR("condata1"));
   {
     struct temprature_conversion_data temptable;
     //temprature
@@ -84,7 +76,7 @@ void get_conversion_data(void)
     temptable.AC6 = get_word(0xB4);
     temptable.MC  = get_word(0xBC);
     temptable.MD  = get_word(0xBE);
-    //eeprom_write_block(&temptable,&tempconv,sizeof(struct temprature_conversion_data));
+    eeprom_write_block(&temptable,&tempconv,sizeof(struct temprature_conversion_data));
   }
   //pressure
   {
@@ -95,7 +87,7 @@ void get_conversion_data(void)
     presstable.AC4 = get_word(0xB0);
     presstable.B1  = get_word(0xB6);
     presstable.B2  = get_word(0xB8);
-    //eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
+    eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
   }
   //debug_pgm(PSTR("condata2"));
 }
@@ -159,11 +151,11 @@ bmp_data_t bmp085_get_data()
 void init_bmp085_sensor()
 {
   twi_init();
-  //uint8_t data_availible = eeprom_read_byte(&have_bmp_conversion_data);
-  //if(data_availible == 0)
+  uint8_t data_availible = eeprom_read_byte(&have_bmp_conversion_data);
+  if(data_availible == 0)
   {
     get_conversion_data();
-    //eeprom_write_byte(&have_bmp_conversion_data,1);
+    eeprom_write_byte(&have_bmp_conversion_data,1);
   }
 }
 

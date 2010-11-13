@@ -100,6 +100,7 @@ debug_pgm(PSTR("error connect1 twi"));
 #elif __AVR_ARCH__ >= 100
   TWI.MASTER.ADDR = (addr<<1)|mode;
   while((TWI.MASTER.STATUS & (1<<6)) == 0); //wait for WIF
+  byte_to_hex(TWI.MASTER.STATUS);
   return 0;
 #endif
 }
@@ -141,6 +142,7 @@ uint8_t twi_read(uint8_t* data, enum twi_send_ack ack)
     return 1;
   }
 #elif __AVR_ARCH__ >= 100
+  while((TWI.MASTER.STATUS & (1<<7)) == 0); //wait for RIF
   TWI.MASTER.CTRLC = TWI.MASTER.CTRLC | ((ack==1)<<2);
   *data = TWI.MASTER.DATA;
   return 0;
