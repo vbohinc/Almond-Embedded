@@ -139,8 +139,11 @@ static void update_id (uint8_t num)
   
   device_list[num].class = downlink_get_nut_class (&err);
 
-  for (uint8_t j = 0; j < EXTENSIONS_LIST && !err; j++)
+  uint8_t j;
+  for (j = 0; j < EXTENSIONS_LIST && !err; j++)
     device_list[num].extension_types[j] = downlink_get_extension_class(j, &err);
+  for (j; j<EXTENSIONS_LIST; j++)
+	device_list[num].extension_types[j] = INVALID;
 }
 
 static void update_values (uint8_t num) 
@@ -166,13 +169,19 @@ static void update_device_entry (const char *address)
   for (uint8_t k = 0; k < NUTS_LIST; k++)
     {
       if (!valid (k))
-        memcpy (&device_list[k], (void *) address, 6);
+        memcpy (&device_list[k], (void *) address, 12);
       else if (!bt_cmp (device_list[k].mac, address))
         break;
         
       if (!bt_connect (device_list[k].mac) && downlink_is_nut (&err)) 
         {
            error_pgm (PSTR("Connection couldn't be established"));
+           device_list[k].mac[0] = 0;
+           device_list[k].mac[1] = 0;
+           device_list[k].mac[2] = 0;
+           device_list[k].mac[3] = 0;
+           device_list[k].mac[4] = 0;
+           device_list[k].mac[5] = 0; 
            return;
         }
           
@@ -194,18 +203,25 @@ static void update_device_entry (const char *address)
 
 void downlink_update(void)
 {
-  char result[8][6];
+  char result[8][12];
 
-  // FIXME: UI
+  for (uint8_t i = 0; i < 8; i++)
+    for (uint8_t j = 0; j < 12; j++)
+      result[i][j] = 0;
+  
+
   if (bt_discover (result, NULL))
     for (uint8_t i = 0; i < 8; i++)
       {
-        for (uint8_t j = 0; j < 6; j++)
-          error_putc (result[i][j] + 48);
+        for (uint8_t j = 0; j < 12; j++)
+          error_putc (result[i][j]);
+
         update_device_entry (result[i]);
       }
   else
-    debug_pgm (PSTR("FAIL!!!"));
+    debug_pgm (PSTR("FAIL!!!"));      
+
+  while (true);
 }
 
 /* -----------------------------------------------------------------------
@@ -250,10 +266,10 @@ int main (void)
   //debug_pgm(PSTR("Display Init"));          
   display_init ();
   
-  debug_pgm(PSTR("INIT"));
+  debug_pgm(PSTR("Linus arbeite!!"));
   //debug_pgm(PSTR("Bluetooth Init"));          
   for (uint8_t i = 0; i < NUTS_LIST; i++)
-    for (uint8_t j = 0; j < 6; j++)
+    for (uint8_t j = 0; j < 12; j++)
       device_list[i].mac[j] = 0;
   bt_init();
   squirrel_state_set (MASTER);
@@ -274,12 +290,18 @@ int main (void)
         }
       else if (state == SLAVE || state == SLAVE_BUSY)
         {
+
+          bt_set_mode (BLUETOOTH_SLAVE);
           // We wait for connections from the backend...
           uint8_t data[UPLINK_PACKAGE_LENGTH];
           uint8_t length = UPLINK_PACKAGE_LENGTH;
       
-          if (bt_receive (data, &length, 0))
-            uplink_process_pkg (data, length);
+          if (bt_receive (data, &length, 0)) 
+            {
+              byte_to_hex (length);
+              uplink_process_pkg (data, length);
+
+            }
             
           //if (state == SLAVE)
           //  squirrel_state_set (MASTER);
