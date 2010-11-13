@@ -142,7 +142,7 @@ static void update_id (uint8_t num)
   uint8_t j;
   for (j = 0; j < EXTENSIONS_LIST && !err; j++)
     device_list[num].extension_types[j] = downlink_get_extension_class(j, &err);
-  for (j; j<EXTENSIONS_LIST; j++)
+  for (; j<EXTENSIONS_LIST; j++)
 	device_list[num].extension_types[j] = INVALID;
 }
 

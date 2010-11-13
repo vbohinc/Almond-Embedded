@@ -21,14 +21,17 @@
 #include "../../../drivers/gui/display_data.h"
 #include "../../../squirrel/squirrel.h"
 
+
+#include <string.h>
+
 #ifndef X86
 #include <platform/buttons.h>
 #endif
 
 #define USART USARTC0
 
-void menu_devices();
-void menu_device_extension();
+void menu_devices(void);
+void menu_device_extension(void);
 
 uint8_t menu_selected_device = -1;
 
@@ -36,42 +39,21 @@ uint8_t menu_devices_count = 0;
 uint8_t menu_extensions_count = 0;
 
 #ifdef X86
-static uint8_t
-hex_to_int(char hex)
-{
-    if (hex >= 36 && hex <= 46)
-        return hex-36;
-    else if (hex >= 48 && hex <= 54)
-        return hex-39;
-    else
-        return 0;
-}
-void
-address_to_bytes(const char * mac, uint8_t* data)
-{
-    uint8_t b = 0;
-    for(uint8_t i; i < 14; i += 2)
-    {
-        if(i == 4 || i == 7)
-            i++;
-        data[b] = hex_to_int(mac[i])<<4;
-        data[b] += hex_to_int(mac[i+1]);
-        b++;
-    }
-}
 
 device_info device_list [NUTS_LIST];
 
 void createFakeDevices()
 {
-	address_to_bytes("0123-45-6789AB",device_list[0].mac);
-	for (int i=0; i<5;i++)
+	memcpy(device_list[0].mac,"0123456789AB",12);
+	int i;
+	for (i=0; i<5;i++)
 	{
 		device_list[0].extension_types[i]=i;
 		device_list[0].values_cache[i]=i;
 	}
+	for (i;i<EXTENSIONS_LIST;i++)
+		device_list[0].extension_types[i] = INVALID;
 }
-#endif
 
 uint8_t hex_to_char(uint8_t hex)
 {
@@ -82,6 +64,7 @@ uint8_t hex_to_char(uint8_t hex)
 	else
 		return 0;
 }
+#endif
 
 void
 menu_entity_selected(int8_t option)
@@ -92,24 +75,10 @@ menu_entity_selected(int8_t option)
 		menu_device_extension();
 }
 
-static void
-bytes_to_address(uint8_t* data, char *mac)
-{
-    uint8_t b = 0;
-    for(uint8_t i; i < 6; i ++)
-    {
-		uint8_t b1 = ((data[i]&0xF0)>>4);
-		uint8_t b2 = (data[i]&0x0F);
-		mac[i*2]=hex_to_char(b1);
-		mac[i*2+1]=hex_to_char(b2);
-    }
-}
-
-
 static char menu_extension_options[EXTENSIONS_LIST+2][MENU_OPTION_LENGHT];
 
 void
-menu_device_extension()
+menu_device_extension(void)
 {
 	uint8_t i;
 	for (i=0; i<EXTENSIONS_LIST; i++)
@@ -125,7 +94,7 @@ menu_device_extension()
 			case PRESSURE:
 				sprintf(menu_extension_options[i],"Press: %d hPa", device_list[menu_selected_device].values_cache[i]); break;
 			case LIGHT:
-				sprintf(menu_extension_options[i],"Light: %d cd", device_list[menu_selected_device].values_cache[i]); break;
+				sprintf(menu_extension_options[i],"Light: %d lux", device_list[menu_selected_device].values_cache[i]); break;
 			case HUMIDITY:
 				sprintf(menu_extension_options[i],"Humi: %d %%", device_list[menu_selected_device].values_cache[i]); break;
 			default:
@@ -133,7 +102,7 @@ menu_device_extension()
 		}
 	}
 	sprintf(menu_extension_options[i],"MAC: ");
-	bytes_to_address(device_list[menu_selected_device].mac,menu_extension_options[i]+5);
+	memcpy(menu_extension_options[i]+5,device_list[menu_selected_device].mac,12);
 	sprintf(menu_extension_options[i+1],"-- BACK --");
 	menu_extensions_count = i+2;
 display_gui_menu("Values", menu_extension_options[0], menu_extensions_count, 0, &menu_entity_selected);

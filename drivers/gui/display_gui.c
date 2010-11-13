@@ -131,7 +131,6 @@ display_gui_draw_scrollbar()
 	if (bar_size < 2)
 		bar_size = 2;
 	uint8_t pos = (uint8_t)(gui_menu_first_option_shown/(double)gui_menu_option_count*height);
-	printf("size:%d,%d\n",bar_size,pos);
 
 	display_draw_rect(DISPLAY_WIDTH-width+2, DISPLAY_FONT0_HEIGHT + pos, DISPLAY_WIDTH, DISPLAY_FONT0_HEIGHT + 1 + pos + bar_size, true);
 

@@ -57,7 +57,7 @@ void display_gui_menu(const char* title, const char* options,uint8_t option_coun
 // Handle keypress events for the menu
 void display_gui_menu_keypress(enum display_gui_keys key);
 // Draw scrollbar if not enough space on screen
-void display_gui_draw_scrollbar();
+void display_gui_draw_scrollbar(void);
 
 // Display a full screen image
 void display_gui_image(const uint8_t* image, void(*callback)(void));

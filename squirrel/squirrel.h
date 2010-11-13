@@ -25,7 +25,7 @@ extern bool    squirrel_log       (uplink_package *p);
 
 struct _device_info
 {
-  char mac[6];
+  char mac[12];
   uint8_t class;
   uint8_t extension_types[EXTENSIONS_LIST];
   uint16_t values_cache[EXTENSIONS_LIST];
