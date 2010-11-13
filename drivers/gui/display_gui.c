@@ -28,7 +28,7 @@ display_gui_keypress(enum display_gui_keys key)
 			/* Omit key press */ break;
 		case display_gui_screen_bootup:
 			break;
-		case display_gui_screen_menu: 
+		case display_gui_screen_menu:
 			display_gui_menu_keypress(key);	break;
 		case display_gui_screen_fullscreenimage:
 			display_gui_image_keypress(key); break;
@@ -43,7 +43,7 @@ display_gui_keypress(enum display_gui_keys key)
 	}
 }
 
-void 
+void
 display_gui_refresh(void)
 {
 	switch(current_screen) {
@@ -52,7 +52,7 @@ display_gui_refresh(void)
 		default:
 			if(display_gui_button_bar_visible) display_gui_draw_button_bar();
 	}
-	
+
 }
 
 // SELECTION MENU ===============================================================================================
@@ -78,16 +78,16 @@ display_gui_menu(const char* title, const char** options, const uint8_t default_
 	display_gui_right_available = false;
 	display_gui_down_available = true;
 	display_gui_button_bar_visible = true;
-	
+
 	display_clear();
 	display_draw_rect(0, DISPLAY_FONT0_HEIGHT, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT - 2, false);
 	display_draw_string(0, 0, 0, title);
-	
+
 	uint8_t option_index = 0;
 	uint8_t current_y = DISPLAY_FONT0_HEIGHT + 2;
 	while(options[option_index] != NULL){
 		display_set_inverted (option_index != gui_menu_selection);
-		display_draw_rect(2, current_y, DISPLAY_WIDTH - 3, current_y + DISPLAY_FONT0_HEIGHT, true);	
+		display_draw_rect(2, current_y, DISPLAY_WIDTH - 3, current_y + DISPLAY_FONT0_HEIGHT, true);
 		//display_transparency = true;
 		display_set_inverted (!display_get_inverted());
 		display_draw_string(3, current_y, 0, options[option_index]);
@@ -128,22 +128,52 @@ display_gui_menu_keypress(enum display_gui_keys key)
 // BOOTUP SCREEN ======================================================================================
 
 void
+display_gui_bootup_num_devices(uint8_t devices) {
+    display_draw_char(100,22,0,devices+48);
+}
+
+void
+display_gui_bootup_progress(uint16_t progress) {
+    display_gui_progress_bar(14, 11, 100, 10, progress);
+}
+
+void
+display_gui_bootup_found_device(const char* device) {
+    /*display_set_inverted (true);
+	display_draw_rect(0, 31, DISPLAY_WIDTH, DISPLAY_HEIGHT - 30, true);
+	display_set_inverted (false);*/
+	display_draw_string(14,41,0,device);
+}
+
+void
 display_gui_bootup_screen(void)
 {
 	display_gui_button_bar_visible = false;
-	display_draw_rect(0,0, DISPLAY_WIDTH, DISPLAY_HEIGHT, true);
-	display_set_inverted (true);
-	display_gui_bootup_line("ALMOND Squirrel v0.1 prealpha\n", 500);
-	display_gui_bootup_line("Initializing storage\n", 100);
-	display_gui_bootup_line("Detecting tits...\n", 100);
-	display_gui_bootup_line("Destroying 'pong'...\n", 100);
-	display_gui_bootup_line("Freaking out...\n", 100);
-	display_set_inverted (false);
+
 	display_clear();
-	
-	display_draw_string(40, DISPLAY_HEIGHT - 15, 1, "ALMOND");
+    display_gui_bootup_progress(0);
+    display_draw_string(14,22,0,"Devices Found:");
+    display_gui_bootup_num_devices(0);
+    display_gui_bootup_found_device("LALAL_DEVICE");
+    display_flip();
+
+    display_gui_sleep(2000);
+    display_clear();
+    display_draw_string(40,DISPLAY_HEIGHT-15,1,"ALMOND");
 	const uint8_t *almond_logo_frames[] = {almond_logo_f1, almond_logo_f2, almond_logo_f3, almond_logo_f4, NULL};
 	display_draw_animated_image(39, 0, almond_logo_frames, 2, 300);
+
+}
+
+
+bool
+display_gui_bootup_update_callback(const char *name, const uint8_t *address) {
+    display_gui_bootup_num_devices(bootup_device_count)
+    display_gui_bootup_found_device(name);
+    //FIXME gimme percentage
+    display_gui_bootup_progress(100);
+    display_flip();
+    return TRUE;
 }
 
 void
@@ -170,7 +200,7 @@ display_gui_image(const uint8_t* image, void(*callback)(void))
 	display_gui_right_available = false;
 	display_gui_down_available = false;
 	display_gui_button_bar_visible = true;
-	
+
 	display_clear();
 	display_draw_image(0, 0, image);
 }
@@ -197,10 +227,10 @@ display_gui_alert(const char* title, const char* message, const char* button1, c
 	display_gui_right_available = false;
 	display_gui_down_available = false;
 	display_gui_button_bar_visible = true;
-		
+
 	display_clear();
 	display_draw_rect(0, DISPLAY_FONT0_HEIGHT, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT - 2, false);
-	
+
 	display_draw_string(0,0,0,title);
 	display_draw_string(3,DISPLAY_FONT0_HEIGHT + 3,0, message);
 }
@@ -237,7 +267,7 @@ display_gui_about(void(*callback)(void))
 	display_clear();
 	display_draw_string_delayed(30, 30, 0, "starring", 100);
 	display_gui_sleep(1000);
-	
+
 	static const uint8_t *images[] = {team_salomon, team_linus, team_maximilian, team_sean, team_stefan, team_matthias, team_pascal, team_thomas, team_christian, NULL};
 	static const char *names[] = {"Salomon", "Linus", "Maximilian", "Sean", "Stefan", "Matthias", "Pascal", "Thomas", "Christian", NULL};
 	static const char *assignments[] = {"The Boss!", "Rumgeloete", "Grinsemaxi", "Schon", "Ultrafanta", "Display", "Rumgammeln", "Gar gar nix", "Keine Ahnung", NULL};
@@ -248,7 +278,7 @@ display_gui_about(void(*callback)(void))
 		display_draw_image(0, 0, images[current_person]);
 		display_draw_string_delayed(45, 20, 2, names[current_person], CREDITS_CHARACTER_DELAY);
 		display_draw_string_delayed(45, 38, 0, assignments[current_person], CREDITS_CHARACTER_DELAY);
-		display_gui_sleep(CREDITS_DELAY);	
+		display_gui_sleep(CREDITS_DELAY);
 		current_person++;
 	}
 	gui_about_callback();
@@ -257,7 +287,7 @@ display_gui_about(void(*callback)(void))
 void
 display_gui_keypress_about(enum display_gui_keys key)
 {
-	
+
 }
 
 // UTILITIES ==========================================================================================
@@ -317,7 +347,7 @@ display_gui_draw_button_bar(void)
 	if(display_gui_down_available){
 		display_draw_image(current_x, BUTTON_INFO_BAR_TOP + 1, arrow_down);
 	}
-	
+
 	display_set_inverted (false);
 }
 
