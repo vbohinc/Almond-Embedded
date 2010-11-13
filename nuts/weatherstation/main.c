@@ -97,7 +97,7 @@ void set_value(uint8_t id, uint16_t value)
 {
   switch (id)
     {
-    case LED: // LED
+    case 4: // LED
       if (value == 0)
         LED1_PORT &= ~(1<<LED1_PIN);
       else
@@ -168,10 +168,10 @@ int main (void)
 	}
 		else
 	{
-		for (uint8_t i=0; i<5; i++)
+		for (uint8_t i=0; i<3; i++)
 		{
 			set_value(LED,1);
-			_delay_ms(500);
+			_delay_ms(300);
 			set_value(LED,0);
 			_delay_ms(50);
 		}
@@ -187,12 +187,11 @@ int main (void)
       
       if (bt_receive (data, &length, 0))
         {
-         set_value(LED,1);
-	_delay_ms(10);
-          set_value(LED,0);
-	_delay_ms(10);
+      /*   set_value(LED,1);
+	_delay_ms(10);*/
           downlink_process_pkg (data, length);
-
+      /*    set_value(LED,0);
+	_delay_ms(10);*/
         }
       
       if (sleep > BLUETOOTH_START_TIME)
