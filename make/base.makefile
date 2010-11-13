@@ -383,7 +383,7 @@ ifeq ($(MCU),atxmega128a1)
 RPROG_FILENAME = ~/Dropbox/ALMOND/remoteprogrammer/xmega
 endif
 ifeq ($(MCU),atmega8535)
-RPROG_FILENAME = ~/Dropbox/ALMOND/remoteprogrammer/xmega
+RPROG_FILENAME = ~/Dropbox/ALMOND/remoteprogrammer/mega
 endif
 
 
