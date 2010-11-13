@@ -94,8 +94,8 @@ static void dump (void)
 bool bt_cmp (const char *add1, const char *add2)
 {
   uint8_t i;
-  for (i = 0; i < 6 && add1[i] == add2[i]; i++);
-  return (i == 6);
+  for (i = 0; i < 12 && add1[i] == add2[i]; i++);
+  return (i == 12);
 }
 
 bool squirrel_list (uint8_t num, uplink_payload_list *p)
@@ -263,14 +263,12 @@ int main (void)
   error_init ();
   sei ();
 
-  //debug_pgm(PSTR("Display Init"));          
   display_init ();
   
-  debug_pgm(PSTR("Linus arbeite!!"));
-  //debug_pgm(PSTR("Bluetooth Init"));          
   for (uint8_t i = 0; i < NUTS_LIST; i++)
     for (uint8_t j = 0; j < 12; j++)
       device_list[i].mac[j] = 0;
+
   bt_init();
   squirrel_state_set (MASTER);
             
