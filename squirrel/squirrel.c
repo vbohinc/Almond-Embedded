@@ -103,7 +103,7 @@ static void dump (void)
 
 }
 
-#define valid(num) (num < NUTS_LIST && (device_list[num].mac[0] != 0 || device_list[num].mac[1] != 0 || device_list[num].mac[2] != 0 || device_list[num].mac[3] != 0 || device_list[num].mac[4] != 0 || device_list[num].mac[5] != 0) || device_list[num].mac[6] != 0) || device_list[num].mac[7] != 0) || device_list[num].mac[8] != 0) || device_list[num].mac[9] != 0) || device_list[num].mac[10] != 0) || device_list[num].mac[11] != 0))
+#define valid(num) (num < NUTS_LIST && (device_list[num].mac[0] != 0 || device_list[num].mac[1] != 0 || device_list[num].mac[2] != 0 || device_list[num].mac[3] != 0 || device_list[num].mac[4] != 0 || device_list[num].mac[5] != 0 || device_list[num].mac[6] != 0 || device_list[num].mac[7] != 0 || device_list[num].mac[8] != 0 || device_list[num].mac[9] != 0 || device_list[num].mac[10] != 0 || device_list[num].mac[11] != 0))
 
 bool bt_cmp (const char *add1, const char *add2)
 {
