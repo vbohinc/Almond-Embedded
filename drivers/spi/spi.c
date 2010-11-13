@@ -21,8 +21,10 @@ uint8_t sd_raw_xmit_byte(uint8_t b)
 	while(!(SPIMOD.STATUS & SPI_IF_bm)) {
 
 	}
+debug_pgm(PSTR("transmission complete"));
 	/* Read received data. */
 	uint8_t result = SPIMOD.DATA;
+	byte_to_hex(result);
 
 	return(result);
 }

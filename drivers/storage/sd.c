@@ -13,12 +13,12 @@ void sd_get_response(uint8_t response_type);
 
 void sd_enable(void)
 {
-	clear_bit(PORTD.OUT, 7);
+	clear_bit(PORTD.OUT, 0);
 }
 
 void sd_disable(void)
 {
-	set_bit(PORTD.OUT, 7);
+	set_bit(PORTD.OUT, 0);
 }
 
 void sd_init(void)
@@ -38,7 +38,7 @@ void sd_init(void)
 	for (uint8_t i = 0; i < 10; ++i)
 	{
 		//spi_receive_byte();
-		spi_send_byte(0x0F);
+		//spi_send_byte(0xFF);
 	}
 
 	sd_enable();
