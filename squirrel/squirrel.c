@@ -258,29 +258,24 @@ int main (void)
   //debug_pgm(PSTR("Display Init"));          
   display_init ();
   
+  debug_pgm(PSTR("INIT"));
   //debug_pgm(PSTR("Bluetooth Init"));          
   for (uint8_t i = 0; i < NUTS_LIST; i++)
     for (uint8_t j = 0; j < 6; j++)
       device_list[i].mac[j] = 0;
   bt_init();
-  bt_set_mode (BLUETOOTH_MASTER);
-  char result[8][6];
-  bt_discover(result,NULL);
-
-
-  
-  //squirrel_state_set (SLAVE);
-  //debug_pgm(PSTR("Mainloop"));
+  squirrel_state_set (MASTER);
             
   while (true)
     {
       display_flip ();
-	  /*
       if (state == MASTER)
         {
+  		  debug_pgm(PSTR("fubar"));
           assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
 		  _delay_ms(2000);
           downlink_update ();
+  		  debug_pgm(PSTR("whoa?"));
           dump ();
           assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");
           squirrel_state_set (SLAVE);
@@ -296,7 +291,7 @@ int main (void)
             
           //if (state == SLAVE)
           //  squirrel_state_set (MASTER);
-        }*/
+        }
     }
 }
 

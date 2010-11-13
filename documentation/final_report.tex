@@ -40,6 +40,8 @@ Um die Kommunikation zwischen den Nuts und dem Squirrel, sowie des Squirrels zum
 Das Downlinkprotokoll dient zur Kommunikation der Nuts mit dem Squirrel.
 	\subsection{Uplink}
 Das Uplinkprotokoll dient zur Kommunikation zwischen dem Squirrel und dem Backend.
+
+\section{Interfaces}
 	\subsection{UART}
 	\subsection{SPI}
 
@@ -47,10 +49,36 @@ Das Uplinkprotokoll dient zur Kommunikation zwischen dem Squirrel und dem Backen
 	\subsection{Squirrel}
 %realtimeclock erwähnen und tasten
 	\subsubsection{Bluetooth}
-	\subsubsection{Display}
-	\subsubsection{SD-Kartenleser}
-	\subsubsection{}
-	\subsection{Nut}
+Das Bluetooth-Modul ist über UART mit dem XMEGA-Prozessor verbunden. Im Bluetooth-Stack gibt es zwei Modi. \\
+Zun einen den Command-Modus, welcher dazu dient Befehle direkt an das Bluetooh-Modul zu senden.\\
+Desweiteren gibt es den Communication-Modus der dann die tatsächlichen Bluetooth-Befehle versendet.\\
+Die empfangenen Daten werden in einer Fifo-Datenstruktur gespeichert.\\
+
+
+\subsubsection{Display}
+\subsubsubsection{SDL-Emulation}
+Um die Funktionsfähigkeit des Display-Treibers auch ohne Hardwarezugriff testen zu können, wurde eine SDL-Emulation geschrieben.\\
+Sie bietet die Möglichkeit in einem SDL-Fenster die Ausgabe ähnlich wie auf dem Diplay auszugeben.\\
+Somit konnten alle GUI-Libary-Ausgaben bereits im voraus getestet werden und mehrere Programmierer in die Entwicklung von neuen GUI-Anwendungen einbezogen werden, ohne durch die Verfügbarkeit der Hardware eingeschränkt zu sein.\\
+Um die SDL-Emulation zu Nutzen, muss bei der Compilation des Display-C-Dateeien das define x86 gesetzt werden.\\
+
+\subsubsection{SD-Kartenleser}
+Um den Nutzer die Möglichkeit zu geben, Messendatenprotokolle direkt aus der Squirrel unter Umgehung des Backends zu erhalten.
+Damit die Daten direkt in der Gewohnten Betriebsystemumgebung am PC des Anwenders auslesen zu können, ist es notwendig die Daten in einem weit verbreiteten Dateisystem abzulegen.\\
+Hierbei fiel die Wahl auf das FAT16 System, da es gegenüber FAT32 eine einfachere Struktur besitzt und trotzdem Speicherkarten bis 2GB unterstützt. Somit allen Anforderungen gerecht werden.\\
+Die Squirrel verfügt über die Fähigkeit Dateien zu
+\begin{itemize}
+\item öffnen
+\item lesen
+\item schreiben
+\item löschen
+\end{itemize}
+Außerdem können Verzeichnisse angelegt, entfernt und durchsucht werden.\\
+
+
+
+\subsubsection{}
+\subsection{Nut}
 
 
 \section{Wetterstation}
@@ -63,6 +91,18 @@ Das Uplinkprotokoll dient zur Kommunikation zwischen dem Squirrel und dem Backen
 		\subsubsection Lichtstärke (Fotowiderstand)
 		\subsubsection Fechtigkeitssensor
 
+		
+\section{Backend}
+Über Uplinkprotokoll kommuniziert die Squirrel mit dem Backend.
+
+\subsubsection Daemon
+Der Daemon ist ein in Java geschriebenes Programm, welches mit Hilfe der Bluecove-Libary die Aktivitäten des Squirrels - und somit des gesamten Almond-Systems - überwacht.\\
+Die anfallenden Log-Daten werden in einer SQLite-Datenbank gespeichert.\\
+Außerdem überprüft es in der Datenbank, ob mit Hilfe des Web-Interfaces Aktoren gesteuert werden. Ist dies der Fall, werden die entsprechenden Kommandos direkt über Bluetooth mit dem Downlinkprotokoll - unter Umgehung des Squirrels - an die Nuts gesendet.\\
+
+\subsubsection Datenbank
+\subsubsection Web-Server
+		
 \section{Team}
 
 \section{Entwicklungeschichte}
@@ -71,12 +111,16 @@ Zunächst wurde zum Entwickeln des Display-Treibers auf eine Test-Hardware zurück
 Das ursprünglich in einem DVB-T Receiver eingesetzte Board verfügt jedoch nur nur über den schwächeren ATMEGA 8515, welcher über weniger Speicher verfügt.\\
 Daher wurde zunächst ein Programm entwickelt, das nur wenig Platz verbraucht und trotzdem die notwendige Flexibilität bietet, beliebige Inhalte anzuzeigen.\\
 Um Buchstaben komfortabel für dieses Programm codieren zu können, wurde ein Hilfsprogramm in Java erstellt, welches eine Grafische Oberfläche bietet zum Entwerfen der Buchstaben.\\
-Im Laufe der Entwicklung stellte sich jedoch heraus, dass nicht nur eine Darstellung von Buchstaben an bestimmten fixen Plätzen auf dem Display benötigt wird, sondern eine noch flexiblere bitweise Ansteuerung.\\
-Da die endültige Hardware des Squirrels über mehr Speicher verfügt, war dies durch eine Neuschreiben weiter Teile des Display Treibers möglich. Um das den weitgehen neuen Display Treiber mit verschiedenen Schriftarten versorgen zu können, wurde ein Perl-Skript geschrieben, welches die Standardfonts der GD-Libary konvertieren kann.\\
+Im Laufe der Entwicklung stellte sich jedoch heraus, dass nicht nur eine Darstellung von Buchstaben an bestimmten fixen Plätzen auf dem Display benötigt wird, sondern eine noch flexiblere pixelweise Ansteuerung.\\
+Da die endültige Hardware des Squirrels über mehr Speicher verfügt, war dies durch ein Neuschreiben vieler Teile des Display-Treibers möglich.\\
+ Um das den weitgehen neuen Display Treiber mit verschiedenen Schriftarten versorgen zu können, wurde ein Perl-Skript geschrieben, welches die Standardfonts der GD-Libary konvertieren kann.\\
 
 
 
 \subsection{Bluetooth}
+Zunächst wurde ein eher monolithischer Bluetooth-Stack geschrieben, dies führte jedoch zu einem Komplexitätsproblem.\\
+Folglich wurde ein neuer leichtgewichtigerer und übersichtlicher Stack entworfen.
+
 
 \section{Quellenverzeichnis}
 
