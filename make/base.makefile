@@ -113,7 +113,13 @@ endif
 
 #display
 ifeq (display, $(findstring display,$(ALMONDLIBS)))
+ALMONDLIBS += pong
 SRC += $(BASE)/drivers/display/display.c $(BASE)/drivers/display/display_draw.c $(BASE)/drivers/display/display_gui.c $(BASE)/drivers/display/display_data.c
+endif
+
+#pong
+ifeq (pong, $(findstring pong,$(ALMONDLIBS)))
+SRC += $(BASE)/test/pong.c
 endif
 
 #button
