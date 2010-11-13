@@ -246,7 +246,9 @@ bt_init (void)
     comm_mode = BT_RAW;
 
     _delay_ms (2000);
-    uart_send ("ATE1\r", 5);
+	char* tmpstring[6];
+	strcpy_P(PSTR("ATE1\r"),tmpstring);
+    uart_send (tmpstring, 5);
 
 
     _delay_ms (50);
