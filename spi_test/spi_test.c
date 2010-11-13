@@ -3,7 +3,7 @@
 #include <avr/interrupt.h>
 #include <avr/delay.h>
 
-#include "../drivers/display/display.h"
+#include <display/display.h>
 
 
 #define NUM_BYTES 254
