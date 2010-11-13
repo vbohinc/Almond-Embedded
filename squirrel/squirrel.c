@@ -213,7 +213,13 @@ void downlink_update(void)
   // FIXME: UI
   if (bt_discover (result, NULL))
     for (uint8_t i = 0; i < 8; i++)
-      update_device_entry (result[i]);
+      {
+        for (uint8_t j = 0; j < 6; j++)
+          error_putc (result[i][j] + 48);
+        update_device_entry (result[i]);
+      }
+  else
+    debug_pgm (PSTR("FAIL!!!"));
 }
 
 /* -----------------------------------------------------------------------
@@ -231,18 +237,18 @@ int main (void)
   OSC.CTRL = OSC_XOSCEN_bm;
   while ((OSC.STATUS & OSC_XOSCRDY_bm) == 0);
 
-//  OSC.PLLCTRL = OSC_PLLSRC1_bm|OSC_PLLSRC1_bm|OSC_PLLFAC1_bm;
+  OSC.PLLCTRL = OSC_PLLSRC0_bm|OSC_PLLSRC1_bm|OSC_PLLFAC1_bm;
 
   /*external clock aktivieren */
 
-//  OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;
+  OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;
 
   /* Warten bis Oszillator/PLL stabil ist */
-//  while ((OSC.STATUS & (OSC_PLLRDY_bm)) == 0);
+  while ((OSC.STATUS & (OSC_PLLRDY_bm)) == 0);
 
   /* System Clock selection */
   CCP = CCP_IOREG_gc;
-  CLK.CTRL = CLK_SCLKSEL_XOSC_gc;
+  CLK.CTRL = CLK_SCLKSEL_PLL_gc;
 
   /* DFLL ein (Auto Kalibrierung) */
   //DFLLRC32M.CTRL = DFLL_ENABLE_bm;
@@ -258,29 +264,24 @@ int main (void)
   //debug_pgm(PSTR("Display Init"));          
   display_init ();
   
+  debug_pgm(PSTR("INIT"));
   //debug_pgm(PSTR("Bluetooth Init"));          
   for (uint8_t i = 0; i < NUTS_LIST; i++)
     for (uint8_t j = 0; j < 6; j++)
       device_list[i].mac[j] = 0;
   bt_init();
-  bt_set_mode (BLUETOOTH_MASTER);
-  char result[8][6];
-  bt_discover(result,NULL);
-
-
-  
-  //squirrel_state_set (SLAVE);
-  //debug_pgm(PSTR("Mainloop"));
+  squirrel_state_set (MASTER);
             
   while (true)
     {
       display_flip ();
-	  /*
       if (state == MASTER)
         {
+  		  debug_pgm(PSTR("fubar"));
           assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
 		  _delay_ms(2000);
           downlink_update ();
+  		  debug_pgm(PSTR("whoa?"));
           dump ();
           assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");
           squirrel_state_set (SLAVE);
@@ -296,7 +297,7 @@ int main (void)
             
           //if (state == SLAVE)
           //  squirrel_state_set (MASTER);
-        }*/
+        }
     }
 }
 

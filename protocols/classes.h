@@ -7,8 +7,9 @@
 
 enum class_id_nuts
 {
-  GENERIC_CLASS = 0x00,
-  WEATHERSTATION = 0x01
+  GENERIC_CLASS = 0x01,
+  WEATHERSTATION = 0x02,
+  TEST_NUT = 0x03
 };
 
 enum class_id_sensors
