@@ -186,8 +186,8 @@ menu_devices(void)
 	}
 	
 	//sprintf(menu_device_options[i+1],"-- BACK --");
-	//menu_devices_count = i+2;
-	menu_devices_count = i+1;
+	//menu_devices_count = i+1;
+	menu_devices_count = i;
 	display_gui_menu("Pick a device", menu_device_options[0],menu_devices_count, 0, &menu_devices_selected);
 }
 

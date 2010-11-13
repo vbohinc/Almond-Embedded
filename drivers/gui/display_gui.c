@@ -112,9 +112,28 @@ display_gui_menu(const char* title, const char* options,uint8_t option_count, co
 void
 display_gui_draw_scrollbar()
 {
-	//if (gui_menu_option_count <=MAX_MENU_ENTRIES)
-	//	return;
-	display_draw_rect(DISPLAY_WIDTH-12, DISPLAY_FONT0_HEIGHT + 3, DISPLAY_WIDTH-2, DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT - 3, true);
+	if (gui_menu_option_count <=MAX_MENU_ENTRIES)
+		return;
+	uint8_t width = 5;
+	
+	display_set_inverted (true);
+	display_draw_rect(DISPLAY_WIDTH-width, DISPLAY_FONT0_HEIGHT, DISPLAY_WIDTH, DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT - 2, true);
+	display_set_inverted (false);
+	display_draw_line(DISPLAY_WIDTH-width, DISPLAY_FONT0_HEIGHT, DISPLAY_WIDTH-width, DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT -2);
+	
+	display_set_inverted (true);
+	display_draw_line(DISPLAY_WIDTH-width-1, DISPLAY_FONT0_HEIGHT+1, DISPLAY_WIDTH-width-1, DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT -3);
+	display_set_inverted (false);
+	
+	
+	double height = DISPLAY_HEIGHT - DISPLAY_FONT0_HEIGHT - BUTTON_INFO_BAR_HEIGHT-2;
+	uint8_t bar_size = (uint8_t)(MAX_MENU_ENTRIES / (double)gui_menu_option_count * height); 
+	if (bar_size < 2)
+		bar_size = 2;
+	uint8_t pos = (uint8_t)(gui_menu_first_option_shown/(double)gui_menu_option_count*height);
+	printf("size:%d,%d\n",bar_size,pos);
+
+	display_draw_rect(DISPLAY_WIDTH-width+2, DISPLAY_FONT0_HEIGHT + pos, DISPLAY_WIDTH, DISPLAY_FONT0_HEIGHT + 1 + pos + bar_size, true);
 
 }
 
@@ -165,7 +184,7 @@ display_gui_bootup_screen(void)
 
     #ifdef X86
     //FIXME DELETE ME ONLY FOR TESTING
-    display_gui_sleep(1000);
+   /* display_gui_sleep(1000);
     display_gui_bootup_update_callback(10);
     display_gui_sleep(1000);
     display_gui_bootup_update_callback(30);
@@ -176,7 +195,7 @@ display_gui_bootup_screen(void)
     display_gui_sleep(1000);
     display_gui_bootup_update_callback(83);
     display_gui_sleep(1000);
-    display_gui_bootup_update_callback(100);
+    display_gui_bootup_update_callback(100);*/
     #endif
 
 }
