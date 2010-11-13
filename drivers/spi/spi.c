@@ -1,59 +1,95 @@
 #include "spi.h"
 #include <util/delay.h>
 
-#define SCK  1  // USART XCK
-#define MISO 2  // USART RxD
-#define MOSI 3  // USART TxD
+#define SPIUARTPORT USARTD0
+
+#define SCK  7  // USART XCK
+#define MISO 6  // USART RxD
+#define MOSI 5  // USART TxD
 #define CS   0  // just an output pin
+
+#define SPIPORT PORTD
+#define SPIMOD  SPID
 
 uint8_t sd_raw_xmit_byte(uint8_t b)
 {
-   while (! (USARTD1.STATUS & USART_DREIF_bm)); //debug_pgm(PSTR("Warten bis Datenregister leer")); // Warten bis Datenregister leer
-   USARTD1.DATA = b; //debug_pgm(PSTR("Byte in Datenregister schreiben (Setup: steigende Flanken)")); // Byte in Datenregister schreiben (Setup: steigende Flanken)
-   while (! (USARTD1.STATUS & USART_RXCIF_bm)); //debug_pgm(PSTR("Warten bis Antwortbyte empfangen (Sample: fallende Flanken)")); // Warten bis Antwortbyte empfangen (Sample: fallende Flanken)
-   return USARTD1.DATA; //debug_pgm(PSTR("Antwortbyte")); // Antwortbyte
+	/* Send pattern. */
+	SPIMOD.DATA = b;
+
+	/* Wait for transmission complete. */
+	debug_pgm(PSTR("Wait for transmission complete"));
+	while(!(SPIMOD.STATUS & SPI_IF_bm)) {
+
+	}
+	/* Read received data. */
+	uint8_t result = SPIMOD.DATA;
+
+	return(result);
 }
 
 void spi_init() {
-debug_pgm(PSTR("spi_init"));
-	/*// Assert low on SS - SPI connected to PORTD
-	//clear_bit(PORTD_OUT, 4);
-	set_bit(PORTD.OUT, 4); // Sets Slave Select (SS) as Output
-	set_bit(PORTD.OUT, 5); // Set MOSI and SCK as Output
-	set_bit(PORTD.OUT, 7);
+	debug_pgm(PSTR("spi_init"));
+
+	SPIMOD.CTRL   = SPI_PRESCALER_DIV4_gc |                  /* SPI prescaler. */
+	                      (false ? SPI_CLK2X_bm : 0) |     /* SPI Clock double. */
+	                      SPI_ENABLE_bm |                  /* Enable SPI module. */
+	                      (false ? SPI_DORD_bm  : 0) |  /* Data order. */
+	                      SPI_MASTER_bm |                  /* SPI master. */
+	                      SPI_MODE_0_gc;                   /* SPI mode. */
+
+	/* Interrupt level. */
+	SPIMOD.INTCTRL = SPI_INTLVL_OFF_gc;
+
+	set_bit(SPIPORT.DIR, MOSI);
+	set_bit(SPIPORT.DIR, CS);
+	clear_bit(SPIPORT.DIR, MISO);
+	set_bit(SPIPORT.DIR, SCK);
+
+	set_bit(SPIPORT.OUT, CS);
+
+
+	
+
+
+
+	/*// Assert low on SS - SPI connected to SPIPORT
+	//clear_bit(SPIPORT_OUT, 4);
+	set_bit(SPIPORT.OUT, 4); // Sets Slave Select (SS) as Output
+	set_bit(SPIPORT.OUT, 5); // Set MOSI and SCK as Output
+	set_bit(SPIPORT.OUT, 7);
 	set_bit(SPID.CTRL, 6); // Enable SPI
 	set_bit(SPID.CTRL, 4); // Set to Master
 	set_bit(SPID.CTRL, 7); // CLK2X
 	//clear_bit(SPID.CTRL, 0); // Prescaler to 00 (by default)
 	//clear_bit(SPID.CTRL, 1); // Results in SCK frequency = clk_PER/2*/
 
-   // CS und MOSI High
-	set_bit(PORTD.OUT, CS); // nicht aktiv
-	set_bit(PORTD.OUT, MOSI);
+   /*// CS und MOSI High
+	set_bit(SPIPORT.OUT, CS); // nicht aktiv
+	set_bit(SPIPORT.OUT, MOSI);
 	// CLK Low
-	clear_bit(PORTD.OUT, SCK);
+	clear_bit(SPIPORT.OUT, SCK);
 
 	// CS, CLK und MOSI als Ausgänge
-	set_bit(PORTD.DIRSET, MOSI);
-	set_bit(PORTD.DIRSET, SCK);
-	set_bit(PORTD.DIRSET, CS);
+	set_bit(SPIPORT.DIRSET, MOSI);
+	set_bit(SPIPORT.DIRSET, SCK);
+	set_bit(SPIPORT.DIRSET, CS);
 
 	// MISO als Eingang
-	set_bit(PORTD.DIRCLR, MISO);
+	set_bit(SPIPORT.DIRCLR, MISO);
 
 	// 100Khz SPI Frequenz zur Initialisierung
 	// BSEL = 32e6 / (2 * Baudrate) - 1
 	// BSEL = 2e6 / (2 * Baudrate) - 1
-	USARTD1.BAUDCTRLA = 159;
-	USARTD1.BAUDCTRLB = 0;
+	SPIUARTPORT.BAUDCTRLA = 159;
+	SPIUARTPORT.BAUDCTRLB = 0;
 
 	// Frameformat (MSB first), SPI Mode 0
-	USARTD1.CTRLC = USART_CMODE_MSPI_gc;
+	SPIUARTPORT.CTRLC = USART_CMODE_MSPI_gc;
 
-	USARTD1.CTRLA = 0;
+	SPIUARTPORT.CTRLA = 0;
 
 	// enable RX und TX
-	USARTD1.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
+	SPIUARTPORT.CTRLB = USART_RXEN_bm | USART_TXEN_bm;*/
 
 
 }

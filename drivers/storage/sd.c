@@ -35,11 +35,11 @@ void sd_init(void)
 
 	debug_pgm(PSTR("SD: warming up chip\n"));
 	display_flip();
-	/*for (uint8_t i = 0; i < 10; ++i)
+	for (uint8_t i = 0; i < 10; ++i)
 	{
-		spi_receive_byte();
-		//spi_send_byte(0x0F);
-	}*/
+		//spi_receive_byte();
+		spi_send_byte(0x0F);
+	}
 
 	sd_enable();
 
@@ -50,6 +50,7 @@ void sd_init(void)
 	uint8_t response;
 	for (uint16_t i = 0;; ++i)
 	{
+debug("sending CMD0\n");
 		response = sd_send_command(CMD0, NULL); //sd_raw_send_command(CMD_GO_IDLE_STATE, 0);
 		byte_to_hex(response);
 	display_flip();
