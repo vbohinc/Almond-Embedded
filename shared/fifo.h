@@ -15,13 +15,13 @@
 
 typedef struct
 {
-  uint8_t count;
-  uint8_t head;
-  uint8_t size;
+  uint16_t count;
+  uint16_t head;
+  uint16_t size;
   uint8_t* buffer;
 } fifo_t;
 
-void fifo_init (fifo_t *fifo, uint8_t *buffer, uint8_t size);
+void fifo_init (fifo_t *fifo, uint8_t *buffer, uint16_t size);
 bool fifo_is_empty (const fifo_t *fifo);
 bool fifo_is_full (const fifo_t *fifo);
 bool fifo_clear (fifo_t *fifo);

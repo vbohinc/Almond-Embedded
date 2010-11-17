@@ -168,23 +168,17 @@ static void update_device_entry (const char *address)
 
   for (uint8_t k = 0; k < NUTS_LIST; k++)
     {
-      if (!valid (k))
-        memcpy (&device_list[k], (void *) address, 12);
-      else if (!bt_cmp (device_list[k].mac, address))
-        break;
-        
-      if (!bt_connect (device_list[k].mac) && downlink_is_nut (&err)) 
+      if (bt_cmp (device_list[k].mac, address))
+        return;
+      else if (valid (k))
+        continue;
+      if (!bt_connect (address) && downlink_is_nut (&err)) 
         {
            error_pgm (PSTR("Connection couldn't be established"));
-           device_list[k].mac[0] = 0;
-           device_list[k].mac[1] = 0;
-           device_list[k].mac[2] = 0;
-           device_list[k].mac[3] = 0;
-           device_list[k].mac[4] = 0;
-           device_list[k].mac[5] = 0; 
            return;
         }
           
+      memcpy (&device_list[k], (void *) address, 12);
       update_id (k);
       update_values (k);
       downlink_bye (POLL_INTERVALL, &err);
@@ -279,7 +273,7 @@ int main (void)
         {
   		  debug_pgm(PSTR("fubar"));
           assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
-		  _delay_ms(2000);
+		  //_delay_ms(2000);
           downlink_update ();
   		  debug_pgm(PSTR("whoa?"));
           dump ();

@@ -38,7 +38,7 @@ typedef enum
 } bt_cmd_t;
 
 #ifdef SQUIRREL
-#define IN_FIFO_SIZE 255
+#define IN_FIFO_SIZE 512
 #endif
 
 #ifdef NUT
@@ -425,7 +425,7 @@ bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress)
 	if (!bt_set_mode(BLUETOOTH_MASTER)) return false;
   if (!send_cmd (BT_FIND_DEVICES, NULL)) return false;
 
-  char buffer[100]; //oversized, but who cares?
+  char buffer[255]; //oversized, but who cares?
   char *bufferhead = buffer;
   uint8_t pos = 0; 
 
@@ -463,6 +463,7 @@ bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress)
 
   		if (strstr_P (buffer, PSTR ("Inquiry End")))
     		{
+				error_putc('0'+pos);
     			fifo_clear (&in_fifo);
     			return true;
     		}

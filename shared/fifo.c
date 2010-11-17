@@ -1,7 +1,7 @@
 #include "fifo.h"
 
 void
-fifo_init (fifo_t * fifo, uint8_t * buffer, uint8_t size)
+fifo_init (fifo_t * fifo, uint8_t * buffer, uint16_t size)
 {
   fifo->size = size;
   fifo->buffer = buffer;
@@ -55,11 +55,11 @@ fifo_clear (fifo_t * fifo)
 }
 
 static bool
-fifo_cmp_pgm_at (fifo_t * fifo, const prog_char * pgm, const uint8_t index)
+fifo_cmp_pgm_at (fifo_t * fifo, const prog_char * pgm, const uint16_t index)
 {
-  uint8_t i;
-  uint8_t fifo_byte;
-  uint8_t pgm_byte;
+  uint16_t i;
+  uint16_t fifo_byte;
+  uint16_t pgm_byte;
 
   for (i = 0; pgm_read_byte (pgm + i) != 0; i++)
     {
@@ -88,7 +88,7 @@ fifo_cmp_pgm (fifo_t * fifo, const prog_char * pgm)
 bool
 fifo_strstr_pgm (fifo_t * fifo, const prog_char * pgm)
 {
-  for (uint8_t i = 0; i < fifo->count; i++)
+  for (uint16_t i = 0; i < fifo->count; i++)
     {
       if (fifo_cmp_pgm_at (fifo, pgm, i))
         return true;
