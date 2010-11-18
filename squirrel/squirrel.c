@@ -230,29 +230,26 @@ int main (void)
   /*external clock konfigurieren 9-12mhz*/
   OSC.XOSCCTRL = OSC_FRQRANGE1_bm | OSC_XOSCSEL3_bm | OSC_XOSCSEL1_bm | OSC_XOSCSEL0_bm;
 
-  /*external clock aktivieren */
   OSC.CTRL = OSC_XOSCEN_bm;
-
-  /* PLL auf 10x stellen */
-  OSC.PLLCTRL = OSC_PLLSRC0_bm|OSC_PLLSRC1_bm|OSC_PLLFAC3_bm|OSC_PLLFAC1_bm;
- 
-  //Set Prescaler to devide by 4
-  CLK.PSCTRL |= CLK_PSBCDIV_2_2_gc;
-
-  /*auf stabile clock warten */
   while ((OSC.STATUS & OSC_XOSCRDY_bm) == 0);
 
-  /*external clock + PLL aktivieren */
+  OSC.PLLCTRL = OSC_PLLSRC0_bm|OSC_PLLSRC1_bm|OSC_PLLFAC1_bm;
+
+  /*external clock aktivieren */
+
   OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;
 
-  /* Warten bis PLL stabil ist */
+  /* Warten bis Oszillator/PLL stabil ist */
   while ((OSC.STATUS & (OSC_PLLRDY_bm)) == 0);
 
   /* System Clock selection */
   CCP = CCP_IOREG_gc;
   CLK.CTRL = CLK_SCLKSEL_PLL_gc;
 
-/* Backlight anschalten */
+  /* DFLL ein (Auto Kalibrierung) */
+  //DFLLRC32M.CTRL = DFLL_ENABLE_bm;
+
+/* Behold the MAGIC Clock! */
     set_bit(PORTC.DIR,4);
     clear_bit(PORTC.OUT,4);
 
@@ -262,6 +259,10 @@ int main (void)
 
   display_init ();
   
+  for (uint8_t i = 0; i < NUTS_LIST; i++)
+    for (uint8_t j = 0; j < 12; j++)
+      device_list[i].mac[j] = 0;
+
   bt_init();
   squirrel_state_set (MASTER);
             
@@ -272,6 +273,7 @@ int main (void)
         {
   		  debug_pgm(PSTR("fubar"));
           assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
+		  //_delay_ms(2000);
           downlink_update ();
   		  debug_pgm(PSTR("whoa?"));
           dump ();
