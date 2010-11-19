@@ -227,6 +227,10 @@ int main (void)
   /* Internen 32Mhz Oszillator einschalten */
   //OSC.CTRL = OSC_RC32MEN_bm;
 
+//Set Prescaler to devide by 4
+  CCP = CCP_IOREG_gc;
+  CLK.PSCTRL = CLK_PSBCDIV_2_2_gc;
+
   /*external clock konfigurieren 9-12mhz*/
   OSC.XOSCCTRL = OSC_FRQRANGE1_bm | OSC_XOSCSEL3_bm | OSC_XOSCSEL1_bm | OSC_XOSCSEL0_bm;
 
@@ -236,9 +240,6 @@ int main (void)
   /* PLL auf 10x stellen */
   OSC.PLLCTRL = OSC_PLLSRC0_bm|OSC_PLLSRC1_bm|OSC_PLLFAC3_bm|OSC_PLLFAC1_bm;
  
-  //Set Prescaler to devide by 4
-  CLK.PSCTRL |= CLK_PSBCDIV_2_2_gc;
-
   /*auf stabile clock warten */
   while ((OSC.STATUS & OSC_XOSCRDY_bm) == 0);
 

@@ -4,6 +4,7 @@
 
 #include <stdbool.h>
 #include "ftdi.h"
+#include <display/display.h>
 
 #include <avr/pgmspace.h>
 #include "error_driver.h"
@@ -26,6 +27,9 @@ void send_pgm(const prog_char *msg)
 		error_driver_write_c(myByte);
         myByte = pgm_read_byte(msg+i);
 	}
+  #ifdef DEBUG_TO_DISPLAY
+  display_flip();
+  #endif
 }
 
 uint8_t char_to_hex(uint8_t chr)
@@ -63,6 +67,9 @@ void error_init(void)
 void error_putc(const char c)
 {
 	error_driver_write_c(c);
+  #ifdef DEBUG_TO_DISPLAY
+  display_flip();
+  #endif
 }
 
 
@@ -151,6 +158,9 @@ void byte_to_hex(uint8_t byte){
 	uint8_t b1 = ((byte & 0xF0)>>4);
 	print_hex(b1);
 	print_hex(b2);
+  #ifdef DEBUG_TO_DISPLAY
+  display_flip();
+  #endif
 }
 
 #endif

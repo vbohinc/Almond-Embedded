@@ -8,7 +8,7 @@
  * Baudrate for the UART-connection to the BTM-222 on SQUIRREL
  */
 #ifdef SQUIRREL
-#define UART_BAUD_RATE      19200
+#define UART_BAUD_RATE      115200
 #endif
 
 #ifdef NUT
