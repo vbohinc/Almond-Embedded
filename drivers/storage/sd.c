@@ -13,47 +13,52 @@ void sd_get_response(uint8_t response_type);
 
 void sd_enable(void)
 {
-	clear_bit(PORTC.OUT, 0);
+	clear_bit(PORTD.OUT, 0);
 }
 
 void sd_disable(void)
 {
-	set_bit(PORTC.OUT, 0);
+	set_bit(PORTD.OUT, 0);
 }
+
+#define nop() \
+   asm volatile ("nop")
 
 void sd_init(void)
 {
 	debug("Init spi ...\n");
-	display_flip();
 	spi_init();
 	debug("SPI initialized\n");
-	display_flip();
 
-	//_delay_ms(100);
+	_delay_ms(100);
 
 	sd_disable();
 
+	unsigned char a=0;
+	for(a=0;a<200;a++){
+	nop();
+	};
+
 	debug_pgm(PSTR("SD: warming up chip\n"));
-	display_flip();
-	for (uint8_t i = 0; i < 10; ++i)
+	for (uint8_t i = 0; i < 80; ++i)
 	{
-		//spi_receive_byte();
-		//spi_send_byte(0xFF);
+		spi_receive_byte();
+		spi_send_byte(0xFF);
 	}
 
 	sd_enable();
 
+	//while(true);
+
 	debug("SPI initialized\n");
-	display_flip();
 
 	/* reset card */
 	uint8_t response;
 	for (uint16_t i = 0;; ++i)
 	{
-debug("sending CMD0\n");
+		debug("sending CMD0\n");
 		response = sd_send_command(CMD0, NULL); //sd_raw_send_command(CMD_GO_IDLE_STATE, 0);
 		byte_to_hex(response);
-	display_flip();
 		if (response == (1 << R1_IDLE_STATE))
 			break;
 
@@ -61,7 +66,6 @@ debug("sending CMD0\n");
 		{
 			sd_disable();
 			debug_pgm(PSTR("sd: failed (CMD0)"));
-	display_flip();
 			return;
 		}
 	}
@@ -123,7 +127,9 @@ uint8_t sd_send_command(uint8_t command_nr, uint8_t *arguments)
 	uint8_t response;
 	uint8_t sd_buffer[6];
 
+	sd_disable();
 	spi_receive_byte();
+	sd_enable();
 
 	switch (command_nr)
 	{

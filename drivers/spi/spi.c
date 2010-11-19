@@ -3,13 +3,27 @@
 
 #define SPIUARTPORT USARTD0
 
-#define SCK  7  // USART XCK
-#define MISO 6  // USART RxD
-#define MOSI 5  // USART TxD
-#define CS   0  // just an output pin
+#define SCK    7  // USART XCK
+#define MISO   6  // USART RxD
+#define MOSI   5  // USART TxD
+#define ORIGCS 4  // original SPI chip select
+#define CS     0  // just an output pin
 
-#define SPIPORT PORTC
-#define SPIMOD  SPIC
+#define SPIPORT PORTD
+#define SPIMOD  SPID
+
+/* Hardware defines */
+
+#define SPI_SS_bm             0x10 /*!< \brief Bit mask for the SS pin. */
+#define SPI_MOSI_bm           0x20 /*!< \brief Bit mask for the MOSI pin. */
+#define SPI_MISO_bm           0x40 /*!< \brief Bit mask for the MISO pin. */
+#define SPI_SCK_bm            0x80 /*!< \brief Bit mask for the SCK pin. */
+
+/* SPI master status code defines. */
+
+#define SPI_OK              0     /*!< \brief The transmission completed successfully. */
+#define SPI_INTERRUPTED     1     /*!< \brief The transmission was interrupted by another master. */
+#define SPI_BUSY            2     /*!< \brief The SPI module is busy with another transmission. */
 
 uint8_t sd_raw_xmit_byte(uint8_t b)
 {
@@ -17,14 +31,14 @@ uint8_t sd_raw_xmit_byte(uint8_t b)
 	SPIMOD.DATA = b;
 
 	/* Wait for transmission complete. */
-	debug_pgm(PSTR("Wait for transmission complete"));
+	//debug_pgm(PSTR("Wait for transmission complete"));
 	while(!(SPIMOD.STATUS & SPI_IF_bm)) {
 
 	}
-debug_pgm(PSTR("transmission complete"));
+	//debug_pgm(PSTR("transmission complete"));
 	/* Read received data. */
 	uint8_t result = SPIMOD.DATA;
-	byte_to_hex(result);
+	//byte_to_hex(result);
 
 	return(result);
 }
@@ -32,7 +46,18 @@ debug_pgm(PSTR("transmission complete"));
 void spi_init() {
 	debug_pgm(PSTR("spi_init"));
 
-	SPIMOD.CTRL   = SPI_PRESCALER_DIV4_gc |                  /* SPI prescaler. */
+
+	/* Init SS pin as output with wired AND and pull-up. */
+	SPIPORT.DIRSET = PIN4_bm;
+	SPIPORT.PIN4CTRL = PORT_OPC_WIREDANDPULL_gc;
+
+	/* Set SS output to high. (No slave addressed). */
+	SPIPORT.OUTSET = PIN4_bm;
+
+
+	//set_bit(SPIPORT.OUT, CS);
+
+	SPIMOD.CTRL   = SPI_PRESCALER_DIV128_gc |                  /* SPI prescaler. */
 	                      (false ? SPI_CLK2X_bm : 0) |     /* SPI Clock double. */
 	                      SPI_ENABLE_bm |                  /* Enable SPI module. */
 	                      (false ? SPI_DORD_bm  : 0) |  /* Data order. */
@@ -44,10 +69,16 @@ void spi_init() {
 
 	set_bit(SPIPORT.DIR, MOSI);
 	set_bit(SPIPORT.DIR, CS);
+	//set_bit(SPIPORT.DIR, ORIGCS);
 	clear_bit(SPIPORT.DIR, MISO);
 	set_bit(SPIPORT.DIR, SCK);
 
 	set_bit(SPIPORT.OUT, CS);
+	clear_bit(SPIPORT.OUT, ORIGCS);
+
+	//SPIPORT.DIRSET  = SPI_MOSI_bm | SPI_SCK_bm;
+
+
 
 
 	

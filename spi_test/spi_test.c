@@ -4,6 +4,8 @@
 #include <avr/delay.h>
 
 #include <display/display.h>
+#include <gui/display_draw.h>
+#include <gui/display_data.h>
 
 
 #define NUM_BYTES 254
@@ -64,6 +66,10 @@ uint8_t main(void) {
 
 	display_init();
 	error_init();
+
+	display_draw_image(0,0,testimg);
+	display_flip();
+	//while(true);
 
 
 	//sei();
