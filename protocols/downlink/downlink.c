@@ -34,7 +34,7 @@ static uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint
     }
   else
     {
-      error_pgm (PSTR ("Send/receive error")); 
+      //error_pgm (PSTR ("Send/receive error"));
     }
           
   *err = true;

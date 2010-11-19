@@ -155,7 +155,8 @@ send_cmd (const bt_cmd_t command, const char *data)
 
     case BT_SET_ADDRESS:
         strcpy_P (full_command, PSTR ("ATD="));
-        strcat (full_command, data);
+        memcpy((full_command+strlen(full_command)), data, 12);
+		full_command[16] = 0;
         break;
 
     case BT_FIND_DEVICES:
@@ -187,7 +188,6 @@ send_cmd (const bt_cmd_t command, const char *data)
 
     // send command
     uart_send (full_command, strlen (full_command));
-
     // get response
     while_timeout (true, BT_CMD_TIMEOUT_MS)
     {
@@ -236,6 +236,7 @@ update_comm_mode (uint16_t timeout_ms)
         if (fifo_strstr_pgm (&in_fifo, PSTR ("CONNECT")))
         {
             clean_line ();
+			debug_pgm(PSTR("CONNECTED"));
             return comm_mode = BT_DATA;
         }
 
@@ -374,10 +375,11 @@ bool
 bt_connect (const char *address)
 {
     debug_pgm (PSTR ("CONNECT"));
-    
+	test();
     if (!send_cmd (BT_SET_ADDRESS, address))
         return false;
 
+	test();
     if (!send_cmd (BT_CONNECT, NULL))
         return false;
 
@@ -465,12 +467,14 @@ bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress)
     		{
 				error_putc('0'+pos);
     			fifo_clear (&in_fifo);
+				test();
     			return true;
     		}
 
 		  copy_address (&buffer[21], result[pos]);      
       pos++;
 	}
+	test();
   
   return false;
 }

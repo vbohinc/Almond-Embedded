@@ -185,7 +185,7 @@ static void update_device_entry (const char *address)
            
       if (!bt_disconnect()) 
         {
-          error_pgm(PSTR("Connection couldn't be closed"));
+          error_pgm(PSTR("Conn not closed"));
           // Hard reset module!
         }
        
@@ -262,7 +262,10 @@ int main (void)
   sei ();
 
   display_init ();
-  
+  /*while (true) {
+	  _delay_ms(1000);
+	 }
+*/
   bt_init();
   squirrel_state_set (MASTER);
             
