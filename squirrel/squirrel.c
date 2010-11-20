@@ -15,13 +15,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "squirrel.h"
-#include "../drivers/bluetooth/bluetooth.h"
-#include "../drivers/display/display.h"
-#include "../drivers/platform/buttons.h"
-//#include "../drivers/storage/storage.h"
-#include "../protocols/downlink/downlink.h"
-#include "../protocols/uplink/uplink.h"
-#include "../protocols/package_types.h"
+#include <bluetooth/bluetooth.h>
+#include <display/display.h>
+#include <platform/buttons.h>
+#include <downlink/downlink.h>
+#include <uplink/uplink.h>
+#include <package_types.h>
 
 /* -----------------------------------------------------------------------
  * Squirrel State
