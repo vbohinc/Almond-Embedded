@@ -9,12 +9,32 @@
  *
  * \author Stefan Profanter
  * \author Sean Labastille
+ * \author Linus Lotz
  */
+
+#define SD_BLOCK_SIZE 512
+
+typedef enum {
+    CMD0 = 0x40,
+    CMD8 = 0x48,
+    CMD16 = 0x50,
+    CMD17 = 0x51,
+    CMD24 = 0x58,
+    CMD55 = 0x77,
+    CMD58 = 0x7A,
+    ACMD41 = 0x69} command_t;
+    
+typedef enum {
+    R1,
+    R1B,
+    R2,
+    R3,
+    R7} response_t;    
+
+uint8_t sd_send_command (command_t command_nr, uint8_t *arguments);
 
 #include <util/delay.h>
 #include "sd.h"
-
-#define R1_IDLE_STATE 0
 
 static uint8_t sd_response_buffer[5];
 static uint8_t sd_token_buffer[SD_BLOCK_SIZE + 3];
@@ -89,8 +109,6 @@ void sd_init (void)
     }
 
     debug_pgm (PSTR ("SD: SPI Init Succeeded"));
-
-    display_flip();
     // Place SD Card into Idle State
     sd_send_command (CMD0, NULL);
     sd_get_response (R1);
@@ -103,7 +121,6 @@ void sd_init (void)
     sd_send_command (CMD8, NULL);
     sd_get_response (R1);
     debug_pgm (PSTR ("SD: Switch to SPI Mode Succeeded. Voltage queried"));
-    display_flip();
 
     if (sd_response_buffer[0] == 0x04)
     { // CMD8 is illegal, Version 1 card
@@ -120,8 +137,6 @@ void sd_init (void)
         while (sd_response_buffer[0] != 0x00);
 
         debug_pgm (PSTR ("SD: Type 1 Initialization complete"));
-
-        display_flip();
     }
 
     else
@@ -144,8 +159,6 @@ void sd_init (void)
         sd_get_response (R3);
 
         debug_pgm (PSTR ("SD: Type 2 Initialization complete"));
-
-        display_flip();
     }
 
     // Set block size to 32 bytes
@@ -153,11 +166,11 @@ void sd_init (void)
     //sd_get_response(R1);
 }
 
-uint8_t sd_send_command (uint8_t command_nr, uint8_t *arguments)
+uint8_t sd_send_command (command_t command_nr, uint8_t* arguments)
 {
 
     uint8_t response;
-    uint8_t sd_buffer[6];
+    uint8_t sd_buffer[6] = {command_nr, 0, 0, 0, 0, 0x95};
 
     sd_disable();
     spi_receive_byte();
@@ -167,106 +180,38 @@ uint8_t sd_send_command (uint8_t command_nr, uint8_t *arguments)
     {
 
         case CMD0:
-            // Static CMD0. As the card is still in SD mode a valid CRC is required
-            //sd_buffer = 0x400000000095;
-            sd_buffer[0] = 0x40;
-            sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
-            sd_buffer[5] = 0x95;
-            debug_pgm (PSTR ("SD: CMD0 complete"))
-            ;
             break;
 
         case CMD8:
-            // Static CMD8. Ask the card if it likes tasty 2.7-3.6V
-            //sd_buffer = 0x480000010001;
-            sd_buffer[0] = 0x48;
-            sd_buffer[1] = sd_buffer[2] = sd_buffer[4] = 0x00;
-            sd_buffer[3] = sd_buffer[5] = 0x01;
-            debug_pgm (PSTR ("SD: CMD8 complete"))
-            ;
+            sd_buffer[3] = 0x01;
             break;
 
         case CMD16:
-            // Static CMD16. Sets the block size to 32 bytes.
-            //sd_buffer = 0x500000002001;
-            sd_buffer[0] = 0x50;
-            sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = 0x00;
             sd_buffer[4] = 0x20;
-            sd_buffer[5] = 0x01;
-            debug_pgm (PSTR ("SD: CMD16 complete"))
-            ;
             break;
 
         case CMD17:
             // Requests a single block beginning at the address passed (4 Bytes)
-            sd_buffer[0] = 0x51;
-
             for (int i = 0; i < 4; i++)
                 sd_buffer[i + 1] = arguments[i];
-
-            sd_buffer[5] = 0x01;
-
-            debug_pgm (PSTR ("SD: CMD17 complete"))
-            ;
-
             break;
 
         case CMD24:
-            // Writes a single block at the address passed
-            sd_buffer[0] = 0x58;
-
             for (int i = 0; i < 4; i++)
-                sd_buffer[i + 1] = arguments[i];
-
-            sd_buffer[5] = 0x01;
-
-            debug_pgm (PSTR ("SD: CMD24 complete"))
-            ;
-
-            break;
-
-        case CMD55:
-            // Static CMD55. Informs the card the next command will be an 'A'-Command (Application Specific)
-            //sd_buffer = 0x770000000001;
-            sd_buffer[0] = 0x77;
-
-            sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
-
-            sd_buffer[5] = 0x01;
-
-            debug_pgm (PSTR ("SD: CMD55 complete"))
-            ;
-
+                sd_buffer[i + 1] = arguments[i]; 
             break;
 
         case ACMD41:
             // Static ACMD41. Initialize the card. Inform it we don't support High Capacity.
             //sd_buffer = 0x696000000001;
-            sd_buffer[0] = 0x69;
-
             sd_buffer[1] = 0x60;
-
-            sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
-
-            sd_buffer[5] = 0x01;
-
-            debug_pgm (PSTR ("SD: ACMD41 complete"))
-            ;
 
             break;
 
+        case CMD55:
+            break;
+            
         case CMD58:
-            // Static CMD58. Get OCR. (Operating Conditions Register) Returns the Card Capacity.
-            //sd_buffer = 0x790000000001;
-            sd_buffer[0] = 0x79;
-
-            sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
-
-            sd_buffer[5] = 0x01;
-
-            debug_pgm (PSTR ("SD: CMD58 complete"))
-            ;
-
             break;
 
         default:
@@ -413,10 +358,12 @@ void sd_get_response (uint8_t response_type)
 
     debug_pgm (PSTR ("SD: Waiting for response"));
 
+    
     switch (response_type)
     {
 
         case R1:
+            
             sd_response_buffer[0] = spi_receive_byte();
             debug_pgm (PSTR ("SD: R1 received:"))
             ;
@@ -425,43 +372,21 @@ void sd_get_response (uint8_t response_type)
         case R1b:
             sd_response_buffer[0] = spi_receive_byte();
 
-            do
-            {
-                sd_response_buffer[1] = spi_receive_byte();
-            }
-
-            while (sd_response_buffer[1] == 0x00);
-
-            debug_pgm (PSTR ("SD: R1b received"))
-            ;
+            while ((sd_response_buffer[1] = spi_receive_byte()) == 0x00);
 
             break;
 
         case R2:
             sd_response_buffer[0] = spi_receive_byte();
-
             sd_response_buffer[1] = spi_receive_byte();
-
-            debug_pgm (PSTR ("SD: R2 received"))
-            ;
 
             break;
 
         case R3:
 
         case R7:
-            sd_response_buffer[0] = spi_receive_byte();
-
-            sd_response_buffer[1] = spi_receive_byte();
-
-            sd_response_buffer[2] = spi_receive_byte();
-
-            sd_response_buffer[3] = spi_receive_byte();
-
-            sd_response_buffer[4] = spi_receive_byte();
-
-            debug_pgm (PSTR ("SD: R3/7 received"))
-            ;
+            for (uint8_t i = 0; i < 5; i++)
+                sd_response_buffer[i] = spi_receive_byte();
 
             break;
 
