@@ -1,13 +1,8 @@
 /**
- * fifo.c - a simple Fifo
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- */
+* a simple Fifo, Part of the ALMOND Project
+* @file fifo.c
+* @author Pascal Schnurr
+*/
 #include "fifo.h"
 
 void
