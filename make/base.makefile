@@ -50,6 +50,9 @@ FORMAT = ihex
 OBJDIR = .
 
 EXTRAINCDIRS += $(BASE) $(BASE)/drivers/ $(BASE)/protocols/ $(BASE)/shared/
+ifeq ($(TARGETTYPE), SQUIRREL)
+EXTRAINCDIRS += $(BASE)/squirrel/
+endif
 
 ##################### DEFINE ALMOND LIBS HERE ############################
 
