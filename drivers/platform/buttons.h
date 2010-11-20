@@ -13,6 +13,7 @@
 #define __BUTTONS_H__
 
 #include "../../shared/common.h"
+#include <squirrel/gui/gui.h>
 
 //Port J, Pin 0 bis 7
 
@@ -25,14 +26,17 @@
 #define BUTTONS_PIN_A 3
 #define BUTTONS_PIN_B 2
 
-/**
-Initializes the Button-Port/Pins
-*/
+/** \brief Button Initialization
+ *
+ * Initializes the PINs for Button
+ */
 void button_init (void);
 
-/**
-Checks if a Button is pressed. Returns the values of enum display_gui_keys
-*/
+/** \brief Checks if button Pressed
+ *
+ * Checks if a Button is Pressed and returns a value of display_gui_keys (squirrel/gui/gui.h)
+ *
+ */
 uint8_t button_pressed (void);
 
 #endif /*_BUTTONS_H__*/
