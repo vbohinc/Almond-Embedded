@@ -210,26 +210,28 @@ static void update_device_entry (const char *address)
 
 void downlink_update (void)
 {
-    char result[8][12];
+  char result[8][12];
 
+  for (uint8_t i = 0; i < 8; i++)
+    for (uint8_t j = 0; j < 12; j++)
+      result[i][j] = 0;
+  
+  //strcpy_P (result[0], PSTR("00126F037095"));
+  //update_device_entry (result[0]);
+
+  if (bt_discover (result, NULL))
     for (uint8_t i = 0; i < 8; i++)
+      {
         for (uint8_t j = 0; j < 12; j++)
-            result[i][j] = 0;
+          error_putc (result[i][j]);
 
+        update_device_entry (result[i]);
+      }
 
-    if (bt_discover (result, NULL))
-        for (uint8_t i = 0; i < 8; i++)
-        {
-            for (uint8_t j = 0; j < 12; j++)
-                error_putc (result[i][j]);
+  else
+    debug_pgm (PSTR ("FAIL!!!"));
 
-            update_device_entry (result[i]);
-        }
-
-    else
-        debug_pgm (PSTR ("FAIL!!!"));
-
-    while (true);
+  while (true);
 }
 
 /* -----------------------------------------------------------------------
@@ -241,7 +243,7 @@ int main (void)
     /* Internen 32Mhz Oszillator einschalten */
     //OSC.CTRL = OSC_RC32MEN_bm;
 
-//Set Prescaler to devide by 4
+    //Set Prescaler to devide by 4
     CCP = CCP_IOREG_gc;
     CLK.PSCTRL = CLK_PSBCDIV_2_2_gc;
 
@@ -256,15 +258,13 @@ int main (void)
 
     /*auf stabile clock warten */
 
-    while ( (OSC.STATUS & OSC_XOSCRDY_bm) == 0)
-        ;
+    while ((OSC.STATUS & OSC_XOSCRDY_bm) == 0);
 
     /*external clock + PLL aktivieren */
     OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;
 
     /* Warten bis PLL stabil ist */
-    while ( (OSC.STATUS & (OSC_PLLRDY_bm)) == 0)
-        ;
+    while ((OSC.STATUS & (OSC_PLLRDY_bm)) == 0);
 
     /* System Clock selection */
     CCP = CCP_IOREG_gc;
@@ -273,20 +273,13 @@ int main (void)
 
     /* Backlight anschalten */
     set_bit (PORTC.DIR, 4);
-
     clear_bit (PORTC.OUT, 4);
-
 
     error_init ();
 
     sei ();
 
     display_init ();
-
-    /*while (true) {
-     _delay_ms(1000);
-    }
-    */
     bt_init();
 
     squirrel_state_set (MASTER);

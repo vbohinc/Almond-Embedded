@@ -26,9 +26,10 @@ extern void    squirrel_state_set (uint8_t state);
 extern bool    squirrel_list (uint8_t num, uplink_payload_list *p);
 extern bool    squirrel_log (uplink_package *p);
 
-
 #define NUTS_LIST 16
 #define EXTENSIONS_LIST 16
+
+typedef struct _device_info device_info;
 
 struct _device_info
 {
@@ -39,7 +40,6 @@ struct _device_info
     uint16_t values_cache[EXTENSIONS_LIST];
 };
 
-typedef struct _device_info device_info;
 extern device_info device_list[NUTS_LIST];
 
 #define valid(num) (num < NUTS_LIST && (device_list[num].mac[0] != 0 || device_list[num].mac[1] != 0 || device_list[num].mac[2] != 0 || device_list[num].mac[3] != 0 || device_list[num].mac[4] != 0 || device_list[num].mac[5] != 0 || device_list[num].mac[6] != 0 || device_list[num].mac[7] != 0 || device_list[num].mac[8] != 0 || device_list[num].mac[9] != 0 || device_list[num].mac[10] != 0 || device_list[num].mac[11] != 0))
