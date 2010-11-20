@@ -31,11 +31,11 @@
  * LOG:
  *
  * | OPCODE (1)  | PAGE (1)       |
- * | BT ADDR (6) | EXTENSION_ID (1) |
+ * | BT ADDR (12) | EXTENSION_ID (1) |
  *
  * | LOG_TIME_1 (4) | VALUE_1 (2) |
  * .....
- * | LOG_TIME_9 (4) | VALUE_9 (2) | PAD (1)
+ * | LOG_TIME_8 (4) | VALUE_8 (2) | PAD (1)
  *
  * TIME:
  *
@@ -61,16 +61,16 @@ struct _log_entry
 
 struct _uplink_payload_list
 {
-    uint8_t bt_address[6];
+    char bt_address[12];
     uint8_t nut_class;
-    uint8_t extension_class[55];
+    uint8_t extension_class[49];
 };
 
 struct _uplink_payload_log
 {
-    uint8_t bt_address[6];
+    char bt_address[12];
     uint8_t extension_id;
-    log_entry entries[9];
+    log_entry entries[8];
     uint8_t padding;
 };
 

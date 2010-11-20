@@ -30,11 +30,11 @@
  * LOG:
  *
  * | OPCODE (1)  | PAGE (1)       |
- * | BT ADDR (6) | EXTENSION_ID (1) |
+ * | BT ADDR (12) | EXTENSION_ID (1) |
  *
  * | LOG_TIME_1 (4) | VALUE_1 (2) |
  * .....
- * | LOG_TIME_9 (4) | VALUE_9 (2) | PAD (1)
+ * | LOG_TIME_8 (4) | VALUE_8 (2) | PAD (1)
  *
  * TIME:
  *

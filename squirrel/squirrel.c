@@ -73,12 +73,9 @@ static void dump (void)
     for (uint8_t i = 0; i < 2; i++)
     {
         debug_pgm (PSTR ("MAC: "));
-        byte_to_hex (device_list[i].mac[0]);
-        byte_to_hex (device_list[i].mac[1]);
-        byte_to_hex (device_list[i].mac[2]);
-        byte_to_hex (device_list[i].mac[3]);
-        byte_to_hex (device_list[i].mac[4]);
-        byte_to_hex (device_list[i].mac[5]);
+        for (uint8_t j = 0; j < 12; j++)
+          byte_to_hex (device_list[i].mac[j]);
+
         error_putc ('\n');
         debug_pgm (PSTR ("CLASS: "));
         byte_to_hex (device_list[i].class);
@@ -97,16 +94,12 @@ static void dump (void)
             error_putc ('\n');
         }
     }
-
 }
 
 bool bt_cmp (const char *add1, const char *add2)
 {
     uint8_t i;
-
-    for (i = 0; i < 12 && add1[i] == add2[i]; i++)
-        ;
-
+    for (i = 0; i < 12 && add1[i] == add2[i]; i++);
     return (i == 12);
 }
 
@@ -114,7 +107,7 @@ bool squirrel_list (uint8_t num, uplink_payload_list *p)
 {
     if (valid (num))
     {
-        for (uint8_t i = 0; i < 6; i++)
+        for (uint8_t i = 0; i < 12; i++)
             p->bt_address[i] = device_list[num].mac[i];
 
         p->nut_class = device_list[num].class;
@@ -135,7 +128,7 @@ bool squirrel_log (uplink_package *p)
 {
     uplink_payload_log *log = & (p->payload.log);
 
-    for (uint8_t i = 0; i < 9; i++)
+    for (uint8_t i = 0; i < 8; i++)
     {
         log->entries[i].time = i;
         log->entries[i].value = 42;
@@ -236,8 +229,7 @@ void downlink_update (void)
     else
         debug_pgm (PSTR ("FAIL!!!"));
 
-    while (true)
-        ;
+    while (true);
 }
 
 /* -----------------------------------------------------------------------
