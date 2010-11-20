@@ -203,4 +203,3 @@ extern uint8_t fat16_write_dir_entry(const struct fat16_dir_entry* dir_entry);
 
 #endif /* FAT16_H_ */
 
-/**@}/
