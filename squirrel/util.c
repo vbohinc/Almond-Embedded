@@ -10,8 +10,8 @@
  */
 
 #include "util.h"
-#include "../drivers/fat16/fat16.h"
-#include "../protocols/uplink/uplink.h"
+#include <fat16/fat16.h>
+#include <protocols/uplink/uplink.h>
 
 /**
  * Time
@@ -32,7 +32,9 @@ uint32_t time_get()
 /**
  * Log Access
  */
-bool log_write (uint8_t* mac, uint8_t id, uint32_t time, uint16_t value)
+
+// FIXME: adapt!
+bool log_write (char *mac, uint8_t id, uint32_t time, uint16_t value)
 {
     debug_pgm (PSTR ("LOG: WRITE"));
 
