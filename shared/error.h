@@ -1,5 +1,12 @@
-/*
- * Error handling functions.
+/**
+ * error.h - Error output Driver
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
+ *
  */
 
 #ifndef __ERROR__
@@ -13,23 +20,23 @@
 
 #ifdef DEBUG
 
-void error_init(void);
+void error_init (void);
 
-void error_putc(const char c);
+void error_putc (const char c);
 
 void assert (bool condition, const char *msg);
 void info (const char *msg);
-void warn(const char *msg);
-void debug(const char *msg);
-void error(const char *msg);
+void warn (const char *msg);
+void debug (const char *msg);
+void error (const char *msg);
 
-void assert_pgm(bool condition, const prog_char *msg);
+void assert_pgm (bool condition, const prog_char *msg);
 void info_pgm (const prog_char *msg);
-void warn_pgm(const prog_char *msg);
-void debug_pgm(const prog_char *msg);
-void error_pgm(const prog_char *msg);
+void warn_pgm (const prog_char *msg);
+void debug_pgm (const prog_char *msg);
+void error_pgm (const prog_char *msg);
 
-void byte_to_hex(uint8_t byte);
+void byte_to_hex (uint8_t byte);
 
 #else
 
@@ -58,11 +65,11 @@ void byte_to_hex(uint8_t byte);
  * @param chr the char value
  * @return the int value
  */
-extern uint8_t char_to_hex(uint8_t chr);
+extern uint8_t char_to_hex (uint8_t chr);
 
 /**
  * Converts a hex value to its corresponding char value 0-9,A-F
  * @param hex the hex value
  * @return the char value
  */
-extern uint8_t hex_to_char(uint8_t hex);
+extern uint8_t hex_to_char (uint8_t hex);

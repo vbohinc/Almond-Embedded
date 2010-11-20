@@ -1,35 +1,46 @@
+/**
+ * fat16.h - FAT driver
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
+ *
+ * \author Christian Rupprecht
+ */
 #ifndef FAT16_H_
 #define FAT16_H_
 
 #include <stdint.h>
 
-#define FAT16_SEEK_SET 			0			// The given offset is relative to the beginning of the file.
-#define FAT16_SEEK_CUR 			1			// The given offset is relative to the current read/write position.
-#define FAT16_SEEK_END 			2			// The given offset is relative to the end of the file.
+#define FAT16_SEEK_SET          0           // The given offset is relative to the beginning of the file.
+#define FAT16_SEEK_CUR          1           // The given offset is relative to the current read/write position.
+#define FAT16_SEEK_END          2           // The given offset is relative to the end of the file.
 
-#define FAT16_ATTRIB_READONLY 	(1 << 0) 	// The file is read-only.
-#define FAT16_ATTRIB_HIDDEN 	(1 << 1)	// The file is hidden.
-#define FAT16_ATTRIB_SYSTEM 	(1 << 2)	// The file is a system file.
-#define FAT16_ATTRIB_VOLUME 	(1 << 3)	// The file is empty and has the volume label as its name.
-#define FAT16_ATTRIB_DIR 		(1 << 4)	// The file is a directory.
-#define FAT16_ATTRIB_ARCHIVE 	(1 << 5)	// The file has to be archived.
+#define FAT16_ATTRIB_READONLY   (1 << 0)    // The file is read-only.
+#define FAT16_ATTRIB_HIDDEN     (1 << 1)    // The file is hidden.
+#define FAT16_ATTRIB_SYSTEM     (1 << 2)    // The file is a system file.
+#define FAT16_ATTRIB_VOLUME     (1 << 3)    // The file is empty and has the volume label as its name.
+#define FAT16_ATTRIB_DIR        (1 << 4)    // The file is a directory.
+#define FAT16_ATTRIB_ARCHIVE    (1 << 5)    // The file has to be archived.
 
 struct fat16_dir_entry {
-	char long_name[32]; 	//file name, 31 characters.
-	uint8_t attributes; 	//file attributes. one of FAT16_ATTRIB_*
-	uint16_t cluster; 		//cluster in which the file starts
-	uint32_t file_size; 	//file size
-	uint32_t entry_offset; 	//total offset of this entry
+    char long_name[32];     //file name, 31 characters.
+    uint8_t attributes;     //file attributes. one of FAT16_ATTRIB_*
+    uint16_t cluster;       //cluster in which the file starts
+    uint32_t file_size;     //file size
+    uint32_t entry_offset;  //total offset of this entry
 };
 
 struct fat16_file {
-	struct fat16_dir_entry dir_entry;
-	uint32_t pos;
+    struct fat16_dir_entry dir_entry;
+    uint32_t pos;
 };
 
 struct fat16_dir {
-	struct fat16_dir_entry dir_entry;
-	uint16_t entry_next;
+    struct fat16_dir_entry dir_entry;
+    uint16_t entry_next;
 };
 
 /**

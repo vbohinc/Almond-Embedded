@@ -1,7 +1,13 @@
 /**
- * downlink.h
+ * downlink.c - Downlink (Nut->Squirrel/Nut->PC)
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
  *
- * Header files for downlink.c
+ *
  *
  * Everybody using this header for a nut must provide following:
  *
@@ -36,9 +42,9 @@ typedef struct _downlink_package downlink_package;
 
 struct _downlink_package
 {
-  uint8_t opcode;
-  uint8_t id;
-  uint16_t value;
+    uint8_t opcode;
+    uint8_t id;
+    uint16_t value;
 };
 
 #ifdef SQUIRREL

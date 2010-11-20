@@ -1,89 +1,85 @@
-/*
-      ___                         ___           ___           ___          _____    
-     /  /\                       /__/\         /  /\         /__/\        /  /::\   
-    /  /::\                     |  |::\       /  /::\        \  \:\      /  /:/\:\  
-   /  /:/\:\    ___     ___     |  |:|:\     /  /:/\:\        \  \:\    /  /:/  \:\ 
-  /  /:/~/::\  /__/\   /  /\  __|__|:|\:\   /  /:/  \:\   _____\__\:\  /__/:/ \__\:|
- /__/:/ /:/\:\ \  \:\ /  /:/ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\ \  \:\ /  /:/
- \  \:\/:/__\/  \  \:\  /:/  \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/  \  \:\  /:/ 
-  \  \::/        \  \:\/:/    \  \:\        \  \:\  /:/   \  \:\  ~~~    \  \:\/:/  
-   \  \:\         \  \::/      \  \:\        \  \:\/:/     \  \:\         \  \::/   
-    \  \:\         \__\/        \  \:\        \  \::/       \  \:\         \__\/    
-     \__\/                       \__\/         \__\/         \__\/                  
-      ___           ___           ___           ___           ___           ___     
-     /  /\         /  /\         /__/\         /__/\         /  /\         /__/\    
-    /  /:/        /  /::\       |  |::\       |  |::\       /  /::\        \  \:\   
-   /  /:/        /  /:/\:\      |  |:|:\      |  |:|:\     /  /:/\:\        \  \:\  
-  /  /:/  ___   /  /:/  \:\   __|__|:|\:\   __|__|:|\:\   /  /:/  \:\   _____\__\:\ 
- /__/:/  /  /\ /__/:/ \__\:\ /__/::::| \:\ /__/::::| \:\ /__/:/ \__\:\ /__/::::::::\
- \  \:\ /  /:/ \  \:\ /  /:/ \  \:\~~\__\/ \  \:\~~\__\/ \  \:\ /  /:/ \  \:\~~\~~\/
-  \  \:\  /:/   \  \:\  /:/   \  \:\        \  \:\        \  \:\  /:/   \  \:\  ~~~ 
-   \  \:\/:/     \  \:\/:/     \  \:\        \  \:\        \  \:\/:/     \  \:\     
-    \  \::/       \  \::/       \  \:\        \  \:\        \  \::/       \  \:\    
-     \__\/         \__\/         \__\/         \__\/         \__\/         \__\/    
-*/
+/**
+ * ftdi.c - a FTDI Debug output Driver
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
+ *
+ */
 
 #include "ftdi.h"
 
-void FTDIInit(void)
+void FTDIInit (void)
 {
 #ifndef __AVR_ATxmega128A1__
-	// initialize data direction
-	DDRD |= FTDI_DD1;
-	DDRC |= FTDI_DD2;
-	DDRB = 0xFF;
+    // initialize data direction
+    DDRD |= FTDI_DD1;
+    DDRC |= FTDI_DD2;
+    DDRB = 0xFF;
 
-	PORTD |= (1<<P_SI);
+    PORTD |= (1 << P_SI);
 #endif
 }
 
-void FTDISend( uint8_t out_buf)
+void FTDISend (uint8_t out_buf)
 {
 #ifndef __AVR_ATxmega128A1__
-	if (out_buf == '\0')
-	{
-		FTDISendImmediate();
-		return;
-	}
 
-	while( TXE !=0 ) {};
+    if (out_buf == '\0')
+    {
+        FTDISendImmediate();
+        return;
+    }
 
-	PORTB = out_buf;
-	PORTC |= (1<<P_WR);
-	nop(); nop();
-	PORTC &= ~(1<<P_WR);
+    while (TXE != 0)
+        {};
+
+    PORTB = out_buf;
+
+    PORTC |= (1 << P_WR);
+
+    nop();
+
+    nop();
+
+    PORTC &= ~ (1 << P_WR);
+
 #endif
 }
 
-void FTDISendImmediate(void)
+void FTDISendImmediate (void)
 {
 #ifndef __AVR_ATxmega128A1__
-	// strobe low
-	PORTD &= ~(1<<P_SI);
-	PORTD |= (1<<P_SI);
+    // strobe low
+    PORTD &= ~ (1 << P_SI);
+    PORTD |= (1 << P_SI);
 #endif
 }
 
-uint8_t FTDIRead( uint8_t *out_buf)
+uint8_t FTDIRead (uint8_t *out_buf)
 {
 #ifndef __AVR_ATxmega128A1__
-	// no data avaiable
-	if( RXF)
-		return 0;
+    // no data avaiable
 
-	// set direction
-	DDRB = 0x00;
+    if (RXF)
+        return 0;
 
-	PORTD &= ~(1<<P_RD);
-	PORTD |= (1<<P_RD);
+    // set direction
+    DDRB = 0x00;
 
-	// read byte out
-	(*out_buf) = PINB;
+    PORTD &= ~ (1 << P_RD);
 
-	// set direction
-	DDRB = 0xFF;
+    PORTD |= (1 << P_RD);
+
+    // read byte out
+    (*out_buf) = PINB;
+
+    // set direction
+    DDRB = 0xFF;
 
 
 #endif
-	return 1;
+    return 1;
 }

@@ -15,15 +15,17 @@
  * uint8_t    tm_wday  day of week [0,6] (Sunday = 0)
  * uint16_t   tm_yday  day of year [0,365]
  */
-struct time_struct {
-	uint8_t    tm_sec;
-	uint8_t    tm_min;
-	uint8_t    tm_hour;
-	uint8_t    tm_mday;
-	uint8_t    tm_mon;
-	uint16_t   tm_year;
-	uint8_t    tm_wday;
-	uint16_t   tm_yday;
+
+struct time_struct
+{
+    uint8_t    tm_sec;
+    uint8_t    tm_min;
+    uint8_t    tm_hour;
+    uint8_t    tm_mday;
+    uint8_t    tm_mon;
+    uint16_t   tm_year;
+    uint8_t    tm_wday;
+    uint16_t   tm_yday;
 };
 
 /**
@@ -40,7 +42,7 @@ extern bool timestamp_to_time (uint32_t timestamp, uint16_t offset, struct time_
  * @param tm time_struct to convert (uses only tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec)
  * @return the unix timestamp
  */
-extern uint32_t timestruct_to_timestamp(struct time_struct tm);
+extern uint32_t timestruct_to_timestamp (struct time_struct tm);
 
 /**
  * Converts the time with given parameters into a unix timestamp.
@@ -53,8 +55,8 @@ extern uint32_t timestruct_to_timestamp(struct time_struct tm);
  * @param second
  * @return the unix timestamp
  */
-extern uint32_t time_to_timestamp(uint16_t year, uint8_t month, uint8_t day,
-		uint8_t hour, uint8_t minute, uint8_t second);
+extern uint32_t time_to_timestamp (uint16_t year, uint8_t month, uint8_t day,
+                                       uint8_t hour, uint8_t minute, uint8_t second);
 
 
 #endif //__TIME_CONVERSION__

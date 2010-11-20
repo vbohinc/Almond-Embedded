@@ -1,3 +1,16 @@
+/**
+ * bluetooth.c - source for the Bluetooth driver
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
+ *
+ * \author Linus Lotz<lotz@in.tum.de>
+ * \author Salomon Sickert
+ */
+
 #include "bluetooth.h"
 #include <uart/uart.h>
 #include <fifo.h>
@@ -17,24 +30,24 @@
 
 typedef enum
 {
-  BT_RAW,
-  BT_DATA,
-  BT_CMD
+    BT_RAW,
+    BT_DATA,
+    BT_CMD
 } communication_mode_t;
 
 #define BT_CMD_TIMEOUT_MS 1000
 
 typedef enum
 {
-  BT_TEST,                      // AT
-  BT_CONNECT,                   // ATA
-  BT_DISCONNECT,                // ATH
-  BT_CLEAR_ADDRESS,             // ATD0
-  BT_SET_ADDRESS,               // ATD=_____
-  BT_FIND_DEVICES,              // ATF?
-  BT_DISABLE_AUTOCONNECT,       // ATO1
-  BT_SET_MASTER,                // ATR0
-  BT_SET_SLAVE,                 // ATR1
+    BT_TEST,                      // AT
+    BT_CONNECT,                   // ATA
+    BT_DISCONNECT,                // ATH
+    BT_CLEAR_ADDRESS,             // ATD0
+    BT_SET_ADDRESS,               // ATD=_____
+    BT_FIND_DEVICES,              // ATF?
+    BT_DISABLE_AUTOCONNECT,       // ATO1
+    BT_SET_MASTER,                // ATR0
+    BT_SET_SLAVE,                 // ATR1
 } bt_cmd_t;
 
 #ifdef SQUIRREL
@@ -62,34 +75,34 @@ uart_receive (void)
 
         switch (uart_data & 0xFF00)
         {
-                /* Framing Error detected, i.e no stop bit detected */
-            case UART_FRAME_ERROR:
-                warn_pgm (PSTR ("FRM ERR"));
-                return;
+            /* Framing Error detected, i.e no stop bit detected */
+        case UART_FRAME_ERROR:
+            warn_pgm (PSTR ("FRM ERR"));
+            return;
 
-                /*
-                 * Overrun, a character already presend in the UART UDR register was
-                 * not read by the interrupt handler before the next character arrived,
-                 * one or more received characters have been dropped
-                 */
-            case UART_OVERRUN_ERROR:
-                warn_pgm (PSTR ("OVR ERR"));
-                return;
+            /*
+             * Overrun, a character already presend in the UART UDR register was
+             * not read by the interrupt handler before the next character arrived,
+             * one or more received characters have been dropped
+             */
+        case UART_OVERRUN_ERROR:
+            warn_pgm (PSTR ("OVR ERR"));
+            return;
 
-                /*
-                 * We are not reading the receive buffer fast enough,
-                 * one or more received character have been dropped
-                 */
-            case UART_BUFFER_OVERFLOW:
-                warn_pgm (PSTR ("BUF ERR"));
-                return;
+            /*
+             * We are not reading the receive buffer fast enough,
+             * one or more received character have been dropped
+             */
+        case UART_BUFFER_OVERFLOW:
+            warn_pgm (PSTR ("BUF ERR"));
+            return;
 
-                /* UART Inputbuffer empty, nothing to do */
-            case UART_NO_DATA:
-                return;
+            /* UART Inputbuffer empty, nothing to do */
+        case UART_NO_DATA:
+            return;
 
-            default:
-                fifo_write (&in_fifo, uart_data);
+        default:
+            fifo_write (&in_fifo, uart_data);
         }
     }
 
@@ -109,8 +122,8 @@ uart_send (const char *data, const uint8_t length)
         }
 
         if (comm_mode == BT_RAW)
-          _delay_ms (50);
-        
+            _delay_ms (50);
+
         /* Check for echo */
         if (comm_mode == BT_CMD)
         {
@@ -131,7 +144,7 @@ void test (void);
 static bool
 send_cmd (const bt_cmd_t command, const char *data)
 {
-	_delay_ms(500);
+    _delay_ms(500);
     // Check for command mode?
     char full_command[20];        // Maximum command size
 
@@ -156,7 +169,7 @@ send_cmd (const bt_cmd_t command, const char *data)
     case BT_SET_ADDRESS:
         strcpy_P (full_command, PSTR ("ATD="));
         memcpy((full_command+strlen(full_command)), data, 12);
-		full_command[16] = 0;
+        full_command[16] = 0;
         break;
 
     case BT_FIND_DEVICES:
@@ -198,8 +211,8 @@ send_cmd (const bt_cmd_t command, const char *data)
             return false;
     }
 
-	if(command != BT_TEST)
-	    warn_pgm (PSTR ("CMD SEND: TIMEOUT"));
+    if (command != BT_TEST)
+        warn_pgm (PSTR ("CMD SEND: TIMEOUT"));
 
     return false;
 }
@@ -217,7 +230,7 @@ static void
 clean_line (void)
 {
     while_timeout(fifo_strstr_pgm (&in_fifo, PSTR ("\r\n")),1000)
-        uart_receive();
+    uart_receive();
 }
 
 static communication_mode_t
@@ -236,7 +249,7 @@ update_comm_mode (uint16_t timeout_ms)
         if (fifo_strstr_pgm (&in_fifo, PSTR ("CONNECT")))
         {
             clean_line ();
-			debug_pgm(PSTR("CONNECTED"));
+            debug_pgm(PSTR("CONNECTED"));
             return comm_mode = BT_DATA;
         }
 
@@ -270,12 +283,12 @@ bt_init (void)
 
     comm_mode = BT_CMD;
 
-	test();
+    test();
 
     send_cmd (BT_CLEAR_ADDRESS, NULL);
-	test();
+    test();
     send_cmd (BT_SET_SLAVE, NULL);
-	test();
+    test();
     return true;
 }
 
@@ -291,19 +304,19 @@ bt_set_mode (const bt_mode_t mode)
 
     if (mode == BLUETOOTH_MASTER)
         if (send_cmd (BT_SET_MASTER, NULL))
-		{
+        {
             bt_mode = BLUETOOTH_MASTER;
-			test();
-			send_cmd (BT_DISABLE_AUTOCONNECT, NULL);
-		}
+            test();
+            send_cmd (BT_DISABLE_AUTOCONNECT, NULL);
+        }
 
     if (mode == BLUETOOTH_SLAVE)
         if (send_cmd (BT_SET_SLAVE, NULL))
-		{
+        {
             bt_mode = BLUETOOTH_SLAVE;
-		}
+        }
 
-	test();
+    test();
     return mode == bt_mode;
 }
 
@@ -375,11 +388,11 @@ bool
 bt_connect (const char *address)
 {
     debug_pgm (PSTR ("CONNECT"));
-	test();
+    test();
     if (!send_cmd (BT_SET_ADDRESS, address))
         return false;
 
-	test();
+    test();
     if (!send_cmd (BT_CONNECT, NULL))
         return false;
 
@@ -410,73 +423,73 @@ bt_disconnect (void)
 void
 copy_address (const char *src, char *dst)
 {
-  uint8_t off = 0;
-  
-  for (uint8_t i = 0; i < 14; i++)
+    uint8_t off = 0;
+
+    for (uint8_t i = 0; i < 14; i++)
     {
-      if (src[i+off] == '-')
-          off++;
-      
-      dst[i] = src[i+off];
+        if (src[i+off] == '-')
+            off++;
+
+        dst[i] = src[i+off];
     }
 }
 
 bool
 bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress))
 {
-	if (!bt_set_mode(BLUETOOTH_MASTER)) return false;
-  if (!send_cmd (BT_FIND_DEVICES, NULL)) return false;
+    if (!bt_set_mode(BLUETOOTH_MASTER)) return false;
+    if (!send_cmd (BT_FIND_DEVICES, NULL)) return false;
 
-  char buffer[255]; //oversized, but who cares?
-  char *bufferhead = buffer;
-  uint8_t pos = 0; 
+    char buffer[255]; //oversized, but who cares?
+    char *bufferhead = buffer;
+    uint8_t pos = 0;
 
-  while_timeout (!fifo_strstr_pgm (&in_fifo, PSTR ("Inquiry Results:\r\n")), 12000)
+    while_timeout (!fifo_strstr_pgm (&in_fifo, PSTR ("Inquiry Results:\r\n")), 12000)
     uart_receive();
 
-  for (uint16_t i = 0; i < 60000; i++)
+    for (uint16_t i = 0; i < 60000; i++)
     {
-      uart_receive();
-      
-      if ((i % 1000) == 0) //&& update_callback != NULL)
+        uart_receive();
+
+        if ((i % 1000) == 0) //&& update_callback != NULL)
         {
-          error_putc('.');
+            error_putc('.');
         }
 
-      _delay_ms (1);
-	  }
+        _delay_ms (1);
+    }
 
-	while (!fifo_is_empty (&in_fifo))
-	  {  
-      // Get next line
-      while (!fifo_cmp_pgm (&in_fifo, PSTR ("\r\n")))
-    		{
-    			fifo_read (&in_fifo, bufferhead);
-     			bufferhead++;
-    		}
-  		//terminate string
-  		*bufferhead = 0;
+    while (!fifo_is_empty (&in_fifo))
+    {
+        // Get next line
+        while (!fifo_cmp_pgm (&in_fifo, PSTR ("\r\n")))
+        {
+            fifo_read (&in_fifo, bufferhead);
+            bufferhead++;
+        }
+        //terminate string
+        *bufferhead = 0;
 
-  		//reset bufferhead
-  		bufferhead = buffer;
+        //reset bufferhead
+        bufferhead = buffer;
 
-  		if (strlen (buffer) == 0)
-  			continue; //the empty line before end of inquiry
+        if (strlen (buffer) == 0)
+            continue; //the empty line before end of inquiry
 
-  		if (strstr_P (buffer, PSTR ("Inquiry End")))
-    		{
-				error_putc('0'+pos);
-    			fifo_clear (&in_fifo);
-				test();
-    			return true;
-    		}
+        if (strstr_P (buffer, PSTR ("Inquiry End")))
+        {
+            error_putc('0'+pos);
+            fifo_clear (&in_fifo);
+            test();
+            return true;
+        }
 
-		  copy_address (&buffer[21], result[pos]);      
-      pos++;
-	}
-	test();
-  
-  return false;
+        copy_address (&buffer[21], result[pos]);
+        pos++;
+    }
+    test();
+
+    return false;
 }
 
 #endif /* SQUIRREL */

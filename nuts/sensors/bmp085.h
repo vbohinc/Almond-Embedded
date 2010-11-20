@@ -1,5 +1,11 @@
 /**
- * @brief sensor driver for the bmp085 pressure and temprature sensor
+ * bmp085.h - Driver for the BMP085 temprature and pressure sensor connected via TWI
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
  *
  */
 
@@ -16,15 +22,15 @@
 
 struct bmp_data
 {
-  int32_t temprature;
-  int32_t pressure;
+    int32_t temprature;
+    int32_t pressure;
 };
 
 typedef struct bmp_data bmp_data_t;
 
-extern void init_bmp085_sensor(void);
+extern void init_bmp085_sensor (void);
 
-extern bmp_data_t bmp085_get_data(void);
+extern bmp_data_t bmp085_get_data (void);
 
 #endif //__BMP085_H__
 

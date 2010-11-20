@@ -1,5 +1,12 @@
-/*
- * squirrel.h
+/**
+ * squirrel.h - the Squirrel
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
+ *
  */
 
 #ifndef __SQUIRREL__
@@ -10,14 +17,14 @@
 
 enum STATES
 {
-  SLAVE, SLAVE_BUSY, MASTER
+    SLAVE, SLAVE_BUSY, MASTER
 };
 
 extern uint8_t squirrel_state_get (void);
 extern void    squirrel_state_set (uint8_t state);
 
-extern bool    squirrel_list      (uint8_t num, uplink_payload_list *p);
-extern bool    squirrel_log       (uplink_package *p); 
+extern bool    squirrel_list (uint8_t num, uplink_payload_list *p);
+extern bool    squirrel_log (uplink_package *p);
 
 
 #define NUTS_LIST 16
@@ -25,11 +32,13 @@ extern bool    squirrel_log       (uplink_package *p);
 
 struct _device_info
 {
-  char mac[12];
-  uint8_t class;
-  uint8_t extension_types[EXTENSIONS_LIST];
-  uint16_t values_cache[EXTENSIONS_LIST];
+    char mac[12];
+
+    uint8_t class;
+    uint8_t extension_types[EXTENSIONS_LIST];
+    uint16_t values_cache[EXTENSIONS_LIST];
 };
+
 typedef struct _device_info device_info;
 extern device_info device_list[NUTS_LIST];
 

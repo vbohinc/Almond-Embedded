@@ -1,10 +1,13 @@
-/*
+/**
+ * uplink.h - Uplink (PC->Squirrel)
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
  *
- * uplink.h
- *
- * Header files for uplink.c
  */
-
 #ifndef __UPLINK_H__
 #define __UPLINK_H__
 
@@ -41,50 +44,54 @@
  */
 
 typedef struct _uplink_payload_list   uplink_payload_list;
+
 typedef struct _uplink_payload_log    uplink_payload_log;
+
 typedef struct _uplink_payload_time   uplink_payload_time;
+
 typedef struct _uplink_package        uplink_package;
+
 typedef struct _log_entry             log_entry;
 
 struct _log_entry
 {
-  uint32_t time;
-  uint16_t value;
+    uint32_t time;
+    uint16_t value;
 };
 
 struct _uplink_payload_list
 {
-  uint8_t bt_address[6];
-  uint8_t nut_class;
-  uint8_t extension_class[55];
+    uint8_t bt_address[6];
+    uint8_t nut_class;
+    uint8_t extension_class[55];
 };
 
 struct _uplink_payload_log
 {
-  uint8_t bt_address[6];
-  uint8_t extension_id;
-  log_entry entries[9];
-  uint8_t padding;
+    uint8_t bt_address[6];
+    uint8_t extension_id;
+    log_entry entries[9];
+    uint8_t padding;
 };
 
 struct _uplink_payload_time
 {
-  uint32_t time;
-  uint8_t padding[58];
+    uint32_t time;
+    uint8_t padding[58];
 };
 
 union payload
 {
-  uplink_payload_list list;
-  uplink_payload_log log;
-  uplink_payload_time time;
+    uplink_payload_list list;
+    uplink_payload_log log;
+    uplink_payload_time time;
 } payload;
 
 struct _uplink_package
 {
-  uint8_t opcode;
-  uint8_t id;
-  union payload payload;
+    uint8_t opcode;
+    uint8_t id;
+    union payload payload;
 };
 
 

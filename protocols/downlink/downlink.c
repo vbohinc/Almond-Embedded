@@ -1,7 +1,12 @@
 /**
- * downlink.c
+ * downlink.c - Downlink (Nut->Squirrel/Nut->PC)
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
  *
- * Downlink protocol implementation
  */
 
 #include "downlink.h"
@@ -12,63 +17,67 @@
 /* WARNING: Assuming layer above already connected */
 static uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t value, bool *err)
 {
-  downlink_package package;
-  uint8_t length;
-  
-  package.opcode = opcode | flag;
-  package.id = id;
-  package.value = value;
-  *err = false;
-  length = DOWNLINK_PACKAGE_LENGTH;
+    downlink_package package;
+    uint8_t length;
 
-  if (bt_send ((void *) &package, length) && bt_receive ((void *) &package, &length, DOWNLINK_TIMEOUT_MS))
+    package.opcode = opcode | flag;
+    package.id = id;
+    package.value = value;
+    *err = false;
+    length = DOWNLINK_PACKAGE_LENGTH;
+
+    if (bt_send ( (void *) &package, length) && bt_receive ( (void *) &package, &length, DOWNLINK_TIMEOUT_MS))
     {
-      if (length != DOWNLINK_PACKAGE_LENGTH)
-        error_pgm (PSTR ("Length doesnt match"));
-      else if ((package.opcode == (RET | opcode | flag)) && (package.id == id) )
-        return package.value;
-      else if (package.opcode == (ERROR | flag))
-        error_pgm (PSTR ("Nut signalled error")); // 
-      else
-        error_pgm (PSTR ("Downlink protocol mismatch")); // 
+        if (length != DOWNLINK_PACKAGE_LENGTH)
+            error_pgm (PSTR ("Length doesnt match"));
+        else
+            if ( (package.opcode == (RET | opcode | flag)) && (package.id == id))
+                return package.value;
+            else
+                if (package.opcode == (ERROR | flag))
+                    error_pgm (PSTR ("Nut signalled error")); //
+                else
+                    error_pgm (PSTR ("Downlink protocol mismatch")); //
     }
-  else
+
+    else
     {
-      //error_pgm (PSTR ("Send/receive error"));
+        //error_pgm (PSTR ("Send/receive error"));
     }
-          
-  *err = true;
-  return 0;
+
+    *err = true;
+
+    return 0;
 }
 
 uint16_t downlink_get_sensor_value (uint8_t id, bool *err)
 {
-  return downlink_request (GET, STANDARD, id, 0, err);
+    return downlink_request (GET, STANDARD, id, 0, err);
 }
 
 void downlink_set_actuator_value (uint8_t id, uint16_t value, bool *err)
 {
-  downlink_request (SET, STANDARD, id, value, err);
+    downlink_request (SET, STANDARD, id, value, err);
 }
 
 uint8_t downlink_get_nut_class (bool *err)
 {
-  return downlink_request (GET, INFO_NUT, 0, 0, err);
+    return downlink_request (GET, INFO_NUT, 0, 0, err);
 }
 
 uint8_t downlink_get_extension_class (uint8_t id, bool *err)
 {
-  return downlink_request (GET, INFO_EXTENSION, id, 0, err);
+    return downlink_request (GET, INFO_EXTENSION, id, 0, err);
 }
 
 bool downlink_is_nut (bool *err)
 {
-  return 42 == downlink_request (ECHO, STANDARD, 0, 42, err);
+    return 42 == downlink_request (ECHO, STANDARD, 0, 42, err);
 }
 
 void downlink_bye (uint16_t time_sec, bool *err)
 {
-  downlink_request (BYE, STANDARD, 0, time_sec, err);
+    downlink_request (BYE, STANDARD, 0, time_sec, err);
 }
 
 #endif
@@ -80,31 +89,38 @@ void downlink_bye (uint16_t time_sec, bool *err)
  */
 static inline bool downlink_handle_get_package (downlink_package *p)
 {
-  switch (p->opcode & 0x0F)
+    switch (p->opcode & 0x0F)
     {
 
-    case STANDARD:
-      if (p->id < class_id_extensions_length && class_id_extensions[p->id] < GENERIC_ACTOR)
-        p->value = get_value (p->id);
-      else
-        return false;
-      break;
+        case STANDARD:
 
-    case INFO_NUT:
-      p->id = 0;
-      p->value = class_id_nut;
-      break;
+            if (p->id < class_id_extensions_length && class_id_extensions[p->id] < GENERIC_ACTOR)
+                p->value = get_value (p->id);
+            else
+                return false;
 
-    case INFO_EXTENSION:
-      if (p->id >= class_id_extensions_length) return false;
-      p->value = class_id_extensions[p->id];
-      break;
+            break;
 
-    default:
-      return false;
+        case INFO_NUT:
+            p->id = 0;
+
+            p->value = class_id_nut;
+
+            break;
+
+        case INFO_EXTENSION:
+            if (p->id >= class_id_extensions_length)
+                return false;
+
+            p->value = class_id_extensions[p->id];
+
+            break;
+
+        default:
+            return false;
     }
 
-  return true;
+    return true;
 }
 
 /**
@@ -112,78 +128,85 @@ static inline bool downlink_handle_get_package (downlink_package *p)
  */
 static inline bool downlink_handle_set_package (downlink_package *p)
 {
-  switch (p->opcode & 0x0F)
+    switch (p->opcode & 0x0F)
     {
 
-    case STANDARD:
-      if (p->id < class_id_extensions_length && class_id_extensions[p->id] >= GENERIC_ACTOR)
-        set_value (p->id, p->value);
-      else
-        return false;
-      break;
+        case STANDARD:
 
-    default:
-      return false;
+            if (p->id < class_id_extensions_length && class_id_extensions[p->id] >= GENERIC_ACTOR)
+                set_value (p->id, p->value);
+            else
+                return false;
+
+            break;
+
+        default:
+            return false;
     }
 
-  return true;
+    return true;
 }
 
 bool downlink_process_pkg (uint8_t * data, uint8_t length)
 {
-  bool return_package;
-  downlink_package *p;
+    bool return_package;
+    downlink_package *p;
 
 #ifdef DEBUG
-  debug_pgm (PSTR ("P LEN:"));
-  
-  byte_to_hex (length);
-  error_putc(13);
-  
-  debug_pgm (PSTR ("P REC:"));
-  for (uint8_t i = 0; i < length; i++)
+    debug_pgm (PSTR ("P LEN:"));
+
+    byte_to_hex (length);
+    error_putc (13);
+
+    debug_pgm (PSTR ("P REC:"));
+
+    for (uint8_t i = 0; i < length; i++)
     {
-      byte_to_hex(data[i]);
-      error_putc(' ');
+        byte_to_hex (data[i]);
+        error_putc (' ');
     }
-  
-  error_putc(13);
+
+    error_putc (13);
+
 #endif
 
-  if (length != DOWNLINK_PACKAGE_LENGTH)
-    return false;
-    
-  p = (downlink_package *) (data);
-  sleep = 0;
+    if (length != DOWNLINK_PACKAGE_LENGTH)
+        return false;
 
-  switch (p->opcode & 0xF0)
+    p = (downlink_package *) (data);
+
+    sleep = 0;
+
+    switch (p->opcode & 0xF0)
     {
-      case GET:
-        return_package = downlink_handle_get_package (p);
-        break;
 
-      case SET:
-        return_package = downlink_handle_set_package (p);
-        break;
+        case GET:
+            return_package = downlink_handle_get_package (p);
+            break;
 
-      case BYE:
-        sleep = p->value; 
-        p->id = 0;
-        p->value = 0;
-        return_package = true;
-        break;
+        case SET:
+            return_package = downlink_handle_set_package (p);
+            break;
 
-      case ECHO:
-        return_package = true;
-        break;
+        case BYE:
+            sleep = p->value;
+            p->id = 0;
+            p->value = 0;
+            return_package = true;
+            break;
 
-      default:
-        return_package = false;
-        break;
+        case ECHO:
+            return_package = true;
+            break;
+
+        default:
+            return_package = false;
+            break;
     }
 
-  p->opcode |= return_package ? RET : ERROR;
-  return bt_send ((void *) p, DOWNLINK_PACKAGE_LENGTH);
+    p->opcode |= return_package ? RET : ERROR;
+
+    return bt_send ( (void *) p, DOWNLINK_PACKAGE_LENGTH);
 }
 
 #endif

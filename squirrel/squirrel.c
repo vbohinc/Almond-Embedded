@@ -1,5 +1,11 @@
-/*
- * squirrel.c
+/**
+ * squirrel.c - the Squirrel
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
  *
  */
 
@@ -25,31 +31,34 @@ volatile uint8_t state;
 
 extern uint8_t squirrel_state_get (void)
 {
-  return state;
+    return state;
 }
 
 extern void squirrel_state_set (uint8_t s)
 {
 #ifdef DEBUG
-  switch (s)
+
+    switch (s)
     {
-    case SLAVE:
-      debug_pgm (PSTR ("Switching to SLAVE..."));
-      break;
 
-    case SLAVE_BUSY:
-      debug_pgm (PSTR ("Switching to SLAVE_BUSY..."));
-      break;
+        case SLAVE:
+            debug_pgm (PSTR ("Switching to SLAVE..."));
+            break;
 
-    case MASTER:
-      debug_pgm (PSTR ("Switching to MASTER..."));
-      break;
+        case SLAVE_BUSY:
+            debug_pgm (PSTR ("Switching to SLAVE_BUSY..."));
+            break;
 
-    default:
-      debug_pgm (PSTR ("Switching to ???..."));
+        case MASTER:
+            debug_pgm (PSTR ("Switching to MASTER..."));
+            break;
+
+        default:
+            debug_pgm (PSTR ("Switching to ???..."));
     }
+
 #endif
-  state = s;
+    state = s;
 }
 
 /* -----------------------------------------------------------------------
@@ -60,162 +69,176 @@ extern void squirrel_state_set (uint8_t s)
 
 device_info device_list [NUTS_LIST];
 
-static void dump (void) 
+static void dump (void)
 {
-  for (uint8_t i = 0; i < 2; i++)
+    for (uint8_t i = 0; i < 2; i++)
     {
-      debug_pgm (PSTR("MAC: "));
-      byte_to_hex (device_list[i].mac[0]);
-      byte_to_hex (device_list[i].mac[1]);
-      byte_to_hex (device_list[i].mac[2]);
-      byte_to_hex (device_list[i].mac[3]);
-      byte_to_hex (device_list[i].mac[4]);
-      byte_to_hex (device_list[i].mac[5]);
-      error_putc ('\n');
-      debug_pgm (PSTR("CLASS: "));
-      byte_to_hex (device_list[i].class);
-      error_putc ('\n');
-      debug_pgm (PSTR("VALUES: "));  
-      for (uint8_t j = 0; j < EXTENSIONS_LIST; j++) 
+        debug_pgm (PSTR ("MAC: "));
+        byte_to_hex (device_list[i].mac[0]);
+        byte_to_hex (device_list[i].mac[1]);
+        byte_to_hex (device_list[i].mac[2]);
+        byte_to_hex (device_list[i].mac[3]);
+        byte_to_hex (device_list[i].mac[4]);
+        byte_to_hex (device_list[i].mac[5]);
+        error_putc ('\n');
+        debug_pgm (PSTR ("CLASS: "));
+        byte_to_hex (device_list[i].class);
+        error_putc ('\n');
+        debug_pgm (PSTR ("VALUES: "));
+
+        for (uint8_t j = 0; j < EXTENSIONS_LIST; j++)
         {
-          byte_to_hex (device_list[i].extension_types[j]);
-          error_putc (' ');
-          error_putc ('-');
-          error_putc ('>');
-          error_putc (' ');
-          byte_to_hex ((uint8_t) (device_list[i].values_cache[j] >> 8));
-          byte_to_hex ((uint8_t) device_list[i].values_cache[j]);
-          error_putc ('\n');
-        }  
+            byte_to_hex (device_list[i].extension_types[j]);
+            error_putc (' ');
+            error_putc ('-');
+            error_putc ('>');
+            error_putc (' ');
+            byte_to_hex ( (uint8_t) (device_list[i].values_cache[j] >> 8));
+            byte_to_hex ( (uint8_t) device_list[i].values_cache[j]);
+            error_putc ('\n');
+        }
     }
 
 }
 
 bool bt_cmp (const char *add1, const char *add2)
 {
-  uint8_t i;
-  for (i = 0; i < 12 && add1[i] == add2[i]; i++);
-  return (i == 12);
+    uint8_t i;
+
+    for (i = 0; i < 12 && add1[i] == add2[i]; i++)
+        ;
+
+    return (i == 12);
 }
 
 bool squirrel_list (uint8_t num, uplink_payload_list *p)
 {
-  if (valid (num))
+    if (valid (num))
     {
-      for (uint8_t i = 0; i < 6; i++)
-        p->bt_address[i] = device_list[num].mac[i];
+        for (uint8_t i = 0; i < 6; i++)
+            p->bt_address[i] = device_list[num].mac[i];
 
-      p->nut_class = device_list[num].class;
+        p->nut_class = device_list[num].class;
 
-      for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
-        p->extension_class[i] = device_list[num].extension_types[i];
+        for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
+            p->extension_class[i] = device_list[num].extension_types[i];
 
-      return true;
+        return true;
     }
-  else
+
+    else
     {
-      return false;
+        return false;
     }
 }
 
-bool squirrel_log (uplink_package *p) 
+bool squirrel_log (uplink_package *p)
 {
-  uplink_payload_log *log = &(p->payload.log);
+    uplink_payload_log *log = & (p->payload.log);
 
-  for (uint8_t i = 0; i < 9; i++)
+    for (uint8_t i = 0; i < 9; i++)
     {
-      log->entries[i].time = i;
-      log->entries[i].value = 42;
+        log->entries[i].time = i;
+        log->entries[i].value = 42;
     }
 
-  return true;
+    return true;
 }
 
-static void update_id (uint8_t num) 
+static void update_id (uint8_t num)
 {
-  if (!valid (num)) return;
+    if (!valid (num))
+        return;
 
-  bool err = false;
-  
-  device_list[num].class = downlink_get_nut_class (&err);
+    bool err = false;
 
-  uint8_t j;
-  for (j = 0; j < EXTENSIONS_LIST && !err; j++)
-    device_list[num].extension_types[j] = downlink_get_extension_class(j, &err);
-  for (; j<EXTENSIONS_LIST; j++)
-	device_list[num].extension_types[j] = INVALID;
+    device_list[num].class = downlink_get_nut_class (&err);
+
+    uint8_t j;
+
+    for (j = 0; j < EXTENSIONS_LIST && !err; j++)
+        device_list[num].extension_types[j] = downlink_get_extension_class (j, &err);
+
+    for (; j < EXTENSIONS_LIST; j++)
+        device_list[num].extension_types[j] = INVALID;
 }
 
-static void update_values (uint8_t num) 
+static void update_values (uint8_t num)
 {
-  if (!valid (num)) return;
-  
-  bool err = false;
-  
-  for (uint8_t i = 0; i < EXTENSIONS_LIST && !err; i++)
+    if (!valid (num))
+        return;
+
+    bool err = false;
+
+    for (uint8_t i = 0; i < EXTENSIONS_LIST && !err; i++)
     {
-      if (device_list[num].extension_types[i] < GENERIC_ACTOR)
+        if (device_list[num].extension_types[i] < GENERIC_ACTOR)
         {
-          device_list[num].values_cache[i] = downlink_get_sensor_value (i, &err);
-          // log??
+            device_list[num].values_cache[i] = downlink_get_sensor_value (i, &err);
+            // log??
         }
     }
 }
 
 static void update_device_entry (const char *address)
 {
-  bool err;
+    bool err;
 
-  for (uint8_t k = 0; k < NUTS_LIST; k++)
+    for (uint8_t k = 0; k < NUTS_LIST; k++)
     {
-      if (bt_cmp (device_list[k].mac, address))
+        if (bt_cmp (device_list[k].mac, address))
+            return;
+        else
+            if (valid (k))
+                continue;
+
+        if (!bt_connect (address) && downlink_is_nut (&err))
+        {
+            error_pgm (PSTR ("Connection couldn't be established"));
+            return;
+        }
+
+        memcpy (&device_list[k], (void *) address, 12);
+
+        update_id (k);
+        update_values (k);
+        downlink_bye (POLL_INTERVALL, &err);
+
+        if (!bt_disconnect())
+        {
+            error_pgm (PSTR ("Conn not closed"));
+            // Hard reset module!
+        }
+
         return;
-      else if (valid (k))
-        continue;
-      if (!bt_connect (address) && downlink_is_nut (&err)) 
-        {
-           error_pgm (PSTR("Connection couldn't be established"));
-           return;
-        }
-          
-      memcpy (&device_list[k], (void *) address, 12);
-      update_id (k);
-      update_values (k);
-      downlink_bye (POLL_INTERVALL, &err);
-           
-      if (!bt_disconnect()) 
-        {
-          error_pgm(PSTR("Conn not closed"));
-          // Hard reset module!
-        }
-       
-      return;
     }
 
-  error_pgm (PSTR("Out of Memory"));
+    error_pgm (PSTR ("Out of Memory"));
 }
 
-void downlink_update(void)
+void downlink_update (void)
 {
-  char result[8][12];
+    char result[8][12];
 
-  for (uint8_t i = 0; i < 8; i++)
-    for (uint8_t j = 0; j < 12; j++)
-      result[i][j] = 0;
-  
-
-  if (bt_discover (result, NULL))
     for (uint8_t i = 0; i < 8; i++)
-      {
         for (uint8_t j = 0; j < 12; j++)
-          error_putc (result[i][j]);
+            result[i][j] = 0;
 
-        update_device_entry (result[i]);
-      }
-  else
-    debug_pgm (PSTR("FAIL!!!"));      
 
-  while (true);
+    if (bt_discover (result, NULL))
+        for (uint8_t i = 0; i < 8; i++)
+        {
+            for (uint8_t j = 0; j < 12; j++)
+                error_putc (result[i][j]);
+
+            update_device_entry (result[i]);
+        }
+
+    else
+        debug_pgm (PSTR ("FAIL!!!"));
+
+    while (true)
+        ;
 }
 
 /* -----------------------------------------------------------------------
@@ -224,82 +247,93 @@ void downlink_update(void)
 
 int main (void)
 {
-  /* Internen 32Mhz Oszillator einschalten */
-  //OSC.CTRL = OSC_RC32MEN_bm;
+    /* Internen 32Mhz Oszillator einschalten */
+    //OSC.CTRL = OSC_RC32MEN_bm;
 
 //Set Prescaler to devide by 4
-  CCP = CCP_IOREG_gc;
-  CLK.PSCTRL = CLK_PSBCDIV_2_2_gc;
+    CCP = CCP_IOREG_gc;
+    CLK.PSCTRL = CLK_PSBCDIV_2_2_gc;
 
-  /*external clock konfigurieren 9-12mhz*/
-  OSC.XOSCCTRL = OSC_FRQRANGE1_bm | OSC_XOSCSEL3_bm | OSC_XOSCSEL1_bm | OSC_XOSCSEL0_bm;
+    /*external clock konfigurieren 9-12mhz*/
+    OSC.XOSCCTRL = OSC_FRQRANGE1_bm | OSC_XOSCSEL3_bm | OSC_XOSCSEL1_bm | OSC_XOSCSEL0_bm;
 
-  /*external clock aktivieren */
-  OSC.CTRL = OSC_XOSCEN_bm;
+    /*external clock aktivieren */
+    OSC.CTRL = OSC_XOSCEN_bm;
 
-  /* PLL auf 10x stellen */
-  OSC.PLLCTRL = OSC_PLLSRC0_bm|OSC_PLLSRC1_bm|OSC_PLLFAC3_bm|OSC_PLLFAC1_bm;
- 
-  /*auf stabile clock warten */
-  while ((OSC.STATUS & OSC_XOSCRDY_bm) == 0);
+    /* PLL auf 10x stellen */
+    OSC.PLLCTRL = OSC_PLLSRC0_bm | OSC_PLLSRC1_bm | OSC_PLLFAC3_bm | OSC_PLLFAC1_bm;
 
-  /*external clock + PLL aktivieren */
-  OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;
+    /*auf stabile clock warten */
 
-  /* Warten bis PLL stabil ist */
-  while ((OSC.STATUS & (OSC_PLLRDY_bm)) == 0);
+    while ( (OSC.STATUS & OSC_XOSCRDY_bm) == 0)
+        ;
 
-  /* System Clock selection */
-  CCP = CCP_IOREG_gc;
-  CLK.CTRL = CLK_SCLKSEL_PLL_gc;
+    /*external clock + PLL aktivieren */
+    OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;
 
-/* Backlight anschalten */
-    set_bit(PORTC.DIR,4);
-    clear_bit(PORTC.OUT,4);
+    /* Warten bis PLL stabil ist */
+    while ( (OSC.STATUS & (OSC_PLLRDY_bm)) == 0)
+        ;
+
+    /* System Clock selection */
+    CCP = CCP_IOREG_gc;
+
+    CLK.CTRL = CLK_SCLKSEL_PLL_gc;
+
+    /* Backlight anschalten */
+    set_bit (PORTC.DIR, 4);
+
+    clear_bit (PORTC.OUT, 4);
 
 
-  error_init ();
-  sei ();
+    error_init ();
 
-  display_init ();
-  /*while (true) {
-	  _delay_ms(1000);
-	 }
-*/
-  bt_init();
-  squirrel_state_set (MASTER);
-            
-  while (true)
+    sei ();
+
+    display_init ();
+
+    /*while (true) {
+     _delay_ms(1000);
+    }
+    */
+    bt_init();
+
+    squirrel_state_set (MASTER);
+
+    while (true)
     {
-      display_flip ();
-      if (state == MASTER)
-        {
-  		  debug_pgm(PSTR("fubar"));
-          assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
-          downlink_update ();
-  		  debug_pgm(PSTR("whoa?"));
-          dump ();
-          assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");
-          squirrel_state_set (SLAVE);
-        }
-      else if (state == SLAVE || state == SLAVE_BUSY)
-        {
+        display_flip ();
 
-          bt_set_mode (BLUETOOTH_SLAVE);
-          // We wait for connections from the backend...
-          uint8_t data[UPLINK_PACKAGE_LENGTH];
-          uint8_t length = UPLINK_PACKAGE_LENGTH;
-      
-          if (bt_receive (data, &length, 0)) 
+        if (state == MASTER)
+        {
+            debug_pgm (PSTR ("fubar"));
+            assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
+            downlink_update ();
+            debug_pgm (PSTR ("whoa?"));
+            dump ();
+            assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");
+            squirrel_state_set (SLAVE);
+        }
+
+        else
+            if (state == SLAVE || state == SLAVE_BUSY)
             {
-              byte_to_hex (length);
-              uplink_process_pkg (data, length);
 
+                bt_set_mode (BLUETOOTH_SLAVE);
+                // We wait for connections from the backend...
+                uint8_t data[UPLINK_PACKAGE_LENGTH];
+                uint8_t length = UPLINK_PACKAGE_LENGTH;
+
+                if (bt_receive (data, &length, 0))
+                {
+                    byte_to_hex (length);
+                    uplink_process_pkg (data, length);
+
+                }
+
+                //if (state == SLAVE)
+                //  squirrel_state_set (MASTER);
             }
-            
-          //if (state == SLAVE)
-          //  squirrel_state_set (MASTER);
-        }
     }
 }
 

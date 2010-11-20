@@ -1,3 +1,14 @@
+/**
+ * display.h - header for the display driver
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
+ *
+ * \author Thomas Parsch
+ */
 #include <common.h>
 
 #ifndef __DISPLAY_H__

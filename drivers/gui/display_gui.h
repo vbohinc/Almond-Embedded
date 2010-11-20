@@ -1,3 +1,14 @@
+/**
+ * display_gui.h - Highlevel Display Driver
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
+ *
+ * \author Matthias Schwab
+ */
 #include "../../shared/common.h"
 #include "../display/display.h"
 #include "display_data.h"
@@ -11,24 +22,26 @@
 #define VERSION_MINOR 1
 #define MENU_OPTION_LENGHT 20
 
-enum display_gui_keys{
-	display_gui_key_up = 1,
-	display_gui_key_down,
-	display_gui_key_left,
-	display_gui_key_right,
-	display_gui_key_a,
-	display_gui_key_b,
-	display_gui_key_none
+enum display_gui_keys
+{
+    display_gui_key_up = 1,
+    display_gui_key_down,
+    display_gui_key_left,
+    display_gui_key_right,
+    display_gui_key_a,
+    display_gui_key_b,
+    display_gui_key_none
 };
 
-enum display_gui_screens{
-	display_gui_screen_none,
-	display_gui_screen_bootup,
-	display_gui_screen_menu,
-	display_gui_screen_fullscreenimage,
-	display_gui_screen_alert,
-	display_gui_screen_game,
-	display_gui_screen_about
+enum display_gui_screens
+{
+    display_gui_screen_none,
+    display_gui_screen_bootup,
+    display_gui_screen_menu,
+    display_gui_screen_fullscreenimage,
+    display_gui_screen_alert,
+    display_gui_screen_game,
+    display_gui_screen_about
 };
 
 
@@ -47,50 +60,50 @@ extern const char* display_gui_b_function;
 uint8_t bootup_current_frame;
 
 // Refresh stuff before redrawing
-void display_gui_refresh(void);
+void display_gui_refresh (void);
 // Handle key press events
-void display_gui_keypress(enum display_gui_keys key);
+void display_gui_keypress (enum display_gui_keys key);
 
 
 // Draw a menu
-void display_gui_menu(const char* title, const char* options,uint8_t option_count, const uint8_t default_option, void(*callback)(int8_t));
+void display_gui_menu (const char* title, const char* options, uint8_t option_count, const uint8_t default_option, void (*callback) (int8_t));
 // Handle keypress events for the menu
-void display_gui_menu_keypress(enum display_gui_keys key);
+void display_gui_menu_keypress (enum display_gui_keys key);
 // Draw scrollbar if not enough space on screen
-void display_gui_draw_scrollbar(void);
+void display_gui_draw_scrollbar (void);
 
 // Display a full screen image
-void display_gui_image(const uint8_t* image, void(*callback)(void));
+void display_gui_image (const uint8_t* image, void (*callback) (void));
 // Handle keypress events while displaying fullscreen image
-void display_gui_image_keypress(enum display_gui_keys key);
+void display_gui_image_keypress (enum display_gui_keys key);
 
 
 // Set Bootup Progress bar
-void display_gui_bootup_progress(uint16_t progress);
+void display_gui_bootup_progress (uint16_t progress);
 // Updates the bootup screen callback for BT discover
-void display_gui_bootup_update_callback(uint16_t percentage);
+void display_gui_bootup_update_callback (uint16_t percentage);
 // Draw the bootup screen
-void display_gui_bootup_screen(void);
+void display_gui_bootup_screen (void);
 
 // Draw a fake bootup line
 // DEPRECATED
-void display_gui_bootup_line(const char* string, uint16_t wait);
+void display_gui_bootup_line (const char* string, uint16_t wait);
 
 // Draw an alert with 2 options
-void display_gui_alert(const char* title, const char* message, const char* button1, const char* button2, void(*callback)(bool));
+void display_gui_alert (const char* title, const char* message, const char* button1, const char* button2, void (*callback) (bool));
 // Handle keypress events for the alert
-void display_gui_alert_keypress(enum display_gui_keys key);
+void display_gui_alert_keypress (enum display_gui_keys key);
 
 // Display the about screen with credits
-void display_gui_about(void(*callback)(void));
+void display_gui_about (void (*callback) (void));
 // Handle keypress events for the credits
-void display_gui_keypress_about(enum display_gui_keys key);
+void display_gui_keypress_about (enum display_gui_keys key);
 
 // Draw a progress bar
-void display_gui_progress_bar(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t progress);
+void display_gui_progress_bar (uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t progress);
 // Draw button functions line
-void display_gui_draw_button_bar(void);
+void display_gui_draw_button_bar (void);
 // Sleep for a given amount of ms
-void display_gui_sleep(uint16_t ms);
+void display_gui_sleep (uint16_t ms);
 
 #endif
