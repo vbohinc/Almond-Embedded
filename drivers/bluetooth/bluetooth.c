@@ -393,12 +393,13 @@ bt_connect (const char *address)
         return false;
 
     test();
+
     if (!send_cmd (BT_CONNECT, NULL))
         return false;
 
     debug_pgm (PSTR ("WAIT FOR COMM"));
 
-    return (BT_DATA == update_comm_mode (30000));
+    return (BT_DATA == update_comm_mode (60000));
 }
 
 bool
