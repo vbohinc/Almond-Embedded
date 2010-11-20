@@ -10,7 +10,7 @@
  */
 
 #include "downlink.h"
-#include "../../drivers/bluetooth/bluetooth.h"
+#include <bluetooth/bluetooth.h>
 
 #ifdef SQUIRREL
 

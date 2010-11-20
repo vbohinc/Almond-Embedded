@@ -13,9 +13,9 @@
 
 #ifdef SQUIRREL
 
-#include "../squirrel/squirrel.h"
-#include "../squirrel/util.h"
-#include "../../drivers/bluetooth/bluetooth.h"
+#include <squirrel/squirrel.h>
+#include <squirrel/util.h>
+#include <bluetooth/bluetooth.h>
 
 /**
  * Package format:
