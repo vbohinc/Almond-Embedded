@@ -27,11 +27,13 @@ void sd_get_response (uint8_t response_type);
 void sd_enable (void)
 {
     clear_bit (PORTD.OUT, 0);
+    clear_bit (PORTD.OUT, 4);
 }
 
 void sd_disable (void)
 {
     set_bit (PORTD.OUT, 0);
+    set_bit (PORTD.OUT, 4);
 }
 
 #define nop() \
@@ -58,7 +60,7 @@ void sd_init (void)
 
     for (uint8_t i = 0; i < 80; ++i)
     {
-        spi_receive_byte();
+        //spi_receive_byte();
         spi_send_byte (0xFF);
     }
 
@@ -156,12 +158,8 @@ void sd_init (void)
 uint8_t sd_send_command (uint8_t command_nr, uint8_t *arguments)
 {
 
-    uint8_t response;
+    uint8_t response=0xff;
     uint8_t sd_buffer[6];
-
-    sd_disable();
-    spi_receive_byte();
-    sd_enable();
 
     switch (command_nr)
     {
@@ -273,12 +271,16 @@ uint8_t sd_send_command (uint8_t command_nr, uint8_t *arguments)
             return 0;
     }
 
+    sd_disable();
+    spi_receive_byte();
+    sd_enable();
+
     for (uint8_t i = 0; i < 6; i++)
     {
         spi_send_byte (sd_buffer[i]);
     }
 
-    response = 0x00;
+    response = 0xff;
 
     /* receive response */
 

@@ -73,6 +73,20 @@ void spi_init()
 
     //set_bit(SPIPORT.OUT, CS);
 
+
+    set_bit (SPIPORT.DIR, MOSI);
+    PORTD.PIN5CTRL = PORT_OPC_WIREDANDPULL_gc;
+    set_bit (SPIPORT.DIR, CS);
+    //set_bit(SPIPORT.DIR, ORIGCS);
+    clear_bit (SPIPORT.DIR, MISO);
+    PORTD.PIN6CTRL = PORT_OPC_WIREDANDPULL_gc;
+    set_bit (SPIPORT.DIR, SCK);
+    PORTD.PIN7CTRL = PORT_OPC_WIREDANDPULL_gc;
+    PORTD.PIN0CTRL = PORT_OPC_WIREDANDPULL_gc;
+
+    //clear_bit (SPIPORT.OUT, CS);
+    //clear_bit (SPIPORT.OUT, ORIGCS);
+
     SPIMOD.CTRL   = SPI_PRESCALER_DIV128_gc |                  /* SPI prescaler. */
                     (false ? SPI_CLK2X_bm : 0) |     /* SPI Clock double. */
                     SPI_ENABLE_bm |                  /* Enable SPI module. */
@@ -82,15 +96,6 @@ void spi_init()
 
     /* Interrupt level. */
     SPIMOD.INTCTRL = SPI_INTLVL_OFF_gc;
-
-    set_bit (SPIPORT.DIR, MOSI);
-    set_bit (SPIPORT.DIR, CS);
-    //set_bit(SPIPORT.DIR, ORIGCS);
-    clear_bit (SPIPORT.DIR, MISO);
-    set_bit (SPIPORT.DIR, SCK);
-
-    set_bit (SPIPORT.OUT, CS);
-    clear_bit (SPIPORT.OUT, ORIGCS);
 
     //SPIPORT.DIRSET  = SPI_MOSI_bm | SPI_SCK_bm;
 
