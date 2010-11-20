@@ -10,9 +10,8 @@
  * \author Stefan Profanter
  */
 #include "buttons.h"
+#include <gui/gui.h>
 
-
-#include <gui/display_gui.h>
 #include <util/delay.h>
 
 /* Einfache Funktion zum Entprellen eines Tasters */

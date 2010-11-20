@@ -49,7 +49,7 @@ FORMAT = ihex
 #     this an empty or blank macro!
 OBJDIR = .
 
-EXTRAINCDIRS += $(BASE)/drivers/ $(BASE)/protocols/ $(BASE)/shared/
+EXTRAINCDIRS += $(BASE) $(BASE)/drivers/ $(BASE)/protocols/ $(BASE)/shared/
 
 ##################### DEFINE ALMOND LIBS HERE ############################
 
@@ -114,7 +114,7 @@ endif
 #gui
 ifeq (gui, $(findstring gui,$(ALMONDLIBS)))
 ALMONDLIBS += display button pong
-SRC += $(BASE)/drivers/gui/display_draw.c $(BASE)/drivers/gui/display_gui.c $(BASE)/drivers/gui/display_data.c
+SRC += $(BASE)/squirrel/gui/gui_draw.c $(BASE)/squirrel/gui/gui.c $(BASE)/squirrel/gui/gui_data.c
 endif
 
 #display
@@ -124,7 +124,7 @@ endif
 
 #pong
 ifeq (pong, $(findstring pong,$(ALMONDLIBS)))
-SRC += $(BASE)/test/pong.c
+SRC += $(BASE)/squirrel/gui/pong.c
 endif
 
 #button

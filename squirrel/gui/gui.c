@@ -1,5 +1,5 @@
 /**
- * display_gui.c - Highlevel Display Driver
+ * gui.c - Highlevel Display Driver
  * Part of the ALMOND Project
  *     _    _     __  __  ___  _   _ ____
  *    / \  | |   |  \/  |/ _ \| \ | |  _ \
@@ -9,9 +9,9 @@
  *
  * \author Matthias Schwab
  */
-#include "display_gui.h"
-#include "display_draw.h"
-#include "../../test/pong.h"
+#include "gui.h"
+#include "gui_draw.h"
+#include "pong.h"
 
 #ifdef X86
 #include <SDL.h>

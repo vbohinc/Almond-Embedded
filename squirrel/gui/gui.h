@@ -1,5 +1,5 @@
 /**
- * display_gui.h - Highlevel Display Driver
+ * gui.h - Highlevel Display Driver
  * Part of the ALMOND Project
  *     _    _     __  __  ___  _   _ ____
  *    / \  | |   |  \/  |/ _ \| \ | |  _ \
@@ -9,9 +9,11 @@
  *
  * \author Matthias Schwab
  */
-#include "../../shared/common.h"
-#include "../display/display.h"
-#include "display_data.h"
+#include <common.h>
+#include <display/display.h>
+#include "gui_data.h"
+#include "gui_draw.h"
+
 
 #ifndef __DISPLAY_GUI_H__
 #define __DISPLAY_GUI_H__

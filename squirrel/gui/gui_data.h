@@ -1,5 +1,5 @@
 /**
- * display_data.h - GUI Data
+ * gui_data.h - GUI Data
  * Part of the ALMOND Project
  *     _    _     __  __  ___  _   _ ____
  *    / \  | |   |  \/  |/ _ \| \ | |  _ \
@@ -13,7 +13,7 @@
 #include <avr/pgmspace.h>
 #endif
 
-#include "../../shared/common.h"
+#include <common.h>
 
 #ifndef __DISPLAY_DATA_H__
 #define __DISPLAY_DATA_H__

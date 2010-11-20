@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <bluetooth/bluetooth.h>
+#include <gui/gui.h>
 
 
 static bool

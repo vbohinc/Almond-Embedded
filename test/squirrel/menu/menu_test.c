@@ -14,12 +14,12 @@
 
 #endif
 
-#include "../../../drivers/display/display.h"
-#include "../../../drivers/gui/display_draw.h"
-#include "../../../drivers/gui/display_gui.h"
+#include <display/display.h>
+#include <gui/gui_draw.h>
+#include <gui/gui.h>
 
-#include "../../../drivers/gui/display_data.h"
-#include "../../../squirrel/squirrel.h"
+#include <gui/gui_data.h>
+#include <squirrel/squirrel.h>
 
 
 #include <string.h>

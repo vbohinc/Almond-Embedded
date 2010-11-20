@@ -1,10 +1,10 @@
 #ifndef __PONG_H__
 #define __PONG_H__
 
-#include "../shared/common.h"
-#include "../drivers/display/display.h"
-#include "../drivers/gui/display_draw.h"
-#include "../drivers/gui/display_gui.h"
+#include <common.h>
+#include <display/display.h>
+#include "gui_draw.h"
+#include "gui.h"
 #include <math.h>
 
 void pong(void);

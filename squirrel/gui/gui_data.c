@@ -1,5 +1,5 @@
 /**
- * display_data.c - GUI Data
+ * gui_data.c - GUI Data
  * Part of the ALMOND Project
  *     _    _     __  __  ___  _   _ ____
  *    / \  | |   |  \/  |/ _ \| \ | |  _ \
@@ -9,7 +9,7 @@
  *
  * \author Matthias Schwab
  */
-#include "display_data.h"
+#include "gui_data.h"
 
 
 // FONT SIZE: 0 (6x8)

@@ -1,5 +1,5 @@
 /**
- * display_draw.h - Highlevel Display Driver
+ * gui_draw.h - Highlevel Display Driver
  * Part of the ALMOND Project
  *     _    _     __  __  ___  _   _ ____
  *    / \  | |   |  \/  |/ _ \| \ | |  _ \
@@ -9,7 +9,7 @@
  *
  * \author Matthias Schwab
  */
-#include "../../shared/common.h"
+#include <common.h>
 
 #ifndef __DISPLAY_DRAW_H__
 #define __DISPLAY_DRAW_H__

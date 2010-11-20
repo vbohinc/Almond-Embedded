@@ -16,7 +16,7 @@
 #include <string.h>
 #include "squirrel.h"
 #include <bluetooth/bluetooth.h>
-#include <display/display.h>
+#include <gui/gui.h>
 #include <platform/buttons.h>
 #include <downlink/downlink.h>
 #include <uplink/uplink.h>

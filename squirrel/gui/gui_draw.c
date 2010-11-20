@@ -1,5 +1,5 @@
 /**
- * display_draw.c - Highlevel Display Driver
+ * gui_draw.c - Highlevel Display Driver
  * Part of the ALMOND Project
  *     _    _     __  __  ___  _   _ ____
  *    / \  | |   |  \/  |/ _ \| \ | |  _ \
@@ -13,13 +13,13 @@
 #include <avr/pgmspace.h>
 #endif
 
-#include "display_draw.h"
-#include "../display/display.h"
-#include "display_data.h"
+#include "gui_draw.h"
+#include <display/display.h>
+#include "gui_data.h"
 
 #ifdef X86
 #include <stdbool.h>
-#include "SDL.h" // main SDL header
+#include <SDL.h> // main SDL header
 #include <SDL_gfxPrimitives.h>
 #include <SDL_rotozoom.h>
 #endif

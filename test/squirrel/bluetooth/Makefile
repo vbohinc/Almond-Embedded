@@ -3,8 +3,9 @@ F_CPU = 2000000
 TARGET = bluetooth
 SRC = $(TARGET).c
 BASE = ../../..
-ALMONDLIBS = display bluetooth
+ALMONDLIBS = gui display bluetooth
 TARGETTYPE = SQUIRREL
+EXTRAINCDIRS = $(BASE)/squirrel/
 ENABLE_DEBUG = 0
 include $(BASE)/make/base.makefile
 

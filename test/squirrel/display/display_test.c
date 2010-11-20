@@ -14,12 +14,10 @@
 
 #endif
 
-#include "../../../drivers/display/display.h"
-#include "../../../drivers/gui/display_draw.h"
-#include "../../../drivers/gui/display_gui.h"
+#include <display/display.h>
+#include <gui/gui.h>
 
-#include "../../../drivers/gui/display_data.h"
-#include "../../pong.h"
+#include <gui/pong.h>
 
 #ifndef X86
 #include <platform/buttons.h>
