@@ -85,7 +85,7 @@ bool log_write (char *mac, uint8_t id, uint32_t time, uint16_t value)
     return true;
 }
 
-bool log_read (uint8_t* mac, uint8_t id, uint8_t page, uint8_t* buffer)
+bool log_read (char *mac, uint8_t id, uint8_t page, uint8_t* buffer)
 {
     debug_pgm (PSTR ("LOG: READ"));
 
