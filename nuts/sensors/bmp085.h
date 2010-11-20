@@ -1,12 +1,6 @@
 /**
- * bmp085.h - Driver for the BMP085 temprature and pressure sensor connected via TWI
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
+ * Driver for the BMP085 temprature and pressure sensor connected via TWI
+ * @file bmp085.h
  */
 
 /**

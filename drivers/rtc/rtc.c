@@ -1,13 +1,7 @@
 /**
- * rtc.c - RTC / timer driver for a PCF 8535 on the TWI interface
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Linus Lotz
+ * RTC / timer driver for a PCF 8535 on the TWI interface
+ * @file rtc.c
+ * @author Linus Lotz
  */
 
 #include <rtc/rtc.h>

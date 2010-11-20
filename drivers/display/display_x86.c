@@ -1,13 +1,8 @@
 /**
- * display_x86.c - the display driver windows version
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Thomas Parsch
+ * \brief the display driver sdl testing version
+ * @file display_x86.c
+ * @addtogroup display
+ * @author Pascal Schnurr
  */
 #include <SDL.h>
 #include <SDL_gfxPrimitives.h>

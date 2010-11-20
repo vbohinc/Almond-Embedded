@@ -1,31 +1,50 @@
 /**
- * display.h - header for the display driver
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Thomas Parsch
- */
+ * header for the display driver
+ * @file display.h
+ * @addtogroup display Display Driver
+ * @author Thomas Parsch
+*/
+/**@{*/
+
 #include <common.h>
 
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 
-// Backbuffer
+/// Backbuffer width
 #define DISPLAY_WIDTH 128
+/// Backbuffer height
 #define DISPLAY_HEIGHT 64
 
+
+/** \brief initialize the display
+ * calls all required prerequisites for drawing on the displays
+ */
 void display_init(void);
-// Set pixel at x, y position, value = 1 = black, value = 0 = black
+
+/** Sets pixel value of coordinate
+* @param x coordinate of pixel to set
+* @param y coordinate of pixel to set
+* @param value set pixel 1 = black, 0 = white, if inverted is not set
+*/
 void display_set_pixel (uint8_t x, uint8_t y, bool value);
-// Render whole backbuffer to the screen
+
+/** Render whole backbuffer to the screen */
 void display_flip (void);
+
+/** clears the complete display */
 void display_clear(void);
 
+/** \brief set the inverted mode
+* inverted mode inverts the color of all pixel drawn after mode is aktivated
+* @param value true set inverted mode on, false off
+*/
 void display_set_inverted(bool value);
+
+/** gets the value of inverted mode status
+* @return true if inverted mode is on, false if off
+*/
 bool display_get_inverted(void);
 
 #endif
+/**@}*/

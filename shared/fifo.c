@@ -1,7 +1,7 @@
 /**
-* a simple Fifo, Part of the ALMOND Project
-* @file fifo.c
-* @author Pascal Schnurr
+ * a simple Fifo
+ * @file fifo.c
+ * @author Pascal Schnurr
 */
 #include "fifo.h"
 

@@ -1,14 +1,8 @@
 /**
- * bluetooth.c - source for the Bluetooth driver
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Linus Lotz<lotz@in.tum.de>
- * \author Salomon Sickert
+ * source for the Bluetooth driver
+ * @file bluetooth.c
+ * @author Linus Lotz<lotz@in.tum.de>
+ * @author Salomon Sickert
  */
 
 #include "bluetooth.h"

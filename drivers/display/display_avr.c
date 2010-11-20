@@ -1,14 +1,9 @@
 
 /**
- * display_avr.c - the display driver avr version
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Thomas Parsch
+ * the display driver avr version
+ * @file display_avr.c
+ * @addtogroup display
+ * @author Thomas Parsch
  */
 #include <avr/io.h>
 #include <util/delay.h>
