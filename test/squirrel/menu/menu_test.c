@@ -12,6 +12,8 @@
 #include <SDL_gfxPrimitives.h>
 #include <SDL_rotozoom.h>
 
+#define _delay_ms SDL_Delay
+
 #endif
 
 #include <display/display.h>
@@ -19,14 +21,12 @@
 #include <gui/gui.h>
 
 #include <gui/gui_data.h>
-#include <squirrel/squirrel.h>
+#include <squirrel.h>
 
 
 #include <string.h>
 
-#ifndef X86
 #include <platform/buttons.h>
-#endif
 
 #define USART USARTC0
 
@@ -39,6 +39,7 @@ uint8_t menu_devices_count = 0;
 uint8_t menu_extensions_count = 0;
 
 #ifdef X86
+//Create fake devices, only on X86 needed
 
 device_info device_list [NUTS_LIST];
 
@@ -105,7 +106,7 @@ menu_device_extension(void)
 	memcpy(menu_extension_options[i]+5,device_list[menu_selected_device].mac,12);
 	sprintf(menu_extension_options[i+1],"-- BACK --");
 	menu_extensions_count = i+2;
-display_gui_menu("Values", menu_extension_options[0], menu_extensions_count, 0, &menu_entity_selected);
+	display_gui_menu("Values", menu_extension_options[0], menu_extensions_count, 0, &menu_entity_selected);
 }
 
 
@@ -160,11 +161,13 @@ menu_devices(void)
 	display_gui_menu("Pick a device", menu_device_options[0],menu_devices_count, 0, &menu_devices_selected);
 }
 
+int main (
 #ifndef X86
-int main (void)
+void
 #else
-int main (int argc, char *argv[])
+int argc, char *argv[]
 #endif
+)
 {
 
 #ifndef X86
@@ -176,15 +179,11 @@ int main (int argc, char *argv[])
 
 	set_bit(PORTC.DIR,4);
 	clear_bit(PORTC.OUT,4);
-
-
 #endif
 
 	display_init();		// Initialize display
 
-#ifndef X86
 	button_init();
-#endif
 
 #ifdef X86
 	createFakeDevices();
@@ -198,67 +197,9 @@ int main (int argc, char *argv[])
 	display_flip();
 	while(true) 
 	{
-#ifdef X86
-		uint8_t button = display_gui_key_none;
-		SDL_Event keyevent;
-		while (SDL_PollEvent(&keyevent)) {
-			switch(keyevent.type){
-				case SDL_KEYDOWN:
-					// Handle key events
-					printf("Key pressed: ");
-     					switch(keyevent.key.keysym.sym){
-						case SDLK_UP:
-							printf("^");
-							button = display_gui_key_up;
-							break;
-						case SDLK_DOWN:
-							printf("v");
-							button = display_gui_key_down;
-							break;
-						case SDLK_LEFT:
-							printf("<");
-							button = display_gui_key_left;
-							break;
-						case SDLK_RIGHT:
-							printf(">");
-							button = display_gui_key_right;
-							break;
-						case SDLK_a:
-							printf("A");
-							button = display_gui_key_a;
-							break;
-						case SDLK_s:
-							printf("B");
-							button = display_gui_key_b;
-							break;
-						case SDLK_x:
-							printf("(X) SDL quit escape key");
-							exit(0);
-							break;
-						default:
-							break;
-					}
-					printf("\n");
-					break;
-				case SDL_QUIT:
-					printf("Quitting...\n");
-					exit(0);
-					break;
-			}
-		}
-#else
-		uint8_t button = button_pressed();
-#endif
-		if (button != display_gui_key_none)	{
-			display_gui_keypress(button);
-		}
-		
+		display_gui_keypress(button_pressed());
 		display_gui_refresh();	// Refresh gui drawings
 		display_flip();
-#ifndef X86
 		_delay_ms(1);
-#else
-		SDL_Delay(100);
-#endif
 	}
 }
