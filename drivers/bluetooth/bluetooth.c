@@ -15,7 +15,7 @@
  * Baudrate for the UART-connection to the BTM-222 on SQUIRREL
  */
 #ifdef SQUIRREL
-#define UART_BAUD_RATE      115200
+#define UART_BAUD_RATE      19200
 #endif
 
 #ifdef NUT
@@ -121,7 +121,7 @@ uart_send (const char *data, const uint8_t length)
         /* Check for echo */
         if (comm_mode == BT_CMD)
         {
-            while_timeout (fifo_is_empty(&in_fifo), 100)
+            while_timeout (fifo_is_empty(&in_fifo), 200)
             uart_receive();
 
             fifo_read (&in_fifo, &echo);
@@ -223,8 +223,8 @@ void test ()
 static void
 clean_line (void)
 {
-    while_timeout(fifo_strstr_pgm (&in_fifo, PSTR ("\r\n")),1000)
-    uart_receive();
+    while_timeout(true,50) uart_receive();
+    fifo_strstr_pgm (&in_fifo, PSTR ("\r\n"));
 }
 
 static communication_mode_t
