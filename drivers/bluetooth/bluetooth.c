@@ -270,7 +270,8 @@ bt_init (void (*upate_percentage) (uint16_t))
 
     // Enable ECHO
     comm_mode = BT_RAW;
-
+	
+    upate_percentage(10);
     _delay_ms (2000);
     uart_receive ();
     fifo_clear (&in_fifo);
@@ -455,6 +456,7 @@ bt_discover (char result[8][12], void (*update_callback)(const uint16_t progress
         uart_receive();
         _delay_ms (1);
     }
+	update_callback(100);
 
     while (!fifo_is_empty (&in_fifo))
     {
