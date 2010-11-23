@@ -263,7 +263,7 @@ update_comm_mode (uint16_t timeout_ms)
 }
 
 bool
-bt_init (void (*upate_percentage) (uint8_t))
+bt_init (void (*upate_percentage) (uint16_t))
 {
     uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
     fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
@@ -438,7 +438,7 @@ copy_address (const char *src, char *dst)
 }
 
 bool
-bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress))
+bt_discover (char result[8][12], void (*update_callback)(const uint16_t progress))
 {
     if (!bt_set_mode(BLUETOOTH_MASTER)) return false;
     if (!send_cmd (BT_FIND_DEVICES, NULL)) return false;

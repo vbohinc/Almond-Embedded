@@ -14,6 +14,7 @@
 #define __SD_H__
 #include <spi/spi.h>
 #include <common.h>
+#include <drivers/display/display.h>
 
 #define CMD0 0
 #define CMD8 1
