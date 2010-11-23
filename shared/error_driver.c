@@ -14,6 +14,7 @@
 
 #ifdef DEBUG_TO_DISPLAY
 #include <display/display.h>
+#include <squirrel/gui/gui_draw.h>
 #endif
 
 #ifdef __AVR_ATmega8535__

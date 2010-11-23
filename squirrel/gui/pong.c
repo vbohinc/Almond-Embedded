@@ -68,6 +68,8 @@ void pong_keypress(enum display_gui_keys key) {
 		right_pad_input = 1; break;
 		case display_gui_key_down:
 		current_screen = display_gui_screen_menu; break;
+		default:
+			break;
 	}
 }
 
