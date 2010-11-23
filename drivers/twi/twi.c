@@ -1,13 +1,7 @@
 /**
- * twi.c - Driver for twi on XMega and ATMega
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Linus Lotz
+ * Driver for twi on XMega and ATMega
+ * @file twi.c
+ * @author Linus Lotz
  */
 
 #include <twi/twi.h>
