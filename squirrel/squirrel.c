@@ -35,7 +35,7 @@ extern uint8_t squirrel_state_get (void)
 
 extern void squirrel_state_set (uint8_t s)
 {
-#ifdef DEBUG
+#if 0
 
     switch (s)
     {
@@ -219,7 +219,7 @@ void downlink_update (void)
   //strcpy_P (result[0], PSTR("00126F037095"));
   //update_device_entry (result[0]);
 
-  if (bt_discover (result, NULL))
+  if (bt_discover (result, display_gui_bootup_update_callback))
     for (uint8_t i = 0; i < 8; i++)
       {
         for (uint8_t j = 0; j < 12; j++)
@@ -240,9 +240,12 @@ void downlink_update (void)
 
 int main (void)
 {
-    /* Internen 32Mhz Oszillator einschalten */
-    //OSC.CTRL = OSC_RC32MEN_bm;
-
+    OSC.CTRL = OSC_RC32MEN_bm;                      // Internen 32Mhz Oszillator einschalten
+    while ((OSC.STATUS & OSC_RC32MRDY_bm) == 0);    // Warten bis Oszillator stabil ist
+    CCP = CCP_IOREG_gc;                             // System Clock selection
+    CLK.CTRL = CLK_SCLKSEL_RC32M_gc;
+    display_init ();
+    display_gui_bootup_screen();
     //Set Prescaler to devide by 4
     CCP = CCP_IOREG_gc;
     CLK.PSCTRL = CLK_PSBCDIV_2_2_gc;
@@ -259,38 +262,33 @@ int main (void)
     /*auf stabile clock warten */
 
     while ((OSC.STATUS & OSC_XOSCRDY_bm) == 0);
+    display_gui_bootup_update_callback(5);
 
     /*external clock + PLL aktivieren */
     OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;
 
     /* Warten bis PLL stabil ist */
     while ((OSC.STATUS & (OSC_PLLRDY_bm)) == 0);
-
+    display_gui_bootup_update_callback(10);
     /* System Clock selection */
     CCP = CCP_IOREG_gc;
 
     CLK.CTRL = CLK_SCLKSEL_PLL_gc;
-
+    
+    display_gui_bootup_update_callback(15);
     /* Backlight anschalten */
     set_bit (PORTC.DIR, 4);
     clear_bit (PORTC.OUT, 4);
-
-    error_init ();
-
     sei ();
-
-    display_init ();
-    bt_init();
-
+    bt_init(display_gui_bootup_update_callback);
     squirrel_state_set (MASTER);
-
+    
     while (true)
     {
         display_flip ();
 
         if (state == MASTER)
         {
-            debug_pgm (PSTR ("fubar"));
             assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
             downlink_update ();
             debug_pgm (PSTR ("whoa?"));

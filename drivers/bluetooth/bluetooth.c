@@ -15,7 +15,7 @@
  * Baudrate for the UART-connection to the BTM-222 on SQUIRREL
  */
 #ifdef SQUIRREL
-#define UART_BAUD_RATE      115200
+#define UART_BAUD_RATE      19200
 #endif
 
 #ifdef NUT
@@ -121,13 +121,16 @@ uart_send (const char *data, const uint8_t length)
         /* Check for echo */
         if (comm_mode == BT_CMD)
         {
-            while_timeout (fifo_is_empty(&in_fifo), 100)
+            while_timeout (fifo_is_empty(&in_fifo), 200)
             uart_receive();
 
             fifo_read (&in_fifo, &echo);
 
             if (echo != data[i])
+            {
+                error_putc (data[i]);
                 error_pgm (PSTR ("BT: WRONG ECHO"));
+            }
         }
     }
 }
@@ -223,8 +226,8 @@ void test ()
 static void
 clean_line (void)
 {
-    while_timeout(fifo_strstr_pgm (&in_fifo, PSTR ("\r\n")),1000)
-    uart_receive();
+    while_timeout(true,50) uart_receive();
+    fifo_strstr_pgm (&in_fifo, PSTR ("\r\n"));
 }
 
 static communication_mode_t
@@ -237,6 +240,7 @@ update_comm_mode (uint16_t timeout_ms)
         if (fifo_strstr_pgm (&in_fifo, PSTR ("DISCONNECT")))
         {
             clean_line ();
+            debug_pgm(PSTR("DISCONNECTED"));
             return comm_mode = BT_CMD;
         }
 
@@ -250,6 +254,7 @@ update_comm_mode (uint16_t timeout_ms)
         if (fifo_strstr_pgm (&in_fifo, PSTR ("Time out,Fail to connect!")))
         {
             clean_line ();
+            debug_pgm(PSTR("CONNECT FAILED"));
             return comm_mode = BT_CMD;
         }
     }
@@ -258,7 +263,7 @@ update_comm_mode (uint16_t timeout_ms)
 }
 
 bool
-bt_init (void)
+bt_init (void (*upate_percentage) (uint16_t))
 {
     uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
     fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
@@ -267,22 +272,22 @@ bt_init (void)
     comm_mode = BT_RAW;
 
     _delay_ms (2000);
-    //uart_send ("ATZ0\r", 5);
-
-
-    //_delay_ms (50);
-    // throw away your television
     uart_receive ();
     fifo_clear (&in_fifo);
 
     comm_mode = BT_CMD;
-
+	if(upate_percentage != NULL)
+	    upate_percentage(20);
     test();
 
     send_cmd (BT_CLEAR_ADDRESS, NULL);
     test();
+	if(upate_percentage != NULL)
+    	upate_percentage(30);
     send_cmd (BT_SET_SLAVE, NULL);
     test();
+	if(upate_percentage != NULL)
+    	upate_percentage(40);
     return true;
 }
 
@@ -332,17 +337,16 @@ bt_receive (void * data, uint8_t * length, uint16_t timeout_ms)
             continue;
         }
 
-        fifo_read (&in_fifo, (char *) &receive_length);
-
-        if (receive_length > *length)
+		while (fifo_read (&in_fifo, (char *) &receive_length) && receive_length != *length)
         {
+			uart_receive();
+			fifo_read (&in_fifo, (char *) &receive_length);
             byte_to_hex (receive_length);
             byte_to_hex (*length);
-            debug_pgm (PSTR ("receive_length > length"));
+            debug_pgm (PSTR ("rl > l"));
             return false;
         }
 
-        *length = receive_length;
 
         // Warning!! if no data arrives this function will be stuck
         for (uint8_t i = 0; i < receive_length; i++)
@@ -381,6 +385,9 @@ bt_send (void *data, const uint8_t length)
 bool
 bt_connect (const char *address)
 {
+    test();
+    if (!send_cmd (BT_DISABLE_AUTOCONNECT, address))
+        return false;
     debug_pgm (PSTR ("CONNECT"));
     test();
     if (!send_cmd (BT_SET_ADDRESS, address))
@@ -400,6 +407,7 @@ bool
 bt_disconnect (void)
 {
     // Switch to online cmd mode
+    comm_mode = BT_RAW;
     for (uint8_t i = 0; i < 4; i++)
     {
         const char plus = '+';
@@ -430,7 +438,7 @@ copy_address (const char *src, char *dst)
 }
 
 bool
-bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress))
+bt_discover (char result[8][12], void (*update_callback)(const uint16_t progress))
 {
     if (!bt_set_mode(BLUETOOTH_MASTER)) return false;
     if (!send_cmd (BT_FIND_DEVICES, NULL)) return false;
@@ -444,13 +452,9 @@ bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress)
 
     for (uint16_t i = 0; i < 60000; i++)
     {
+        if((i % 1000) == 0)
+            update_callback(40+i/1000);
         uart_receive();
-
-        if ((i % 1000) == 0) //&& update_callback != NULL)
-        {
-            error_putc('.');
-        }
-
         _delay_ms (1);
     }
 
@@ -479,8 +483,11 @@ bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress)
             return true;
         }
 
-        copy_address (&buffer[21], result[pos]);
-        pos++;
+		if(strstr_P(PSTR("0012"),&buffer[21]))
+		{
+        	copy_address (&buffer[21], result[pos]);
+        	pos++;
+		}
     }
     test();
 

@@ -22,7 +22,7 @@ extern void timer_reset(void);
 extern bool timer_reached(void);
 
 
-#define while_timeout(X, Y) for(__timer_set_helper(Y); __timer_timout_helper(X); )
+#define while_timeout(X, Y) for(__timer_set_helper(Y); __timer_timeout_helper(X); )
 
 extern void __timer_set_helper(uint16_t time);
 
