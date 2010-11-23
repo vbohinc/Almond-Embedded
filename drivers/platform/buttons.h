@@ -1,13 +1,7 @@
 /**
- * button.h - Driver for the Buttons on XMega
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Stefan Profanter
+ * Driver for the Buttons on XMega
+ * @file buttons.h
+ * @author Stefan Profanter
  */
 #ifndef __BUTTONS_H__
 #define __BUTTONS_H__
@@ -16,7 +10,6 @@
 #include <squirrel/gui/gui.h>
 
 //Port J, Pin 0 bis 7
-
 #define BUTTONS_PORT PORTJ
 
 #define BUTTONS_PIN_UP 6
@@ -35,7 +28,7 @@ void button_init (void);
 /** \brief Checks if button Pressed
  *
  * Checks if a Button is Pressed and returns a value of display_gui_keys (squirrel/gui/gui.h)
- *
+ * @return a value between 1 and n for the buttons defined in the display_gui_keys enmu in gui.h
  */
 uint8_t button_pressed (void);
 
