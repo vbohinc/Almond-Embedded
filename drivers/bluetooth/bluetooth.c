@@ -276,15 +276,18 @@ bt_init (void (*upate_percentage) (uint8_t))
     fifo_clear (&in_fifo);
 
     comm_mode = BT_CMD;
-    upate_percentage(20);
+	if(upate_percentage != NULL)
+	    upate_percentage(20);
     test();
 
     send_cmd (BT_CLEAR_ADDRESS, NULL);
     test();
-    upate_percentage(30);
+	if(upate_percentage != NULL)
+    	upate_percentage(30);
     send_cmd (BT_SET_SLAVE, NULL);
     test();
-    upate_percentage(40);
+	if(upate_percentage != NULL)
+    	upate_percentage(40);
     return true;
 }
 
@@ -334,17 +337,16 @@ bt_receive (void * data, uint8_t * length, uint16_t timeout_ms)
             continue;
         }
 
-        fifo_read (&in_fifo, (char *) &receive_length);
-
-        if (receive_length > *length)
+		while (fifo_read (&in_fifo, (char *) &receive_length) && receive_length != *length)
         {
+			uart_receive();
+			fifo_read (&in_fifo, (char *) &receive_length);
             byte_to_hex (receive_length);
             byte_to_hex (*length);
-            debug_pgm (PSTR ("receive_length > length"));
+            debug_pgm (PSTR ("rl > l"));
             return false;
         }
 
-        *length = receive_length;
 
         // Warning!! if no data arrives this function will be stuck
         for (uint8_t i = 0; i < receive_length; i++)
@@ -481,8 +483,11 @@ bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress)
             return true;
         }
 
-        copy_address (&buffer[21], result[pos]);
-        pos++;
+		if(strstr_P(PSTR("0012"),&buffer[21]))
+		{
+        	copy_address (&buffer[21], result[pos]);
+        	pos++;
+		}
     }
     test();
 
