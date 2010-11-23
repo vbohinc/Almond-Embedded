@@ -23,7 +23,7 @@ typedef enum {
 /** init bluetooth driver
 * @return always true
 */
-extern bool bt_init (void (*upate_percentage) (uint8_t));
+extern bool bt_init (void (*upate_percentage) (uint16_t));
 
 /** Set the Bluetooth mode 
 * @param mode bt_mode_t Bluetooth Mode ENUM (BLUETOOTH_MASTER or BLUETOOTH_SLAVE)
@@ -65,7 +65,7 @@ extern bool bt_disconnect (void);
 * @param update_callback to inform of progress (in % from 0 to 100)
 * @return true if successful, false if error occured 
 */
-extern bool bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress));
+extern bool bt_discover (char result[8][12], void (*update_callback)(const uint16_t progress));
 #endif /* SQUIRREL */
 
 

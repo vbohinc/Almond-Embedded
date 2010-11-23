@@ -47,7 +47,7 @@ bool log_write (char *mac, uint8_t id, uint32_t time, uint16_t value)
 
     uint16_t new_pos;
 
-    if (!fat16_open_file_by_name (&file, &filename))
+    if (!fat16_open_file_by_name (&file, filename))
     {
         debug_pgm (PSTR ("Could not open file, creating new one..."));
 
@@ -70,15 +70,15 @@ bool log_write (char *mac, uint8_t id, uint32_t time, uint16_t value)
 
         new_pos = 2;
 
-        fat16_write_file (&file, &new_pos, 2);
+        fat16_write_file (&file, (uint8_t*)&new_pos, 2);
     }
 
-    fat16_read_file (&file, new_pos, 2);
+    fat16_read_file (&file, (uint8_t*)&new_pos, 2);
 
     // Pos...
     file.pos = new_pos;
-    fat16_write_file (&file, &time, 4);
-    fat16_write_file (&file, &value, 2);
+    fat16_write_file (&file, (uint8_t*)&time, 4);
+    fat16_write_file (&file, (uint8_t*)&value, 2);
     //file.pos = 0;
     new_pos += 6;
 
@@ -102,7 +102,7 @@ bool log_read (char *mac, uint8_t id, uint8_t page, uint8_t* buffer)
         * (buffer + i) = 0x00;
     }
 
-    if (!fat16_open_file_by_name (&file, &filename))
+    if (!fat16_open_file_by_name (&file, filename))
     {
         debug_pgm (PSTR ("Could not open file!"));
         return false;
