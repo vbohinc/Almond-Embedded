@@ -127,7 +127,10 @@ uart_send (const char *data, const uint8_t length)
             fifo_read (&in_fifo, &echo);
 
             if (echo != data[i])
+            {
+                error_putc (data[i]);
                 error_pgm (PSTR ("BT: WRONG ECHO"));
+            }
         }
     }
 }
@@ -237,6 +240,7 @@ update_comm_mode (uint16_t timeout_ms)
         if (fifo_strstr_pgm (&in_fifo, PSTR ("DISCONNECT")))
         {
             clean_line ();
+            debug_pgm(PSTR("DISCONNECTED"));
             return comm_mode = BT_CMD;
         }
 
@@ -250,6 +254,7 @@ update_comm_mode (uint16_t timeout_ms)
         if (fifo_strstr_pgm (&in_fifo, PSTR ("Time out,Fail to connect!")))
         {
             clean_line ();
+            debug_pgm(PSTR("CONNECT FAILED"));
             return comm_mode = BT_CMD;
         }
     }
@@ -258,7 +263,7 @@ update_comm_mode (uint16_t timeout_ms)
 }
 
 bool
-bt_init (void)
+bt_init (void (*upate_percentage) (uint8_t))
 {
     uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
     fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
@@ -267,22 +272,19 @@ bt_init (void)
     comm_mode = BT_RAW;
 
     _delay_ms (2000);
-    //uart_send ("ATZ0\r", 5);
-
-
-    //_delay_ms (50);
-    // throw away your television
     uart_receive ();
     fifo_clear (&in_fifo);
 
     comm_mode = BT_CMD;
-
+    upate_percentage(20);
     test();
 
     send_cmd (BT_CLEAR_ADDRESS, NULL);
     test();
+    upate_percentage(30);
     send_cmd (BT_SET_SLAVE, NULL);
     test();
+    upate_percentage(40);
     return true;
 }
 
@@ -381,6 +383,9 @@ bt_send (void *data, const uint8_t length)
 bool
 bt_connect (const char *address)
 {
+    test();
+    if (!send_cmd (BT_DISABLE_AUTOCONNECT, address))
+        return false;
     debug_pgm (PSTR ("CONNECT"));
     test();
     if (!send_cmd (BT_SET_ADDRESS, address))
@@ -400,6 +405,7 @@ bool
 bt_disconnect (void)
 {
     // Switch to online cmd mode
+    comm_mode = BT_RAW;
     for (uint8_t i = 0; i < 4; i++)
     {
         const char plus = '+';
@@ -444,13 +450,9 @@ bt_discover (char result[8][12], void (*update_callback)(const uint8_t progress)
 
     for (uint16_t i = 0; i < 60000; i++)
     {
+        if((i % 1000) == 0)
+            update_callback(40+i/1000);
         uart_receive();
-
-        if ((i % 1000) == 0) //&& update_callback != NULL)
-        {
-            error_putc('.');
-        }
-
         _delay_ms (1);
     }
 

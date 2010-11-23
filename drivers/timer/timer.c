@@ -66,14 +66,18 @@ void __timer_set_helper(uint16_t time)
     timer_init();
     if(timerstack_count <= TIMER_STACK_SIZE)
     {
-        timer_set(time);
         if (timerstack_count != 0)
         {
             if(timer_remaining() > time)
+            {
                 timerstack[timerstack_count-1] = timer_remaining()-time;
+                timer_set(time);
+            }
             else
                 timerstack[timerstack_count-1] = 0;
         }
+        else
+            timer_set(time);
     }
     timerstack_count++;
 }

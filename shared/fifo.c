@@ -70,8 +70,8 @@ static bool
 fifo_cmp_pgm_at (fifo_t * fifo, const prog_char * pgm, const uint16_t index)
 {
     uint16_t i;
-    uint16_t fifo_byte;
-    uint16_t pgm_byte;
+    uint8_t fifo_byte;
+    uint8_t pgm_byte;
 
     for (i = 0; pgm_read_byte (pgm + i) != 0; i++)
     {
