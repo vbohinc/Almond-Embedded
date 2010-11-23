@@ -55,7 +55,7 @@ uint8_t twi_connect (enum twi_access_mode mode, uint8_t address);
  */
 uint8_t twi_write (uint8_t data);
 
-/**
+/**g
  get a byte from a slave
  @param data the data that was recieved
  @param ack ACK to send an ack after recieving or NACK to send NACK afterwards
@@ -69,6 +69,9 @@ uint8_t twi_read (uint8_t * data, enum twi_send_ack ack);
  */
 uint8_t twi_status (void);
 
+/** \brief accept to commit twi ackoledge
+* only needed on xmega, where you have to either stop restart or accept after a read(to commit the acknoledge)
+*/
 void twi_accept (void);
 
 #endif // TWI_H_INCLUDED
