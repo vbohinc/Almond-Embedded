@@ -1,7 +1,13 @@
 /**
- * the x86 emulation buttons driver
- * @file buttons_x86.c
- * @author Stefan Profanter
+ * buttons_x86.c - the buttons driver windows version
+ * Part of the ALMOND Project
+ *     _    _     __  __  ___  _   _ ____
+ *    / \  | |   |  \/  |/ _ \| \ | |  _ \
+ *   / _ \ | |   | |\/| | | | |  \| | | | |
+ *  / ___ \| |___| |  | | |_| | |\  | |_| |
+ * /_/   \_\_____|_|  |_|\___/|_| \_|____/
+ *
+ * \author Stefan Profanter
  */
 
 void button_init (void)

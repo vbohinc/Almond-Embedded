@@ -24,7 +24,6 @@
 #define VERSION_MINOR 1
 #define MENU_OPTION_LENGHT 20
 
-/// buttons enum
 enum display_gui_keys
 {
     display_gui_key_up = 1,
