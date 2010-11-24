@@ -164,7 +164,7 @@ extern uint8_t fat16_create_file(struct fat16_dir* parent, const char* file, str
  */
 extern uint8_t fat16_delete_file(struct fat16_dir_entry* dir_entry);
 
-/*
+/**
  * Opens a directory.
  *
  * @param in out dir the directory handle
@@ -182,7 +182,7 @@ extern uint8_t fat16_open_dir(struct fat16_dir* dir, const struct fat16_dir_entr
  */
 extern uint8_t fat16_read_dir(struct fat16_dir* dd, struct fat16_dir_entry* dir_entry);
 
-/*
+/**
  * Resets the directory handle such that reading restarts
  * with the first directory entry.
  *

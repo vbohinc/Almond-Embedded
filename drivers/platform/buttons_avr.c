@@ -1,6 +1,6 @@
 /**
- * the x86 emulation buttons driver
- * @file buttons_x86.c
+ * the avr buttons driver
+ * @file buttons_avr.c
  * @author Stefan Profanter
  */
 

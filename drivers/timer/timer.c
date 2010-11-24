@@ -1,8 +1,7 @@
-/*     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
+/**
+ * \brief A timer driver for XMega
+ * This is a timer driver for XMega, to properly implement timeouts
+ * @file timer.c
  */
 
 #include <avr/io.h>
