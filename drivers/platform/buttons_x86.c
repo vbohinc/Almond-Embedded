@@ -1,13 +1,7 @@
 /**
- * buttons_x86.c - the buttons driver avr version
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Stefan Profanter
+ * the buttons driver avr version
+ * @file buttons_x86.c
+ * @author Stefan Profanter
  */
 
 #include <SDL_events.h>
