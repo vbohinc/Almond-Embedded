@@ -29,7 +29,7 @@ typedef enum
     BT_CMD
 } communication_mode_t;
 
-#define BT_CMD_TIMEOUT_MS 1000
+#define BT_CMD_TIMEOUT_MS 2000
 
 typedef enum
 {
@@ -130,6 +130,7 @@ uart_send (const char *data, const uint8_t length)
             {
                 error_putc (data[i]);
                 error_pgm (PSTR ("BT: WRONG ECHO"));
+				return;
             }
         }
     }
@@ -241,21 +242,24 @@ update_comm_mode (uint16_t timeout_ms)
         {
             clean_line ();
             debug_pgm(PSTR("DISCONNECTED"));
-            return comm_mode = BT_CMD;
+            comm_mode = BT_CMD;
+			return comm_mode;
         }
 
         if (fifo_strstr_pgm (&in_fifo, PSTR ("CONNECT")))
         {
             clean_line ();
             debug_pgm(PSTR("CONNECTED"));
-            return comm_mode = BT_DATA;
+            comm_mode = BT_DATA;
+			return comm_mode;
         }
 
         if (fifo_strstr_pgm (&in_fifo, PSTR ("Time out,Fail to connect!")))
         {
             clean_line ();
             debug_pgm(PSTR("CONNECT FAILED"));
-            return comm_mode = BT_CMD;
+            comm_mode = BT_CMD;
+			return comm_mode;
         }
     }
 
@@ -320,7 +324,7 @@ bt_set_mode (const bt_mode_t mode)
 }
 
 bool
-bt_receive (void * data, uint8_t * length, uint16_t timeout_ms)
+bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
 {
     while_timeout(true, timeout_ms)
     {
@@ -337,12 +341,12 @@ bt_receive (void * data, uint8_t * length, uint16_t timeout_ms)
             continue;
         }
 
-		while (fifo_read (&in_fifo, (char *) &receive_length) && receive_length != *length)
+		while (fifo_read (&in_fifo, (char *) &receive_length) && receive_length != length)
         {
 			uart_receive();
 			fifo_read (&in_fifo, (char *) &receive_length);
             byte_to_hex (receive_length);
-            byte_to_hex (*length);
+            byte_to_hex (length);
             debug_pgm (PSTR ("rl > l"));
             return false;
         }
@@ -392,8 +396,6 @@ bt_connect (const char *address)
     test();
     if (!send_cmd (BT_SET_ADDRESS, address))
         return false;
-
-    test();
 
     if (!send_cmd (BT_CONNECT, NULL))
         return false;
@@ -483,7 +485,7 @@ bt_discover (char result[8][12], void (*update_callback)(const uint16_t progress
             return true;
         }
 
-		if(strstr_P(PSTR("0012"),&buffer[21]))
+		if(strncmp_P(PSTR("0012"),&buffer[21],4))
 		{
         	copy_address (&buffer[21], result[pos]);
         	pos++;

@@ -184,11 +184,18 @@ static void update_device_entry (const char *address)
             if (valid (k))
                 continue;
 
-        if (!bt_connect (address) && downlink_is_nut (&err))
+        if (!bt_connect (address) )
         {
-            error_pgm (PSTR ("Connection couldn't be established"));
+            error_pgm (PSTR ("Conn failed"));
             return;
         }
+
+        if (!downlink_is_nut(&err) )
+        {
+            error_pgm (PSTR ("No Nut today"));
+            return;
+        }
+
 
         memcpy (&device_list[k], (void *) address, 12);
 

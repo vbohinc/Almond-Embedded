@@ -147,7 +147,7 @@ bool enable_bt (void)
     _delay_ms (50);
     clear_bit (PORTB, 0);
 #endif
-    return bt_init ();
+    return bt_init (NULL);
 }
 
 int main (void)
@@ -178,7 +178,7 @@ int main (void)
         uint8_t data[DOWNLINK_PACKAGE_LENGTH];
         uint8_t length = DOWNLINK_PACKAGE_LENGTH;
 
-        if (bt_receive (data, &length, 0))
+        if (bt_receive (data, length, 0))
             downlink_process_pkg (data, length);
 
         if (sleep > BLUETOOTH_START_TIME)

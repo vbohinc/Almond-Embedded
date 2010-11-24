@@ -14,6 +14,15 @@
 
 #ifdef SQUIRREL
 
+void dump (downlink_package *p) 
+{
+	byte_to_hex (((char *)p)[0]);
+	byte_to_hex (((char *)p)[1]);
+	byte_to_hex (((char *)p)[2]);
+	byte_to_hex (((char *)p)[3]);
+	error_putc('\n');
+}
+
 /* WARNING: Assuming layer above already connected */
 static uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t value, bool *err)
 {
@@ -26,23 +35,27 @@ static uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint
     *err = false;
     length = DOWNLINK_PACKAGE_LENGTH;
 
-    if (bt_send ( (void *) &package, length) && bt_receive ( (void *) &package, &length, DOWNLINK_TIMEOUT_MS))
+	dump (&package);
+
+    if (!bt_send ( (void *) &package, length))
+	{
+		error_pgm PSTR("send failed");
+	}
+    else if (bt_receive ( (void *) &package, length, DOWNLINK_TIMEOUT_MS))
     {
-        if (length != DOWNLINK_PACKAGE_LENGTH)
-            error_pgm (PSTR ("Length doesnt match"));
-        else
-            if ( (package.opcode == (RET | opcode | flag)) && (package.id == id))
-                return package.value;
-            else
-                if (package.opcode == (ERROR | flag))
-                    error_pgm (PSTR ("Nut signalled error")); //
-                else
-                    error_pgm (PSTR ("Downlink protocol mismatch")); //
-    }
+		dump (&package);
+		if ( (package.opcode == (RET | opcode | flag)) && (package.id == id))
+			return package.value;
+		else
+			if (package.opcode == (ERROR | flag))
+				error_pgm (PSTR ("Nut signalled error")); //
+			else
+				error_pgm (PSTR ("Downlink protocol mismatch")); //
+	}
 
     else
     {
-        //error_pgm (PSTR ("Send/receive error"));
+        error_pgm (PSTR ("receive error"));
     }
 
     *err = true;

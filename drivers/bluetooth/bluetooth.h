@@ -37,7 +37,7 @@ extern bool bt_set_mode (const bt_mode_t mode);
 * @param timeout_ms timeout in ms after the recive function aborts and returns with false
 * @return false if recived length > length parameter or it timeouted, true otherwise  
 */
-extern bool bt_receive (void * data, uint8_t *length, uint16_t timeout_ms);
+extern bool bt_receive (void * data, uint8_t length, uint16_t timeout_ms);
 
 /** send data over bluetooth
 * @param data pointer to the data to send
