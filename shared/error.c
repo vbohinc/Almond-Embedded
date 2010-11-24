@@ -1,12 +1,6 @@
 /**
- * error.c - Error output Driver
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
+ * Error output Driver
+ * @file error.c
  */
 
 #include <stdbool.h>

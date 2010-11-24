@@ -2,7 +2,6 @@
  * header for the error output driver
  * @file error.h
 */
-/**@{*/
 
 #ifndef __ERROR__
 #define __ERROR__

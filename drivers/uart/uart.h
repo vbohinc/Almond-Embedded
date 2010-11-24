@@ -25,6 +25,7 @@ LICENSE:
 ************************************************************************/
 
 /** 
+ * @file uart.h
  *  @defgroup pfleury_uart UART Library
  *  @code #include <uart.h> @endcode
  * 

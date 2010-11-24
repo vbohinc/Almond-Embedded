@@ -3,7 +3,7 @@
  * common includes and code parts
  * @file common.h
 */
-/**@{*/
+
 
 #ifndef __COMMON__
 #define __COMMON__
