@@ -33,32 +33,26 @@ static uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint
   package.value = value;
   *err = true;
 
-  dump (&package);
-
   if (!bt_send ( (void *) &package, DOWNLINK_PACKAGE_LENGTH))
 	  {
 	  	error_pgm PSTR("send failed");
       return 0;
 	  }
 
-  _delay_ms (1);
-  
   if (!bt_receive ( (void *) &package, DOWNLINK_PACKAGE_LENGTH, DOWNLINK_TIMEOUT_MS))
     {
-	  	error_pgm PSTR("receive failed");
+      if (opcode != BYE)	  	
+        error_pgm PSTR("receive failed");
       return 0;
     }
 
-  dump (&package);
 	*err = false;
 
   if ((package.opcode == (RET | opcode | flag)) && (package.id == id))
 		return package.value;
 	
-	if (package.opcode == (ERROR | flag))
-		error_pgm (PSTR ("Nut signalled error")); //
-	else
-		error_pgm (PSTR ("Downlink protocol mismatch")); //
+	if (package.opcode != (ERROR | flag))
+		error_pgm (PSTR ("Downlink protocol mismatch"));
 
   *err = true;
   return 0;

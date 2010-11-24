@@ -262,7 +262,7 @@ int main (void)
         {
             assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
             downlink_update ();
-            //dump ();
+            dump ();
             _delay_ms (500);
             debug_pgm (PSTR("Act test..."));
             bt_connect (device_list[0].mac);
@@ -272,7 +272,7 @@ int main (void)
             bt_disconnect ();
 
             assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");
-            squirrel_state_set (SLAVE);
+            squirrel_state_set (MASTER);
         }
 
         else

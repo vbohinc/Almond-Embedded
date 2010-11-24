@@ -139,7 +139,7 @@ uart_send (const char *data, const uint8_t length)
 static bool
 send_cmd (const bt_cmd_t command, const char *data)
 {
-    _delay_ms(500);
+    _delay_ms(200);
     // Check for command mode?
     char full_command[20];        // Maximum command size
 
@@ -240,6 +240,7 @@ update_comm_mode (uint16_t timeout_ms)
         {
             clean_line ();
             debug_pgm(PSTR("DISCONNECTED"));
+            test ();
             comm_mode = BT_CMD;
       			return comm_mode;
         }
@@ -256,6 +257,7 @@ update_comm_mode (uint16_t timeout_ms)
         {
             clean_line ();
             debug_pgm(PSTR("CONNECT FAILED"));
+            test ();
             comm_mode = BT_CMD;
             return comm_mode;
         }
@@ -439,7 +441,9 @@ bt_disconnect (void)
         uart_send (&plus, 1);
         _delay_ms (1500);
     }
+
  
+
     if (!send_cmd (BT_DISCONNECT, NULL))
         return false;
 
