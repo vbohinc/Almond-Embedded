@@ -160,31 +160,10 @@ static inline bool downlink_handle_set_package (downlink_package *p)
     return true;
 }
 
-bool downlink_process_pkg (uint8_t * data, uint8_t length)
+bool downlink_process_pkg (uint8_t * data)
 {
     bool return_package;
     downlink_package *p;
-
-#ifdef DEBUG
-    debug_pgm (PSTR ("P LEN:"));
-
-    byte_to_hex (length);
-    error_putc (13);
-
-    debug_pgm (PSTR ("P REC:"));
-
-    for (uint8_t i = 0; i < length; i++)
-    {
-        byte_to_hex (data[i]);
-        error_putc (' ');
-    }
-
-    error_putc (13);
-
-#endif
-
-    if (length != DOWNLINK_PACKAGE_LENGTH)
-        return false;
 
     p = (downlink_package *) (data);
 

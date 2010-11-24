@@ -36,9 +36,7 @@ uint16_t read_adc (uint8_t pin)
     // wandlung starten
     ADCSRA |= (1 << ADSC);
     // warten bis ergebniss
-
-    while (ADCSRA & (1 << ADSC))
-        ;
+    while (ADCSRA & (1 << ADSC));
 
     return ADCW;
 }
@@ -113,9 +111,7 @@ void set_value (uint8_t id, uint16_t value)
 {
     switch (id)
     {
-
         case 4: // LED
-
             if (value == 0)
                 LED1_PORT &= ~ (1 << LED1_PIN);
             else
@@ -176,10 +172,9 @@ int main (void)
     while (true)
     {
         uint8_t data[DOWNLINK_PACKAGE_LENGTH];
-        uint8_t length = DOWNLINK_PACKAGE_LENGTH;
 
-        if (bt_receive (data, length, 0))
-            downlink_process_pkg (data, length);
+        if (bt_receive (data, DOWNLINK_PACKAGE_LENGTH, 0))
+            downlink_process_pkg (data);
 
         if (sleep > BLUETOOTH_START_TIME)
         {

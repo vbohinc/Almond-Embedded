@@ -26,7 +26,7 @@
  * Squirrel State
  * ----------------------------------------------------------------------- */
 
-volatile uint8_t state;
+static uint8_t state;
 
 extern uint8_t squirrel_state_get (void)
 {
@@ -311,13 +311,10 @@ int main (void)
                 bt_set_mode (BLUETOOTH_SLAVE);
                 // We wait for connections from the backend...
                 uint8_t data[UPLINK_PACKAGE_LENGTH];
-                uint8_t length = UPLINK_PACKAGE_LENGTH;
-
-                if (bt_receive (data, &length, 0))
+              
+                if (bt_receive (data, UPLINK_PACKAGE_LENGTH, 0))
                 {
-                    byte_to_hex (length);
-                    uplink_process_pkg (data, length);
-
+                    uplink_process_pkg (data);
                 }
 
                 //if (state == SLAVE)

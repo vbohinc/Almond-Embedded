@@ -75,19 +75,12 @@ static inline bool uplink_handle_set_package (uplink_package *p)
     }
 }
 
-bool uplink_process_pkg (uint8_t * data, uint8_t length)
+bool uplink_process_pkg (uint8_t * data)
 {
     bool error;
     uplink_package *p;
 
-    if (length != UPLINK_PACKAGE_LENGTH)
-    {
-        error_pgm (PSTR ("Length doesnt match"));
-        return false;
-    }
-
     squirrel_state_set (SLAVE_BUSY);
-
     p = (uplink_package *) data;
 
     switch (p->opcode & 0xF0)
