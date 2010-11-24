@@ -84,7 +84,7 @@ uint8_t main(void) {
 	}*/
 
 	//sd_write_bytes(0, bytes, NUM_BYTES);
-
+	while(true);
 	sd_read_bytes(0,bytes,50);
 
 	debug_pgm(PSTR("Read bytes:"));

@@ -11,8 +11,11 @@
  * \author Sean Labastille
  */
 
+
 #include <util/delay.h>
 #include "sd.h"
+
+#define nop() __asm volatile ("nop")
 
 #define R1_IDLE_STATE 0
 
@@ -26,88 +29,18 @@ void sd_get_response (uint8_t response_type);
 
 void sd_enable (void)
 {
-    clear_bit (PORTD.OUT, 0);
     clear_bit (PORTD.OUT, 4);
+    clear_bit (PORTD.OUT, 0);
 }
 
 void sd_disable (void)
 {
-    set_bit (PORTD.OUT, 0);
     set_bit (PORTD.OUT, 4);
+    set_bit (PORTD.OUT, 0);
 }
-
-#define nop() \
-    asm volatile ("nop")
-
-unsigned char mmc_write_command (unsigned char *cmd)
-//############################################################################
-{
-	unsigned char tmp = 0xff;
-	unsigned int Timeout = 0;
-
-	//set MMC_Chip_Select to high (MMC/SD-Karte Inaktiv) 
-	sd_disable ();
-
-	//sendet 8 Clock Impulse
-	spi_send_byte(0xFF);
-
-	//set MMC_Chip_Select to low (MMC/SD-Karte Aktiv)
-	sd_enable();
-
-	//sendet 6 Byte Commando
-	unsigned char a = 0;
-	for (a=0;a<0x06;a++) //sendet 6 Byte Commando zur MMC/SD-Karte
-		{
-		spi_send_byte(*cmd++);
-		}
-
-	//Wartet auf ein gültige Antwort von der MMC/SD-Karte
-	while (tmp == 0xff)	
-		{//byte_to_hex (tmp);
-		tmp = spi_receive_byte();
-		if (Timeout++ > 500)
-			{
-			break; //Abbruch da die MMC/SD-Karte nicht Antwortet
-			}
-		}
-	byte_to_hex (tmp);
-	return(tmp);
-}
-
 
 void sd_init (void)
 {
-
-	spi_init();
-	uint16_t Timeout = 0;
-
-	
-	//Initialisiere MMC/SD-Karte in den SPI-Mode
-    for (uint8_t i = 0; i < 0x0f; ++i)
-    {
-        //spi_receive_byte();
-        spi_send_byte (0xFF);
-    }
-	
-	//Sendet Commando CMD0 an MMC/SD-Karte
-	debug("CMD0");
-	uint8_t CMD[] = {0x40,0x00,0x00,0x00,0x00,0x95};
-	while(mmc_write_command (CMD) !=1)
-	{
-		if (Timeout++ > 200)
-			{
-			debug("Abbruch bei CMD0");
-			while(true);
-			}
-	}
-
-	//byte_to_hex (response);
-
-	debug("win");
-	while(true);
-
-
-
     debug ("Init spi ...\n");
     spi_init();
     debug ("SPI initialized\n");
