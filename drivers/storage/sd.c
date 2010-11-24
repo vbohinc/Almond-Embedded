@@ -19,13 +19,12 @@
 
 #define R1_IDLE_STATE 0
 
-//static uint8_t sd_response_buffer[5];
 static uint8_t sd_token_buffer[SD_BLOCK_SIZE + 3];
 
 //void sd_read_block(uint8_t *addr, uint8_t *read_buffer);
 //void sd_write_block(uint8_t *addr, uint8_t *write_buffer);
 void sd_send_buffer (void);
-void sd_get_response (uint8_t response_type, uint8_t *sd_response_buffer)
+void sd_get_response (uint8_t response_type, uint8_t *sd_response_buffer);
 
 void sd_enable (void)
 {
@@ -78,8 +77,8 @@ void sd_init (void)
         debug ("sending CMD0\n");
         sd_send_command (CMD0, NULL); //sd_raw_send_command(CMD_GO_IDLE_STATE, 0);
         sd_get_response(R1,sd_response_buffer);
-        //TODO remove strangeness
-        byte_to_hex(*sd_response_buffer);
+        
+        byte_to_hex(sd_response_buffer[0]);
 
         if (sd_response_buffer[0] == (1 << R1_IDLE_STATE))
             break;
