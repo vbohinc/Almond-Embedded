@@ -19,14 +19,12 @@
 
 #define R1_IDLE_STATE 0
 
-//static uint8_t sd_response_buffer[5];
 static uint8_t sd_token_buffer[SD_BLOCK_SIZE + 3];
 
 //void sd_read_block(uint8_t *addr, uint8_t *read_buffer);
 //void sd_write_block(uint8_t *addr, uint8_t *write_buffer);
 void sd_send_buffer (void);
-//void sd_get_response (uint8_t response_type);
-void sd_get_response (uint8_t response_type, uint8_t *sd_response_buffer)
+void sd_get_response (uint8_t response_type, uint8_t *sd_response_buffer);
 
 void sd_enable (void)
 {
@@ -72,15 +70,17 @@ void sd_init (void)
     debug ("SPI initialized\n");
 
     /* reset card */
-    uint8_t response;
+    uint8_t sd_response_buffer[5];
 
     for (uint16_t i = 0;; ++i)
     {
         debug ("sending CMD0\n");
-        response = sd_send_command (CMD0, NULL); //sd_raw_send_command(CMD_GO_IDLE_STATE, 0);
-        byte_to_hex (response);
+        sd_send_command (CMD0, NULL); //sd_raw_send_command(CMD_GO_IDLE_STATE, 0);
+        sd_get_response(R1,sd_response_buffer);
+        
+        byte_to_hex(sd_response_buffer[0]);
 
-        if (response == (1 << R1_IDLE_STATE))
+        if (sd_response_buffer[0] == (1 << R1_IDLE_STATE))
             break;
 
         if (i == 0x1ff)
@@ -93,19 +93,19 @@ void sd_init (void)
 
     debug_pgm (PSTR ("SD: SPI Init Succeeded"));
 
-    uint8_t sd_response_buffer[5]
+    
     //display_flip();
     // Place SD Card into Idle State
     sd_send_command (CMD0, NULL);
-    sd_get_response (R1,&sd_response_buffer);
+    sd_get_response (R1,sd_response_buffer);
     // Chip Select Low
     //clear_bit(PORTC.OUT, 3); // Redundant if CS == SS?
     // Place SD Card into Idle State (again). Transition to SPI mode
     sd_send_command (CMD0, NULL);
-    sd_get_response (R1,&sd_response_buffer);
+    sd_get_response (R1,sd_response_buffer);
     // Check supply voltage
     sd_send_command (CMD8, NULL);
-    sd_get_response (R1,&sd_response_buffer);
+    sd_get_response (R1,sd_response_buffer);
     debug_pgm (PSTR ("SD: Switch to SPI Mode Succeeded. Voltage queried"));
     //display_flip();
 
@@ -115,10 +115,10 @@ void sd_init (void)
         {
             // Prepare 'A'-Command transmission
             sd_send_command (CMD55, NULL);
-            sd_get_response (R1,&sd_response_buffer);
+            sd_get_response (R1,sd_response_buffer);
             // Card initialization. Doesn't know about High Capacity cards.
             sd_send_command (ACMD41, NULL);
-            sd_get_response (R1,&sd_response_buffer);
+            sd_get_response (R1,sd_response_buffer);
         }
 
         while (sd_response_buffer[0] != 0x00);
@@ -134,10 +134,10 @@ void sd_init (void)
         {
             // Prepare 'A'-Command transmission
             sd_send_command (CMD55, NULL);
-            sd_get_response (R1,&sd_response_buffer);
+            sd_get_response (R1,sd_response_buffer);
             // Card initialization. Inform it we don't like High Capacity cards.
             sd_send_command (ACMD41, NULL);
-            sd_get_response (R1,&sd_response_buffer);
+            sd_get_response (R1,sd_response_buffer);
         }
 
         while (sd_response_buffer[0] != 0x00);
@@ -298,11 +298,14 @@ uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size)
         addr_bytes[1] = block_addr >> 16;
         addr_bytes[2] = block_addr >> 8;
         addr_bytes[3] = block_addr;
-
-        if (sd_send_command (CMD17, addr_bytes))
+        
+	sd_send_command (CMD17, addr_bytes);
+	sd_get_response(R1,sd_response_buffer);
+	
+        if (sd_response_buffer[0])
         {
             debug_pgm (PSTR ("SD: CMD17 Succeeded"));
-            sd_get_response (R1,&sd_response_buffer);
+            sd_get_response (R1,sd_response_buffer);
 
             if (sd_response_buffer[0] == 0x00)
             {
@@ -358,11 +361,14 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
         addr_bytes[1] = block_addr >> 16;
         addr_bytes[2] = block_addr >> 8;
         addr_bytes[3] = block_addr;
+        
+        sd_send_command (CMD24, addr_bytes);
+        sd_get_response(R1,sd_response_buffer);
 
-        if (sd_send_command (CMD24, addr_bytes))
+        if (sd_response_buffer[0])
         {
             debug_pgm (PSTR ("SD: CMD24 Succeeded"));
-            sd_get_response (R1,&sd_response_buffer);
+            sd_get_response (R1,sd_response_buffer);
 
             if (sd_response_buffer[0] == 0x00)
             {
