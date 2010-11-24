@@ -33,7 +33,7 @@
 #define SD_BLOCK_SIZE 512
 
 void sd_init (void);
-uint8_t sd_send_command (uint8_t command_nr, uint8_t *arguments);
+void sd_send_command (uint8_t command_nr, uint8_t *arguments);
 uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size);
 uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size);
 #endif
