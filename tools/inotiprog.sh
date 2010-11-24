@@ -9,14 +9,18 @@ inotifywait -mr --timefmt '%d/%m/%y %H:%M' --format '%T %w %f' \
 		# convert absolute path to relative
 		#FILECHANGEREL=`echo "$FILECHANGE" | sed 's_'$CURPATH'/__'`
 
-	  	if [ $file = "xmega.eep" ]
+	  	if [ $file = "xmega.hex" ]
 		then
-			avrdude -p atxmega128a1 -P usb:0000B0029073 -c stk500   -y -U flash:w:xmega.hex -U eeprom:w:xmega.eep
+			sudo avrdude -p atxmega128a1 -P usb:0000B0029073 -c stk500   -y -U flash:w:xmega.hex -U eeprom:w:xmega.eep
+			rm xmega.eep
+			rm xmega.hex
 		fi
 
-        if [ $file = "mega.eep" ]
+        if [ $file = "mega.hex" ]
 		then
-            avrdude -p atmega8535 -P usb:0000B0028758 -c stk500   -y -U flash:w:mega.hex -U eeprom:w:mega.eep
+            sudo avrdude -p atmega8535 -P usb:0000B0028758 -c stk500   -y -U flash:w:mega.hex -U eeprom:w:mega.eep
+	    rm mega.eep
+ 	    rm mega.hex
         fi
 	   
 done
