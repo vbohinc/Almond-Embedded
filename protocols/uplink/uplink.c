@@ -1,8 +1,6 @@
-/*
- *
- * uplink.c
- *
+/**
  * Uplink protocol implementation
+ * @file uplink.c
  */
 
 #include "uplink.h"

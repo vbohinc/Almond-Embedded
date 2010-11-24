@@ -26,6 +26,7 @@
 
 ///downlink communication timeout
 #define DOWNLINK_TIMEOUT_MS 100
+///downlink packet length
 #define DOWNLINK_PACKAGE_LENGTH 4
 
 /**
@@ -42,7 +43,7 @@ typedef struct _downlink_package downlink_package;
 struct _downlink_package
 {
   uint8_t opcode; ///< opcode of packet
-  uint8_t id; ///< id  
+  uint8_t id; ///< id 
   uint16_t value; ///< value
 };
 
@@ -97,18 +98,16 @@ void     downlink_bye (uint16_t time_sec, bool *err);
 
 #ifdef NUT
 
-/**
- * MUST BE IMPLEMENTED IN YOUR FILES
- */
 
-extern const uint8_t class_id_nut;
-extern const uint8_t class_id_extensions[];
-extern const uint8_t class_id_extensions_length;
-extern uint16_t get_value (uint8_t id);
-extern void set_value (uint8_t id, uint16_t value);
-extern uint16_t sleep;
 
-/** Callback handler */
+extern const uint8_t class_id_nut; ///< MUST BE IMPLEMENTED IN YOUR FILES
+extern const uint8_t class_id_extensions[]; ///< MUST BE IMPLEMENTED IN YOUR FILES
+extern const uint8_t class_id_extensions_length; ///< MUST BE IMPLEMENTED IN YOUR FILES
+extern uint16_t get_value (uint8_t id); ///< MUST BE IMPLEMENTED IN YOUR FILES
+extern void set_value (uint8_t id, uint16_t value); ///< MUST BE IMPLEMENTED IN YOUR FILES
+extern uint16_t sleep; ///< MUST BE IMPLEMENTED IN YOUR FILES
+
+/** Callback handler for packet processing*/
 bool downlink_process_pkg (uint8_t * data, uint8_t length);
 
 #endif

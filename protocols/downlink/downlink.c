@@ -1,7 +1,6 @@
 /**
- * downlink.c
- *
  * Downlink protocol implementation
+ * @file downlink.c
  */
 
 #include "downlink.h"
