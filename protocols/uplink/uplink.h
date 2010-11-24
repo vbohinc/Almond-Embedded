@@ -27,6 +27,7 @@
  * @file uplink.h
  * @addtogroup Protocols
  */
+ /**@{*/
 
 #ifndef __UPLINK_H__
 #define __UPLINK_H__
@@ -40,56 +41,74 @@
 ///uplink payload length define
 #define UPLINK_PAYLOAD_LENGTH 62
 
+///_uplink_payload_list struct datatype
 typedef struct _uplink_payload_list   uplink_payload_list;
+///_uplink_payload_log struct datatype
 typedef struct _uplink_payload_log    uplink_payload_log;
+///_uplink_payload_time struct datatype
 typedef struct _uplink_payload_time   uplink_payload_time;
+/// _uplink_package struct datatype
 typedef struct _uplink_package        uplink_package;
+/// _log_entry struct datatype
 typedef struct _log_entry             log_entry;
 
+/// log entry struct
 struct _log_entry
 {
-  uint32_t time;
-  uint16_t value;
+  uint32_t time; ///< unixtimestamp of log entry
+  uint16_t value; ///< logged value
 };
 
+/// payload list struct for list packets
 struct _uplink_payload_list
 {
-  uint8_t bt_address[6];
-  uint8_t nut_class;
-  uint8_t extension_class[55];
+  uint8_t bt_address[6]; ///< a device bluetooth address split into array
+  uint8_t nut_class; ///< the according nut class
+  uint8_t extension_class[55]; ///< all extension classes (max 55)
 };
 
+/// payload log struct for a log packets
 struct _uplink_payload_log
 {
-  uint8_t bt_address[6];
-  uint8_t extension_id;
-  log_entry entries[9];
-  uint8_t padding;
+  uint8_t bt_address[6]; ///< the device bluetooth address where the log comes from 
+  uint8_t extension_id; ///< the extension id to the log vlaue
+  log_entry entries[9]; //< array of 9 log entrys (as a log entry struct)
+  uint8_t padding; ///< just padding can be ignored (to force same size for all uplink packets)
 };
 
+/// paylod time struct for time packet
 struct _uplink_payload_time
 {
-  uint32_t time;
-  uint8_t padding[58];
+  uint32_t time; ///< unix timestamp with a time
+  uint8_t padding[58]; ///< just padding can be ignored (to force same size for all uplink packets)
 };
 
+/// a general uplink payload type which can hold all possible packet formats
 union payload
 {
-  uplink_payload_list list;
-  uplink_payload_log log;
-  uplink_payload_time time;
+  uplink_payload_list list; ///< content format of packet for list requests
+  uplink_payload_log log; ///< content format of packet for log requests
+  uplink_payload_time time; ///< content format of packet for time requests
 } payload;
 
+///a general uplink packet with opcode id and payload
 struct _uplink_package
 {
-  uint8_t opcode;
-  uint8_t id;
-  union payload payload;
+  uint8_t opcode; ///< opcode of the packet
+  uint8_t id; ///< id of packet for identification
+  union payload payload; ///< payload with the data
 };
 
 
 #ifdef SQUIRREL
+/**
+* Handler for recieved data and parsing
+* @param data buffer which holds the recieved data
+* @param length of the data buffer
+* @return false if error occured in packet handling, true if succesful
+*/
 bool uplink_process_pkg (uint8_t * data, uint8_t length);
 #endif
 
 #endif
+/**@}*/
