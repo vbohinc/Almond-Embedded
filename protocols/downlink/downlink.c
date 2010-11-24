@@ -26,41 +26,42 @@ void dump (downlink_package *p)
 /* WARNING: Assuming layer above already connected */
 static uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t value, bool *err)
 {
-    downlink_package package;
-    uint8_t length;
+  downlink_package package;
 
-    package.opcode = opcode | flag;
-    package.id = id;
-    package.value = value;
-    *err = false;
-    length = DOWNLINK_PACKAGE_LENGTH;
+  package.opcode = opcode | flag;
+  package.id = id;
+  package.value = value;
+  *err = true;
 
-	dump (&package);
+  dump (&package);
 
-    if (!bt_send ( (void *) &package, length))
-	{
-		error_pgm PSTR("send failed");
-	}
-    else if (bt_receive ( (void *) &package, length, DOWNLINK_TIMEOUT_MS))
+  if (!bt_send ( (void *) &package, DOWNLINK_PACKAGE_LENGTH))
+	  {
+	  	error_pgm PSTR("send failed");
+      return 0;
+	  }
+
+  _delay_ms (1);
+  
+  if (!bt_receive ( (void *) &package, DOWNLINK_PACKAGE_LENGTH, DOWNLINK_TIMEOUT_MS))
     {
-		dump (&package);
-		if ( (package.opcode == (RET | opcode | flag)) && (package.id == id))
-			return package.value;
-		else
-			if (package.opcode == (ERROR | flag))
-				error_pgm (PSTR ("Nut signalled error")); //
-			else
-				error_pgm (PSTR ("Downlink protocol mismatch")); //
-	}
-
-    else
-    {
-        error_pgm (PSTR ("receive error"));
+	  	error_pgm PSTR("receive failed");
+      return 0;
     }
 
-    *err = true;
+  dump (&package);
+	*err = false;
 
-    return 0;
+  if ((package.opcode == (RET | opcode | flag)) && (package.id == id))
+		return package.value;
+	
+	if (package.opcode == (ERROR | flag))
+		error_pgm (PSTR ("Nut signalled error")); //
+	else
+		error_pgm (PSTR ("Downlink protocol mismatch")); //
+
+  *err = true;
+  return 0;
 }
 
 uint16_t downlink_get_sensor_value (uint8_t id, bool *err)

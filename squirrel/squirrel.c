@@ -28,36 +28,47 @@
 
 static uint8_t state;
 
-extern uint8_t squirrel_state_get (void)
+uint8_t squirrel_state_get (void)
 {
     return state;
 }
 
-extern void squirrel_state_set (uint8_t s)
+void squirrel_state_set (uint8_t s)
 {
-#if 0
+    state = s;
+}
 
-    switch (s)
+/* -----------------------------------------------------------------------
+ * Uplink hooks
+ * ----------------------------------------------------------------------- */
+
+bool squirrel_list (uint8_t num, uplink_payload_list *p)
+{
+  if (!valid (num))
+    return false;
+
+  for (uint8_t i = 0; i < 12; i++)
+    p->bt_address[i] = device_list[num].mac[i];
+
+  p->nut_class = device_list[num].class;
+
+  for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
+    p->extension_class[i] = device_list[num].extension_types[i];
+
+  return true;
+}
+
+bool squirrel_log (uplink_package *p)
+{
+  uplink_payload_log *log = & (p->payload.log);
+
+  for (uint8_t i = 0; i < 8; i++)
     {
-
-        case SLAVE:
-            debug_pgm (PSTR ("Switching to SLAVE..."));
-            break;
-
-        case SLAVE_BUSY:
-            debug_pgm (PSTR ("Switching to SLAVE_BUSY..."));
-            break;
-
-        case MASTER:
-            debug_pgm (PSTR ("Switching to MASTER..."));
-            break;
-
-        default:
-            debug_pgm (PSTR ("Switching to ???..."));
+      log->entries[i].time = i;
+      log->entries[i].value = 42;
     }
 
-#endif
-    state = s;
+  return true;
 }
 
 /* -----------------------------------------------------------------------
@@ -68,34 +79,6 @@ extern void squirrel_state_set (uint8_t s)
 
 device_info device_list [NUTS_LIST];
 
-static void dump (void)
-{
-    for (uint8_t i = 0; i < 2; i++)
-    {
-        debug_pgm (PSTR ("MAC: "));
-        for (uint8_t j = 0; j < 12; j++)
-          byte_to_hex (device_list[i].mac[j]);
-
-        error_putc ('\n');
-        debug_pgm (PSTR ("CLASS: "));
-        byte_to_hex (device_list[i].class);
-        error_putc ('\n');
-        debug_pgm (PSTR ("VALUES: "));
-
-        for (uint8_t j = 0; j < EXTENSIONS_LIST; j++)
-        {
-            byte_to_hex (device_list[i].extension_types[j]);
-            error_putc (' ');
-            error_putc ('-');
-            error_putc ('>');
-            error_putc (' ');
-            byte_to_hex ( (uint8_t) (device_list[i].values_cache[j] >> 8));
-            byte_to_hex ( (uint8_t) device_list[i].values_cache[j]);
-            error_putc ('\n');
-        }
-    }
-}
-
 bool bt_cmp (const char *add1, const char *add2)
 {
     uint8_t i;
@@ -103,116 +86,108 @@ bool bt_cmp (const char *add1, const char *add2)
     return (i == 12);
 }
 
-bool squirrel_list (uint8_t num, uplink_payload_list *p)
+static void dump (void)
 {
-    if (valid (num))
+  for (uint8_t i = 0; i < 1; i++)
     {
-        for (uint8_t i = 0; i < 12; i++)
-            p->bt_address[i] = device_list[num].mac[i];
+      debug_pgm (PSTR ("MAC: "));
+      for (uint8_t j = 0; j < 12; j++)
+        error_putc (device_list[i].mac[j]);
+      error_putc ('\n');
+      
+      debug_pgm (PSTR ("CLASS: "));
+      byte_to_hex (device_list[i].class);
+      error_putc ('\n');
+      
+      debug_pgm (PSTR ("VALUES: "));
 
-        p->nut_class = device_list[num].class;
-
-        for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
-            p->extension_class[i] = device_list[num].extension_types[i];
-
-        return true;
-    }
-
-    else
-    {
-        return false;
+      for (uint8_t j = 0; j < 6; j++)
+        {
+          byte_to_hex (device_list[i].extension_types[j]);
+          error_putc ('-');
+          error_putc ('>');
+          error_putc (' ');
+          byte_to_hex ( (uint8_t) (device_list[i].values_cache[j] >> 8));
+          byte_to_hex ( (uint8_t) device_list[i].values_cache[j]);
+          error_putc ('\n');
+        }
     }
 }
 
-bool squirrel_log (uplink_package *p)
+static void update_info (uint8_t num)
 {
-    uplink_payload_log *log = & (p->payload.log);
+  bool err = false;
+  uint8_t j;
 
-    for (uint8_t i = 0; i < 8; i++)
-    {
-        log->entries[i].time = i;
-        log->entries[i].value = 42;
-    }
+  if (!valid (num))
+    return;
+  
+  device_list[num].class = downlink_get_nut_class (&err);
 
-    return true;
-}
+  if (err)
+    debug_pgm (PSTR ("GET NUT_CLASS FAILED"));
+    
+  for (j = 0; j < EXTENSIONS_LIST && !err; j++)
+    device_list[num].extension_types[j] = downlink_get_extension_class (j, &err);
 
-static void update_id (uint8_t num)
-{
-    if (!valid (num))
-        return;
-
-    bool err = false;
-
-    device_list[num].class = downlink_get_nut_class (&err);
-
-    uint8_t j;
-
-    for (j = 0; j < EXTENSIONS_LIST && !err; j++)
-        device_list[num].extension_types[j] = downlink_get_extension_class (j, &err);
-
-    for (; j < EXTENSIONS_LIST; j++)
-        device_list[num].extension_types[j] = INVALID;
+  for (; j < EXTENSIONS_LIST; j++)
+    device_list[num].extension_types[j] = INVALID;
 }
 
 static void update_values (uint8_t num)
 {
-    if (!valid (num))
-        return;
+  bool err = false;
 
-    bool err = false;
+  if (!valid (num))
+    return;
 
-    for (uint8_t i = 0; i < EXTENSIONS_LIST && !err; i++)
+  for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
     {
-        if (device_list[num].extension_types[i] < GENERIC_ACTOR)
+      if (device_list[num].extension_types[i] < GENERIC_ACTOR)
         {
-            device_list[num].values_cache[i] = downlink_get_sensor_value (i, &err);
-            // log??
+          device_list[num].values_cache[i] = downlink_get_sensor_value (i, &err);
+          // log??
         }
     }
 }
 
-static void update_device_entry (const char *address)
+static void create_device_entry (const char *address)
 {
-    bool err;
+  bool err;
 
-    for (uint8_t k = 0; k < NUTS_LIST; k++)
+  for (uint8_t k = 0; k < NUTS_LIST; k++)
     {
-        if (bt_cmp (device_list[k].mac, address))
-            return;
-        else
-            if (valid (k))
-                continue;
-
-        if (!bt_connect (address) )
-        {
-            error_pgm (PSTR ("Conn failed"));
-            return;
-        }
-
-        if (!downlink_is_nut(&err) )
-        {
-            error_pgm (PSTR ("No Nut today"));
-            return;
-        }
-
-
-        memcpy (&device_list[k], (void *) address, 12);
-
-        update_id (k);
-        update_values (k);
-        downlink_bye (POLL_INTERVALL, &err);
-
-        if (!bt_disconnect())
-        {
-            error_pgm (PSTR ("Conn not closed"));
-            // Hard reset module!
-        }
-
+      if (bt_cmp (device_list[k].mac, address))
         return;
+      else
+        if (valid (k))
+          continue;
+
+      for (uint8_t i = 0; i < 3 && !bt_connect (address); i++)
+        {
+          error_pgm (PSTR ("Conn failed"));
+          bt_disconnect ();
+        }
+
+      if (!downlink_is_nut (&err))
+        {
+          error_pgm (PSTR ("No Nut today"));
+          return;
+        }
+
+      memcpy (&device_list[k], (void *) address, 12);
+
+      update_info (k);
+      update_values (k);
+      downlink_bye (POLL_INTERVALL, &err);
+
+      if (!bt_disconnect())
+        error_pgm (PSTR ("Conn not closed"));
+
+      return;
     }
 
-    error_pgm (PSTR ("Out of Memory"));
+  error_pgm (PSTR ("Out of Memory"));
 }
 
 void downlink_update (void)
@@ -222,23 +197,12 @@ void downlink_update (void)
   for (uint8_t i = 0; i < 8; i++)
     for (uint8_t j = 0; j < 12; j++)
       result[i][j] = 0;
-  
-  //strcpy_P (result[0], PSTR("00126F037095"));
-  //update_device_entry (result[0]);
 
   if (bt_discover (result, display_gui_bootup_update_callback))
     for (uint8_t i = 0; i < 8; i++)
-      {
-        for (uint8_t j = 0; j < 12; j++)
-          error_putc (result[i][j]);
-
-        update_device_entry (result[i]);
-      }
-
+      create_device_entry (result[i]);
   else
-    debug_pgm (PSTR ("FAIL!!!"));
-
-  while (true);
+    debug_pgm (PSTR ("Search failed"));
 }
 
 /* -----------------------------------------------------------------------
@@ -298,8 +262,15 @@ int main (void)
         {
             assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
             downlink_update ();
-            debug_pgm (PSTR ("whoa?"));
-            dump ();
+            //dump ();
+            _delay_ms (500);
+            debug_pgm (PSTR("Act test..."));
+            bt_connect (device_list[0].mac);
+            bool err;
+            downlink_set_actuator_value (4, 1, &err);
+            downlink_bye (10, &err);
+            bt_disconnect ();
+
             assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");
             squirrel_state_set (SLAVE);
         }
@@ -313,9 +284,7 @@ int main (void)
                 uint8_t data[UPLINK_PACKAGE_LENGTH];
               
                 if (bt_receive (data, UPLINK_PACKAGE_LENGTH, 0))
-                {
                     uplink_process_pkg (data);
-                }
 
                 //if (state == SLAVE)
                 //  squirrel_state_set (MASTER);
