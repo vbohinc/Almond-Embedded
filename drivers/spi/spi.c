@@ -57,7 +57,8 @@ uint8_t sd_raw_xmit_byte (uint8_t b)
 
     return (result);
 }
-
+#define nop() \
+   asm volatile ("nop")
 void spi_init()
 {
     debug_pgm (PSTR ("spi_init"));
@@ -84,8 +85,13 @@ void spi_init()
     PORTD.PIN7CTRL = PORT_OPC_WIREDANDPULL_gc;
     PORTD.PIN0CTRL = PORT_OPC_WIREDANDPULL_gc;
 
-    //clear_bit (SPIPORT.OUT, CS);
-    //clear_bit (SPIPORT.OUT, ORIGCS);
+    set_bit (SPIPORT.OUT, CS);
+    set_bit (SPIPORT.OUT, ORIGCS);
+
+	uint8_t a=0;
+	for(a=0;a<200;a++){
+	nop();
+	};		//Wartet eine kurze Zeit
 
     SPIMOD.CTRL   = SPI_PRESCALER_DIV128_gc |                  /* SPI prescaler. */
                     (false ? SPI_CLK2X_bm : 0) |     /* SPI Clock double. */
@@ -150,11 +156,8 @@ void spi_init()
 
 void spi_send_byte (uint8_t byte_to_send)
 {
-    /*SPID.DATA = byte_to_send;
-    while (!check_bit(SPID.STATUS,7)); // Wait until IF is set to signal end of Tx*/
-    sd_raw_xmit_byte (byte_to_send);
-    //debug_pgm(PSTR("SPI: Byte Sent"));
-    /*return;*/
+    SPIMOD.DATA = byte_to_send;
+    while (! (SPIMOD.STATUS & SPI_IF_bm));
 }
 
 uint8_t spi_receive_byte()
