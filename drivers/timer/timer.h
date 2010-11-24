@@ -1,22 +1,26 @@
-/*     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- */
 /**
- * \file timer.c
  * \brief A timer driver for XMega
- * 
  * This is a timer driver for XMega, to properly implement timeouts
+ * @file timer.h
  */
 
 #include <common.h>
 
+///Initialize the timer
+
+/**
+* Set the timer to a time
+* @param time the timer is set to
+*/
 extern void timer_init(void);
 
+///Reset the timer
 extern void timer_set(uint16_t time);
 
+/**
+* Wait till timer is reached
+* @return TODO
+*/
 extern void timer_reset(void);
 
 extern bool timer_reached(void);
