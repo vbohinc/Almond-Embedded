@@ -19,7 +19,8 @@ inotifywait -mr --timefmt '%d/%m/%y %H:%M' --format '%T %w %f' \
 
         if [ -f $file -a $file = "mega.hex" ]
 		then
-            sudo avrdude -p atmega8535 -P usb:0000B0028758 -c stk500   -y -U flash:w:mega.hex -U eeprom:w:mega.eep
+#            sudo avrdude -p atmega8535 -P usb:0000B0028758 -c stk500   -y -U flash:w:mega.hex -U eeprom:w:mega.eep
+            sudo avrdude -p atmega8535 -P usb:0000B0028758 -c stk500   -y -U flash:w:mega.hex
 			rm mega.hex
 			rm mega.eep
         fi
