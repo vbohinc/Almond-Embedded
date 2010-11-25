@@ -247,10 +247,11 @@ int main (void)
     CLK.CTRL = CLK_SCLKSEL_PLL_gc;
     
     display_gui_bootup_update_callback(15);
-    /* Backlight anschalten */
+    /* Bluetooth einschalten */
     set_bit (PORTC.DIR, 4);
     clear_bit (PORTC.OUT, 4);
-    sei ();
+    
+	sei ();
     bt_init(display_gui_bootup_update_callback);
     squirrel_state_set (MASTER);
     
