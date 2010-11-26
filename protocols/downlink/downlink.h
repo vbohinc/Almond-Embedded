@@ -72,7 +72,7 @@ extern void set_value (uint8_t id, uint16_t value);
 extern uint16_t sleep;
 
 /* Callback handler */
-bool downlink_process_pkg (uint8_t * data, uint8_t length);
+bool downlink_process_pkg (uint8_t * data);
 
 #endif
 

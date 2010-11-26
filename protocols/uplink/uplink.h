@@ -96,7 +96,7 @@ struct _uplink_package
 
 
 #ifdef SQUIRREL
-bool uplink_process_pkg (uint8_t * data, uint8_t length);
+bool uplink_process_pkg (uint8_t * data);
 #endif
 
 #endif

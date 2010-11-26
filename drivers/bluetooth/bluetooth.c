@@ -29,7 +29,7 @@ typedef enum
     BT_CMD
 } communication_mode_t;
 
-#define BT_CMD_TIMEOUT_MS 1000
+#define BT_CMD_TIMEOUT_MS 2000
 
 typedef enum
 {
@@ -130,18 +130,16 @@ uart_send (const char *data, const uint8_t length)
             {
                 error_putc (data[i]);
                 error_pgm (PSTR ("BT: WRONG ECHO"));
+				        return;
             }
         }
     }
 }
 
-
-void test (void);
-
 static bool
 send_cmd (const bt_cmd_t command, const char *data)
 {
-    _delay_ms(500);
+    _delay_ms(200);
     // Check for command mode?
     char full_command[20];        // Maximum command size
 
@@ -214,20 +212,21 @@ send_cmd (const bt_cmd_t command, const char *data)
     return false;
 }
 
-void test ()
+void 
+test (void)
 {
-    comm_mode = BT_RAW;
-    for (uint8_t i = 0; i < 20; i++)
-        if (send_cmd (BT_TEST, NULL))
-            break;
-    comm_mode = BT_CMD;
+  comm_mode = BT_RAW;
+  for (uint8_t i = 0; i < 10; i++)
+    if (send_cmd (BT_TEST, NULL))
+      break;
+  comm_mode = BT_CMD;
 }
 
 static void
 clean_line (void)
 {
-    while_timeout(true,50) uart_receive();
-    fifo_strstr_pgm (&in_fifo, PSTR ("\r\n"));
+  while_timeout(true,50) uart_receive();
+  fifo_strstr_pgm (&in_fifo, PSTR ("\r\n"));
 }
 
 static communication_mode_t
@@ -241,21 +240,26 @@ update_comm_mode (uint16_t timeout_ms)
         {
             clean_line ();
             debug_pgm(PSTR("DISCONNECTED"));
-            return comm_mode = BT_CMD;
+            test ();
+            comm_mode = BT_CMD;
+      			return comm_mode;
         }
 
         if (fifo_strstr_pgm (&in_fifo, PSTR ("CONNECT")))
         {
             clean_line ();
             debug_pgm(PSTR("CONNECTED"));
-            return comm_mode = BT_DATA;
+            comm_mode = BT_DATA;
+      			return comm_mode;
         }
 
         if (fifo_strstr_pgm (&in_fifo, PSTR ("Time out,Fail to connect!")))
         {
             clean_line ();
             debug_pgm(PSTR("CONNECT FAILED"));
-            return comm_mode = BT_CMD;
+            test ();
+            comm_mode = BT_CMD;
+            return comm_mode;
         }
     }
 
@@ -265,28 +269,33 @@ update_comm_mode (uint16_t timeout_ms)
 bool
 bt_init (void (*upate_percentage) (uint16_t))
 {
-    uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
-    fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
-
-    // Enable ECHO
-    comm_mode = BT_RAW;
+  uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
+  fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
+	if(upate_percentage != NULL)
+	  upate_percentage(10);	
+  _delay_ms (2000);
+  uart_receive ();
+  fifo_clear (&in_fifo);
+  
+  comm_mode = BT_CMD;
+  test();
+  
+	if(upate_percentage != NULL)
+	  upate_percentage(20);
+  
+  send_cmd (BT_CLEAR_ADDRESS, NULL);
+  test();
 	
-    upate_percentage(10);
-    _delay_ms (2000);
-    uart_receive ();
-    fifo_clear (&in_fifo);
-
-    comm_mode = BT_CMD;
-    upate_percentage(20);
-    test();
-
-    send_cmd (BT_CLEAR_ADDRESS, NULL);
-    test();
+  if(upate_percentage != NULL)
     upate_percentage(30);
-    send_cmd (BT_SET_SLAVE, NULL);
-    test();
+  
+  send_cmd (BT_SET_SLAVE, NULL);
+  test();
+	
+  if(upate_percentage != NULL)
     upate_percentage(40);
-    return true;
+
+  return true;
 }
 
 
@@ -318,54 +327,54 @@ bt_set_mode (const bt_mode_t mode)
 }
 
 bool
-bt_receive (void * data, uint8_t * length, uint16_t timeout_ms)
+bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
 {
-    while_timeout(true, timeout_ms)
+  uint8_t rec_length = 0;
+  uint8_t i = 0;
+  
+  while_timeout(true, timeout_ms)
     {
-        uint8_t receive_length;
-
-        uart_receive ();
-
-        if (fifo_is_empty (&in_fifo))
-            continue;
-
-        if (update_comm_mode (0) == BT_CMD)
-        {
-            debug_pgm (PSTR ("not connected"));
-            continue;
-        }
-
-        fifo_read (&in_fifo, (char *) &receive_length);
-
-        if (receive_length > *length)
-        {
-            byte_to_hex (receive_length);
-            byte_to_hex (*length);
-            debug_pgm (PSTR ("receive_length > length"));
-            return false;
-        }
-
-        *length = receive_length;
-
-        // Warning!! if no data arrives this function will be stuck
-        for (uint8_t i = 0; i < receive_length; i++)
-        {
-            if (update_comm_mode(0) == BT_CMD)
-            {
-                debug_pgm (PSTR ("not connected"));
-                return false;
-            }
-
-            while (fifo_is_empty (&in_fifo))
-                uart_receive ();
-
-            fifo_read (&in_fifo, (char *) data + i);
-        }
+      if (i == length)
         return true;
-    }
-    return false;
-}
 
+      uart_receive ();
+
+      if (fifo_is_empty (&in_fifo))
+        continue;
+
+      if (update_comm_mode (0) == BT_CMD)
+        {
+          debug_pgm (PSTR ("not connected"));
+          return false;
+        }
+      
+      // Find starting point of packet
+      if (!rec_length)
+        {
+          fifo_read (&in_fifo, (char *) &rec_length);
+
+          if (rec_length != length)
+            {
+		          byte_to_hex (rec_length);
+              byte_to_hex (length);
+              debug_pgm (PSTR ("rl != l"));
+              rec_length = 0;                  
+            }
+          else
+            {
+              // You've got mail!
+              timeout_ms = 1000;
+            }
+        }
+      else
+        {
+          fifo_read (&in_fifo, (char *) data + i);
+          i++; 
+        }
+  }
+
+  return false;
+}
 
 bool
 bt_send (void *data, const uint8_t length)
@@ -384,15 +393,26 @@ bt_send (void *data, const uint8_t length)
 bool
 bt_connect (const char *address)
 {
+    // Maybe we already disconnected???
+    if (BT_DATA == update_comm_mode (0))
+      {
+        debug_pgm (PSTR ("We are still connected..."));
+        return false;
+      }
+
     test();
+
     if (!send_cmd (BT_DISABLE_AUTOCONNECT, address))
         return false;
-    debug_pgm (PSTR ("CONNECT"));
+    debug_pgm (PSTR ("SET_ADD"));
+
     test();
+
     if (!send_cmd (BT_SET_ADDRESS, address))
         return false;
 
     test();
+    debug_pgm (PSTR ("CONNECT"));
 
     if (!send_cmd (BT_CONNECT, NULL))
         return false;
@@ -405,8 +425,17 @@ bt_connect (const char *address)
 bool
 bt_disconnect (void)
 {
+    // Maybe we already disconnected???
+    if (BT_CMD == update_comm_mode (0))
+      {
+        fifo_clear (&in_fifo);
+        return true;
+      }
+
+    //ne
+    //for (uint8_t i)
+
     // Switch to online cmd mode
-    comm_mode = BT_RAW;
     for (uint8_t i = 0; i < 4; i++)
     {
         const char plus = '+';
@@ -414,12 +443,18 @@ bt_disconnect (void)
         _delay_ms (1500);
     }
 
-    comm_mode = BT_CMD;
+ 
 
     if (!send_cmd (BT_DISCONNECT, NULL))
         return false;
 
-    return (BT_CMD == update_comm_mode (60000));
+    if (BT_CMD == update_comm_mode (60000))
+    {
+        fifo_clear (&in_fifo);
+        return true;        
+    }
+    debug_pgm (PSTR("Still in DATA??"));
+    return false;
 }
 
 void
@@ -483,8 +518,11 @@ bt_discover (char result[8][12], void (*update_callback)(const uint16_t progress
             return true;
         }
 
-        copy_address (&buffer[21], result[pos]);
-        pos++;
+		if(strncmp_P(PSTR("0012"),&buffer[21],4))
+		{
+        	copy_address (&buffer[21], result[pos]);
+        	pos++;
+		}
     }
     test();
 

@@ -14,40 +14,48 @@
 
 #ifdef SQUIRREL
 
+void dump (downlink_package *p) 
+{
+	byte_to_hex (((char *)p)[0]);
+	byte_to_hex (((char *)p)[1]);
+	byte_to_hex (((char *)p)[2]);
+	byte_to_hex (((char *)p)[3]);
+	error_putc('\n');
+}
+
 /* WARNING: Assuming layer above already connected */
 static uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint16_t value, bool *err)
 {
-    downlink_package package;
-    uint8_t length;
+  downlink_package package;
 
-    package.opcode = opcode | flag;
-    package.id = id;
-    package.value = value;
-    *err = false;
-    length = DOWNLINK_PACKAGE_LENGTH;
+  package.opcode = opcode | flag;
+  package.id = id;
+  package.value = value;
+  *err = true;
 
-    if (bt_send ( (void *) &package, length) && bt_receive ( (void *) &package, &length, DOWNLINK_TIMEOUT_MS))
+  if (!bt_send ( (void *) &package, DOWNLINK_PACKAGE_LENGTH))
+	  {
+	  	error_pgm PSTR("send failed");
+      return 0;
+	  }
+
+  if (!bt_receive ( (void *) &package, DOWNLINK_PACKAGE_LENGTH, DOWNLINK_TIMEOUT_MS))
     {
-        if (length != DOWNLINK_PACKAGE_LENGTH)
-            error_pgm (PSTR ("Length doesnt match"));
-        else
-            if ( (package.opcode == (RET | opcode | flag)) && (package.id == id))
-                return package.value;
-            else
-                if (package.opcode == (ERROR | flag))
-                    error_pgm (PSTR ("Nut signalled error")); //
-                else
-                    error_pgm (PSTR ("Downlink protocol mismatch")); //
+      if (opcode != BYE)	  	
+        error_pgm PSTR("receive failed");
+      return 0;
     }
 
-    else
-    {
-        //error_pgm (PSTR ("Send/receive error"));
-    }
+	*err = false;
 
-    *err = true;
+  if ((package.opcode == (RET | opcode | flag)) && (package.id == id))
+		return package.value;
+	
+	if (package.opcode != (ERROR | flag))
+		error_pgm (PSTR ("Downlink protocol mismatch"));
 
-    return 0;
+  *err = true;
+  return 0;
 }
 
 uint16_t downlink_get_sensor_value (uint8_t id, bool *err)
@@ -147,31 +155,10 @@ static inline bool downlink_handle_set_package (downlink_package *p)
     return true;
 }
 
-bool downlink_process_pkg (uint8_t * data, uint8_t length)
+bool downlink_process_pkg (uint8_t * data)
 {
     bool return_package;
     downlink_package *p;
-
-#ifdef DEBUG
-    debug_pgm (PSTR ("P LEN:"));
-
-    byte_to_hex (length);
-    error_putc (13);
-
-    debug_pgm (PSTR ("P REC:"));
-
-    for (uint8_t i = 0; i < length; i++)
-    {
-        byte_to_hex (data[i]);
-        error_putc (' ');
-    }
-
-    error_putc (13);
-
-#endif
-
-    if (length != DOWNLINK_PACKAGE_LENGTH)
-        return false;
 
     p = (downlink_package *) (data);
 

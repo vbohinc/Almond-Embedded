@@ -1,13 +1,7 @@
 /**
- * twi.c - Driver for twi on XMega and ATMega
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Linus Lotz
+ * Driver for twi on XMega and ATMega
+ * @file twi.c
+ * @author Linus Lotz
  */
 
 #include <twi/twi.h>
@@ -46,8 +40,8 @@ void twi_init (void)
 {
 #if __AVR_ARCH__ <= 6
     //twi_setbitrate(1000);
-    TWSR = 0;
-    TWBR = 9;
+    TWSR = 0x03;
+    TWBR = 0;
     //this will give us 1000000/16 Hz clock for the twi interface
     TWCR = (1 << TWEN);
 #elif __AVR_ARCH__ >= 100

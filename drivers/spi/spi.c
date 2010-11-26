@@ -36,6 +36,17 @@
 #define SPI_INTERRUPTED     1     /*!< \brief The transmission was interrupted by another master. */
 #define SPI_BUSY            2     /*!< \brief The SPI module is busy with another transmission. */
 
+void spi_wait_busy(void)
+{
+    uint8_t timeout = 200;
+
+    while (!(SPIMOD.STATUS & _BV(SPI_IF_bp)) && timeout > 0)
+        timeout--;
+
+    if (timeout == 0)
+	debug_pgm(PSTR("spi timeout reached!"));
+}
+
 uint8_t sd_raw_xmit_byte (uint8_t b)
 {
     /* Send pattern. */
@@ -43,25 +54,29 @@ uint8_t sd_raw_xmit_byte (uint8_t b)
 
     /* Wait for transmission complete. */
     //debug_pgm(PSTR("Wait for transmission complete"));
-
-    while (! (SPIMOD.STATUS & SPI_IF_bm))
-    {
-
-    }
+    spi_wait_busy();
 
     //debug_pgm(PSTR("transmission complete"));
     /* Read received data. */
-    uint8_t result = SPIMOD.DATA;
-
-    //byte_to_hex(result);
-
-    return (result);
+    return SPIMOD.DATA;
 }
-
+#define nop() \
+   asm volatile ("nop")
 void spi_init()
 {
     debug_pgm (PSTR ("spi_init"));
 
+    SPIPORT.DIR |= 0xB0;
+    set_bit (SPIPORT.DIR, CS);
+
+
+    /* enable spi, set master and clock modes (f/8) */
+	SPIMOD.CTRL = _BV(SPI_MASTER_bp);
+	SPIMOD.CTRL |= _BV(SPI_ENABLE_bp) |
+	            	//_BV(SPI_CLK2X_bp)  |
+	            	_BV(SPI_PRESCALER0_bp) | _BV(SPI_PRESCALER1_bp);
+
+	return;
 
     /* Init SS pin as output with wired AND and pull-up. */
     SPIPORT.DIRSET = PIN4_bm;
@@ -84,8 +99,13 @@ void spi_init()
     PORTD.PIN7CTRL = PORT_OPC_WIREDANDPULL_gc;
     PORTD.PIN0CTRL = PORT_OPC_WIREDANDPULL_gc;
 
-    //clear_bit (SPIPORT.OUT, CS);
-    //clear_bit (SPIPORT.OUT, ORIGCS);
+    set_bit (SPIPORT.OUT, CS);
+    set_bit (SPIPORT.OUT, ORIGCS);
+
+	uint8_t a=0;
+	for(a=0;a<200;a++){
+	nop();
+	};		//Wartet eine kurze Zeit
 
     SPIMOD.CTRL   = SPI_PRESCALER_DIV128_gc |                  /* SPI prescaler. */
                     (false ? SPI_CLK2X_bm : 0) |     /* SPI Clock double. */
@@ -150,22 +170,11 @@ void spi_init()
 
 void spi_send_byte (uint8_t byte_to_send)
 {
-    /*SPID.DATA = byte_to_send;
-    while (!check_bit(SPID.STATUS,7)); // Wait until IF is set to signal end of Tx*/
-    sd_raw_xmit_byte (byte_to_send);
-    //debug_pgm(PSTR("SPI: Byte Sent"));
-    /*return;*/
+    sd_raw_xmit_byte (byte_to_send);	
 }
 
 uint8_t spi_receive_byte()
 {
-
-    /*SPID.DATA = 0xFF;
-    _delay_ms(10);
-
-    while (!check_bit(SPID.STATUS,7)); // Wait until IF is set to signal end of Rx*/
-    //debug_pgm(PSTR("SPI: Byte Receiving"));
     return sd_raw_xmit_byte (0xFF);
-    /*return SPID.DATA;*/
 }
 
