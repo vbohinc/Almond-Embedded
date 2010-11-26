@@ -12,6 +12,7 @@
 #include "gui.h"
 #include "gui_draw.h"
 #include "pong.h"
+#include <string.h>
 
 #ifdef X86
 #include <SDL.h>
@@ -390,6 +391,7 @@ display_gui_about (void (*callback) (void))
         display_draw_image (0, 0, images[current_person]);
         display_draw_string_delayed (45, 20, 2, names[current_person], CREDITS_CHARACTER_DELAY);
         display_draw_string_delayed (45, 38, 0, assignments[current_person], CREDITS_CHARACTER_DELAY);
+	
         display_gui_sleep (CREDITS_DELAY);
         current_person++;
     }

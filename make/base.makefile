@@ -118,7 +118,7 @@ endif
 #gui
 ifeq (gui, $(findstring gui,$(ALMONDLIBS)))
 ALMONDLIBS += display button pong
-SRC += $(BASE)/squirrel/gui/gui_draw.c $(BASE)/squirrel/gui/gui.c $(BASE)/squirrel/gui/gui_data.c
+SRC += $(BASE)/squirrel/gui/gui_draw.c $(BASE)/squirrel/gui/gui.c $(BASE)/squirrel/gui/menu.c $(BASE)/squirrel/gui/gui_data.c
 endif
 
 #display

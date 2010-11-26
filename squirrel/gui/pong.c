@@ -40,8 +40,10 @@ static void pad_reset(void);
 static void draw_center_line(void);
 static void draw_ui(void); 
 
-void pong() { 
-	
+void (*pong_menu_callback) (void) = NULL;
+
+void pong(void (*callback) (void)) { 
+	pong_menu_callback = callback;
 	ball_reset();
 	pad_reset();
 	
@@ -67,7 +69,7 @@ void pong_keypress(enum display_gui_keys key) {
 		case display_gui_key_b:
 		right_pad_input = 1; break;
 		case display_gui_key_down:
-		current_screen = display_gui_screen_menu; break;
+		pong_menu_callback(); break;
 		default:
 			break;
 	}

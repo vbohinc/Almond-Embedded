@@ -37,6 +37,6 @@ void button_init (void);
  * Checks if a Button is Pressed and returns a value of display_gui_keys (squirrel/gui/gui.h)
  *
  */
-uint8_t button_pressed (void);
+enum display_gui_keys button_pressed (void);
 
 #endif /*_BUTTONS_H__*/

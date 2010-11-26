@@ -42,7 +42,7 @@ uint8_t debounce (uint8_t pin)
     return 0;
 }
 
-uint8_t button_pressed (void)
+enum display_gui_keys button_pressed (void)
 {
     if (debounce (BUTTONS_PIN_UP))
         return display_gui_key_up;
