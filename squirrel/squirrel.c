@@ -209,7 +209,7 @@ void downlink_update (void)
  * Init
  * ----------------------------------------------------------------------- */
 
-int main_NON_ACTIVE (void)
+int main (void)
 {
     OSC.CTRL = OSC_RC32MEN_bm;                      // Internen 32Mhz Oszillator einschalten
     while ((OSC.STATUS & OSC_RC32MRDY_bm) == 0);    // Warten bis Oszillator stabil ist
