@@ -96,13 +96,13 @@ void sd_init (void)
     
     //display_flip();
     // Place SD Card into Idle State
-    sd_send_command (CMD0, NULL);
-    sd_get_response (R1,sd_response_buffer);
+    //sd_send_command (CMD1, NULL);
+    //sd_get_response (R1,sd_response_buffer);
     // Chip Select Low
     //clear_bit(PORTC.OUT, 3); // Redundant if CS == SS?
     // Place SD Card into Idle State (again). Transition to SPI mode
-    sd_send_command (CMD0, NULL);
-    sd_get_response (R1,sd_response_buffer);
+    //sd_send_command (CMD0, NULL);
+    //sd_get_response (R1,sd_response_buffer);
     // Check supply voltage
     sd_send_command (CMD8, NULL);
     sd_get_response (R1,sd_response_buffer);
@@ -155,6 +155,10 @@ void sd_init (void)
     // Set block size to 32 bytes
     sd_send_command(CMD16, NULL);
     sd_get_response(R1,sd_response_buffer);
+
+	byte_to_hex(sd_response_buffer[0]);
+
+sd_disable();
 }
 
 void sd_send_command (uint8_t command_nr, uint8_t *arguments)
@@ -175,6 +179,16 @@ void sd_send_command (uint8_t command_nr, uint8_t *arguments)
             ;
             break;
 
+        case CMD1:
+            // Static CMD1
+            //sd_buffer = 0x410000000095;
+            sd_buffer[0] = 0x41;
+            sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
+            sd_buffer[5] = 0xff;
+            debug_pgm (PSTR ("SD: CMD1 complete"))
+            ;
+            break;
+
         case CMD8:
             // Static CMD8. Ask the card if it likes tasty 2.7-3.6V
             //sd_buffer = 0x480000010001;
@@ -186,11 +200,13 @@ void sd_send_command (uint8_t command_nr, uint8_t *arguments)
             break;
 
         case CMD16:
-            // Static CMD16. Sets the block size to 32 bytes.
+            // Static CMD16. Sets the block size to 512 bytes.
             //sd_buffer = 0x500000002001;
             sd_buffer[0] = 0x50;
-            sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = 0x00;
-            sd_buffer[4] = 0x20;
+            sd_buffer[1] = 0x00;
+            sd_buffer[2] = 0x00;
+            sd_buffer[3] = 0x02;
+            sd_buffer[4] = 0x00;
             sd_buffer[5] = 0x01;
             debug_pgm (PSTR ("SD: CMD16 complete"))
             ;
@@ -200,7 +216,7 @@ void sd_send_command (uint8_t command_nr, uint8_t *arguments)
             // Requests a single block beginning at the address passed (4 Bytes)
             sd_buffer[0] = 0x51;
 
-            for (int i = 0; i < 4; i++)
+            for (uint8_t i = 0; i < 4; i++)
                 sd_buffer[i + 1] = arguments[i];
 
             sd_buffer[5] = 0x01;
@@ -214,10 +230,10 @@ void sd_send_command (uint8_t command_nr, uint8_t *arguments)
             // Writes a single block at the address passed
             sd_buffer[0] = 0x58;
 
-            for (int i = 0; i < 4; i++)
+            for (uint8_t i = 0; i < 4; i++)
                 sd_buffer[i + 1] = arguments[i];
 
-            sd_buffer[5] = 0x01;
+            sd_buffer[5] = 0xFF;
 
             debug_pgm (PSTR ("SD: CMD24 complete"))
             ;
@@ -232,6 +248,7 @@ void sd_send_command (uint8_t command_nr, uint8_t *arguments)
             sd_buffer[1] = sd_buffer[2] = sd_buffer[3] = sd_buffer[4] = 0x00;
 
             sd_buffer[5] = 0x01;
+	    //sd_buffer[5] = 0xff;
 
             debug_pgm (PSTR ("SD: CMD55 complete"))
             ;
@@ -304,14 +321,15 @@ uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size)
 	
         /*if (sd_response_buffer[0]!=0)
         {*/
-            debug_pgm (PSTR ("SD: CMD17 Succeeded"));
-            //sd_get_response (R1,sd_response_buffer);
 
 	    
 	    byte_to_hex(sd_response_buffer[0]);
 
             if (sd_response_buffer[0] == 0x00)
             {
+            debug_pgm (PSTR ("SD: CMD17 Succeeded"));
+            //sd_get_response (R1,sd_response_buffer);
+
                 debug_pgm (PSTR ("SD: Reading Block"));
 
 		while (spi_receive_byte() != 0xfe){};
@@ -365,8 +383,8 @@ uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size)
 
 uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
 {
-    uint32_t block_addr = addr - (addr % SD_BLOCK_SIZE);
-    uint8_t bytes_written = 0;
+    uint32_t block_addr = 512;//addr;// - (addr % SD_BLOCK_SIZE);
+    uint16_t bytes_written = 0;
     uint8_t sd_response_buffer[5];
 
     while (bytes_written < size)
@@ -378,35 +396,57 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
         addr_bytes[1] = block_addr >> 16;
         addr_bytes[2] = block_addr >> 8;
         addr_bytes[3] = block_addr;
+
+	byte_to_hex(addr_bytes[0]);
+	byte_to_hex(addr_bytes[1]);
+	byte_to_hex(addr_bytes[2]);
+	byte_to_hex(addr_bytes[3]);
         
         sd_send_command (CMD24, addr_bytes);
         sd_get_response(R1,sd_response_buffer);
 
-        if (sd_response_buffer[0])
-        {
-            debug_pgm (PSTR ("SD: CMD24 Succeeded"));
-            sd_get_response (R1,sd_response_buffer);
 
-            if (sd_response_buffer[0] == 0x00)
+	while( sd_response_buffer[0] != 0) {
+ 		sd_send_command (CMD24, addr_bytes);
+        	sd_get_response(R1,sd_response_buffer);
+	}
+        //if (sd_response_buffer[0] == 0)
+        {
+
+
+            if (sd_response_buffer[0] = 0x00)
             {
+
+            debug_pgm (PSTR ("SD: CMD24 Succeeded"));
+            //sd_get_response (R1,sd_response_buffer);
+
+	//Wartet einen Moment und sendet einen Clock an die MMC/SD-Karte
+                unsigned char a=0;
+                for (a=0;a<100;a++)
+		{
+		    spi_receive_byte();
+		}
+
                 uint8_t start_token = 0xFE;
                 spi_send_byte (start_token);
 
-                for (int i = 0; i < 512; i++)
+                for (uint16_t i = 0; i < 512; i++)
                 {
-                    if (block_addr + i < addr || block_addr + i > addr + size)
+		    spi_send_byte(write_buffer[bytes_written++]);
+			//byte_to_hex(write_buffer[bytes_written]);
+                    /*if (block_addr + i < addr || block_addr + i > addr + size)
                         spi_send_byte (sd_token_buffer[i + 1]);
                     else
                     {
                         spi_send_byte (write_buffer[bytes_written++]);
-                    }
+                    }*/
+                }
 
                     uint8_t crc[2] =
 
                         { 0xFF, 0xFF }; //0xFFFF;
                     spi_send_byte (crc[0]);
                     spi_send_byte (crc[1]);
-                }
 
                 //sd_token_buffer[0] = spi_receive_byte(); // Receive data response token.
 		//Wartet auf MMC/SD-Karte Bussy
@@ -415,11 +455,15 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
                 // TODO: Check status bits -> return 0 on failure
                 // Busy tokens?
 
-            }
+            } else {
+		debug_pgm (PSTR ("SD: write return fail"));
+		while(true);
+		}
 
             block_addr += SD_BLOCK_SIZE;
         }
 
+	sd_disable();
         debug_pgm (PSTR ("SD: Write Succeeded"));
     }
 

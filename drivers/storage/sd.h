@@ -17,6 +17,7 @@
 #include <drivers/display/display.h>
 
 #define CMD0 0
+#define CMD1 100
 #define CMD8 1
 #define CMD16 2
 #define CMD17 3

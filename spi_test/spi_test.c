@@ -83,7 +83,18 @@ uint8_t main(void) {
 		b++;
 	}*/
 
+	for (uint8_t i=0; i<18; i++)
+	{
+		bytes[i] = 'l';
+	}
+
 	sd_write_bytes(0, bytes, NUM_BYTES);
+
+	for (uint8_t i=0; i<18; i++)
+	{
+		bytes[i] = 0;
+	}
+
 	//while(true);
 	sd_read_bytes(0,bytes,NUM_BYTES);
 
