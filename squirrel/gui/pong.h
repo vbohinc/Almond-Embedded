@@ -7,7 +7,7 @@
 #include "gui.h"
 #include <math.h>
 
-void pong(void);
+void pong(void (*callback) (void));
 void pong_update(void);
 void pong_keypress(enum display_gui_keys key);
 #endif

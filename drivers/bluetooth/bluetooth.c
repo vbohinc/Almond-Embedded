@@ -271,7 +271,6 @@ bt_init (void (*upate_percentage) (uint16_t))
 {
   uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
   fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
-
   _delay_ms (2000);
   uart_receive ();
   fifo_clear (&in_fifo);
@@ -490,6 +489,7 @@ bt_discover (char result[8][12], void (*update_callback)(const uint16_t progress
         uart_receive();
         _delay_ms (1);
     }
+	update_callback(100);
 
     while (!fifo_is_empty (&in_fifo))
     {

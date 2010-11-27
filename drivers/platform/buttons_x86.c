@@ -18,7 +18,7 @@ void button_init (void)
     
 }
 
-uint8_t button_pressed (void)
+enum display_gui_keys button_pressed (void)
 {
 	uint8_t button = display_gui_key_none;
 	SDL_Event keyevent;
