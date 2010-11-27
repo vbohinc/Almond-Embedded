@@ -211,6 +211,10 @@ void downlink_update (void)
 
 int main (void)
 {
+    /* Bluetooth einschalten */
+    set_bit (PORTC.DIR, 4);
+    clear_bit (PORTC.OUT, 4);
+ 
     OSC.CTRL = OSC_RC32MEN_bm;                      // Internen 32Mhz Oszillator einschalten
     while ((OSC.STATUS & OSC_RC32MRDY_bm) == 0);    // Warten bis Oszillator stabil ist
     CCP = CCP_IOREG_gc;                             // System Clock selection
@@ -247,10 +251,7 @@ int main (void)
     CLK.CTRL = CLK_SCLKSEL_PLL_gc;
     
     display_gui_bootup_update_callback(15);
-    /* Bluetooth einschalten */
-    set_bit (PORTC.DIR, 4);
-    clear_bit (PORTC.OUT, 4);
-    
+   
 	sei ();
     bt_init(display_gui_bootup_update_callback);
     squirrel_state_set (MASTER);
