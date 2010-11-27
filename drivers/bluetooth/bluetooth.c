@@ -295,20 +295,20 @@ bt_init (void (*upate_percentage) (uint16_t))
   test();
   
 	if(upate_percentage != NULL)
-	  upate_percentage(20);
+	  upate_percentage(10);
   
 
   send_cmd (BT_CLEAR_ADDRESS, NULL);
   test();
 	
   if(upate_percentage != NULL)
-    upate_percentage(30);
+    upate_percentage(15);
 
   send_cmd (BT_SET_SLAVE, NULL);
   test();
 	
   if(upate_percentage != NULL)
-    upate_percentage(40);
+    upate_percentage(18);
 
   return true;
 }
@@ -495,6 +495,7 @@ copy_address (const char *src, char *dst)
 bool
 bt_discover (char result[8][12], void (*update_callback)(const uint16_t progress))
 {
+	update_callback(20);
 	test();
     if (!bt_set_mode(BLUETOOTH_MASTER)) return false;
     if (!send_cmd (BT_FIND_DEVICES, NULL)) return false;

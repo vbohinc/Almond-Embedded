@@ -74,7 +74,7 @@ menu_devices_selected(int8_t option)
 	{
 		menu_main();
 	}
-	else if (option == menu_devices_count -2)  // Rescan
+	else if (option == menu_devices_count -1)  // Rescan
 	{
 		menu_new_return = MEN_NEW_SEARCH;
 	}
@@ -151,6 +151,19 @@ menu_main(void)
  	display_gui_menu("Main Menu", *options, 4,0, &menu_main_selected);
 }
 
+void menu_slave_connected(bool isConnected)
+{
+	if (isConnected)
+	{
+		display_clear();
+		display_draw_string (10, 10, 1, "With Backend Connected");
+	}
+	else
+	{
+		menu_main();
+	}
+	display_flip();
+}
 
 enum menu_return menu_update(void)
 {

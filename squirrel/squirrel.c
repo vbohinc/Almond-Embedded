@@ -276,14 +276,15 @@ int main (void)
 
         if (state == MASTER)
         {
+			display_gui_bootup_update_callback(20);
             assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
-            //downlink_update ();
+            downlink_update ();
 		
 
 ///debug_pgm(PSTR("Fake devices:"));
-display_gui_bootup_update_callback(0);
+/*display_gui_bootup_update_callback(0);
 		createFakeDevices();
-display_gui_bootup_update_callback(100);
+display_gui_bootup_update_callback(100);*/
             
 
 //dump ();
@@ -309,7 +310,7 @@ display_gui_bootup_update_callback(100);
                 uint8_t data[UPLINK_PACKAGE_LENGTH];
               
                 if (bt_receive (data, UPLINK_PACKAGE_LENGTH, 0))
-                    uplink_process_pkg (data);
+                    uplink_process_pkg (data, &menu_slave_connected);
 
 				men_ret = menu_update();
 				if (men_ret == MEN_NEW_SEARCH)

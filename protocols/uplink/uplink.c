@@ -75,11 +75,13 @@ static inline bool uplink_handle_set_package (uplink_package *p)
     }
 }
 
-bool uplink_process_pkg (uint8_t * data)
+bool uplink_process_pkg (uint8_t * data, void (*menu_slave) (bool))
 {
     bool error;
     uplink_package *p;
 
+	if (menu_slave)
+		menu_slave(true);
     squirrel_state_set (SLAVE_BUSY);
     p = (uplink_package *) data;
 
@@ -96,6 +98,8 @@ bool uplink_process_pkg (uint8_t * data)
 
         case BYE:
             squirrel_state_set (SLAVE);
+			if (menu_slave)
+				menu_slave(false);
             error = false;
             break;
 
