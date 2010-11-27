@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{article}
+ï»¿\documentclass[12pt,a4paper]{article}
 
 \usepackage[german]{babel}
 \usepackage[utf8]{inputenc}
@@ -30,12 +30,12 @@
 
 % Inhalt
 
-\section{Übersicht}
-Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein System aus vernetzten Aktoren und Sensoren: Nuts ({\bf N}etworked {\bf Ut}ilities and {\bf S}ensors), die über einen zentralen Controller (Squirrel) gesteuert werden. Zusätzlich gibt es ein Backend für PCs, welches über eine Weboberfläche Zugriff auf Gerätedaten gibt und die Steuerung der Aktoren sowie Konfigurationsänderungen erlaubt.\\
-Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls über Bluetooth mit dem auf einem Linux/Windows/Mac laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensor-Werte) mit übermittelt, die dann später auf dem Rechner ausgewertet werden können.
+\section{Ãœbersicht}
+Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein System aus vernetzten Aktoren und Sensoren: Nuts ({\bf N}etworked {\bf Ut}ilities and {\bf S}ensors), die Ã¼ber einen zentralen Controller (Squirrel) gesteuert werden. ZusÃ¤tzlich gibt es ein Backend fÃ¼r PCs, welches Ã¼ber eine WeboberflÃ¤che Zugriff auf GerÃ¤tedaten gibt und die Steuerung der Aktoren sowie KonfigurationsÃ¤nderungen erlaubt.\\
+Die einzelnen GerÃ¤te werden Ã¼ber ein dafÃ¼r entwickeltes Protokoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls Ã¼ber Bluetooth mit dem auf einem Linux/Windows/Mac laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensor-Werte) mit Ã¼bermittelt, die dann spÃ¤ter auf dem Rechner ausgewertet werden kÃ¶nnen.
 
 \section{Protokolle}
-Um die Kommunikation zwischen den Nuts und dem Squirrel, sowie des Squirrels zum Backend zu gewährleisten sind zwei Protokolle entworfen worden.
+Um die Kommunikation zwischen den Nuts und dem Squirrel, sowie des Squirrels zum Backend zu gewÃ¤hrleisten sind zwei Protokolle entworfen worden.
 	\subsection{Downlink}  
 Das Downlinkprotokoll dient zur Kommunikation der Nuts mit dem Squirrel.
 	\subsection{Uplink}
@@ -47,33 +47,33 @@ Das Uplinkprotokoll dient zur Kommunikation zwischen dem Squirrel und dem Backen
 
 \section{Hardware}
 	\subsection{Squirrel}
-%realtimeclock erwähnen und tasten
+%realtimeclock erwÃ¤hnen und tasten
 	\subsubsection{Bluetooth}
-Das Bluetooth-Modul ist über UART mit dem XMEGA-Prozessor verbunden. Im Bluetooth-Stack gibt es zwei Modi. \\
+Das Bluetooth-Modul ist Ã¼ber UART mit dem XMEGA-Prozessor verbunden. Im Bluetooth-Stack gibt es zwei Modi. \\
 Zun einen den Command-Modus, welcher dazu dient Befehle direkt an das Bluetooh-Modul zu senden.\\
-Desweiteren gibt es den Communication-Modus der dann die tatsächlichen Bluetooth-Befehle versendet.\\
+Desweiteren gibt es den Communication-Modus der dann die tatsÃ¤chlichen Bluetooth-Befehle versendet.\\
 Die empfangenen Daten werden in einer Fifo-Datenstruktur gespeichert.\\
 
 
 \subsubsection{Display}
 \subsubsubsection{SDL-Emulation}
-Um die Funktionsfähigkeit des Display-Treibers auch ohne Hardwarezugriff testen zu können, wurde eine SDL-Emulation geschrieben.\\
-Sie bietet die Möglichkeit in einem SDL-Fenster die Ausgabe ähnlich wie auf dem Diplay auszugeben.\\
-Somit konnten alle GUI-Libary-Ausgaben bereits im voraus getestet werden und mehrere Programmierer in die Entwicklung von neuen GUI-Anwendungen einbezogen werden, ohne durch die Verfügbarkeit der Hardware eingeschränkt zu sein.\\
+Um die FunktionsfÃ¤higkeit des Display-Treibers auch ohne Hardwarezugriff testen zu kÃ¶nnen, wurde eine SDL-Emulation geschrieben.\\
+Sie bietet die MÃ¶glichkeit in einem SDL-Fenster die Ausgabe Ã¤hnlich wie auf dem Diplay auszugeben.\\
+Somit konnten alle GUI-Libary-Ausgaben bereits im voraus getestet werden und mehrere Programmierer in die Entwicklung von neuen GUI-Anwendungen einbezogen werden, ohne durch die VerfÃ¼gbarkeit der Hardware eingeschrÃ¤nkt zu sein.\\
 Um die SDL-Emulation zu Nutzen, muss bei der Compilation des Display-C-Dateeien das define x86 gesetzt werden.\\
 
 \subsubsection{SD-Kartenleser}
-Um den Nutzer die Möglichkeit zu geben, Messendatenprotokolle direkt aus der Squirrel unter Umgehung des Backends zu erhalten.
-Damit die Daten direkt in der Gewohnten Betriebsystemumgebung am PC des Anwenders auslesen zu können, ist es notwendig die Daten in einem weit verbreiteten Dateisystem abzulegen.\\
-Hierbei fiel die Wahl auf das FAT16 System, da es gegenüber FAT32 eine einfachere Struktur besitzt und trotzdem Speicherkarten bis 2GB unterstützt. Somit allen Anforderungen gerecht werden.\\
-Die Squirrel verfügt über die Fähigkeit Dateien zu
+Um den Nutzer die MÃ¶glichkeit zu geben, Messendatenprotokolle direkt aus der Squirrel unter Umgehung des Backends zu erhalten.
+Damit die Daten direkt in der Gewohnten Betriebsystemumgebung am PC des Anwenders auslesen zu kÃ¶nnen, ist es notwendig die Daten in einem weit verbreiteten Dateisystem abzulegen.\\
+Hierbei fiel die Wahl auf das FAT16 System, da es gegenÃ¼ber FAT32 eine einfachere Struktur besitzt und trotzdem Speicherkarten bis 2GB unterstÃ¼tzt. Somit allen Anforderungen gerecht werden.\\
+Die Squirrel verfÃ¼gt Ã¼ber die FÃ¤higkeit Dateien zu
 \begin{itemize}
-\item öffnen
+\item Ã¶ffnen
 \item lesen
 \item schreiben
-\item löschen
+\item lÃ¶schen
 \end{itemize}
-Außerdem können Verzeichnisse angelegt, entfernt und durchsucht werden.\\
+AuÃŸerdem kÃ¶nnen Verzeichnisse angelegt, entfernt und durchsucht werden.\\
 
 
 
@@ -88,43 +88,43 @@ Außerdem können Verzeichnisse angelegt, entfernt und durchsucht werden.\\
 		\subsubsection Temperatursensor (BMP085)
 		\subsubsection Windrichtungssensor (Eigenbau, optische Dekodierung)
 		\subsubsection Windgeschwindigkeitssensor (Eigenbau, Dynamo)
-		\subsubsection Lichtstärke (Fotowiderstand)
+		\subsubsection LichtstÃ¤rke (Fotowiderstand)
 		\subsubsection Fechtigkeitssensor
 
 		
 \section{Backend}
-Das Backend stellt eine Web-Oberfläche zur Verfügung über die es möglich ist Log-Daten aus der Squirrel grafisch aufbereitet darzustellen oder Aktor-Befehle an die angeschlossenen Geräte zu senden. Das Backend besteht aus einem in Java geschriebenen Daemon sowie einer in Perl geschriebenen Web-Oberfläche die via CGI über einen Webserver verfügbar gemacht wird.
+Das Backend stellt eine Web-OberflÃ¤che zur VerfÃ¼gung Ã¼ber die es mÃ¶glich ist Log-Daten aus der Squirrel grafisch aufbereitet darzustellen oder Aktor-Befehle an die angeschlossenen GerÃ¤te zu senden. Das Backend besteht aus einem in Java geschriebenen Daemon sowie einer in Perl geschriebenen Web-OberflÃ¤che die via CGI Ã¼ber einen Webserver verfÃ¼gbar gemacht wird.
 
 \subsubsection{Daemon}
-Der Daemon ist ein in Java geschriebenes Programm, welches mit Hilfe der Bluecove-Libary die Aktivitäten des Squirrels - und somit des gesamten Almond-Systems - überwacht.\\
+Der Daemon ist ein in Java geschriebenes Programm, welches mit Hilfe der Bluecove-Libary die AktivitÃ¤ten des Squirrels - und somit des gesamten Almond-Systems - Ã¼berwacht.\\
 Die anfallenden Log-Daten werden in einer SQLite-Datenbank gespeichert.\\
-Außerdem überprüft es in der Datenbank, ob mit Hilfe des Web-Interfaces Aktoren gesteuert werden. Ist dies der Fall, werden die entsprechenden Kommandos direkt über Bluetooth mit dem Downlinkprotokoll - unter Umgehung des Squirrels - an die Nuts gesendet.\\
+AuÃŸerdem Ã¼berprÃ¼ft es in der Datenbank, ob mit Hilfe des Web-Interfaces Aktoren gesteuert werden. Ist dies der Fall, werden die entsprechenden Kommandos direkt Ã¼ber Bluetooth mit dem Downlinkprotokoll - unter Umgehung des Squirrels - an die Nuts gesendet.\\
 
 \subsubsection{Datenbank}
-Als Datenbank wird auf MySQL Server zurückgegriffen. Auf dem Backend-System welches den Webserver zur Verfügung stellt wird ein MySQL vorrausgesetzt das auch zur Kommunikation zwischen der Web-Oberfläche und dem Java-Daemon dient. \\
-Das launch-Script des Backends liest Zugangsdaten und Schema-Name aus der Konfigurationsdatei und legt die benötigten Tabellen an.
+Als Datenbank wird auf MySQL Server zurÃ¼ckgegriffen. Auf dem Backend-System welches den Webserver zur VerfÃ¼gung stellt wird ein MySQL vorrausgesetzt das auch zur Kommunikation zwischen der Web-OberflÃ¤che und dem Java-Daemon dient. \\
+Das launch-Script des Backends liest Zugangsdaten und Schema-Name aus der Konfigurationsdatei und legt die benÃ¶tigten Tabellen an.
 
 \subsubsection{Web-Server}
-Das Backend nutzt als Benutzeroberfläche eine in Perl geschriebene Web-Anwendung, was Nutzung von mehreren Web-Fähigen Geräten aus einfach macht. Die Web-Oberfläche kann als Virtual-Host in einen vorhandenen Webserver (z.B. Apache oder lighttpd) integriert werden. Vorraussetzung ist eine perl Runtime, einige Perl-Module (siehe README.txt im Backend) sowie ein CGI fähiger Webserver. Ist ein lighttpd auf dem Server-System installiert der nicht genutzt wird, kann das launch-Script diesen mit einer bereits vorkonfigurierten Datei starten und das Web-Interface läuft ohne weitere Modifikationen.
-Das launch-Script des Backends startet auch den Java-Daemon, der über die MySQL Datenbank dann mit der Oberfläche kommuniziert.
+Das Backend nutzt als BenutzeroberflÃ¤che eine in Perl geschriebene Web-Anwendung, was Nutzung von mehreren Web-FÃ¤higen GerÃ¤ten aus einfach macht. Die Web-OberflÃ¤che kann als Virtual-Host in einen vorhandenen Webserver (z.B. Apache oder lighttpd) integriert werden. Vorraussetzung ist eine perl Runtime, einige Perl-Module (siehe README.txt im Backend) sowie ein CGI fÃ¤higer Webserver. Ist ein lighttpd auf dem Server-System installiert der nicht genutzt wird, kann das launch-Script diesen mit einer bereits vorkonfigurierten Datei starten und das Web-Interface lÃ¤uft ohne weitere Modifikationen.
+Das launch-Script des Backends startet auch den Java-Daemon, der Ã¼ber die MySQL Datenbank dann mit der OberflÃ¤che kommuniziert.
 		
 \section{Team}
 
 \section{Entwicklungeschichte}
 \subsection{Display}
-Zunächst wurde zum Entwickeln des Display-Treibers auf eine Test-Hardware zurückgegriffen, in der ebenfalls ein 13BB0-Display verbaut worden war.\\
-Das ursprünglich in einem DVB-T Receiver eingesetzte Board verfügt jedoch nur nur über den schwächeren ATMEGA 8515, welcher über weniger Speicher verfügt.\\
-Daher wurde zunächst ein Programm entwickelt, das nur wenig Platz verbraucht und trotzdem die notwendige Flexibilität bietet, beliebige Inhalte anzuzeigen.\\
-Um Buchstaben komfortabel für dieses Programm codieren zu können, wurde ein Hilfsprogramm in Java erstellt, welches eine Grafische Oberfläche bietet zum Entwerfen der Buchstaben.\\
-Im Laufe der Entwicklung stellte sich jedoch heraus, dass nicht nur eine Darstellung von Buchstaben an bestimmten fixen Plätzen auf dem Display benötigt wird, sondern eine noch flexiblere pixelweise Ansteuerung.\\
-Da die endültige Hardware des Squirrels über mehr Speicher verfügt, war dies durch ein Neuschreiben vieler Teile des Display-Treibers möglich.\\
- Um das den weitgehen neuen Display Treiber mit verschiedenen Schriftarten versorgen zu können, wurde ein Perl-Skript geschrieben, welches die Standardfonts der GD-Libary konvertieren kann.\\
+ZunÃ¤chst wurde zum Entwickeln des Display-Treibers auf eine Test-Hardware zurÃ¼ckgegriffen, in der ebenfalls ein 13BB0-Display verbaut worden war.\\
+Das ursprÃ¼nglich in einem DVB-T Receiver eingesetzte Board verfÃ¼gt jedoch nur nur Ã¼ber den schwÃ¤cheren ATMEGA 8515, welcher Ã¼ber weniger Speicher verfÃ¼gt.\\
+Daher wurde zunÃ¤chst ein Programm entwickelt, das nur wenig Platz verbraucht und trotzdem die notwendige FlexibilitÃ¤t bietet, beliebige Inhalte anzuzeigen.\\
+Um Buchstaben komfortabel fÃ¼r dieses Programm codieren zu kÃ¶nnen, wurde ein Hilfsprogramm in Java erstellt, welches eine Grafische OberflÃ¤che bietet zum Entwerfen der Buchstaben.\\
+Im Laufe der Entwicklung stellte sich jedoch heraus, dass nicht nur eine Darstellung von Buchstaben an bestimmten fixen PlÃ¤tzen auf dem Display benÃ¶tigt wird, sondern eine noch flexiblere pixelweise Ansteuerung.\\
+Da die endÃ¼ltige Hardware des Squirrels Ã¼ber mehr Speicher verfÃ¼gt, war dies durch ein Neuschreiben vieler Teile des Display-Treibers mÃ¶glich.\\
+ Um das den weitgehen neuen Display Treiber mit verschiedenen Schriftarten versorgen zu kÃ¶nnen, wurde ein Perl-Skript geschrieben, welches die Standardfonts der GD-Libary konvertieren kann.\\
 
 
 
 \subsection{Bluetooth}
-Zunächst wurde ein eher monolithischer Bluetooth-Stack geschrieben, dies führte jedoch zu einem Komplexitätsproblem.\\
-Folglich wurde ein neuer leichtgewichtigerer und übersichtlicher Stack entworfen.
+ZunÃ¤chst wurde ein eher monolithischer Bluetooth-Stack geschrieben, dies fÃ¼hrte jedoch zu einem KomplexitÃ¤tsproblem.\\
+Folglich wurde ein neuer leichtgewichtigerer und Ã¼bersichtlicher Stack entworfen.
 
 
 \section{Quellenverzeichnis}
