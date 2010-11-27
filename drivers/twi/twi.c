@@ -48,7 +48,7 @@ void twi_init (void)
     debug_pgm (PSTR ("twi_init sez herro. Setting CTRL\n"));
     TWI.CTRL = 0;
     debug_pgm (PSTR ("twi_init sez herro. Setting BAUD\n"));
-    TWI.MASTER.BAUD = 0;           // maximum performance
+    TWI.MASTER.BAUD = 255;           // maximum performance
     debug_pgm (PSTR ("twi_init sez herro. Setting CTRLA\n"));
     TWI.MASTER.CTRLA = 0 | (1 << 3); // enable master, but disable interrupts
     debug_pgm (PSTR ("twi_init sez herro. Setting CTRLB\n"));
