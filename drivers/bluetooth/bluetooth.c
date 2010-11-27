@@ -121,8 +121,8 @@ uart_send (const char *data, const uint8_t length)
         /* Check for echo */
         if (comm_mode == BT_CMD)
         {
-			uint8_t i = 0;
-			for (; i<3; i++)
+			uint8_t x = 0;
+			for (; x<3; x++)
 			{
 		        while_timeout (fifo_is_empty(&in_fifo), 200)
 		        uart_receive();
@@ -140,11 +140,11 @@ uart_send (const char *data, const uint8_t length)
 				else
 					break;
 			}
-			if (i==3)
+			if (x==3)
 			{
 			        error_putc (data[i]);
 		            error_pgm (PSTR ("BT: WRONG ECHO"));
-						    return;
+					return;
 			}
         }
     }
@@ -153,7 +153,7 @@ uart_send (const char *data, const uint8_t length)
 static bool
 send_cmd (const bt_cmd_t command, const char *data)
 {
-    _delay_ms(200);
+    _delay_ms(500); //300 zu wenig
     // Check for command mode?
     char full_command[20];        // Maximum command size
 
@@ -296,12 +296,13 @@ bt_init (void (*upate_percentage) (uint16_t))
 	if(upate_percentage != NULL)
 	  upate_percentage(20);
   
+
   send_cmd (BT_CLEAR_ADDRESS, NULL);
   test();
 	
   if(upate_percentage != NULL)
     upate_percentage(30);
-  
+
   send_cmd (BT_SET_SLAVE, NULL);
   test();
 	
@@ -348,7 +349,10 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
   while_timeout(true, timeout_ms)
     {
       if (i == length)
+		{
+		debug("--------");
         return true;
+		}
 
       uart_receive ();
 
@@ -365,7 +369,6 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
       if (!rec_length)
         {
           fifo_read (&in_fifo, (char *) &rec_length);
-
           if (rec_length != length)
             {
 		          byte_to_hex (rec_length);
@@ -376,16 +379,20 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
           else
             {
               // You've got mail!
-              timeout_ms = 1000;
+              timeout_ms += 1000;
             }
         }
       else
         {
           fifo_read (&in_fifo, (char *) data + i);
           i++; 
+
+			byte_to_hex(data + i);
+			debug("= Rec");
         }
   }
-
+byte_to_hex(i);
+	error("PKG too small");
   return false;
 }
 
@@ -487,6 +494,7 @@ copy_address (const char *src, char *dst)
 bool
 bt_discover (char result[8][12], void (*update_callback)(const uint16_t progress))
 {
+	test();
     if (!bt_set_mode(BLUETOOTH_MASTER)) return false;
     if (!send_cmd (BT_FIND_DEVICES, NULL)) return false;
 

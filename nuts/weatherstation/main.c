@@ -167,7 +167,7 @@ int main (void)
     }
 
     /* Initialize Sensors */
-    init_bmp085_sensor (); // Don't enable, causes BT to not working
+    //init_bmp085_sensor (); // Don't enable, causes BT to not working
 
     while (true)
     {

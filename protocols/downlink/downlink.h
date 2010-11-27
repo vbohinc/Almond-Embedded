@@ -28,7 +28,7 @@
 
 /* Protocol Details */
 
-#define DOWNLINK_TIMEOUT_MS 100
+#define DOWNLINK_TIMEOUT_MS 5000
 #define DOWNLINK_PACKAGE_LENGTH 4
 
 /**

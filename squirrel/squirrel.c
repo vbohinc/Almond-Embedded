@@ -190,6 +190,16 @@ static void create_device_entry (const char *address)
   error_pgm (PSTR ("Out of Memory"));
 }
 
+//00126f095065
+
+void createFakeDevices()
+{
+	char result[8][12];
+	memcpy(result[0],"00126f095065",12);
+	
+      create_device_entry (result[0]);
+}
+
 void downlink_update (void)
 {
   char result[8][12];
@@ -263,7 +273,9 @@ int main (void)
         if (state == MASTER)
         {
             assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
-            downlink_update ();
+            //downlink_update ();
+		debug_pgm("Fake devices:");
+		createFakeDevices();
             dump ();
             _delay_ms (500);
             debug_pgm (PSTR("Act test..."));
