@@ -29,8 +29,8 @@ void menu_main(void);
 void
 menu_entity_selected(int8_t option)
 {
-	if (option == menu_extensions_count-1 || option == -1 )
-		menu_devices(); //Back selected or B button pressed (-1)
+	if (option == -1 )
+		menu_devices(); //B button pressed (-1)
 	else
 		menu_device_extension();
 }
@@ -38,7 +38,7 @@ menu_entity_selected(int8_t option)
 void
 menu_device_extension(void)
 {
-	static char menu_extension_options[EXTENSIONS_LIST+2][MENU_OPTION_LENGHT];
+	static char menu_extension_options[EXTENSIONS_LIST+1][MENU_OPTION_LENGHT];
 	uint8_t i;
 	for (i=0; i<EXTENSIONS_LIST; i++)
 	{
@@ -62,8 +62,7 @@ menu_device_extension(void)
 	}
 	sprintf(menu_extension_options[i],"MAC: ");
 	memcpy(menu_extension_options[i]+5,device_list[menu_selected_device].mac,12);
-	sprintf(menu_extension_options[i+1],"-- BACK --");
-	menu_extensions_count = i+2;
+	menu_extensions_count = i+1;
 	display_gui_menu("Values", menu_extension_options[0], menu_extensions_count, 0, &menu_entity_selected);
 }
 
@@ -71,7 +70,7 @@ menu_device_extension(void)
 void
 menu_devices_selected(int8_t option)
 {
-	if (option == menu_devices_count-1 || option == -1 ) //back selected or B button pressed (-1)	
+	if (option == -1 ) //B button pressed (-1)	
 	{
 		menu_main();
 	}
@@ -117,7 +116,6 @@ menu_devices(void)
 	}
 	
 	sprintf(menu_device_options[i++],"-- RESCAN --");
-	sprintf(menu_device_options[i++],"-- BACK --");
 	menu_devices_count = i;
 	//menu_devices_count = i;
 	display_gui_menu("Pick a device", menu_device_options[0],menu_devices_count, 0, &menu_devices_selected);

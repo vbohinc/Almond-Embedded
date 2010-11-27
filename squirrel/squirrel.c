@@ -21,6 +21,7 @@
 #include <downlink/downlink.h>
 #include <uplink/uplink.h>
 #include <package_types.h>
+#include <gui/menu.h>
 
 /* -----------------------------------------------------------------------
  * Squirrel State
@@ -230,6 +231,7 @@ int main (void)
     CCP = CCP_IOREG_gc;                             // System Clock selection
     CLK.CTRL = CLK_SCLKSEL_RC32M_gc;
     display_init ();
+	button_init();
     display_gui_bootup_screen();
     //Set Prescaler to devide by 4
     CCP = CCP_IOREG_gc;
@@ -266,6 +268,8 @@ int main (void)
     bt_init(display_gui_bootup_update_callback);
     squirrel_state_set (MASTER);
     
+	enum menu_return men_ret;
+
     while (true)
     {
         display_flip ();
@@ -274,19 +278,26 @@ int main (void)
         {
             assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
             //downlink_update ();
-		debug_pgm("Fake devices:");
+		
+
+///debug_pgm(PSTR("Fake devices:"));
+display_gui_bootup_update_callback(0);
 		createFakeDevices();
-            dump ();
-            _delay_ms (500);
-            debug_pgm (PSTR("Act test..."));
-            bt_connect (device_list[0].mac);
-            bool err;
-            downlink_set_actuator_value (4, 1, &err);
-            downlink_bye (10, &err);
-            bt_disconnect ();
+display_gui_bootup_update_callback(100);
+            
+
+//dump ();
+
+           // _delay_ms (500);
+           // bt_connect (device_list[0].mac);
+           // bool err;
+           // downlink_set_actuator_value (4, 1, &err);
+		//led_on = !led_on;
+            //downlink_bye (10, &err);
+            //bt_disconnect ();
 
             assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");
-            squirrel_state_set (MASTER);
+            squirrel_state_set (SLAVE);
         }
 
         else
@@ -299,6 +310,11 @@ int main (void)
               
                 if (bt_receive (data, UPLINK_PACKAGE_LENGTH, 0))
                     uplink_process_pkg (data);
+
+				men_ret = menu_update();
+				if (men_ret == MEN_NEW_SEARCH)
+					 squirrel_state_set (MASTER);
+
 
                 //if (state == SLAVE)
                 //  squirrel_state_set (MASTER);

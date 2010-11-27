@@ -144,7 +144,7 @@ uart_send (const char *data, const uint8_t length)
 			{
 			        error_putc (data[i]);
 		            error_pgm (PSTR ("BT: WRONG ECHO"));
-					return;
+					//return;
 			}
         }
     }
@@ -253,7 +253,7 @@ update_comm_mode (uint16_t timeout_ms)
         if (fifo_strstr_pgm (&in_fifo, PSTR ("DISCONNECT")))
         {
             clean_line ();
-            debug_pgm(PSTR("DISCONNECTED"));
+            //debug_pgm(PSTR("DISCONNECTED"));
             test ();
             comm_mode = BT_CMD;
       			return comm_mode;
@@ -262,7 +262,8 @@ update_comm_mode (uint16_t timeout_ms)
         if (fifo_strstr_pgm (&in_fifo, PSTR ("CONNECT")))
         {
             clean_line ();
-            debug_pgm(PSTR("CONNECTED"));
+            //debug_pgm(PSTR("CONNECTED"));
+		_delay_ms(200); //don't delete this, else there will be no success!!!!!!!!!
             comm_mode = BT_DATA;
       			return comm_mode;
         }
@@ -387,12 +388,10 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
           fifo_read (&in_fifo, (char *) data + i);
           i++; 
 
-			byte_to_hex(data + i);
+			//byte_to_hex(data + i);
 			//debug("= Rec");
         }
   }
-byte_to_hex(i);
-	error("PKG too small");
   return false;
 }
 
@@ -424,7 +423,7 @@ bt_connect (const char *address)
 
     if (!send_cmd (BT_DISABLE_AUTOCONNECT, address))
         return false;
-    debug_pgm (PSTR ("SET_ADD"));
+    //debug_pgm (PSTR ("SET_ADD"));
 
     test();
 
@@ -432,12 +431,12 @@ bt_connect (const char *address)
         return false;
 
     test();
-    debug_pgm (PSTR ("CONNECT"));
+    //debug_pgm (PSTR ("CONNECT"));
 
     if (!send_cmd (BT_CONNECT, NULL))
         return false;
 
-    debug_pgm (PSTR ("WAIT FOR COMM"));
+    //debug_pgm (PSTR ("WAIT FOR COMM"));
 
     return (BT_DATA == update_comm_mode (60000));
 }
