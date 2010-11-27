@@ -350,7 +350,7 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
     {
       if (i == length)
 		{
-		//debug("--------");
+		//error_putc("\n");
         return true;
 		}
 
@@ -387,7 +387,7 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
           fifo_read (&in_fifo, (char *) data + i);
           i++; 
 
-			//byte_to_hex(data + i);
+			byte_to_hex(data + i);
 			//debug("= Rec");
         }
   }
