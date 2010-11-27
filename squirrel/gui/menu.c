@@ -77,8 +77,7 @@ menu_device_extension(void)
 void
 menu_devices_selected(int8_t option)
 {
-	if (option == menu_devices_count-1 || option == -1 ) //back selected or B button pressed (-1)
-	{
+	if (option == menu_devices_count-1 || option == -1 ) //back selected or B button pressed (-1)	{
 		menu_main();
 	}
 	else if (option == menu_devices_count -2)  // Rescan
