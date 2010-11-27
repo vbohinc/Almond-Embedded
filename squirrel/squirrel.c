@@ -21,6 +21,7 @@
 #include <downlink/downlink.h>
 #include <uplink/uplink.h>
 #include <package_types.h>
+#include <gui/menu.h>
 
 /* -----------------------------------------------------------------------
  * Squirrel State
@@ -190,6 +191,16 @@ static void create_device_entry (const char *address)
   error_pgm (PSTR ("Out of Memory"));
 }
 
+//00126f095065
+
+void createFakeDevices()
+{
+	char result[8][12];
+	memcpy(result[0],"00126f095065",12);
+	
+      create_device_entry (result[0]);
+}
+
 void downlink_update (void)
 {
   char result[8][12];
@@ -220,6 +231,7 @@ int main (void)
     CCP = CCP_IOREG_gc;                             // System Clock selection
     CLK.CTRL = CLK_SCLKSEL_RC32M_gc;
     display_init ();
+	button_init();
     display_gui_bootup_screen();
     //Set Prescaler to devide by 4
     CCP = CCP_IOREG_gc;
@@ -256,25 +268,37 @@ int main (void)
     bt_init(display_gui_bootup_update_callback);
     squirrel_state_set (MASTER);
     
+	enum menu_return men_ret;
+
     while (true)
     {
         display_flip ();
 
         if (state == MASTER)
         {
+			display_gui_bootup_update_callback(20);
             assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
             downlink_update ();
-            dump ();
-            _delay_ms (500);
-            debug_pgm (PSTR("Act test..."));
-            bt_connect (device_list[0].mac);
-            bool err;
-            downlink_set_actuator_value (4, 1, &err);
-            downlink_bye (10, &err);
-            bt_disconnect ();
+		
+
+///debug_pgm(PSTR("Fake devices:"));
+/*display_gui_bootup_update_callback(0);
+		createFakeDevices();
+display_gui_bootup_update_callback(100);*/
+            
+
+//dump ();
+
+           // _delay_ms (500);
+           // bt_connect (device_list[0].mac);
+           // bool err;
+           // downlink_set_actuator_value (4, 1, &err);
+		//led_on = !led_on;
+            //downlink_bye (10, &err);
+            //bt_disconnect ();
 
             assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");
-            squirrel_state_set (MASTER);
+            squirrel_state_set (SLAVE);
         }
 
         else
@@ -286,7 +310,12 @@ int main (void)
                 uint8_t data[UPLINK_PACKAGE_LENGTH];
               
                 if (bt_receive (data, UPLINK_PACKAGE_LENGTH, 0))
-                    uplink_process_pkg (data);
+                    uplink_process_pkg (data, &menu_slave_connected);
+
+				men_ret = menu_update();
+				if (men_ret == MEN_NEW_SEARCH)
+					 squirrel_state_set (MASTER);
+
 
                 //if (state == SLAVE)
                 //  squirrel_state_set (MASTER);

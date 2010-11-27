@@ -34,7 +34,7 @@ uint8_t debounce (uint8_t pin)
         {
 		//Pin is still on ground
 		//Give user time to release button
-            _delay_ms (25);
+            _delay_ms (40);
             return 1;
         }
     }

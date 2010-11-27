@@ -121,17 +121,31 @@ uart_send (const char *data, const uint8_t length)
         /* Check for echo */
         if (comm_mode == BT_CMD)
         {
-            while_timeout (fifo_is_empty(&in_fifo), 200)
-            uart_receive();
+			uint8_t x = 0;
+			for (; x<3; x++)
+			{
+		        while_timeout (fifo_is_empty(&in_fifo), 200)
+		        uart_receive();
 
-            fifo_read (&in_fifo, &echo);
+		        fifo_read (&in_fifo, &echo);
 
-            if (echo != data[i])
-            {
-                error_putc (data[i]);
-                error_pgm (PSTR ("BT: WRONG ECHO"));
-				        return;
-            }
+		        if (echo != data[i])
+		        {
+					if (uart_putc (data[i]) == 0)
+					{
+						warn_pgm (PSTR ("UART: Remote not ready"));
+						return;
+					}
+		        }
+				else
+					break;
+			}
+			if (x==3)
+			{
+			        error_putc (data[i]);
+		            error_pgm (PSTR ("BT: WRONG ECHO"));
+					//return;
+			}
         }
     }
 }
@@ -139,7 +153,7 @@ uart_send (const char *data, const uint8_t length)
 static bool
 send_cmd (const bt_cmd_t command, const char *data)
 {
-    _delay_ms(200);
+    _delay_ms(500); //300 zu wenig
     // Check for command mode?
     char full_command[20];        // Maximum command size
 
@@ -239,7 +253,7 @@ update_comm_mode (uint16_t timeout_ms)
         if (fifo_strstr_pgm (&in_fifo, PSTR ("DISCONNECT")))
         {
             clean_line ();
-            debug_pgm(PSTR("DISCONNECTED"));
+            //debug_pgm(PSTR("DISCONNECTED"));
             test ();
             comm_mode = BT_CMD;
       			return comm_mode;
@@ -248,7 +262,8 @@ update_comm_mode (uint16_t timeout_ms)
         if (fifo_strstr_pgm (&in_fifo, PSTR ("CONNECT")))
         {
             clean_line ();
-            debug_pgm(PSTR("CONNECTED"));
+            //debug_pgm(PSTR("CONNECTED"));
+		_delay_ms(200); //don't delete this, else there will be no success!!!!!!!!!
             comm_mode = BT_DATA;
       			return comm_mode;
         }
@@ -271,6 +286,7 @@ bt_init (void (*upate_percentage) (uint16_t))
 {
   uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
   fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
+
   _delay_ms (2000);
   uart_receive ();
   fifo_clear (&in_fifo);
@@ -279,19 +295,20 @@ bt_init (void (*upate_percentage) (uint16_t))
   test();
   
 	if(upate_percentage != NULL)
-	  upate_percentage(20);
+	  upate_percentage(10);
   
+
   send_cmd (BT_CLEAR_ADDRESS, NULL);
   test();
 	
   if(upate_percentage != NULL)
-    upate_percentage(30);
-  
+    upate_percentage(15);
+
   send_cmd (BT_SET_SLAVE, NULL);
   test();
 	
   if(upate_percentage != NULL)
-    upate_percentage(40);
+    upate_percentage(18);
 
   return true;
 }
@@ -333,7 +350,10 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
   while_timeout(true, timeout_ms)
     {
       if (i == length)
+		{
+		//error_putc("\n");
         return true;
+		}
 
       uart_receive ();
 
@@ -350,7 +370,6 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
       if (!rec_length)
         {
           fifo_read (&in_fifo, (char *) &rec_length);
-
           if (rec_length != length)
             {
 		          byte_to_hex (rec_length);
@@ -368,9 +387,11 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
         {
           fifo_read (&in_fifo, (char *) data + i);
           i++; 
+
+			//byte_to_hex(data + i);
+			//debug("= Rec");
         }
   }
-
   return false;
 }
 
@@ -402,7 +423,7 @@ bt_connect (const char *address)
 
     if (!send_cmd (BT_DISABLE_AUTOCONNECT, address))
         return false;
-    debug_pgm (PSTR ("SET_ADD"));
+    //debug_pgm (PSTR ("SET_ADD"));
 
     test();
 
@@ -410,12 +431,12 @@ bt_connect (const char *address)
         return false;
 
     test();
-    debug_pgm (PSTR ("CONNECT"));
+    //debug_pgm (PSTR ("CONNECT"));
 
     if (!send_cmd (BT_CONNECT, NULL))
         return false;
 
-    debug_pgm (PSTR ("WAIT FOR COMM"));
+    //debug_pgm (PSTR ("WAIT FOR COMM"));
 
     return (BT_DATA == update_comm_mode (60000));
 }
@@ -433,6 +454,8 @@ bt_disconnect (void)
     //ne
     //for (uint8_t i)
 
+	//comm_mode = BT_RAW;
+
     // Switch to online cmd mode
     for (uint8_t i = 0; i < 4; i++)
     {
@@ -441,7 +464,7 @@ bt_disconnect (void)
         _delay_ms (1500);
     }
 
- 
+	//comm_mode = BT_CMD;
 
     if (!send_cmd (BT_DISCONNECT, NULL))
         return false;
@@ -472,6 +495,8 @@ copy_address (const char *src, char *dst)
 bool
 bt_discover (char result[8][12], void (*update_callback)(const uint16_t progress))
 {
+	update_callback(20);
+	test();
     if (!bt_set_mode(BLUETOOTH_MASTER)) return false;
     if (!send_cmd (BT_FIND_DEVICES, NULL)) return false;
 

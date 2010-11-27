@@ -42,7 +42,7 @@ static uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint
   if (!bt_receive ( (void *) &package, DOWNLINK_PACKAGE_LENGTH, DOWNLINK_TIMEOUT_MS))
     {
       if (opcode != BYE)	  	
-        error_pgm PSTR("receive failed");
+        error_pgm (PSTR("Receive Failed"));
       return 0;
     }
 
