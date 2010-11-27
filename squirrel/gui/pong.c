@@ -1,3 +1,7 @@
+/**
+ * Pong game for squirrel 
+ * @file pong.c
+ */
 #include "pong.h"
 
 //#include <unistd.h>
