@@ -271,8 +271,6 @@ bt_init (void (*upate_percentage) (uint16_t))
 {
   uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
   fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
-	if(upate_percentage != NULL)
-	  upate_percentage(10);	
   _delay_ms (2000);
   uart_receive ();
   fifo_clear (&in_fifo);
