@@ -350,7 +350,7 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
     {
       if (i == length)
 		{
-		debug("--------");
+		//debug("--------");
         return true;
 		}
 
@@ -379,7 +379,7 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
           else
             {
               // You've got mail!
-              timeout_ms += 1000;
+              timeout_ms = 1000;
             }
         }
       else
@@ -387,8 +387,8 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
           fifo_read (&in_fifo, (char *) data + i);
           i++; 
 
-			byte_to_hex(data + i);
-			debug("= Rec");
+			//byte_to_hex(data + i);
+			//debug("= Rec");
         }
   }
 byte_to_hex(i);
@@ -455,6 +455,8 @@ bt_disconnect (void)
     //ne
     //for (uint8_t i)
 
+	//comm_mode = BT_RAW;
+
     // Switch to online cmd mode
     for (uint8_t i = 0; i < 4; i++)
     {
@@ -463,7 +465,7 @@ bt_disconnect (void)
         _delay_ms (1500);
     }
 
- 
+	//comm_mode = BT_CMD;
 
     if (!send_cmd (BT_DISCONNECT, NULL))
         return false;
