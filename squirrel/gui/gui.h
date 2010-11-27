@@ -12,11 +12,13 @@
 #ifndef __DISPLAY_GUI_H__
 #define __DISPLAY_GUI_H__
 
-///button 
+///button info bar height
 #define BUTTON_INFO_BAR_HEIGHT 10
+/// button info bar y position coordinate
 #define BUTTON_INFO_BAR_TOP DISPLAY_HEIGHT - BUTTON_INFO_BAR_HEIGHT
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
+///max menu option string lenght 
 #define MENU_OPTION_LENGHT 20
 
 ///enum of all aviable keys
