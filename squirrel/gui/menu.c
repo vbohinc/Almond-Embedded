@@ -1,13 +1,7 @@
 /**
- * menu.c - Main and Sub-Menues
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Stefan Profanter
+ * Main and Sub-Menues
+ * @file menu.c
+ * @author Stefan Profanter
  */
 
 #include "menu.h"
@@ -35,8 +29,8 @@ void menu_main(void);
 void
 menu_entity_selected(int8_t option)
 {
-	if (option == menu_extensions_count-1)
-		menu_devices(); //Back
+	if (option == menu_extensions_count-1 || option == -1 )
+		menu_devices(); //Back selected or B button pressed (-1)
 	else
 		menu_device_extension();
 }
@@ -77,7 +71,7 @@ menu_device_extension(void)
 void
 menu_devices_selected(int8_t option)
 {
-	if (option == menu_devices_count-1) //back
+	if (option == menu_devices_count-1 || option == -1 ) //back selected or B button pressed (-1)	
 	{
 		menu_main();
 	}

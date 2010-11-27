@@ -153,8 +153,8 @@ void sd_init (void)
     }
 
     // Set block size to 32 bytes
-    //sd_send_command(CMD16, NULL);
-    //sd_get_response(R1);
+    sd_send_command(CMD16, NULL);
+    sd_get_response(R1,sd_response_buffer);
 }
 
 void sd_send_command (uint8_t command_nr, uint8_t *arguments)
@@ -286,8 +286,8 @@ void sd_send_command (uint8_t command_nr, uint8_t *arguments)
 
 uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size)
 {
-    uint32_t block_addr = addr - (addr % SD_BLOCK_SIZE);
-    uint8_t bytes_read = 0;
+    uint32_t block_addr = addr;// - (addr % SD_BLOCK_SIZE);
+    uint16_t bytes_read = 0;
     uint8_t sd_response_buffer[5];
 
     while (bytes_read < size)
@@ -302,16 +302,32 @@ uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size)
 	sd_send_command (CMD17, addr_bytes);
 	sd_get_response(R1,sd_response_buffer);
 	
-        if (sd_response_buffer[0])
-        {
+        /*if (sd_response_buffer[0]!=0)
+        {*/
             debug_pgm (PSTR ("SD: CMD17 Succeeded"));
-            sd_get_response (R1,sd_response_buffer);
+            //sd_get_response (R1,sd_response_buffer);
+
+	    
+	    byte_to_hex(sd_response_buffer[0]);
 
             if (sd_response_buffer[0] == 0x00)
             {
                 debug_pgm (PSTR ("SD: Reading Block"));
 
-                for (int i = 0; i < 3 + SD_BLOCK_SIZE; i++)
+		while (spi_receive_byte() != 0xfe){};
+
+		unsigned int a=0;
+		for (a=0;a<SD_BLOCK_SIZE;a++)
+		{
+                        if (read_buffer != NULL && bytes_read < size) {
+                            read_buffer[bytes_read++] = spi_receive_byte();
+			}
+		}
+
+		spi_receive_byte();//CRC - Byte wird nicht ausgewertet
+		spi_receive_byte();//CRC - Byte wird nicht ausgewertet
+
+                /*for (int i = 0; i < 3 + SD_BLOCK_SIZE; i++)
                 {
                     sd_token_buffer[i] = spi_receive_byte();
 
@@ -325,9 +341,9 @@ uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size)
                         if (read_buffer != NULL)
                             read_buffer[bytes_read++] = sd_token_buffer[i];
                     }
-                }
+                }*/
             }
-        }
+        /*}*/
 
         else
         {
@@ -341,6 +357,7 @@ uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size)
     /*for (int i = 0; i < size; i++) {
      read_buffer[i] = sd_token_buffer[i+2];
      }*/
+    sd_disable();
     debug_pgm (PSTR ("SD: Read Succeeded"));
 
     return 1;
@@ -354,7 +371,7 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
 
     while (bytes_written < size)
     {
-        sd_read_bytes (block_addr, NULL, SD_BLOCK_SIZE);
+        //sd_read_bytes (block_addr, NULL, SD_BLOCK_SIZE);
 
         uint8_t addr_bytes[4];
         addr_bytes[0] = block_addr >> 24;
@@ -391,7 +408,9 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
                     spi_send_byte (crc[1]);
                 }
 
-                sd_token_buffer[0] = spi_receive_byte(); // Receive data response token.
+                //sd_token_buffer[0] = spi_receive_byte(); // Receive data response token.
+		//Wartet auf MMC/SD-Karte Bussy
+		while (spi_receive_byte() != 0xff){};
 
                 // TODO: Check status bits -> return 0 on failure
                 // Busy tokens?

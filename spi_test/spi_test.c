@@ -67,8 +67,8 @@ uint8_t main(void) {
 	display_init();
 	error_init();
 
-	/*display_draw_image(0,0,testimg);
-	display_flip();*/
+	/*display_draw_image(0,0,testimg);*/
+	display_flip();
 	//while(true);
 
 
@@ -83,20 +83,21 @@ uint8_t main(void) {
 		b++;
 	}*/
 
-	//sd_write_bytes(0, bytes, NUM_BYTES);
-	while(true);
-	sd_read_bytes(0,bytes,50);
+	sd_write_bytes(0, bytes, NUM_BYTES);
+	//while(true);
+	sd_read_bytes(0,bytes,NUM_BYTES);
 
 	debug_pgm(PSTR("Read bytes:"));
 
-	for (uint8_t i=0; i<50; i++)
+	for (uint8_t i=0; i<20; i++)
 	{
-		byte_to_hex(bytes[i]);
+		error_putc(bytes[i]);
+		/*byte_to_hex(bytes[i]);
 		error_putc(' ');
 		if ((i+1)%8==0)
 			error_putc(' ');
 		if ((i+1)%16==0)
-			error_putc('\n');
+			error_putc('\n');*/
 
 
 	}
