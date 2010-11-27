@@ -35,8 +35,8 @@ void menu_main(void);
 void
 menu_entity_selected(int8_t option)
 {
-	if (option == menu_extensions_count-1)
-		menu_devices(); //Back
+	if (option == menu_extensions_count-1 || option == -1 )
+		menu_devices(); //Back selected or B button pressed (-1)
 	else
 		menu_device_extension();
 }
@@ -77,7 +77,7 @@ menu_device_extension(void)
 void
 menu_devices_selected(int8_t option)
 {
-	if (option == menu_devices_count-1) //back
+	if (option == menu_devices_count-1 || option == -1 ) //back selected or B button pressed (-1)
 	{
 		menu_main();
 	}
