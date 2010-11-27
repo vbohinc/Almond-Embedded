@@ -77,9 +77,9 @@ void createFakeDevices()
 	memcpy(device_list[0].mac,"0123456789AB",12);
 	device_list[0].class = WEATHERSTATION;
 	int i;
-	for (i=0; i<5;i++)
+	for (i=0; i<4;i++)
 	{
-		device_list[0].extension_types[i]=i;
+		device_list[0].extension_types[i]=GENERIC_ACTOR;
 		device_list[0].values_cache[i]=i;
 	}
 	for (;i<EXTENSIONS_LIST;i++)

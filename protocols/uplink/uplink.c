@@ -24,7 +24,7 @@
  * LIST:
  *
  * | OPCODE (1)  | DEVICE_NUM (1) |
- * | BT ADDR (6) | NUT_CLASS (1)  |
+ * | BT ADDR (12) | NUT_CLASS (1)  |
  * | EXTENSION_CLASS_1 (1) | .... | TERMINATOR (1)
  *
  * LOG:
@@ -48,17 +48,17 @@ static inline bool uplink_handle_get_package (uplink_package *p)
     {
 
         case LIST:
-            return squirrel_list (p->id, & (p->payload.list));
+            return !squirrel_list (p->id, & (p->payload.list));
 
         case LOG:
-            return squirrel_log (p);
+            return !squirrel_log (p);
 
         case TIME:
             p->payload.time.time = time_get ();
             return true;
 
         default:
-            return true;
+            return false;
     }
 }
 
@@ -111,6 +111,7 @@ bool uplink_process_pkg (uint8_t * data, void (*menu_slave) (bool))
             error = true;
             break;
     }
+
 
     p->opcode |= error ? ERROR : RET;
 

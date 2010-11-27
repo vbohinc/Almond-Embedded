@@ -46,7 +46,9 @@ void squirrel_state_set (uint8_t s)
 bool squirrel_list (uint8_t num, uplink_payload_list *p)
 {
   if (!valid (num))
-    return false;
+	{
+	    return false;
+	}
 
   for (uint8_t i = 0; i < 12; i++)
     p->bt_address[i] = device_list[num].mac[i];
@@ -61,11 +63,15 @@ bool squirrel_list (uint8_t num, uplink_payload_list *p)
 
 bool squirrel_log (uplink_package *p)
 {
+	if (p->id != 0)
+		return false;
+
   uplink_payload_log *log = & (p->payload.log);
+
 
   for (uint8_t i = 0; i < 8; i++)
     {
-      log->entries[i].time = i;
+      log->entries[i].time = i+1;
       log->entries[i].value = 42;
     }
 
@@ -193,12 +199,26 @@ static void create_device_entry (const char *address)
 
 //00126f095065
 
-void createFakeDevices()
+void createFakeDevices_address()
 {
 	char result[8][12];
 	memcpy(result[0],"00126f095065",12);
 	
       create_device_entry (result[0]);
+}
+
+void createFakeDevices_full()
+{
+	memcpy(device_list[0].mac,"00126f095065",12);
+	device_list[0].class = WEATHERSTATION;
+	int i;
+	for (i=0; i<5;i++)
+	{
+		device_list[0].extension_types[i]=i;
+		device_list[0].values_cache[i]=i;
+	}
+	for (;i<EXTENSIONS_LIST;i++)
+		device_list[0].extension_types[i] = INVALID;
 }
 
 void downlink_update (void)
@@ -283,7 +303,7 @@ int main (void)
 
 ///debug_pgm(PSTR("Fake devices:"));
 /*display_gui_bootup_update_callback(0);
-		createFakeDevices();
+		createFakeDevices_full();
 display_gui_bootup_update_callback(100);*/
             
 
@@ -299,22 +319,24 @@ display_gui_bootup_update_callback(100);*/
 
             assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");
             squirrel_state_set (SLAVE);
+            bt_set_mode (BLUETOOTH_SLAVE);
         }
 
         else
             if (state == SLAVE || state == SLAVE_BUSY)
             {
 
-                bt_set_mode (BLUETOOTH_SLAVE);
                 // We wait for connections from the backend...
                 uint8_t data[UPLINK_PACKAGE_LENGTH];
               
                 if (bt_receive (data, UPLINK_PACKAGE_LENGTH, 0))
+		{
                     uplink_process_pkg (data, &menu_slave_connected);
+		}
 
-				men_ret = menu_update();
-				if (men_ret == MEN_NEW_SEARCH)
-					 squirrel_state_set (MASTER);
+		men_ret = menu_update();
+		if (men_ret == MEN_NEW_SEARCH)
+			 squirrel_state_set (MASTER);
 
 
                 //if (state == SLAVE)

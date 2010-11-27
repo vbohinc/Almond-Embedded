@@ -47,17 +47,17 @@ menu_device_extension(void)
 		switch (device_list[menu_selected_device].extension_types[i])
 		{
 			case GENERIC_SENSOR:
-				sprintf(menu_extension_options[i],"Generic: %d", device_list[menu_selected_device].values_cache[i]); break;
+				sprintf(menu_extension_options[i],"Generic: %u", device_list[menu_selected_device].values_cache[i]); break;
 			case TEMPERATURE:
-				sprintf(menu_extension_options[i],"Temp: %d C", device_list[menu_selected_device].values_cache[i]); break;
+				sprintf(menu_extension_options[i],"Temp: %u C", device_list[menu_selected_device].values_cache[i]); break;
 			case PRESSURE:
-				sprintf(menu_extension_options[i],"Press: %d hPa", device_list[menu_selected_device].values_cache[i]); break;
+				sprintf(menu_extension_options[i],"Press: %u hPa", device_list[menu_selected_device].values_cache[i]); break;
 			case LIGHT:
-				sprintf(menu_extension_options[i],"Light: %d cd", device_list[menu_selected_device].values_cache[i]); break;
+				sprintf(menu_extension_options[i],"Light: %u cd", device_list[menu_selected_device].values_cache[i]); break;
 			case HUMIDITY:
-				sprintf(menu_extension_options[i],"Humi: %d %%", device_list[menu_selected_device].values_cache[i]); break;
+				sprintf(menu_extension_options[i],"Humi: %u %%", device_list[menu_selected_device].values_cache[i]); break;
 			default:
-				sprintf(menu_extension_options[i],"UNK: %d", device_list[menu_selected_device].values_cache[i]);
+				sprintf(menu_extension_options[i],"UNK: %u", device_list[menu_selected_device].values_cache[i]);
 		}
 	}
 	sprintf(menu_extension_options[i],"MAC: ");
@@ -156,7 +156,7 @@ void menu_slave_connected(bool isConnected)
 	if (isConnected)
 	{
 		display_clear();
-		display_draw_string (10, 10, 1, "With Backend Connected");
+		display_draw_string (10, 10, 0, "With Backend Connected");
 	}
 	else
 	{

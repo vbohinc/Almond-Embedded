@@ -118,6 +118,9 @@ uart_send (const char *data, const uint8_t length)
         if (comm_mode == BT_RAW)
             _delay_ms (50);
 
+        if (comm_mode == BT_DATA)
+            _delay_ms (1);
+
         /* Check for echo */
         if (comm_mode == BT_CMD)
         {
@@ -253,17 +256,17 @@ update_comm_mode (uint16_t timeout_ms)
         if (fifo_strstr_pgm (&in_fifo, PSTR ("DISCONNECT")))
         {
             clean_line ();
-            //debug_pgm(PSTR("DISCONNECTED"));
             test ();
             comm_mode = BT_CMD;
-      			return comm_mode;
+      		return comm_mode;
         }
 
         if (fifo_strstr_pgm (&in_fifo, PSTR ("CONNECT")))
         {
             clean_line ();
-            //debug_pgm(PSTR("CONNECTED"));
-		_delay_ms(200); //don't delete this, else there will be no success!!!!!!!!!
+			_delay_ms(100);
+			 clean_line ();
+			_delay_ms(100); //don't delete this, else there will be no success!!!!!!!!!
             comm_mode = BT_DATA;
       			return comm_mode;
         }
@@ -332,6 +335,8 @@ bt_set_mode (const bt_mode_t mode)
         }
 
     if (mode == BLUETOOTH_SLAVE)
+	
+
         if (send_cmd (BT_SET_SLAVE, NULL))
         {
             bt_mode = BLUETOOTH_SLAVE;
@@ -362,19 +367,33 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
 
       if (update_comm_mode (0) == BT_CMD)
         {
-          debug_pgm (PSTR ("not connected"));
+          //debug_pgm (PSTR ("not connected"));
           return false;
         }
-      
+        
+		//SALOMON: NICHT WEGOPTIMIEREN!!!
+		//We have a connection
+		if (timeout_ms == 0)
+			timeout_ms = 500;
+
+      if (fifo_is_empty (&in_fifo))
+        continue;
+
       // Find starting point of packet
       if (!rec_length)
         {
           fifo_read (&in_fifo, (char *) &rec_length);
+			if (rec_length == 13 || rec_length == 10)
+			{
+				rec_length = 0;
+				continue;
+			}
           if (rec_length != length)
             {
-		          byte_to_hex (rec_length);
+		      byte_to_hex (rec_length);
               byte_to_hex (length);
               debug_pgm (PSTR ("rl != l"));
+				_delay_ms(500);
               rec_length = 0;                  
             }
           else
@@ -387,9 +406,6 @@ bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
         {
           fifo_read (&in_fifo, (char *) data + i);
           i++; 
-
-			//byte_to_hex(data + i);
-			//debug("= Rec");
         }
   }
   return false;
@@ -468,6 +484,11 @@ bt_disconnect (void)
 
     if (!send_cmd (BT_DISCONNECT, NULL))
         return false;
+
+	test();
+    if (!send_cmd (BT_CLEAR_ADDRESS, NULL))
+        return false;
+test();
 
     if (BT_CMD == update_comm_mode (60000))
     {
