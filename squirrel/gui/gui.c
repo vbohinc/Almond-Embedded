@@ -367,21 +367,21 @@ display_gui_about (void (*callback) (void))
     current_screen = display_gui_screen_about;
     display_gui_button_bar_visible = false;
     display_clear();
-    display_draw_image (0, 0, image_logo);
+    display_draw_image (0, 2, image_logo);
     display_draw_string_delayed (62, 5, 2, "ALMOND", 400);
-    display_draw_string_delayed (62, 25, 0, "Autonomous", 100);
-    display_draw_string_delayed (62, 33, 0, "Logging And", 100);
-    display_draw_string_delayed (62, 41, 0, "Management", 100);
-    display_draw_string_delayed (62, 49, 0, "Of Networked", 100);
-    display_draw_string_delayed (62, 57, 0, "Devices", 100);
+    display_draw_string_delayed (62, 22, 0, "Autonomous", 100);
+    display_draw_string_delayed (62, 30, 0, "Logging And", 100);
+    display_draw_string_delayed (62, 38, 0, "Management", 100);
+    display_draw_string_delayed (62, 46, 0, "Of Network", 100);
+    display_draw_string_delayed (62, 54, 0, "Devices", 100);
     display_gui_sleep (2000);
     display_clear();
     display_draw_string_delayed (30, 30, 0, "starring", 100);
     display_gui_sleep (1000);
 
     static const uint8_t *images[] = {team_salomon, team_linus, team_maximilian, team_sean, team_stefan, team_matthias, team_pascal, team_thomas, team_christian, NULL};
-    static const char *names[] = {"Salomon", "Linus", "Maximilian", "Sean", "Stefan", "Matthias", "Pascal", "Thomas", "Christian", NULL};
-    static const char *assignments[] = {"The Boss!", "Rumgeloete", "Grinsemaxi", "Schon", "Ultrafanta", "Display", "Rumgammeln", "Gar gar nix", "Keine Ahnung", NULL};
+    static const char *names[] = {"Salomon", "Linus", "Maxi", "Sean", "Stefan", "Matthias", "Pascal", "Thomas", "Christian", NULL};
+    static const char *assignments[] = {"Protocols", "Drivers, Nut", "Hardware", "Pong, SD", "Gui, Bluetooth", "Backend, Gui", "Gui EMU, Docu", "Documentation", "Backend", NULL};
 
     uint8_t current_person = 0;
 
