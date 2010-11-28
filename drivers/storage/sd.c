@@ -38,7 +38,7 @@ void sd_disable (void)
     set_bit (PORTD.OUT, 0);
 }
 
-void sd_init (void)
+int sd_init (void)
 {
     debug ("Init spi ...\n");
     spi_init();
@@ -87,7 +87,7 @@ void sd_init (void)
         {
             sd_disable();
             debug_pgm (PSTR ("sd: failed (CMD0)"));
-            return;
+            return 1;
         }
     }
 
@@ -159,6 +159,7 @@ void sd_init (void)
 	byte_to_hex(sd_response_buffer[0]);
 
 sd_disable();
+	return 0;
 }
 
 void sd_send_command (uint8_t command_nr, uint8_t *arguments)
@@ -301,6 +302,8 @@ void sd_send_command (uint8_t command_nr, uint8_t *arguments)
     //return response;
 }
 
+//uint8_t read_block(uint32_t addr, uint8_t *read_buffer);
+
 uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size)
 {
     uint32_t block_addr = addr;// - (addr % SD_BLOCK_SIZE);
@@ -383,7 +386,7 @@ uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size)
 
 uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
 {
-    uint32_t block_addr = 512;//addr;// - (addr % SD_BLOCK_SIZE);
+    uint32_t block_addr = addr;// - (addr % SD_BLOCK_SIZE);
     uint16_t bytes_written = 0;
     uint8_t sd_response_buffer[5];
 
@@ -396,11 +399,6 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
         addr_bytes[1] = block_addr >> 16;
         addr_bytes[2] = block_addr >> 8;
         addr_bytes[3] = block_addr;
-
-	byte_to_hex(addr_bytes[0]);
-	byte_to_hex(addr_bytes[1]);
-	byte_to_hex(addr_bytes[2]);
-	byte_to_hex(addr_bytes[3]);
         
         sd_send_command (CMD24, addr_bytes);
         sd_get_response(R1,sd_response_buffer);
@@ -414,7 +412,7 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
         {
 
 
-            if (sd_response_buffer[0] = 0x00)
+            if (sd_response_buffer[0] == 0x00)
             {
 
             debug_pgm (PSTR ("SD: CMD24 Succeeded"));
@@ -457,6 +455,7 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
 
             } else {
 		debug_pgm (PSTR ("SD: write return fail"));
+		byte_to_hex(sd_response_buffer[0]);
 		while(true);
 		}
 
