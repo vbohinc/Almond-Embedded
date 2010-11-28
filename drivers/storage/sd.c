@@ -302,97 +302,86 @@ void sd_send_command (uint8_t command_nr, uint8_t *arguments)
     //return response;
 }
 
-//uint8_t read_block(uint32_t addr, uint8_t *read_buffer);
+uint8_t read_block(uint32_t block_addr, uint8_t *read_buffer);
 
-uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size)
-{
-    uint32_t block_addr = addr;// - (addr % SD_BLOCK_SIZE);
+uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size) {
+    uint8_t block[SD_BLOCK_SIZE];
+
+
+    uint32_t block_addr = addr - (addr % SD_BLOCK_SIZE);
     uint16_t bytes_read = 0;
-    uint8_t sd_response_buffer[5];
+    uint8_t ret;
 
-    while (bytes_read < size)
-    {
-        uint8_t addr_bytes[4];
+    while( bytes_read < size) {
+        if( read_block(block_addr,block) != 0)
+		return 0;
 
-        addr_bytes[0] = block_addr >> 24;
-        addr_bytes[1] = block_addr >> 16;
-        addr_bytes[2] = block_addr >> 8;
-        addr_bytes[3] = block_addr;
-        
-	sd_send_command (CMD17, addr_bytes);
-	sd_get_response(R1,sd_response_buffer);
-	
-        /*if (sd_response_buffer[0]!=0)
-        {*/
-
-	    
-	    byte_to_hex(sd_response_buffer[0]);
-
-            if (sd_response_buffer[0] == 0x00)
-            {
-            debug_pgm (PSTR ("SD: CMD17 Succeeded"));
-            //sd_get_response (R1,sd_response_buffer);
-
-                debug_pgm (PSTR ("SD: Reading Block"));
-
-		while (spi_receive_byte() != 0xfe){};
-
-		unsigned int a=0;
-		for (a=0;a<SD_BLOCK_SIZE;a++)
-		{
-                        if (read_buffer != NULL && bytes_read < size) {
-                            read_buffer[bytes_read++] = spi_receive_byte();
-			}
-		}
-
-		spi_receive_byte();//CRC - Byte wird nicht ausgewertet
-		spi_receive_byte();//CRC - Byte wird nicht ausgewertet
-
-                /*for (int i = 0; i < 3 + SD_BLOCK_SIZE; i++)
-                {
-                    sd_token_buffer[i] = spi_receive_byte();
-
-                    if ( (i == 0) && (sd_token_buffer[i] != 0xFE))
-                    { // If the first token is not a valid token bail out.
-                        return 0;
-                    }
-
-                    if (i - 1 + block_addr >= addr && bytes_read < size)
+	for( int i=0; i<SD_BLOCK_SIZE; i++)
+		if (i - 1 + block_addr >= addr && bytes_read < size)
                     {
                         if (read_buffer != NULL)
                             read_buffer[bytes_read++] = sd_token_buffer[i];
                     }
-                }*/
-            }
-        /*}*/
 
-        else
-        {
-            debug_pgm (PSTR ("SD: Read Failed"));
-            return 0;
-        }
-
-        block_addr += SD_BLOCK_SIZE;
-    }
-
-    /*for (int i = 0; i < size; i++) {
-     read_buffer[i] = sd_token_buffer[i+2];
-     }*/
-    sd_disable();
-    debug_pgm (PSTR ("SD: Read Succeeded"));
+	block_addr += SD_BLOCK_SIZE;
+     }
 
     return 1;
 }
 
-uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
+
+uint8_t read_block(uint32_t block_addr, uint8_t *read_buffer)
 {
-    uint32_t block_addr = addr;// - (addr % SD_BLOCK_SIZE);
-    uint16_t bytes_written = 0;
+    uint16_t bytes_read = 0;
     uint8_t sd_response_buffer[5];
 
-    while (bytes_written < size)
+    uint8_t addr_bytes[4];
+
+    addr_bytes[0] = block_addr >> 24;
+    addr_bytes[1] = block_addr >> 16;
+    addr_bytes[2] = block_addr >> 8;
+    addr_bytes[3] = block_addr;
+        
+    sd_send_command (CMD17, addr_bytes);
+    sd_get_response(R1,sd_response_buffer);
+	    
+    byte_to_hex(sd_response_buffer[0]);
+
+    if (sd_response_buffer[0] == 0x00)
     {
-        //sd_read_bytes (block_addr, NULL, SD_BLOCK_SIZE);
+        debug_pgm (PSTR ("SD: CMD17 Succeeded"));
+        debug_pgm (PSTR ("SD: Reading Block"));
+
+        while (spi_receive_byte() != 0xfe){};
+
+        unsigned int a=0;
+        for (a=0;a<SD_BLOCK_SIZE;a++)
+        {
+            if (read_buffer != NULL) {
+                read_buffer[bytes_read++] = spi_receive_byte();
+            }
+        }
+
+        spi_receive_byte();//CRC - Byte wird nicht ausgewertet
+        spi_receive_byte();//CRC - Byte wird nicht ausgewertet
+
+    }
+    else
+    {
+        debug_pgm (PSTR ("SD: Read Failed"));
+        return 1;
+    }
+
+    sd_disable();
+    debug_pgm (PSTR ("SD: Read Succeeded"));
+
+    return 0;
+}
+
+uint8_t write_block(uint32_t block_addr, uint8_t *write_buffer);
+uint8_t write_block(uint32_t block_addr, uint8_t *write_buffer) {
+    uint16_t bytes_written = 0;
+    uint8_t sd_response_buffer[5];
 
         uint8_t addr_bytes[4];
         addr_bytes[0] = block_addr >> 24;
@@ -408,8 +397,7 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
  		sd_send_command (CMD24, addr_bytes);
         	sd_get_response(R1,sd_response_buffer);
 	}
-        //if (sd_response_buffer[0] == 0)
-        {
+  
 
 
             if (sd_response_buffer[0] == 0x00)
@@ -428,17 +416,8 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
                 uint8_t start_token = 0xFE;
                 spi_send_byte (start_token);
 
-                for (uint16_t i = 0; i < 512; i++)
-                {
+                for (uint16_t i = 0; i < SD_BLOCK_SIZE; i++)
 		    spi_send_byte(write_buffer[bytes_written++]);
-			//byte_to_hex(write_buffer[bytes_written]);
-                    /*if (block_addr + i < addr || block_addr + i > addr + size)
-                        spi_send_byte (sd_token_buffer[i + 1]);
-                    else
-                    {
-                        spi_send_byte (write_buffer[bytes_written++]);
-                    }*/
-                }
 
                     uint8_t crc[2] =
 
@@ -446,7 +425,6 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
                     spi_send_byte (crc[0]);
                     spi_send_byte (crc[1]);
 
-                //sd_token_buffer[0] = spi_receive_byte(); // Receive data response token.
 		//Wartet auf MMC/SD-Karte Bussy
 		while (spi_receive_byte() != 0xff){};
 
@@ -456,14 +434,35 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
             } else {
 		debug_pgm (PSTR ("SD: write return fail"));
 		byte_to_hex(sd_response_buffer[0]);
-		while(true);
+		return 1;
 		}
-
-            block_addr += SD_BLOCK_SIZE;
-        }
+    
 
 	sd_disable();
         debug_pgm (PSTR ("SD: Write Succeeded"));
+
+    return 0;
+}
+
+uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
+{
+    uint32_t block_addr = addr - (addr % SD_BLOCK_SIZE);
+    uint16_t bytes_written = 0;
+    uint8_t block[SD_BLOCK_SIZE];
+
+    while (bytes_written < size)
+    {
+        if( read_block (block_addr, block) != 0)
+		return 0;
+
+         for (uint16_t i = 0; i < SD_BLOCK_SIZE; i++)
+                    if (!(block_addr + i < addr || block_addr + i > addr + size))
+                        block[i] = write_buffer[bytes_written++];
+
+        if( write_block(block_addr, block) != 0)
+		return 0;
+
+            block_addr += SD_BLOCK_SIZE;
     }
 
     return 1;

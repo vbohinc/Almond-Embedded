@@ -10,7 +10,7 @@
 
 #define NUM_BYTES 254
 
-uint8_t bytes[NUM_BYTES];
+//uint8_t bytes[NUM_BYTES];
 
 /*void print_hex(uint8_t num)
 {
@@ -83,26 +83,25 @@ uint8_t main(void) {
 		b++;
 	}*/
 
-	for (uint8_t i=0; i<18; i++)
-	{
-		bytes[i] = 'l';
-	}
 
-	sd_write_bytes(0, bytes, NUM_BYTES);
+
+	uint8_t bytes[] = "Hallo";
+
+	sd_write_bytes(3, bytes, 5);
 
 	for (uint8_t i=0; i<18; i++)
 	{
 		bytes[i] = 0;
 	}
 
-	//while(true);
-	sd_read_bytes(0,bytes,NUM_BYTES);
+	uint8_t block[512];
+	read_block(0,block);
 
 	debug_pgm(PSTR("Read bytes:"));
 
 	for (uint8_t i=0; i<20; i++)
 	{
-		error_putc(bytes[i]);
+		error_putc(block[i]);
 		/*byte_to_hex(bytes[i]);
 		error_putc(' ');
 		if ((i+1)%8==0)

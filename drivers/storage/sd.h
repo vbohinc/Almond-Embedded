@@ -37,4 +37,7 @@ int sd_init (void);
 void sd_send_command (uint8_t command_nr, uint8_t *arguments);
 uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size);
 uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size);
+
+uint8_t read_block(uint32_t block_addr, uint8_t *read_buffer);
+uint8_t write_block(uint32_t block_addr, uint8_t *write_buffer);
 #endif
