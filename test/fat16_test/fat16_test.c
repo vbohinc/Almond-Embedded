@@ -14,14 +14,9 @@
 
 #endif
 
-#include "../../drivers/display/display.h"
-#include "../../drivers/display/display_draw.h"
-#include "../../drivers/display/display_gui.h"
 
-#include "../../drivers/fat16/fat16.h"
-
-#include "../../drivers/display/display_data.h"
-#include "../pong.h"
+#include <squirrel/gui/gui.h>
+#include <fat16/fat16.h>
 
 /*! Define that selects the Usart used in example. */
 #define USART USARTC0
@@ -65,9 +60,9 @@ int main (void)
 	    return -1;
 	}
 
-	fat16_dir_entry* test_dir;
+	struct fat16_dir_entry test_dir;
 
-	if(fat16_get_dir_entry_of_path("test", test_dir) == 0) {
+	if (fat16_get_dir_entry_of_path("test", &test_dir) == 0) {
 	    if(fat16_write_dir_entry(test_dir) == 0) {
 	        logmsg("ERR: creation failed test/");
 	        return -1;
