@@ -143,12 +143,11 @@ void
 menu_main(void)
 {
 	// Main menu
-	static char options[4][MENU_OPTION_LENGHT];
+	static char options[3][MENU_OPTION_LENGHT];
 	sprintf(options[0],"Show Nuts");
-	sprintf(options[1],"Test Image");
-	sprintf(options[2],"Pong");
-	sprintf(options[3],"Credits");
- 	display_gui_menu("Main Menu", *options, 4,0, &menu_main_selected);
+	sprintf(options[1],"Pong");
+	sprintf(options[2],"Credits");
+ 	display_gui_menu("Main Menu", *options, 3,0, &menu_main_selected);
 }
 
 void menu_slave_connected(bool isConnected)
