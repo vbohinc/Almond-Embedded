@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "storage/sd.h"
+#include <sd/sd.h>
 
 // Globals:
 static struct fat16_filesystem g_filesystem;

@@ -7,8 +7,8 @@
 #include <avr/pgmspace.h>
 #endif
 
-#include "gui_draw.h"
 #include <display/display.h>
+#include "gui_draw.h"
 #include "gui_data.h"
 
 #ifdef X86

@@ -99,15 +99,16 @@ ifeq (error, $(findstring error,$(ALMONDLIBS)))
 SRC += $(BASE)/shared/error.c $(BASE)/shared/ftdi.c $(BASE)/shared/error_driver.c 
 endif
 
-#storage
-ifeq (storage, $(findstring storage,$(ALMONDLIBS)))
-ALMONDLIBS += spi fat16
-SRC += $(BASE)/drivers/storage/sd.c
-endif
-
 #fat16
 ifeq (fat16, $(findstring fat16,$(ALMONDLIBS)))
+ALMONDLIBS += sd
 SRC += $(BASE)/drivers/fat16/fat16.c
+endif
+
+#sd
+ifeq (sd, $(findstring sd,$(ALMONDLIBS)))
+ALMONDLIBS += spi
+SRC += $(BASE)/drivers/sd/sd.c
 endif
 
 #spi
@@ -117,8 +118,14 @@ endif
 
 #gui
 ifeq (gui, $(findstring gui,$(ALMONDLIBS)))
-ALMONDLIBS += display button pong
-SRC += $(BASE)/squirrel/gui/gui_draw.c $(BASE)/squirrel/gui/gui.c $(BASE)/squirrel/gui/menu.c $(BASE)/squirrel/gui/gui_data.c
+ALMONDLIBS += button pong draw_toolkit
+SRC += $(BASE)/squirrel/gui/gui.c $(BASE)/squirrel/gui/menu.c
+endif
+
+#draw_toolkit
+ifeq (draw_toolkit, $(findstring draw_toolkit,$(ALMONDLIBS)))
+ALMONDLIBS += display
+SRC += $(BASE)/squirrel/gui/gui_draw.c $(BASE)/squirrel/gui/gui_data.c
 endif
 
 #display
@@ -135,7 +142,6 @@ endif
 ifeq (button, $(findstring button,$(ALMONDLIBS)))
 SRC += $(BASE)/drivers/platform/buttons.c
 endif
-
 
 ##################### END OF ALMOND LIBLIST ##############################
 

@@ -6,7 +6,7 @@ F_CPU = 27648000
 TARGET = squirrel
 SRC =  squirrel.c util.c 
 BASE = ..
-ALMONDLIBS = gui downlink uplink storage rtc
+ALMONDLIBS = gui downlink uplink fat16 rtc
 TARGETTYPE = SQUIRREL
 ENABLE_DEBUG = 1
 include ../make/base.makefile 

@@ -1,12 +1,10 @@
-#include "../drivers/storage/sd.h"
-
+#include <avr/io.h>
+#include <util/delay.h>
 #include <avr/interrupt.h>
-#include <avr/delay.h>
+#include <gui/gui_draw.h>
 
-/*#include <display/display.h>
-#include <gui/display_draw.h>
-#include <gui/display_data.h>*/
-
+#include <sd/sd.h>
+#include <spi/spi.h>
 
 #define NUM_BYTES 254
 

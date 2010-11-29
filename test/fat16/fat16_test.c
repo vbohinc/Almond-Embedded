@@ -1,37 +1,13 @@
-#ifndef X86
-
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#define UART_BAUD_RATE      9600ul
 
-#else
-
-#include <stdbool.h>
-#include <SDL.h> // main SDL header
-#include <SDL_gfxPrimitives.h>
-#include <SDL_rotozoom.h>
-
-#endif
-
-
-#include <squirrel/gui/gui.h>
+#include <gui/gui_draw.h>
+#include <sd/sd.h>
 #include <fat16/fat16.h>
 
-/*! Define that selects the Usart used in example. */
-#define USART USARTC0
-
-
-void logmsg(const char* msg) {
-    display_print(msg);
-    display_print("\n");
-}
-
-
-// Fat16 test for AVR
 int main (void)
 {
-    //NOT NEEDED ?----------------------------------------
   /* Behold the MAGIC Clock! */
 
   /* Internen 32Mhz Oszillator einschalten */
@@ -47,13 +23,16 @@ int main (void)
   /* DFLL ein (Auto Kalibrierung) */
   DFLLRC32M.CTRL = DFLL_ENABLE_bm;
 
+	display_init();
+	error_init();
+	display_flip();
 
-	set_bit(PORTC.DIR,4);
-	clear_bit(PORTC.OUT,4);
+	//sei();
+	_delay_ms(10);
+	debug_pgm(PSTR("### Storage Test ###"));
+	sd_init();
 
-	set_bit(PORTH.DIR,2);
-	set_bit(PORTH.OUT,2);
-	//END NEEDED?---------------------------------------
+#if 0
 
 	if(fat16_init(0) != 1) {
 	    logmsg("ERR: FAT16 init failed!");
@@ -70,7 +49,6 @@ int main (void)
 	}
 
 	fat16_dir_entry* test_file;
-
     if(fat16_create_file(test_dir,"testfile",test_file)) {
         logmsg("ERR: creation failed test/testfile");
         return -1;
@@ -168,9 +146,10 @@ int main (void)
         logmsg("ERR: deleting folder test");
         return -1;
     }
-
-    logmsg("FINISHED WITHOUT ERROR!");
+#endif
+    debug_pgm(PSTR("FINISHED WITHOUT ERROR!"));
     return 1;
+
 }
 
 
