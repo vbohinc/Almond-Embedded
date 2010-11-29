@@ -8,10 +8,7 @@
  * /_/   \_\_____|_|  |_|\___/|_| \_|____/
  *
  */
-/*
- * classes.h
- * Common classes definition
- */
+
 #ifndef __CLASSES_H__
 #define __CLASSES_H__
 
@@ -42,4 +39,5 @@ enum class_id_actors
 
     INVALID  = 0xFF // Used to mark N/A
 };
+
 #endif
