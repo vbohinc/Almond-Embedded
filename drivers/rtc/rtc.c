@@ -25,7 +25,7 @@ uint8_t get_value (uint8_t address)
     twi_write (address);
     twi_connect (RTC_DEV_ADDRESS, READ);
     uint8_t result;
-    twi_read (&result, ACK);
+    twi_read (&result, NACK);
     byte_to_hex (result);
     twi_stop();
     return result;
