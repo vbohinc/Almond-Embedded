@@ -41,7 +41,7 @@ void twi_init (void)
 #if __AVR_ARCH__ <= 6
     //twi_setbitrate(1000);
     TWSR = 0x03;
-    TWBR = 0;
+    TWBR = 255;
     //this will give us 1000000/16 Hz clock for the twi interface
     TWCR = (1 << TWEN);
 #elif __AVR_ARCH__ >= 100
