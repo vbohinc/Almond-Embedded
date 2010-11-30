@@ -78,8 +78,24 @@ Mit diesem Befehl, kann das Backend die aktuelle Zeit der Squirrel mitteilen.
 \end{itemize}
 
 \section{Interfaces}
+Die im folgenden beschriebenen Interfaces sind die Schnittstellen um die im Almond-Projekt vorhandenen Sensoren und Aktoren direkt auf Hardwareebene ansprechen zu können.
 	\subsection{UART}
+UART wird im Almond
+
 	\subsection{SPI}
+Das Serial Perpheral Interface verfügt über 4 Pins, welche mit Master-Out-Slave-In (MOSI), Master-In-Slave-Out (MISO), CLOCK und Slave-Select (SS).
+\begin{itemize}
+\item MOSI
+Der MOSI Pin stellt die Datenleitung vom Master zum Slave dar.
+\item MISO
+Der MISO Pin stellt die Datenleitung vom Slave zum Master dar.
+\item CLOCK
+Der Clock Pin ist der Anschluss der Taktleitung um die Taktfrequenz zu übertragen.
+\item SS
+Dient in diesem Projekt das Gerät zu aktivieren, da nur eines, die SD-Karte angeschlossen ist.
+\end{itemize}
+Mit Hilfe des SPI Protokolls ist es vergleichsweise einfach eine SD-Karte anzusprechen im Vergleich zu anderen Zugriffsmöglichkeiten.
+
 
 \section{Hardware}
 	\subsection{Squirrel}
