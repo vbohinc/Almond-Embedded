@@ -26,12 +26,42 @@ int main (void)
 	display_init();
 	error_init();
 	display_flip();
-
-	//sei();
 	_delay_ms(10);
-	debug_pgm(PSTR("### Storage Test ###"));
 	sd_init();
+	
+    if(fat16_init(0) != 1) {
+	    debug_pgm(PSTR("FAT16 init fail!"));
+	    return -1;
+	}
+	debug_pgm(PSTR("FAT16 Init OK"));
+	
+	struct fat16_dir_entry de;
+	if(fat16_get_dir_entry_of_path("/",&de) != 1)
+	{
+	    debug_pgm(PSTR("FAT16 dir entry fail!"));
+	    return -1;
+	}
+	debug_pgm(PSTR("DirEntry OK"));
+	
+	struct fat16_dir dir;
+	
+	if(fat16_open_dir(&dir, &de) != 1)
+	{
+	    debug_pgm(PSTR("FAT16 dir open fail!"));
+	    return -1;
+	}
+	debug(&de.long_name);
+	
+	struct fat16_file f;
 
+	if(fat16_open_file_by_name(&f, "TEST.TXT") != 1)
+	{
+	    debug_pgm(PSTR("FAT16 file open fail!"));
+	    return -1;
+	}
+	debug_pgm(PSTR("open file ok"));
+	
+	
 #if 0
 
 	if(fat16_init(0) != 1) {

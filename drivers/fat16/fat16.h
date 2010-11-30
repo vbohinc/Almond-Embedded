@@ -169,7 +169,7 @@ extern uint8_t fat16_delete_file(struct fat16_dir_entry* dir_entry);
  *
  * @param in out dir the directory handle
  * @param in dir_entry The directory entry which stands for the directory to open.
- * @returns directory descriptor on success, 0 on failure.
+ * @returns 1 on success, 0 on failure.
  */
 extern uint8_t fat16_open_dir(struct fat16_dir* dir, const struct fat16_dir_entry* dir_entry);
 

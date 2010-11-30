@@ -106,14 +106,17 @@ static uint8_t partition_open(uint8_t index)
 
     // read specified partition table index
     if (!sd_read_bytes(0x01be + index * 0x10, buffer, sizeof(buffer)))
+    {
+        debug_pgm(PSTR("SD Read failed"));
         return 0;
-
+    }
+        
     // abort on empty partition entry
     if (buffer[4] == PARTITION_TYPE_NONE)
+    {
+        debug_pgm(PSTR("Partition Empty."));
         return 0;
-
-    // reset partition descriptor
-//  memset(&g_filesystem.partition, 0, sizeof(*g_filesystem.partition));
+    }
 
     // fill partition descriptor
     g_filesystem.partition.type = buffer[4];
@@ -132,12 +135,10 @@ static uint8_t partition_open(uint8_t index)
 
 extern uint8_t fat16_init(uint8_t partition_index)
 {
-    //memset(g_filesystem, 0, sizeof(g_filesystem));
-
-    if (!partition_open(partition_index))
+    if (partition_open(partition_index) != 1)
         return 0;
 
-    if (!fat16_read_header())
+    if (fat16_read_header() != 1)
         return 0;
 
     return 1;
@@ -574,8 +575,11 @@ extern uint8_t fat16_open_file_by_name(struct fat16_file* file, const char* file
         return 0;
 
     if (fat16_get_dir_entry_of_path(filename, &file->dir_entry) == 0)
+    {
+        debug_pgm(PSTR("DirEntry not found"));
         return 0;
-
+    }
+    
     if (file->dir_entry.attributes & FAT16_ATTRIB_DIR)
         return 0;
 
