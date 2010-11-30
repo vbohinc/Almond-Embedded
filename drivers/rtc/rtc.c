@@ -7,7 +7,7 @@
 #include <rtc/rtc.h>
 #include <error.h>
 #include <twi/twi.h>
-#define RTC_DEV_ADDRESS 0x50
+#define RTC_DEV_ADDRESS 0x51
 
 uint8_t bcd_to_int (uint8_t bcd)
 {
