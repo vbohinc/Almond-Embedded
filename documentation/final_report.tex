@@ -8,11 +8,12 @@
 \usepackage{amsmath, amsthm, amssymb}
 \usepackage[top=3cm, bottom=3cm, left=2cm, right=2cm]{geometry}
 \usepackage{minitoc}
+\usepackage{multicol}
 \pagestyle{fancy}
 
 % Header
 \lhead{Projekt Almond}
-\chead{Aschlussbericht}
+\chead{Abschlussbericht}
 \rhead{Seite \thepage /\pageref{LastPage} }
 
 \begin{document}
@@ -35,7 +36,12 @@ Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {
 Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls über Bluetooth mit dem auf einem Linux/Windows/Mac laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensor-Werte) mit übermittelt, die dann später auf dem Rechner ausgewertet werden können.
 
 \section{Protokolle}
-Um die Kommunikation zwischen den Nuts und dem Squirrel, sowie des Squirrels zum Backend zu gewährleisten sind zwei Protokolle entworfen worden.
+Um die Kommunikation zwischen den Nuts und dem Squirrel, sowie des Squirrels zum Backend zu gewährleisten sind zwei Protokolle entworfen worden.\\
+Die Protokollpakete sind folgendermaßen aufgebaut:
+\\
+\\
+\includegraphics[height=6.5cm]{./ProkollDiagrams.pdf}\\
+
 	\subsection{Downlink}  
 Das Downlinkprotokoll dient zur Kommunikation der Nuts mit dem Squirrel.\\
 Im Protokoll sind folgende enhalten: SET, GET, ECHO, BYE\\
@@ -76,11 +82,14 @@ Mit diesem Befehle werden die in der Squirrel zwischengespeicherten Sensorwerte 
 Mit diesem Befehl, kann das Backend die aktuelle Zeit der Squirrel mitteilen.
 
 \end{itemize}
+Hier ein schematischer Kommunikationsablauf zwischen Backend, Squirrel und Nut:\\ 
+\includegraphics[height=8cm]{./ProtokollSequence.pdf}\\
 
 \section{Interfaces}
 Die im folgenden beschriebenen Interfaces sind die Schnittstellen um die im Almond-Projekt vorhandenen Sensoren und Aktoren direkt auf Hardwareebene ansprechen zu können.
 	\subsection{UART}
-UART wird im Almond
+Universal Asynchronous Receiver/Transmitter wird im Almond-Projekt für die Anbindung der Bluetoothmodule sowohl auf der Nut als auch der Squirrel verwendet.
+
 
 	\subsection{SPI}
 Das Serial Perpheral Interface verfügt über 4 Pins, welche mit Master-Out-Slave-In (MOSI), Master-In-Slave-Out (MISO), CLOCK und Slave-Select (SS).
@@ -96,23 +105,35 @@ Dient in diesem Projekt das Gerät zu aktivieren, da nur eines, die SD-Karte ang
 \end{itemize}
 Mit Hilfe des SPI Protokolls ist es vergleichsweise einfach eine SD-Karte anzusprechen im Vergleich zu anderen Zugriffsmöglichkeiten.
 
+\subsection{$\text{I}^2$C}
+Über $\text{I}^2$C ist im Almond-Projekt der Sensorchip der Nut angebunden - der BMP085.
+
+
 
 \section{Hardware}
+
+\includegraphics[height=4.2cm]{./Deployment.pdf}
+
 	\subsection{Squirrel}
+	\subsubsection{Prozessor}
+	Die Squirrel verfügt über einen Atmel XMega128A1 Prozessor.\\
+	Dieser hat eine Taktrate von 32 Mhz und 128KB Arbeitsspeicher.\\
+	
+	
 %realtimeclock erwähnen und tasten
 	\subsubsection{Bluetooth}
+	\label{bluetooth}
 Das Bluetooth-Modul ist über UART mit dem XMEGA-Prozessor verbunden. Im Bluetooth-Stack gibt es zwei Modi. \\
 Zun einen den Command-Modus, welcher dazu dient Befehle direkt an das Bluetooh-Modul zu senden.\\
 Desweiteren gibt es den Communication-Modus der dann die tatsächlichen Bluetooth-Befehle versendet.\\
 Die empfangenen Daten werden in einer Fifo-Datenstruktur gespeichert.\\
 
 
-\subsubsection{Display}
-\subsubsubsection{SDL-Emulation}
+\subsubsection{Display: SDL-Emulation}
 Um die Funktionsfähigkeit des Display-Treibers auch ohne Hardwarezugriff testen zu können, wurde eine SDL-Emulation geschrieben.\\
-Sie bietet die Möglichkeit in einem SDL-Fenster die Ausgabe ähnlich wie auf dem Diplay auszugeben.\\
+Sie bietet die Möglichkeit in einem SDL-Fenster die Ausgabe ähnlich wie auf dem Display auszugeben.\\
 Somit konnten alle GUI-Libary-Ausgaben bereits im voraus getestet werden und mehrere Programmierer in die Entwicklung von neuen GUI-Anwendungen einbezogen werden, ohne durch die Verfügbarkeit der Hardware eingeschränkt zu sein.\\
-Um die SDL-Emulation zu Nutzen, muss bei der Compilation des Display-C-Dateeien das define x86 gesetzt werden.\\
+Um die SDL-Emulation zu Nutzen, muss bei der Compilation des Display-C-Dateien das define x86 gesetzt werden.\\
 
 \subsubsection{SD-Kartenleser}
 Um den Nutzer die Möglichkeit zu geben, Messendatenprotokolle direkt aus der Squirrel unter Umgehung des Backends zu erhalten.
@@ -128,20 +149,50 @@ Die Squirrel verfügt über die Fähigkeit Dateien zu
 Außerdem können Verzeichnisse angelegt, entfernt und durchsucht werden.\\
 
 
+\begin{figure}[h]
+\includegraphics[height=5cm]{squirrel_shot1.png}
+\label{fig:0}
+\caption{Squirrel}
+\end{figure}
+\begin{figure}[h]
+\includegraphics[height=5cm]{squirrel_shot2.png}
+\label{fig:1}
+\caption{Squirrel}
+\end{figure}
 
-\subsubsection{}
+
 \subsection{Nut}
+
+Die hier aufgeführte Hardware stellt das Grundgerüst einer Nut da.
+Zur Verbesserung der Kompatibilität ist das selbe Bluetooth-Modul gewählt worden. Diese Wahl wirkte sich durch verringerte Einarbeitungszeit positiv auf den Entwicklungsprozess aus.
+
+\subsubsection{Prozessor}
+Die Nut verfügt über einen Atmel Atmega8535 Prozessor.\\
+Dieser hat eine Taktrate von 16 MHz und 8KB Arbeitsspeicher.\\
+
+
+\subsubsection{Bluetooth}
+Siehe Abschnitt~\ref{bluetooth}
 
 
 \section{Wetterstation}
 	\subsection{Funktionen}
+	Die Wetterstation erfasst Luftdruck, Umgebungstemperatur, Helligkeit und Luftfeuchtigkeit. Desweiteren verfügt sie über zwei rote LED's, welche an und abgeschaltet werden können.
 	\subsection{Hardware}
-		\subsubsection Drucksensor (BMP085)
-		\subsubsection Temperatursensor (BMP085)
-		\subsubsection Windrichtungssensor (Eigenbau, optische Dekodierung)
-		\subsubsection Windgeschwindigkeitssensor (Eigenbau, Dynamo)
-		\subsubsection Lichtstärke (Fotowiderstand)
-		\subsubsection Fechtigkeitssensor
+		\subsubsection{Drucksensor (BMP085)}
+		Der Drucksensor ist durch $\text{I}^2$C angebunden und kann Drücke zwischen 300 hPa und 1100 hPa mit einer Genauigkeit von 16bit erfassen.
+		\subsubsection{Temperatursensor (BMP085)}
+		Der ist selben Chip wie der Drucksenor integriert und gibt in 0.1 Cº die Temperatur in einem 16 Bit-Wert aus.
+		\subsubsection{Lichtstärke (Photoresistor)}
+		Die Lichtstärke wird von einem Photoresitor gemessen und der AVR liest diesen analogen Wert durch einen Analog-Digital-Converter (ADC) ein. Es kann eine Helligkeit von 0,1 Lux bis 1000 Lux in einer Schrittweite von 10 Lux gemessen werden.
+		\subsubsection{Feuchtigkeitssensor (HIH3001)}
+		Der Feuchtigkeitssensor HIH3001 misst die relative Luftfeuchtigkeit in \% in ganz kleinen Schritten. 
+
+		\begin{figure}[h]
+		\includegraphics[height=5cm]{nut_shot1.png} 
+		\label{fig:2}
+		\caption{Nut}
+		\end{figure}
 
 		
 \section{Backend}
@@ -161,6 +212,22 @@ Das Backend nutzt als Benutzeroberfläche eine in Perl geschriebene Web-Anwendun
 Das launch-Script des Backends startet auch den Java-Daemon, der über die MySQL Datenbank dann mit der Oberfläche kommuniziert.
 		
 \section{Team}
+Hier eine grafische Übersicht der Teammitglieder und deren Tätigkeitsbereiche:\\
+\begin{multicols}{2}{
+\begin{list}{ }
+	\item    \includegraphics[height=1.5cm]{./face_Fanter.png}     \\      Stefan Profanter	
+	\item    \includegraphics[height=1.5cm]{./face_Lotz.png}       \\      Linus Lotz 
+	\item    \includegraphics[height=1.5cm]{./face_Matthias.png}   \\      Matthias Schwab	
+	\item    \includegraphics[height=1.5cm]{./face_Maxikay.png}    \\      Maximilian Karl
+	\item    \includegraphics[height=1.5cm]{./face_Parsch.png}     \\      Thomas Parsch		
+	\item 	\includegraphics[height=1.5cm]{./face_Rupprecht.png}   \\      Christian Rupprecht
+	\item    \includegraphics[height=1.5cm]{./face_Schnurrrr.png}  \\      Pascal Schnurr    
+	\item    \includegraphics[height=1.5cm]{./face_Schon.png}      \\      Seán Labastille   
+	\item    \includegraphics[height=1.5cm]{./face_Sickert.png}    \\      Salomon Sickert
+\end{list}
+}
+\end{multicols}
+
 
 \section{Entwicklungeschichte}
 \subsection{Display}
@@ -177,9 +244,6 @@ Da die endültige Hardware des Squirrels über mehr Speicher verfügt, war dies 
 \subsection{Bluetooth}
 Zunächst wurde ein eher monolithischer Bluetooth-Stack geschrieben, dies führte jedoch zu einem Komplexitätsproblem.\\
 Folglich wurde ein neuer leichtgewichtigerer und übersichtlicher Stack entworfen.
-
-
-\section{Quellenverzeichnis}
 
 
 \end{document}
