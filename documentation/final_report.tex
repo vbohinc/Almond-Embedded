@@ -1,4 +1,4 @@
-﻿\documentclass[12pt,a4paper]{article}
+\documentclass[12pt,a4paper]{article}
 
 \usepackage[german]{babel}
 \usepackage[utf8]{inputenc}
@@ -37,9 +37,46 @@ Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetoo
 \section{Protokolle}
 Um die Kommunikation zwischen den Nuts und dem Squirrel, sowie des Squirrels zum Backend zu gewährleisten sind zwei Protokolle entworfen worden.
 	\subsection{Downlink}  
-Das Downlinkprotokoll dient zur Kommunikation der Nuts mit dem Squirrel.
+Das Downlinkprotokoll dient zur Kommunikation der Nuts mit dem Squirrel.\\
+Im Protokoll sind folgende enhalten: SET, GET, ECHO, BYE\\
+Durch die Reduzierung auf diese geringe Anzahl an Befehlen, wird eine sehr kleine Paketgröße von 4 Bytes erreicht.\\
+Neben dem Opcode findet sich in einem Paket eine ID mit der Aktoren oder Sensoren angesprochen werden können. Sowie ein 16 Bit-Wert, der für Nutzdaten verwendet werden kann.\\
+\begin{itemize}
+	\item{SET}
+Der SET-Befehl kann Aktoren auf bestimmte Werste setzen.
+	\item{GET}
+Der GET-Befehl liest die akutellen Sensorewerte oder den Zustand eines Aktors aus.
+	\item{ECHO}
+Der ECHO-Befehl dient Debugging-Zwecken und sendet das empfangene Paket unverändert zurück.
+	\item{BYE}
+Der BYE-Befehl zeigt das Ende einer Verbindung an.
+\end{itemize}
+
+Um Variationen des GET-Befehls zu ermöglichen, wurden zusätzlich noch Flags implementiert.\\
+\begin{itemize}
+	\item{STANDARD}
+Dieses Flag für die beeinflusst die Ausführung des Befehls nicht.
+	\item{INFO_NUT}
+Dieses Flag dient dazu allgemeine - Sensor und Aktor unspezifische - Informationen der Nut, wie z.B. deren Namen abzurufen. Das übergebene ID-Feld wird nicht berücksichtigt.\\
+	\item{INFO_EXTENSION}
+Mit diesem Flag werden Metdaten über den ausgewählten Sensor oder Aktor abgerufen.
+\end{itemize}
+
 	\subsection{Uplink}
-Das Uplinkprotokoll dient zur Kommunikation zwischen dem Squirrel und dem Backend.
+Das Uplinkprotokoll dient zur Kommunikation zwischen dem Squirrel und dem Backend.\\
+Zum einen wird mit diesem Protokoll das Squirrel durch das Backend konfiguriert. Zum anderen kann das Backend Informationen über die aktuell verfügabren Sensoren und Aktoren sowie deren Logdaten abrufen.\\
+Es existieren folgende Befehle:
+\begin{itemize}
+	\item{LIST}
+Teilt dem Backend alle verfügbaren Meta-Daten der Nuts, wie z.B. deren Bluetooth-Adresse, deren Sensoren und Aktoren, mit. Die Mess- und Zustandswerte selbst werden nicht übertragen.
+
+	\item{LOG}
+Mit diesem Befehle werden die in der Squirrel zwischengespeicherten Sensorwerte der verschiedenen Nuts dem Backend mitgeteilt.
+
+	\item{TIME}
+Mit diesem Befehl, kann das Backend die aktuelle Zeit der Squirrel mitteilen.
+
+\end{itemize}
 
 \section{Interfaces}
 	\subsection{UART}
