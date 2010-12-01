@@ -74,9 +74,12 @@ Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetoo
 \end{itemize}
 \subsection{Backend}
 \begin{itemize}
-	\item Entwurfsziele
-	\item Hardware
-	\item Software
+	\item Entwurfsziele\\
+	Beim Backend handelt es sich um einen Plattformunabhängigen Server mit einer Webschnittstelle. Das Beckend dient zum Auslesen und Auswerten der Logdaten der Squirrel sowie zum Anzeigen von Log-Statistiken. Das Backend bietet zudem eine Übersicht über die Geräte und deren Status.
+	\item Hardware\\
+	Für das Backend wird ein Rechner mit Linux, Mac oder Windows benötigt, welcher über ein funktionierendes Bluetooth-Modul verfügen muss.
+	\item Software\\
+	Um Plattformunabhängigkeit zu erreichen wird für die Bluetooth-Kommunikation Java eingesetzt. Für das Webinterface wird Perl mit CGI verwendet, wodurch eine Integration in gängige Webserver gewährleistet wird. Für den Datenaustausch zwischen dem Java-Daemon und dem Webinterface dient eine MySQL-Datenbank.
 \end{itemize}
 \section{Umsetzung}
 \subsection{Protokolle}
