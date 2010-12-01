@@ -65,9 +65,12 @@ Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetoo
 \end{itemize}
 \subsection{``Squirrel''}
 \begin{itemize}
-	\item Entwurfsziele
-	\item Hardware
-	\item Software
+	\item Entwurfsziele\\
+	Die Squirrel arbeitet als Autonome Kontrolleinheit mit der Aufgabe, die Log-Daten der Nuts auf SD-Karte zwischenzuspeichern und dem Backend bereitzustellen. Über ein integriertes Display kann ein Menü angezeigt werden welches mit den 6 Steuerknöpfen gesteuert werden kann.
+	\item Hardware\\
+	Als Hauptprozessor dient ein XMega128A1. Das Board wurde selbst entwickelt und enhält einen SD-Kartenleser, eine Echtzeituhr (RTC) und ein Bluetoothmodul (BTM-222).
+	\item Software\\
+	Die Hauptaufgabe der Software, welche in C entwickelt wurde, dient zum Sammeln der Logdaten der Nuts und zum Übertragen der Logdaten an das Backend. Zusätzlich beinhaltet die Software den Display-/GUI-Treiber sowie einen FAT16-Treiber zum Speichern der Logdaten auf der SD-Karte.
 \end{itemize}
 \subsection{Backend}
 \begin{itemize}
