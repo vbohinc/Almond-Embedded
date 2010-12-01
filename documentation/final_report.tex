@@ -33,25 +33,25 @@
 
 \section{Übersicht}
 Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein System aus vernetzten Aktoren und Sensoren: Nuts ({\bf N}etworked {\bf Ut}ilities and {\bf S}ensors), die über einen zentralen Controller (Squirrel) gesteuert werden. Zusätzlich gibt es ein Backend für PCs, welches über eine Weboberfläche Zugriff auf Gerätedaten gibt und die Steuerung der Aktoren sowie Konfigurationsänderungen erlaubt.\\
-Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls über Bluetooth mit dem auf einem Linux/Windows/Mac laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensor-Werte) mit übermittelt, die dann später auf dem Rechner ausgewertet werden können.
+Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls über Bluetooth mit dem auf Linux, Windows oder Mac OS X laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensor-Werte) mit übermittelt, die dann später auf dem Rechner ausgewertet werden können.
 
 \section{Protokolle}
-Um die Kommunikation zwischen den Nuts und dem Squirrel, sowie des Squirrels zum Backend zu gewährleisten sind zwei Protokolle entworfen worden.\\
+Um die Kommunikation zwischen den Nuts und der Squirrel, sowie der Squirrels zum Backend zu gewährleisten sind zwei Protokolle entworfen worden.\\
 Die Protokollpakete sind folgendermaßen aufgebaut:
 \\
 \\
 \includegraphics[height=6.5cm]{./ProkollDiagrams.pdf}\\
 
 	\subsection{Downlink}  
-Das Downlinkprotokoll dient zur Kommunikation der Nuts mit dem Squirrel.\\
-Im Protokoll sind folgende enhalten: SET, GET, ECHO, BYE\\
+Das Downlinkprotokoll dient zur Kommunikation der Nuts mit der Squirrel.\\
+Im Protokoll sind folgende Befehle enthalten: SET, GET, ECHO, BYE\\
 Durch die Reduzierung auf diese geringe Anzahl an Befehlen, wird eine sehr kleine Paketgröße von 4 Bytes erreicht.\\
 Neben dem Opcode findet sich in einem Paket eine ID mit der Aktoren oder Sensoren angesprochen werden können. Sowie ein 16 Bit-Wert, der für Nutzdaten verwendet werden kann.\\
 \begin{itemize}
 	\item{SET}
-Der SET-Befehl kann Aktoren auf bestimmte Werste setzen.
+Der SET-Befehl kann Aktoren auf bestimmte Werte setzen.
 	\item{GET}
-Der GET-Befehl liest die akutellen Sensorewerte oder den Zustand eines Aktors aus.
+Der GET-Befehl liest die aktuellen Sensorwerte oder den Zustand eines Aktors aus.
 	\item{ECHO}
 Der ECHO-Befehl dient Debugging-Zwecken und sendet das empfangene Paket unverändert zurück.
 	\item{BYE}
@@ -64,12 +64,12 @@ Dieses Flag für die beeinflusst die Ausführung des Befehls nicht.
 	\item{INFO\_NUT}
 Dieses Flag dient dazu allgemeine - Sensor und Aktor unspezifische - Informationen der Nut, wie z.B. deren Namen abzurufen. Das übergebene ID-Feld wird nicht berücksichtigt.\\
 	\item{INFO\_EXTENSION}
-Mit diesem Flag werden Metdaten über den ausgewählten Sensor oder Aktor abgerufen.
+Mit diesem Flag werden Metadaten über den ausgewählten Sensor oder Aktor abgerufen.
 \end{itemize}
 
 	\subsection{Uplink}
-Das Uplinkprotokoll dient zur Kommunikation zwischen dem Squirrel und dem Backend.\\
-Zum einen wird mit diesem Protokoll das Squirrel durch das Backend konfiguriert. Zum anderen kann das Backend Informationen über die aktuell verfügabren Sensoren und Aktoren sowie deren Logdaten abrufen.\\
+Das Uplinkprotokoll dient zur Kommunikation zwischen der Squirrel und dem Backend.\\
+Zum einen wird mit diesem Protokoll die Squirrel durch das Backend konfiguriert. Zum anderen kann das Backend Informationen über die aktuell verfügbaren Sensoren und Aktoren sowie deren Logdaten abrufen.\\
 Es existieren folgende Befehle:
 \begin{itemize}
 	\item{LIST}
@@ -82,7 +82,7 @@ Mit diesem Befehle werden die in der Squirrel zwischengespeicherten Sensorwerte 
 Mit diesem Befehl, kann das Backend die aktuelle Zeit der Squirrel mitteilen.
 
 \end{itemize}
-Hier ein schematischer Kommunikationsablauf zwischen Backend, Squirrel und Nut:\\ 
+Hier folgt schematischer Kommunikationsablauf zwischen Backend, Squirrel und Nut:\\ 
 \includegraphics[height=8cm]{./ProtokollSequence.pdf}\\
 
 \section{Interfaces}
@@ -92,7 +92,7 @@ Universal Asynchronous Receiver/Transmitter wird im Almond-Projekt für die Anbi
 
 
 	\subsection{SPI}
-Das Serial Perpheral Interface verfügt über 4 Pins, welche mit Master-Out-Slave-In (MOSI), Master-In-Slave-Out (MISO), CLOCK und Slave-Select (SS).
+Das Serial Perpheral Interface verfügt über 4 Pins, welche mit Master-Out-Slave-In (MOSI), Master-In-Slave-Out (MISO), CLOCK und Slave-Select (SS) bezeichnet werden.
 \begin{itemize}
 \item MOSI
 Der MOSI Pin stellt die Datenleitung vom Master zum Slave dar.
@@ -103,7 +103,7 @@ Der Clock Pin ist der Anschluss der Taktleitung um die Taktfrequenz zu übertrag
 \item SS
 Dient in diesem Projekt das Gerät zu aktivieren, da nur eines, die SD-Karte angeschlossen ist.
 \end{itemize}
-Mit Hilfe des SPI Protokolls ist es vergleichsweise einfach eine SD-Karte anzusprechen im Vergleich zu anderen Zugriffsmöglichkeiten.
+Mit Hilfe des SPI Protokolls ist es im Vergleich zu anderen Zugriffsmöglichkeiten recht komfortabel eine SD-Karte anzusprechen.
 
 \subsection{$\text{I}^2$C}
 Über $\text{I}^2$C ist im Almond-Projekt der Sensorchip der Nut angebunden - der BMP085.
@@ -124,23 +124,23 @@ Mit Hilfe des SPI Protokolls ist es vergleichsweise einfach eine SD-Karte anzusp
 	\subsubsection{Bluetooth}
 	\label{bluetooth}
 Das Bluetooth-Modul ist über UART mit dem XMEGA-Prozessor verbunden. Im Bluetooth-Stack gibt es zwei Modi. \\
-Zun einen den Command-Modus, welcher dazu dient Befehle direkt an das Bluetooh-Modul zu senden.\\
+Zun einen den Command-Modus, welcher dazu dient Befehle direkt an das Bluetooth-Modul zu senden.\\
 Desweiteren gibt es den Communication-Modus der dann die tatsächlichen Bluetooth-Befehle versendet.\\
-Die empfangenen Daten werden in einer Fifo-Datenstruktur gespeichert.\\
+Die empfangenen Daten werden in einer FIFO-Datenstruktur gespeichert.\\
 
 
-\subsubsection{Display: SDL-Emulation}
+\subsubsection{Display: SDL-Emulation} % FIXME -> Entwicklungsgeschichte
 Um die Funktionsfähigkeit des Display-Treibers auch ohne Hardwarezugriff testen zu können, wurde eine SDL-Emulation geschrieben.\\
 Sie bietet die Möglichkeit in einem SDL-Fenster die Ausgabe ähnlich wie auf dem Display auszugeben.\\
 Somit konnten alle GUI-Libary-Ausgaben bereits im voraus getestet werden und mehrere Programmierer in die Entwicklung von neuen GUI-Anwendungen einbezogen werden, ohne durch die Verfügbarkeit der Hardware eingeschränkt zu sein.\\
 Um die SDL-Emulation zu Nutzen, muss bei der Compilation des Display-C-Dateien das define x86 gesetzt werden.\\
 
 \subsubsection{SD-Kartenleser}
-Um den Nutzer die Möglichkeit zu geben, Messendatenprotokolle direkt aus der Squirrel unter Umgehung des Backends zu erhalten.
-Damit die Daten direkt in der Gewohnten Betriebsystemumgebung am PC des Anwenders auslesen zu können, ist es notwendig die Daten in einem weit verbreiteten Dateisystem abzulegen.\\
-Hierbei fiel die Wahl auf das FAT16 System, da es gegenüber FAT32 eine einfachere Struktur besitzt und trotzdem Speicherkarten bis 2GB unterstützt. Somit allen Anforderungen gerecht werden.\\
+Aufgrund der geringen Speicherkapazität der Nuts ist es notwendig Messdaten zwischenzuspeichern wenn diese nicht vom Backend abgerufen werden - hierzu dient eine SD-Karte.
+Um die Daten direkt in der Gewohnten Betriebsystemumgebung am PC des Anwenders auslesen zu können, ist es notwendig die Daten in einem weit verbreiteten Dateisystem abzulegen.\\
+Hierbei fiel die Wahl auf das FAT16 Dateisystem, da es gegenüber FAT32 eine einfachere Struktur besitzt und trotzdem Speicherkarten bis 2GB unterstützt. Und somit allen Anforderungen gerecht wird.\\
 Die Squirrel verfügt über die Fähigkeit Dateien zu
-\begin{itemize}
+\begin{itemize} % FIXME: Liste?
 \item öffnen
 \item lesen
 \item schreiben
@@ -152,19 +152,19 @@ Außerdem können Verzeichnisse angelegt, entfernt und durchsucht werden.\\
 \begin{figure}[h]
 \includegraphics[height=5cm]{squirrel_shot1.png}
 \label{fig:0}
-\caption{Squirrel}
+\caption{Squirrel: Boot-Sequenz}
 \end{figure}
 \begin{figure}[h]
 \includegraphics[height=5cm]{squirrel_shot2.png}
 \label{fig:1}
-\caption{Squirrel}
+\caption{Squirrel: Hauptmenü}
 \end{figure}
 
 
 \subsection{Nut}
 
 Die hier aufgeführte Hardware stellt das Grundgerüst einer Nut da.
-Zur Verbesserung der Kompatibilität ist das selbe Bluetooth-Modul gewählt worden. Diese Wahl wirkte sich durch verringerte Einarbeitungszeit positiv auf den Entwicklungsprozess aus.
+Zur Verbesserung der Kompatibilität ist das selbe Bluetooth-Modul wie bei der Squirrel gewählt worden. Diese Wahl wirkte sich durch verringerte Einarbeitungszeit positiv auf den Entwicklungsprozess aus. % [sic]
 
 \subsubsection{Prozessor}
 Die Nut verfügt über einen Atmel Atmega8535 Prozessor.\\
@@ -182,7 +182,7 @@ Siehe Abschnitt~\ref{bluetooth}
 		\subsubsection{Drucksensor (BMP085)}
 		Der Drucksensor ist durch $\text{I}^2$C angebunden und kann Drücke zwischen 300 hPa und 1100 hPa mit einer Genauigkeit von 16bit erfassen.
 		\subsubsection{Temperatursensor (BMP085)}
-		Der ist selben Chip wie der Drucksenor integriert und gibt in 0.1 Cº die Temperatur in einem 16 Bit-Wert aus.
+		Dieser ist in denselben Chip wie der Drucksenor integriert und gibt in 0.1 Cº die Temperatur in einem 16 Bit-Wert aus.
 		\subsubsection{Lichtstärke (Photoresistor)}
 		Die Lichtstärke wird von einem Photoresitor gemessen und der AVR liest diesen analogen Wert durch einen Analog-Digital-Converter (ADC) ein. Es kann eine Helligkeit von 0,1 Lux bis 1000 Lux in einer Schrittweite von 10 Lux gemessen werden.
 		\subsubsection{Feuchtigkeitssensor (HIH3001)}
