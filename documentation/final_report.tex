@@ -66,7 +66,7 @@ Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetoo
 \subsection{``Squirrel''}
 \begin{itemize}
 	\item Entwurfsziele\\
-	Die Squirrel arbeitet als Autonome Kontrolleinheit mit der Aufgabe, die Log-Daten der Nuts auf SD-Karte zwischenzuspeichern und dem Backend bereitzustellen. Über ein integriertes Display kann ein Menü angezeigt werden welches mit den 6 Steuerknöpfen gesteuert werden kann.
+	Die Squirrel arbeitet als Autonome Kontrolleinheit mit der Aufgabe, die Log-Daten der Nuts auf SD-Karte zwischenzuspeichern und dem Backend bereitzustellen. Über ein integriertes Display (Emerging Display 13BB0) kann ein Menü angezeigt werden welches mit den 6 Steuerknöpfen gesteuert werden kann.
 	\item Hardware\\
 	Als Hauptprozessor dient ein XMega128A1. Das Board wurde selbst entwickelt und enhält einen SD-Kartenleser, eine Echtzeituhr (RTC) und ein Bluetoothmodul (BTM-222).
 	\item Software\\
@@ -83,7 +83,79 @@ Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetoo
 \end{itemize}
 \section{Umsetzung}
 \subsection{Protokolle}
+Um die Kommunikation zwischen den Nuts und der Squirrel, sowie der Squirrels zum Backend zu gewährleisten sind zwei Protokolle entworfen worden.\\
+Die Protokollpakete sind folgendermaßen aufgebaut:
+\\
+\\
+\includegraphics[height=6.5cm]{./ProkollDiagrams.pdf}\\
+
+	\subsubsection{Downlink}  
+Das Downlinkprotokoll dient zur Kommunikation der Nuts mit der Squirrel.\\
+Im Protokoll sind folgende Befehle enthalten: SET, GET, ECHO, BYE\\
+Durch die Reduzierung auf diese geringe Anzahl an Befehlen, wird eine sehr kleine Paketgröße von 4 Bytes erreicht.\\
+Neben dem Opcode findet sich in einem Paket eine ID mit der Aktoren oder Sensoren angesprochen werden können. Sowie ein 16 Bit-Wert, der für Nutzdaten verwendet werden kann.\\
+\begin{itemize}
+	\item{SET}
+Der SET-Befehl kann Aktoren auf bestimmte Werte setzen.
+	\item{GET}
+Der GET-Befehl liest die aktuellen Sensorwerte oder den Zustand eines Aktors aus.
+	\item{ECHO}
+Der ECHO-Befehl dient Debugging-Zwecken und sendet das empfangene Paket unverändert zurück.
+	\item{BYE}
+Der BYE-Befehl zeigt das Ende einer Verbindung an.
+\end{itemize}
+Um Variationen des GET-Befehls zu ermöglichen, wurden zusätzlich noch Flags implementiert.\\
+\begin{itemize}
+	\item{STANDARD}
+Dieses Flag für die beeinflusst die Ausführung des Befehls nicht.
+	\item{INFO\_NUT}
+Dieses Flag dient dazu allgemeine - Sensor und Aktor unspezifische - Informationen der Nut, wie z.B. deren Namen abzurufen. Das übergebene ID-Feld wird nicht berücksichtigt.\\
+	\item{INFO\_EXTENSION}
+Mit diesem Flag werden Metadaten über den ausgewählten Sensor oder Aktor abgerufen.
+\end{itemize}
+
+	\subsubsection{Uplink}
+Das Uplinkprotokoll dient zur Kommunikation zwischen der Squirrel und dem Backend.\\
+Zum einen wird mit diesem Protokoll die Squirrel durch das Backend konfiguriert. Zum anderen kann das Backend Informationen über die aktuell verfügbaren Sensoren und Aktoren sowie deren Logdaten abrufen.\\
+Es existieren folgende Befehle:
+\begin{itemize}
+	\item{LIST}
+Teilt dem Backend alle verfügbaren Meta-Daten der Nuts, wie z.B. deren Bluetooth-Adresse, deren Sensoren und Aktoren, mit. Die Mess- und Zustandswerte selbst werden nicht übertragen.
+
+	\item{LOG}
+Mit diesem Befehle werden die in der Squirrel zwischengespeicherten Sensorwerte der verschiedenen Nuts dem Backend mitgeteilt.
+
+	\item{TIME}
+Mit diesem Befehl, kann das Backend die aktuelle Zeit der Squirrel mitteilen.
+
+\end{itemize}
+Hier folgt schematischer Kommunikationsablauf zwischen Backend, Squirrel und Nut:\\ 
+\includegraphics[height=8cm]{./ProtokollSequence.pdf}\\
 \subsection{Embedded}
+Die oben vorgestellten Protokolle stellen den Großteil des High-Level Interface zu dem Embedded-Teil von Almond. Als letzte wichtige High-Level-Komponente ist das Display zu erwähnen - auf dem eine möglichst komfortable Möglichkeit besteht direkt an der Squirrel einen Überblick über die vorhandenen Nuts und deren Zustand zu bekommen.\\
+Diese Dienste basieren natürlich auf darunter liegende Hardwareschichten welche wir nun betrachten werden.\\
+\subsubsection{Schnittstellen}
+Auf Hardwareebene werden von den diversen Komponenten 3 Schnittstellen verwendet: SPI, I$^2$C sowie UART. Die GUI greift natürlich auf das Display zurück, wobei dieses nicht unbedingt als Schnittstelle im Sinne der gerade Aufgeführten gilt.\\
+Kurz zu den Hardwareschnittstellen:
+\begin{itemize}
+	\item SPI\\
+	Das Serial Peripheral Interface verfügt über 4 Pins, welche mit Master-Out-Slave-In (MOSI), Master-In-Slave-Out (MISO), CLOCK und Slave-Select (SS) bezeichnet werden.
+	\begin{itemize}
+	\item MOSI
+	Der MOSI Pin stellt die Datenleitung vom Master zum Slave dar.
+	\item MISO
+	Der MISO Pin stellt die Datenleitung vom Slave zum Master dar.
+	\item CLOCK
+	Der Clock Pin ist der Anschluss der Taktleitung um die Taktfrequenz zu übertragen.
+	\item SS
+	Dient in diesem Projekt das Gerät zu aktivieren, da nur eines, die SD-Karte angeschlossen ist.
+	\end{itemize}
+	SPI wird zur Ansteuerung der SD-Karte genutzt.
+	\item I$^2$C\\
+	Über I$^2$C sind der Sensorchip der Nut (BMP085), sowie die Echtzeituhr der Squirrel angeschlossen.
+	\item UART\\
+	Universal Asynchronous Receiver/Transmitter - ein Übertragungsstandard für serielle Schnittstellen - wird im Almond-Projekt für die Anbindung der Bluetoothmodule sowohl auf der Nut als auch der Squirrel verwendet.
+\end{itemize}
 \subsection{Backend}
 Das Backend stellt eine Web-Oberfläche zur Verfügung über die es möglich ist Log-Daten aus der Squirrel grafisch aufbereitet darzustellen oder Aktor-Befehle an die angeschlossenen Geräte zu senden. Das Backend besteht aus einem in Java geschriebenen Daemon sowie einer in Perl geschriebenen Web-Oberfläche die via CGI über einen Webserver verfügbar gemacht wird.
 
@@ -101,78 +173,23 @@ Das Backend nutzt als Benutzeroberfläche eine in Perl geschriebene Web-Anwendun
 Das launch-Script des Backends startet auch den Java-Daemon, der über die MySQL Datenbank dann mit der Oberfläche kommuniziert.
 \section{Stand}
 \subsection{Wetterstation}
+Die auf der im Rahmen des Projekts entwickelten Nut befindlichen Sensoren wurden zum Einsatz als ``Wetterstation'' gewählt.
+Das ursprüngliche Vorhaben die Windrichtung zu messen wurde verworfen, es bleiben jedoch Möglichkeiten die Temperatur, Luftfeuchtigkeit, Luftdruck sowie die Helligkeit zu messen.
+% FIXME Geht's jetzt?
 \subsection{Status}
 
 
 %\section{Protokolle}
-%Um die Kommunikation zwischen den Nuts und der Squirrel, sowie der Squirrels zum Backend zu gewährleisten sind zwei Protokolle entworfen worden.\\
-%Die Protokollpakete sind folgendermaßen aufgebaut:
-%\\
-%\\
-%\includegraphics[height=6.5cm]{./ProkollDiagrams.pdf}\\
-%
-%	\subsection{Downlink}  
-%Das Downlinkprotokoll dient zur Kommunikation der Nuts mit der Squirrel.\\
-%Im Protokoll sind folgende Befehle enthalten: SET, GET, ECHO, BYE\\
-%Durch die Reduzierung auf diese geringe Anzahl an Befehlen, wird eine sehr kleine Paketgröße von 4 Bytes erreicht.\\
-%Neben dem Opcode findet sich in einem Paket eine ID mit der Aktoren oder Sensoren angesprochen werden können. Sowie ein 16 Bit-Wert, der für Nutzdaten verwendet werden kann.\\
-%\begin{itemize}
-%	\item{SET}
-%Der SET-Befehl kann Aktoren auf bestimmte Werte setzen.
-%	\item{GET}
-%Der GET-Befehl liest die aktuellen Sensorwerte oder den Zustand eines Aktors aus.
-%	\item{ECHO}
-%Der ECHO-Befehl dient Debugging-Zwecken und sendet das empfangene Paket unverändert zurück.
-%	\item{BYE}
-%Der BYE-Befehl zeigt das Ende einer Verbindung an.
-%\end{itemize}
-%Um Variationen des GET-Befehls zu ermöglichen, wurden zusätzlich noch Flags implementiert.\\
-%\begin{itemize}
-%	\item{STANDARD}
-%Dieses Flag für die beeinflusst die Ausführung des Befehls nicht.
-%	\item{INFO\_NUT}
-%Dieses Flag dient dazu allgemeine - Sensor und Aktor unspezifische - Informationen der Nut, wie z.B. deren Namen abzurufen. Das übergebene ID-Feld wird nicht berücksichtigt.\\
-%	\item{INFO\_EXTENSION}
-%Mit diesem Flag werden Metadaten über den ausgewählten Sensor oder Aktor abgerufen.
-%\end{itemize}
-%
-%	\subsection{Uplink}
-%Das Uplinkprotokoll dient zur Kommunikation zwischen der Squirrel und dem Backend.\\
-%Zum einen wird mit diesem Protokoll die Squirrel durch das Backend konfiguriert. Zum anderen kann das Backend Informationen über die aktuell verfügbaren Sensoren und Aktoren sowie deren Logdaten abrufen.\\
-%Es existieren folgende Befehle:
-%\begin{itemize}
-%	\item{LIST}
-%Teilt dem Backend alle verfügbaren Meta-Daten der Nuts, wie z.B. deren Bluetooth-Adresse, deren Sensoren und Aktoren, mit. Die Mess- und Zustandswerte selbst werden nicht übertragen.
-%
-%	\item{LOG}
-%Mit diesem Befehle werden die in der Squirrel zwischengespeicherten Sensorwerte der verschiedenen Nuts dem Backend mitgeteilt.
-%
-%	\item{TIME}
-%Mit diesem Befehl, kann das Backend die aktuelle Zeit der Squirrel mitteilen.
-%
-%\end{itemize}
-%Hier folgt schematischer Kommunikationsablauf zwischen Backend, Squirrel und Nut:\\ 
-%\includegraphics[height=8cm]{./ProtokollSequence.pdf}\\
+
 %
 %\section{Interfaces}
 %Die im folgenden beschriebenen Interfaces sind die Schnittstellen um die im Almond-Projekt vorhandenen Sensoren und Aktoren direkt auf Hardwareebene ansprechen zu können.
 %	\subsection{UART}
-%Universal Asynchronous Receiver/Transmitter wird im Almond-Projekt für die Anbindung der Bluetoothmodule sowohl auf der Nut als auch der Squirrel verwendet.
+%
 %
 %
 %	\subsection{SPI}
-%Das Serial Perpheral Interface verfügt über 4 Pins, welche mit Master-Out-Slave-In (MOSI), Master-In-Slave-Out (MISO), CLOCK und Slave-Select (SS) bezeichnet werden.
-%\begin{itemize}
-%\item MOSI
-%Der MOSI Pin stellt die Datenleitung vom Master zum Slave dar.
-%\item MISO
-%Der MISO Pin stellt die Datenleitung vom Slave zum Master dar.
-%\item CLOCK
-%Der Clock Pin ist der Anschluss der Taktleitung um die Taktfrequenz zu übertragen.
-%\item SS
-%Dient in diesem Projekt das Gerät zu aktivieren, da nur eines, die SD-Karte angeschlossen ist.
-%\end{itemize}
-%Mit Hilfe des SPI Protokolls ist es im Vergleich zu anderen Zugriffsmöglichkeiten recht komfortabel eine SD-Karte anzusprechen.
+
 %
 %\subsection{$\text{I}^2$C}
 %Über $\text{I}^2$C ist im Almond-Projekt der Sensorchip der Nut angebunden - der BMP085.
