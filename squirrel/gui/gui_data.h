@@ -68,4 +68,6 @@ extern const uint8_t team_christian[];
 /// Maximilian Credit portrait
 extern const uint8_t team_maximilian[];
 
+extern const uint8_t bluetooth[];
+
 #endif

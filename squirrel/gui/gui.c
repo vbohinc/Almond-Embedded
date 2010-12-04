@@ -9,6 +9,10 @@
 
 #include <string.h>
 
+// Standby Screen Time
+#include <rtc/rtc.h>
+#include <time_conversion.h>
+
 #ifdef X86
 #include <SDL.h>
 #endif
@@ -499,20 +503,47 @@ display_gui_draw_button_bar (void)
 void
 display_gui_standby ()
 {
+	rtc_init();
+	set_time(1291482141);
 	current_screen = display_gui_screen_standby;
+	
     display_gui_button_bar_visible = false;
+
 	display_clear();
-	display_draw_string(DISPLAY_WIDTH/2-22,10,2,"23:59");
+	
+	
+	
+	
 	display_draw_string(DISPLAY_WIDTH/2-17,2,0,"Almond");
+	
 	display_draw_string(DISPLAY_WIDTH-13,2,0,"3G");
 	
 	
+	display_draw_image(DISPLAY_WIDTH-13,2,bluetooth);
+	
+	
 	display_draw_string(20,DISPLAY_HEIGHT-10,0,"32C");
+	
 	display_draw_rect(18,DISPLAY_HEIGHT-12,37,DISPLAY_HEIGHT-2,false);
+	
 	display_draw_string(43,DISPLAY_HEIGHT-10,0,"1024hPa");
+	
 	display_draw_rect(42,DISPLAY_HEIGHT-12,84,DISPLAY_HEIGHT-2,false);
+	
 	display_draw_string(90,DISPLAY_HEIGHT-10,0,"35%");
+	
 	display_draw_rect(88,DISPLAY_HEIGHT-12,108,DISPLAY_HEIGHT-2,false);
+	
+	display_draw_string(4,DISPLAY_HEIGHT-40,0,"A really long status message\n");
+	display_draw_string(4,DISPLAY_HEIGHT-30,0,"Blubb, blubb, blubb...");
+	
+	
+	uint32_t current_timestamp = get_time();
+	struct time_struct current_time;
+	char time[6];
+	timestamp_to_time(current_timestamp, 3600, &current_time);
+	sprintf(time,"%d:%d",current_time.tm_min,current_time.tm_hour);
+	display_draw_string(DISPLAY_WIDTH/2-22,10,2,"23:59");
 }
 
 void
