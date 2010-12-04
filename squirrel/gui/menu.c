@@ -25,7 +25,6 @@ void menu_devices(void);
 void menu_device_extension(void);
 void menu_main(void);
 
-
 void
 menu_entity_selected(int8_t option)
 {
@@ -142,27 +141,22 @@ menu_main_selected(int8_t option)
 void
 menu_main(void)
 {
-	// Main menu
-	//static char options[3][MENU_OPTION_LENGHT];
-	//sprintf(options[0],"Show Nuts");
-	//sprintf(options[1],"Pong");
-	//sprintf(options[2],"Credits");
- 	//display_gui_menu("Main Menu", *options, 3,0, &menu_main_selected);
-	display_gui_standby();
-}
-
-void menu_slave_connected(bool isConnected)
-{
-	if (isConnected)
-	{
-		display_clear();
-		display_draw_string (10, 10, 0, "With Backend Connected");
-	}
-	else
-	{
-		display_gui_standby();
-	}
-	display_flip();
+  if (squirrel_state_get() == SLAVE_BUSY) 
+    {
+      display_clear ();
+		  display_draw_string (10, 10, 0, "With Backend Connected");
+      display_flip ();
+    }
+  else
+    {
+      // Main menu
+	    //static char options[3][MENU_OPTION_LENGHT];
+	    //sprintf(options[0],"Show Nuts");
+	    //sprintf(options[1],"Pong");
+	    //sprintf(options[2],"Credits");
+ 	    //display_gui_menu("Main Menu", *options, 3,0, &menu_main_selected);
+    	display_gui_standby();
+    }
 }
 
 enum menu_return menu_update(void)

@@ -48,12 +48,15 @@ static inline bool uplink_handle_get_package (uplink_package *p)
     {
 
         case LIST:
+            debug ("List");
             return !squirrel_list (p->id, & (p->payload.list));
 
         case LOG:
+            debug ("Log");
             return !squirrel_log (p);
 
         case TIME:
+            debug ("Time");            
             p->payload.time.time = time_get ();
             return true;
 
@@ -75,13 +78,11 @@ static inline bool uplink_handle_set_package (uplink_package *p)
     }
 }
 
-bool uplink_process_pkg (uint8_t * data, void (*menu_slave) (bool))
+bool uplink_process_pkg (uint8_t * data)
 {
     bool error;
     uplink_package *p;
 
-	if (menu_slave)
-		menu_slave(true);
     squirrel_state_set (SLAVE_BUSY);
     p = (uplink_package *) data;
 
@@ -98,8 +99,6 @@ bool uplink_process_pkg (uint8_t * data, void (*menu_slave) (bool))
 
         case BYE:
             squirrel_state_set (SLAVE);
-			if (menu_slave)
-				menu_slave(false);
             error = false;
             break;
 
