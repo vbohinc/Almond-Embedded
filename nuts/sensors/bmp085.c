@@ -151,11 +151,11 @@ bmp_data_t bmp085_get_data()
     bmp_data_t data;
     start_converison (0x2E);
     _delay_ms (6);
-    data.temprature = calculate_true_temprature (&B5, get_word (0x2E));
+    data.temprature = calculate_true_temprature (&B5, get_word (0xF6));
 
     start_converison (0x34);
     _delay_ms (6);
-    data.pressure = calculate_true_pressure (&B5, get_word (0x34));
+    data.pressure = calculate_true_pressure (&B5, get_word (0xF6));
     return data;
 }
 
