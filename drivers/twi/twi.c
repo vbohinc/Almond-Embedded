@@ -45,14 +45,11 @@ void twi_init (void)
     //this will give us 1000000/16 Hz clock for the twi interface
     TWCR = (1 << TWEN);
 #elif __AVR_ARCH__ >= 100
-    debug_pgm (PSTR ("twi_init sez herro. Setting CTRL\n"));
     TWI.CTRL = 0;
-    debug_pgm (PSTR ("twi_init sez herro. Setting BAUD\n"));
     TWI.MASTER.BAUD = 255;           // maximum performance
-    debug_pgm (PSTR ("twi_init sez herro. Setting CTRLA\n"));
     TWI.MASTER.CTRLA = 0 | (1 << 3); // enable master, but disable interrupts
-    debug_pgm (PSTR ("twi_init sez herro. Setting CTRLB\n"));
-    TWI.MASTER.CTRLB = 0 | (1 << 0); // enable smart mode
+    TWI.MASTER.CTRLB = 0;//|= (1 << 0); // enable smart mode
+	TWI.MASTER.STATUS = 0x01;
 #endif
 }
 
@@ -85,7 +82,7 @@ void twi_stop (void)
 #if __AVR_ARCH__ <= 6
     TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
 #elif __AVR_ARCH__ >= 100
-    TWI.MASTER.CTRLC = TWI.MASTER.CTRLC | (1 << 0) | (1 << 1);
+    TWI.MASTER.CTRLC = (1 << 0) | (1 << 1);
 #endif
 }
 
@@ -119,10 +116,8 @@ uint8_t twi_connect (enum twi_access_mode mode, uint8_t addr)
 #elif __AVR_ARCH__ >= 100
     TWI.MASTER.ADDR = (addr << 1) | mode;
 
-    while ( (TWI.MASTER.STATUS & (1 << 6)) == 0)
-        ; //wait for WIF
+    while ( (TWI.MASTER.STATUS & (1 << 6)) == 0); //wait for WIF
 
-    byte_to_hex (TWI.MASTER.STATUS);
 
     return 0;
 
@@ -150,8 +145,9 @@ uint8_t twi_write (uint8_t data)
 #elif __AVR_ARCH__ >= 100
     TWI.MASTER.DATA = data;
 
-    while ( (TWI.MASTER.STATUS & (1 << 6)) == 0)
-        ; //wait for WIF
+    while ( (TWI.MASTER.STATUS & (1 << 6)) == 0); //wait for WIF
+
+	TWI.MASTER.STATUS |= (1 << 6);
 
     return 0;
 
@@ -175,10 +171,10 @@ uint8_t twi_read (uint8_t* data, enum twi_send_ack ack)
     }
 
 #elif __AVR_ARCH__ >= 100
-    while ( (TWI.MASTER.STATUS & (1 << 7)) == 0)
-        ; //wait for RIF
-
-    TWI.MASTER.CTRLC = TWI.MASTER.CTRLC | ( (ack == 1) << 2);
+    while ( (TWI.MASTER.STATUS & (1 << 5)) == 0); //wait for CLKHOLD
+	if ( (TWI.MASTER.STATUS & (1 << 2)) == 0)
+		debug_pgm(PSTR("BUSERR"));
+    TWI.MASTER.CTRLC = TWI.MASTER.CTRLC | ( (ack == NACK) << 2);
 
     *data = TWI.MASTER.DATA;
 
@@ -191,7 +187,7 @@ uint8_t twi_read (uint8_t* data, enum twi_send_ack ack)
 void twi_accept()
 {
 #if __AVR_ARCH__ >= 100
-    TWI.MASTER.CTRLC = TWI.MASTER.CTRLC | (1 << 1);
+    TWI.MASTER.CTRLC = TWI.MASTER.CTRLC | (1 << 2) | (1 << 1);
 #endif
 }
 

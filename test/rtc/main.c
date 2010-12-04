@@ -1,20 +1,19 @@
 #include <rtc/rtc.h>
 #include <display/display.h>
-#include <twi/twi.h>
 #include <string.h>
+#include <avr/interrupt.h>
 
 int main(int argc, char *argv) {
 	display_init();
 	display_clear();
 	display_flip();
 	debug_pgm(PSTR("Start\n"));
-	twi_init();
-	
+	rtc_init();
+	sei();
 	
 	time_t my_time = {59,59,23,31,12,100,6};
 	set_time (&my_time);
-	debug_pgm(PSTR("wayne!\n"));
-	_delay_ms(1000);
+	debug_pgm(PSTR("wayne!"));
 	time_t their_time = get_time();
 	char ausgabe[40];
 	sprintf(ausgabe, "%d %d %d %d %d %d %d\n", their_time.sec, their_time.min, their_time.hour, their_time.mday, their_time.month, their_time.year, their_time.wday);
