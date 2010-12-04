@@ -5,10 +5,11 @@
  */
 
 #include <avr/io.h>
-#include <rtc/rtc.h>
+#include <avr/interrupt.h>
+#include "rtc.h"
 #include <error.h>
 
-uint16_t timeH
+uint16_t timeH;
 
 ISR(RTC_OVF_vect)
 {
