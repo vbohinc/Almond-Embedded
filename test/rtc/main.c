@@ -1,15 +1,15 @@
 #include <rtc/rtc.h>
 #include <display/display.h>
-#include <twi/twi.h>
 #include <string.h>
+#include <avr/interrupt.h>
 
 int main(int argc, char *argv) {
 	display_init();
 	display_clear();
 	display_flip();
 	debug_pgm(PSTR("Start\n"));
-	twi_init();
-	
+	rtc_init();
+	sei();
 	
 	time_t my_time = {59,59,23,31,12,100,6};
 	set_time (&my_time);

@@ -6,8 +6,29 @@
 
 #include <rtc/rtc.h>
 #include <error.h>
-#include <twi/twi.h>
+#include <twi/twi_master_driver.h>
 #define RTC_DEV_ADDRESS 0x51
+
+/*! CPU speed 2MHz, BAUDRATE 100kHz and Baudrate Register Settings */
+#define CPU_SPEED       2000000
+#define BAUDRATE	100000
+#define TWI_BAUDSETTING TWI_BAUD(CPU_SPEED, BAUDRATE)
+
+TWI_Master_t twiMaster;
+
+ISR(TWIE_TWIM_vect)			// Wichtig
+{
+      TWI_MasterInterruptHandler(&twiMaster);
+}
+
+void rtc_init()
+{
+	TWI_MasterInit(&twiMaster,&TWIE,TWI_MASTER_INTLVL_HI_gc,TWI_BAUDSETTING);
+	PORTC.DIR |= 0x03;
+	PMIC.CTRL |= PMIC_LOLVLEN_bm;
+	PMIC.CTRL |= PMIC_MEDLVLEN_bm;
+	PMIC.CTRL |= PMIC_HILVLEN_bm;
+}
 
 uint8_t bcd_to_int (uint8_t bcd)
 {
@@ -21,23 +42,18 @@ uint8_t int_to_bcd (uint8_t integer)
 
 uint8_t get_value (uint8_t address)
 {
-    twi_connect (RTC_DEV_ADDRESS, WRITE);
-    twi_write (address);
-    twi_connect (RTC_DEV_ADDRESS, READ);
-    uint8_t result;
-    twi_read (&result, NACK);
-    byte_to_hex (result);
-    twi_stop();
-    return result;
+	TWI_MasterWriteRead(&twiMaster, RTC_DEV_ADDRESS, &address, 1, 1);
+	while (!TWI_MasterReady(&twiMaster));
+	byte_to_hex(twiMaster.readData[0]);
+    return twiMaster.readData[0];
 }
 
 void set_value (uint8_t address, uint8_t value)
 {
-    twi_connect (RTC_DEV_ADDRESS, WRITE);
-    twi_write (address);
-    twi_write (value);
-    byte_to_hex (value);
-    twi_stop();
+	uint8_t sendarray[2] = {address, value};
+	TWI_MasterWriteRead(&twiMaster, RTC_DEV_ADDRESS, sendarray, 2, 0);
+	debug("sending");
+	while (!TWI_MasterReady(&twiMaster));
 }
 
 time_t get_time()
