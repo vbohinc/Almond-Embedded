@@ -36,6 +36,7 @@
 #include <SDL.h> // main SDL header
 #include <SDL_gfxPrimitives.h>
 #include <SDL_rotozoom.h>
+#include <time.h>
 
 #define _delay_ms SDL_Delay
 
@@ -106,10 +107,31 @@ uint8_t hex_to_char(uint8_t hex)
 		return 0;
 }
 
+void rtc_init()
+{
+
+}
+
+uint32_t get_time()
+{
+	return time(NULL);
+}
+
+void set_time (uint32_t time)
+{
+
+}
+
+
 #endif
 //---------------------------------------------------------------------------------
 
+uint8_t state;
 
+uint8_t squirrel_state_get (void)
+{
+    return state;
+}
 
 int main(int argc, char **argv)
 {
@@ -119,7 +141,7 @@ int main(int argc, char **argv)
 
 	enum menu_return men_ret;
 
-	uint8_t state = MASTER;
+	state = MASTER;
 
 	while (true)
 		{

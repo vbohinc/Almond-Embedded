@@ -542,8 +542,8 @@ display_gui_standby ()
 	struct time_struct current_time;
 	char time[6];
 	timestamp_to_time(current_timestamp, 3600, &current_time);
-	sprintf(time,"%d:%d",current_time.tm_min,current_time.tm_hour);
-	display_draw_string(DISPLAY_WIDTH/2-22,10,2,"23:59");
+	sprintf(time,"%02d:%02d",current_time.tm_hour,current_time.tm_min);
+	display_draw_string(DISPLAY_WIDTH/2-22,10,2,time);
 }
 
 void
