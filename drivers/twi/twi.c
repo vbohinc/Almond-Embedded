@@ -48,7 +48,7 @@ void twi_init (void)
     TWI.CTRL = 0;
     TWI.MASTER.BAUD = 255;           // maximum performance
     TWI.MASTER.CTRLA = 0 | (1 << 3); // enable master, but disable interrupts
-    TWI.MASTER.CTRLB = 0; //| (1 << 0); // enable smart mode
+    TWI.MASTER.CTRLB = 0;//|= (1 << 0); // enable smart mode
 	TWI.MASTER.STATUS = 0x01;
 #endif
 }
@@ -116,8 +116,7 @@ uint8_t twi_connect (enum twi_access_mode mode, uint8_t addr)
 #elif __AVR_ARCH__ >= 100
     TWI.MASTER.ADDR = (addr << 1) | mode;
 
-    while ( (TWI.MASTER.STATUS & (1 << 6)) == 0)
-        ; //wait for WIF
+    while ( (TWI.MASTER.STATUS & (1 << 6)) == 0); //wait for WIF
 
 
     return 0;
@@ -146,8 +145,7 @@ uint8_t twi_write (uint8_t data)
 #elif __AVR_ARCH__ >= 100
     TWI.MASTER.DATA = data;
 
-    while ( (TWI.MASTER.STATUS & (1 << 6)) == 0)
-        ; //wait for WIF
+    while ( (TWI.MASTER.STATUS & (1 << 6)) == 0); //wait for WIF
 
 	TWI.MASTER.STATUS |= (1 << 6);
 
@@ -173,11 +171,9 @@ uint8_t twi_read (uint8_t* data, enum twi_send_ack ack)
     }
 
 #elif __AVR_ARCH__ >= 100
-	debug_pgm(PSTR("waiting for RIF"));
     while ( (TWI.MASTER.STATUS & (1 << 5)) == 0); //wait for CLKHOLD
-	
-	if((TWI.MASTER.STATUS & (1 << 6)) != 0)
-		debug_pgm(PSTR("aarrrrghhh read failed"));
+	if ( (TWI.MASTER.STATUS & (1 << 2)) == 0)
+		debug_pgm(PSTR("BUSERR"));
     TWI.MASTER.CTRLC = TWI.MASTER.CTRLC | ( (ack == NACK) << 2);
 
     *data = TWI.MASTER.DATA;

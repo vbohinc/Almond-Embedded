@@ -21,6 +21,8 @@ struct __time_struct
 
 typedef struct __time_struct  time_t;
 
+void rtc_init(void);
+
 time_t get_time (void);
 
 void set_time (time_t*);
