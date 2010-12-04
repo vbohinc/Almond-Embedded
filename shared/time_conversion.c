@@ -17,7 +17,7 @@
    Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
    02111-1307 USA.  */
 
-#define SECS_PER_HOUR (60 * 60)
+#define SECS_PER_HOUR 3600ul
 #define SECS_PER_DAY (SECS_PER_HOUR * 24)
 
 /** Nonzero if YEAR is a leap year (every 4 years,
@@ -41,7 +41,7 @@ bool timestamp_to_time (uint32_t timestamp, uint16_t offset, struct time_struct 
         { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
     };
 
-    long int days, rem, y;
+    uint32_t days, rem, y;
     const unsigned short int *ip;
 
     days = timestamp / SECS_PER_DAY;
@@ -119,8 +119,8 @@ uint32_t time_to_timestamp (uint16_t year, uint8_t month, uint8_t day,
     const short tage_bis_monatsanfang[12] = /* ohne Schalttag */
         {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
-    long long unix_zeit;
-    long long jahre = year - 1970;
+    uint32_t unix_zeit;
+    uint32_t jahre = year - 1970;
     int schaltjahre = ( (year - 1) - 1968) / 4 - ( (year - 1) - 1900) / 100 + ( (year - 1) - 1600) / 400;
 
     unix_zeit = second + 60 * minute + 60 * 60 * hour +
@@ -128,7 +128,7 @@ uint32_t time_to_timestamp (uint16_t year, uint8_t month, uint8_t day,
                 (jahre * 365 + schaltjahre) * 60 * 60 * 24;
 
     if ( (month > 2) && (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)))
-        unix_zeit += 60 * 60 * 24; /* +Schalttag wenn jahr Schaltjahr ist */
+        unix_zeit += 60ul * 60 * 24; /* +Schalttag wenn jahr Schaltjahr ist */
 
     return unix_zeit;
 }

@@ -263,9 +263,9 @@ update_comm_mode (uint16_t timeout_ms)
 
         if (fifo_strstr_pgm (&in_fifo, PSTR ("CONNECT")))
         {
-            clean_line ();
-			_delay_ms(100);
-			 clean_line ();
+//            clean_line ();
+//			_delay_ms(100);
+//			 clean_line ();
 			_delay_ms(100); //don't delete this, else there will be no success!!!!!!!!!
             comm_mode = BT_DATA;
       			return comm_mode;
@@ -287,33 +287,38 @@ update_comm_mode (uint16_t timeout_ms)
 bool
 bt_init (void (*upate_percentage) (uint16_t))
 {
-  uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
-  fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
+    uart_init (UART_BAUD_SELECT (UART_BAUD_RATE, F_CPU));
+    fifo_init (&in_fifo, bt_buffer, IN_FIFO_SIZE);
 
-  _delay_ms (2000);
-  uart_receive ();
-  fifo_clear (&in_fifo);
-  
-  comm_mode = BT_CMD;
-  test();
-  
+    _delay_ms (2000);
+    uart_receive ();
+    fifo_clear (&in_fifo);
+
+    /* Set comm_mode to CMD */
+    comm_mode = BT_CMD;
+    test();
+
 	if(upate_percentage != NULL)
 	  upate_percentage(10);
   
-
-  send_cmd (BT_CLEAR_ADDRESS, NULL);
-  test();
+    /* Clear remote address */
+    send_cmd (BT_CLEAR_ADDRESS, NULL);
+    test();
 	
-  if(upate_percentage != NULL)
-    upate_percentage(15);
+    if (upate_percentage != NULL)
+      upate_percentage(15);
 
-  send_cmd (BT_SET_SLAVE, NULL);
-  test();
+    /* Set BTM to SLAVE */
+    send_cmd (BT_SET_SLAVE, NULL);
+    test();
+    
+    bt_mode = BLUETOOTH_SLAVE;
 	
   if(upate_percentage != NULL)
     upate_percentage(18);
 
-  return true;
+
+    return true;
 }
 
 
@@ -349,57 +354,50 @@ bt_set_mode (const bt_mode_t mode)
 bool
 bt_receive (void * data, uint8_t length, uint16_t timeout_ms)
 {
-  uint8_t rec_length = 0;
-  uint8_t i = 0;
+    uint8_t rec_length = 0;
+    uint8_t i = 0;
   
-  while_timeout(true, timeout_ms)
+
+    while_timeout(true, timeout_ms)
     {
-      if (i == length)
+        if (i == length)
 		{
-		//error_putc("\n");
-        return true;
+		    error_putc('\n');
+            return true;
 		}
 
-      uart_receive ();
+        uart_receive ();
 
-      if (fifo_is_empty (&in_fifo))
-        continue;
+        if (fifo_is_empty (&in_fifo))
+            continue;
 
-      if (update_comm_mode (0) == BT_CMD)
+		if (update_comm_mode (0) != BT_DATA)
         {
-          //debug_pgm (PSTR ("not connected"));
-          return false;
+            debug_pgm (PSTR ("not connected"));
+            return false;
         }
-        
-		//SALOMON: NICHT WEGOPTIMIEREN!!!
-		//We have a connection
-		if (timeout_ms == 0)
-			timeout_ms = 500;
 
-      if (fifo_is_empty (&in_fifo))
-        continue;
 
-      // Find starting point of packet
-      if (!rec_length)
+		//We have a connection  
+        if (timeout_ms == 0)
+            timeout_ms = 10000;
+
+        if (fifo_is_empty (&in_fifo))
+            continue;
+
+        // Find starting point of packet
+        if (!rec_length)
         {
-          fifo_read (&in_fifo, (char *) &rec_length);
-			if (rec_length == 13 || rec_length == 10)
-			{
-				rec_length = 0;
-				continue;
-			}
-          if (rec_length != length)
+            fifo_read (&in_fifo, (char *) &rec_length);
+      //      byte_to_hex (rec_length);
+            if (rec_length != length)
             {
-		      byte_to_hex (rec_length);
-              byte_to_hex (length);
-              debug_pgm (PSTR ("rl != l"));
-				_delay_ms(500);
-              rec_length = 0;                  
+	              rec_length = 0;
             }
-          else
+            else
             {
               // You've got mail!
-              timeout_ms = 1000;
+              timeout_ms += 1000;
             }
         }
       else
@@ -460,7 +458,15 @@ bt_connect (const char *address)
 bool
 bt_disconnect (void)
 {
-    // Maybe we already disconnected???
+    /* Bluetooth reseten */
+    set_bit (PORTC.DIR, 4);
+    set_bit (PORTC.OUT, 4);
+    _delay_ms (500);
+    clear_bit (PORTC.OUT, 4);
+    return bt_init(NULL);
+
+#if 0
+
     if (BT_CMD == update_comm_mode (0))
       {
         fifo_clear (&in_fifo);
@@ -497,6 +503,7 @@ test();
     }
     debug_pgm (PSTR("Still in DATA??"));
     return false;
+#endif
 }
 
 void

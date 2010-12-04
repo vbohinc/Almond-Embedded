@@ -86,7 +86,7 @@ endif
 #rtc
 ifeq (rtc, $(findstring rtc,$(ALMONDLIBS)))
 ALMONDLIBS += twi
-SRC += $(BASE)/drivers/rtc/rtc.c
+SRC += $(BASE)/drivers/rtc/rtc.c $(BASE)/shared/time_conversion.c
 endif
 
 #twi
