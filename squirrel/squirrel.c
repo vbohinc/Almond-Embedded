@@ -315,7 +315,7 @@ display_gui_bootup_update_callback(100);*/
            // downlink_set_actuator_value (4, 1, &err);
 		//led_on = !led_on;
             //downlink_bye (10, &err);
-            //bt_disconnect ();
+            bt_disconnect ();
 
             assert (bt_set_mode (BLUETOOTH_SLAVE), "Could not set slave mode");
             squirrel_state_set (SLAVE);
