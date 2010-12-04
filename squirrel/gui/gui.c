@@ -6,6 +6,7 @@
 #include "gui.h"
 #include "gui_draw.h"
 #include "pong.h"
+
 #include <string.h>
 
 #ifdef X86
@@ -24,6 +25,8 @@ bool display_gui_b_available = true;
 bool display_gui_button_bar_visible = true;
 const char* display_gui_a_function;
 const char* display_gui_b_function;
+
+char options[3][MENU_OPTION_LENGHT];
 
 void display_gui_sleep (uint16_t ms);
 
@@ -60,6 +63,15 @@ display_gui_keypress (enum display_gui_keys key)
         case display_gui_screen_about:
             display_gui_keypress_about (key);
             break;
+
+		case display_gui_screen_standby:
+			//char options[3][MENU_OPTION_LENGHT];
+			//char options;
+			sprintf(options[0],"Show Nuts");
+			sprintf(options[1],"Pong");
+			sprintf(options[2],"Credits");
+			display_gui_menu("Main Menu", *options, 3,0, &menu_main_selected);
+			break;
 
         default:
             break;
@@ -484,6 +496,24 @@ display_gui_draw_button_bar (void)
     display_set_inverted (false);
 }
 
+void
+display_gui_standby ()
+{
+	current_screen = display_gui_screen_standby;
+    display_gui_button_bar_visible = false;
+	display_clear();
+	display_draw_string(DISPLAY_WIDTH/2-22,10,2,"23:59");
+	display_draw_string(DISPLAY_WIDTH/2-17,2,0,"Almond");
+	display_draw_string(DISPLAY_WIDTH-13,2,0,"3G");
+	
+	
+	display_draw_string(20,DISPLAY_HEIGHT-10,0,"32C");
+	display_draw_rect(18,DISPLAY_HEIGHT-12,37,DISPLAY_HEIGHT-2,false);
+	display_draw_string(43,DISPLAY_HEIGHT-10,0,"1024hPa");
+	display_draw_rect(42,DISPLAY_HEIGHT-12,84,DISPLAY_HEIGHT-2,false);
+	display_draw_string(90,DISPLAY_HEIGHT-10,0,"35%");
+	display_draw_rect(88,DISPLAY_HEIGHT-12,108,DISPLAY_HEIGHT-2,false);
+}
 
 void
 display_gui_sleep (uint16_t ms)

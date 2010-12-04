@@ -42,7 +42,8 @@ enum display_gui_screens
     display_gui_screen_fullscreenimage, ///< fullscreen image is shown state
     display_gui_screen_alert, ///< alter is shown state
     display_gui_screen_game, ///< game is running screen state
-    display_gui_screen_about ///< about screen is running state
+    display_gui_screen_about, ///< about screen is running state
+	display_gui_screen_standby ///< standby screen is being displayed
 };
 
 
@@ -66,6 +67,8 @@ extern bool display_gui_button_bar_visible;
 extern const char* display_gui_a_function;
 ///description string of current b button function
 extern const char* display_gui_b_function;
+
+extern void menu_main_selected(int8_t option);
 
 ///current frame of bootup screen animation
 uint8_t bootup_current_frame;
@@ -170,6 +173,9 @@ void display_gui_keypress_about (enum display_gui_keys key);
 * @param progress state in percent to be drawn (from 0 to 100)
 */
 void display_gui_progress_bar (uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t progress);
+
+/// Shows the Standby screen
+void display_gui_standby (void);
 
 /// Draws button functions line
 void display_gui_draw_button_bar (void);

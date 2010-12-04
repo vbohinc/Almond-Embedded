@@ -143,11 +143,12 @@ void
 menu_main(void)
 {
 	// Main menu
-	static char options[3][MENU_OPTION_LENGHT];
-	sprintf(options[0],"Show Nuts");
-	sprintf(options[1],"Pong");
-	sprintf(options[2],"Credits");
- 	display_gui_menu("Main Menu", *options, 3,0, &menu_main_selected);
+	//static char options[3][MENU_OPTION_LENGHT];
+	//sprintf(options[0],"Show Nuts");
+	//sprintf(options[1],"Pong");
+	//sprintf(options[2],"Credits");
+ 	//display_gui_menu("Main Menu", *options, 3,0, &menu_main_selected);
+	display_gui_standby();
 }
 
 void menu_slave_connected(bool isConnected)
@@ -159,7 +160,7 @@ void menu_slave_connected(bool isConnected)
 	}
 	else
 	{
-		menu_main();
+		display_gui_standby();
 	}
 	display_flip();
 }
