@@ -94,9 +94,9 @@ debug_pgm(PSTR("err twi_wr"));
 
 uint8_t twi_read(uint8_t* data, enum twi_send_ack ack)
 {
-  *data = TWDR;
   TWCR = (1<<TWINT)|(1<<TWEN)|(ack<<TWEA);
   twi_wait();
+  *data = TWDR;
   uint8_t status = twi_status();
   if(status == 0x50 || status == 0x58)
     return 0;

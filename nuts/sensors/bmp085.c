@@ -50,15 +50,15 @@ uint16_t get_word(const uint8_t word)
   twi_start();
   //debug_pgm(PSTR("twi_connect"));
   twi_connect(READ,0x77);
-  uint8_t temp;
+  uint8_t temp=0;
   uint16_t result;
   twi_read(&temp,ACK);
-  byte_to_hex(temp);
-  result = (((uint16_t)temp)<<8);
+  //byte_to_hex(temp);
+  result = (uint16_t)temp<<8;
 
   twi_read(&temp,NACK);
-  byte_to_hex(temp);
-  result += temp;
+  //byte_to_hex(temp);
+  result |= temp;
 
 //debug_pgm(PSTR("twi_stop"));
   twi_stop();
@@ -85,7 +85,7 @@ void get_conversion_data(void)
   temptable.AC6 = get_word(0xB4);
   temptable.MC  = get_word(0xBC);
   temptable.MD  = get_word(0xBE);
-  //eeprom_write_block(&temptable,&tempconv,sizeof(struct temprature_conversion_data));
+  eeprom_write_block(&temptable,&tempconv,sizeof(struct temprature_conversion_data));
   }
   //pressure
   {
@@ -96,8 +96,9 @@ void get_conversion_data(void)
   presstable.AC4 = get_word(0xB0);
   presstable.B1  = get_word(0xB6);
   presstable.B2  = get_word(0xB8);
-  //eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
+  eeprom_write_block(&presstable,&pressconv,sizeof(struct pressure_conversion_data));
   }
+
   debug_pgm(PSTR("condata2"));
 }
 
@@ -105,8 +106,12 @@ int16_t calculate_true_temprature(int32_t* B5, int16_t utemprature)
 {
   struct temprature_conversion_data data;
   eeprom_read_block(&data,&tempconv,sizeof(struct temprature_conversion_data));
-  int32_t X1 = ((int32_t)(utemprature-data.AC6) * (int32_t)(data.AC5))>>15;
-  int32_t X2 = ((int32_t)data.MC << 11) / (X1 + data.MD);
+
+  int32_t X1 = (((int32_t)utemprature-data.AC6) * ((int32_t)data.AC5))>>15;
+  int32_t X2 = (((int32_t)data.MC) << 11) / ((int32_t)(X1 + data.MD));
+  /*int32_t ut = (int32_t)utemprature;
+  int32_t X1 = ((int32_t)ut-data.AC6) * data.AC5>>15;
+  int32_t X2 = ((int32_t)data.MC << 11) / (X1 + data.MD);*/
   *B5 = X1+X2;
   return (*B5+8)>>4;
 }
@@ -119,14 +124,14 @@ int32_t calculate_true_pressure(int32_t* B5, int16_t upressure)
   int32_t B6, X1, X2, X3, B3, p;
   uint32_t B4, B7;
   B6 = *B5 - 4000;
-  X1 = ((int32_t)data.B2 * ((B6 * B6)>>12))>>11;
-  X2 = (data.AC2 * B6)>>11;
+  X1 = (int32_t)(data.B2 * (B6 * B6>>12))>>11;
+  X2 = data.AC2 * B6>>11;
   X3 = X1 + X2;
   B3 = ((((((int32_t)data.AC1)<<2)+X3)<<oversampling_setting) + 2)>>2;
-  X1 = (data.AC3 * B6)>>13;
-  X2 = (data.B1 * ((B6 * B6)>>12))>>16;
+  X1 = data.AC3 * B6>>13;
+  X2 = (data.B1 * (B6 * B6>>12))>>16;
   X3 = ((X1 + X2) + 2)>>2;
-  B4 = (data.AC4 * (uint32_t)(X3 + 32768))>>15;
+  B4 = data.AC4 * (uint32_t)(X3 + 32768)>>15;
   B7 = ((uint32_t)upressure - B3) * (50000>>oversampling_setting);
   if(B7 < 0x80000000){
     p = (B7<<1)/B4;
@@ -148,7 +153,15 @@ bmp_data_t bmp085_get_data()
   bmp_data_t data;
   start_converison(0x2E);
   _delay_ms(6);
-  data.temprature = calculate_true_temprature(&B5, get_word(0xF6));
+  get_word(0xF6);
+
+  start_converison(0x2E);
+  _delay_ms(6);
+  data.temprature= calculate_true_temprature(&B5, get_word(0xF6));
+
+  start_converison(0x34);
+  _delay_ms(6);
+  get_word(0xF6);
 
   start_converison(0x34);
   _delay_ms(6);
@@ -163,7 +176,7 @@ void init_bmp085_sensor()
   //if(data_availible == 0)
   {
     get_conversion_data();
-    eeprom_write_byte(&have_bmp_conversion_data,1);
+    //eeprom_write_byte(&have_bmp_conversion_data,1);
   }
 }
 
