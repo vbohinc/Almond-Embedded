@@ -39,4 +39,9 @@ void button_init (void);
  */
 enum display_gui_keys button_pressed (void);
 
+#ifdef BUTTONS_REMOTE
+void set_gui_key_pressed(enum display_gui_keys button);
+#endif
+
 #endif /*_BUTTONS_H__*/
+

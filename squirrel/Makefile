@@ -9,5 +9,6 @@ BASE = ..
 ALMONDLIBS = gui downlink uplink fat16 rtc
 TARGETTYPE = SQUIRREL
 ENABLE_DEBUG = 1
+CDEFS = -DBUTTONS_REMOTE
 include ../make/base.makefile 
 

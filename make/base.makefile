@@ -52,7 +52,7 @@ OBJDIR = .
 EXTRAINCDIRS += $(BASE) $(BASE)/drivers/ $(BASE)/protocols/ $(BASE)/shared/
 ifeq ($(TARGETTYPE), SQUIRREL)
 EXTRAINCDIRS += $(BASE)/squirrel/
-SRC += $(BASE)/drivers/timer/timer.c
+#SRC += $(BASE)/drivers/timer/timer.c
 endif
 
 ##################### DEFINE ALMOND LIBS HERE ############################
@@ -202,7 +202,7 @@ CSTANDARD = -std=gnu99
 
 
 # Place -D or -U options here for C sources
-CDEFS = -DF_CPU=$(F_CPU)UL
+CDEFS += -DF_CPU=$(F_CPU)UL
 
 ifeq ($(ENABLE_DEBUG),1)
 CDEFS += -DDEBUG

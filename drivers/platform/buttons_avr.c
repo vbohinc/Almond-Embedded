@@ -1,5 +1,5 @@
 /**
- * buttons_x86.c - the buttons driver windows version
+ * buttons_avr.c - the buttons driver avr version
  * Part of the ALMOND Project
  *     _    _     __  __  ___  _   _ ____
  *    / \  | |   |  \/  |/ _ \| \ | |  _ \
@@ -64,3 +64,5 @@ enum display_gui_keys button_pressed (void)
                         else
                             return display_gui_key_none;
 }
+
+
