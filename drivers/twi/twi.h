@@ -33,7 +33,11 @@ enum twi_send_ack { ACK = 1, NACK = 0};
 /**
  Send RESTART on the twi bus
  */
+#if __AVR_ARCH__ <= 6
+uint8_t twi_start(void);
+#else
 uint8_t twi_restart (void);
+#endif
 
 /**
  Send STOP on the twi bus
