@@ -29,7 +29,6 @@
 		#ifdef DEBUG_TO_DISPLAY
 		char s[] = {c,'0'};
 		display_print(s);
-		display_flip();
 		#endif
 		
 		#ifndef DEBUG_TO_DISPLAY

@@ -25,26 +25,21 @@
 #include "spi.h"
 #include <util/delay.h>
 
-#define SPIUARTPORT USARTD1
-
-#define SCK  1  // USART XCK
-#define MISO 2  // USART RxD
-#define MOSI 3  // USART TxD
-#define CS   0  // just an output pin
-
-#define SPIPORT PORTD
+#define SCK  5  // USART XCK
+#define MISO 6  // USART RxD
+#define MOSI 7  // USART TxD
+#define CS   7  // just an output pin
 
 uint8_t sd_raw_xmit_byte(uint8_t b)
 {
-   while (! (SPIUARTPORT.STATUS & USART_DREIF_bm)); //debug_pgm(PSTR("Warten bis Datenregister leer")); // Warten bis Datenregister leer
-   SPIUARTPORT.DATA = b; //debug_pgm(PSTR("Byte in Datenregister schreiben (Setup: steigende Flanken)")); // Byte in Datenregister schreiben (Setup: steigende Flanken)
-   while (! (SPIUARTPORT.STATUS & USART_RXCIF_bm)); //debug_pgm(PSTR("Warten bis Antwortbyte empfangen (Sample: fallende Flanken)")); // Warten bis Antwortbyte empfangen (Sample: fallende Flanken)
-   return SPIUARTPORT.DATA; //debug_pgm(PSTR("Antwortbyte")); // Antwortbyte
+   while (! (USARTE1.STATUS & USART_DREIF_bm)); //debug_pgm(PSTR("Warten bis Datenregister leer")); // Warten bis Datenregister leer
+   USARTE1.DATA = b; //debug_pgm(PSTR("Byte in Datenregister schreiben (Setup: steigende Flanken)")); // Byte in Datenregister schreiben (Setup: steigende Flanken)
+   while (! (USARTE1.STATUS & USART_RXCIF_bm)); //debug_pgm(PSTR("Warten bis Antwortbyte empfangen (Sample: fallende Flanken)")); // Warten bis Antwortbyte empfangen (Sample: fallende Flanken)
+   return USARTE1.DATA; //debug_pgm(PSTR("Antwortbyte")); // Antwortbyte
 }
 
 void spi_init() {
 debug_pgm(PSTR("spi_init"));
-	display_flip();
 	/*// Assert low on SS - SPI connected to PORTD
 	//clear_bit(PORTD_OUT, 4);
 	set_bit(PORTD.OUT, 4); // Sets Slave Select (SS) as Output
@@ -57,32 +52,32 @@ debug_pgm(PSTR("spi_init"));
 	//clear_bit(SPID.CTRL, 1); // Results in SCK frequency = clk_PER/2*/
 
    // CS und MOSI High
-	set_bit(SPIPORT.OUT, CS); // nicht aktiv
-	set_bit(SPIPORT.OUT, MOSI);
+	set_bit(PORTD.OUT, CS); // nicht aktiv
+	set_bit(PORTE.OUT, MOSI);
 	// CLK Low
-	clear_bit(SPIPORT.OUT, SCK);
+	clear_bit(PORTE.OUT, SCK);
 
 	// CS, CLK und MOSI als Ausgänge
-	set_bit(SPIPORT.DIRSET, MOSI);
-	set_bit(SPIPORT.DIRSET, SCK);
-	set_bit(SPIPORT.DIRSET, CS);
+	set_bit(PORTE.DIRSET, MOSI);
+	set_bit(PORTE.DIRSET, SCK);
+	set_bit(PORTD.DIRSET, CS);
 
 	// MISO als Eingang
-	set_bit(SPIPORT.DIRCLR, MISO);
+	set_bit(PORTE.DIRCLR, MISO);
 
 	// 100Khz SPI Frequenz zur Initialisierung
 	// BSEL = 32e6 / (2 * Baudrate) - 1
 	// BSEL = 2e6 / (2 * Baudrate) - 1
-	SPIUARTPORT.BAUDCTRLA = 159;
-	SPIUARTPORT.BAUDCTRLB = 0;
+	USARTE1.BAUDCTRLA = 159;
+	USARTE1.BAUDCTRLB = 0;
 
 	// Frameformat (MSB first), SPI Mode 0
-	SPIUARTPORT.CTRLC = USART_CMODE_MSPI_gc;
+	USARTE1.CTRLC = USART_CMODE_MSPI_gc;
 
-	SPIUARTPORT.CTRLA = 0;
+	USARTE1.CTRLA = 0;
 
 	// enable RX und TX
-	SPIUARTPORT.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
+	USARTE1.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
 
 
 }

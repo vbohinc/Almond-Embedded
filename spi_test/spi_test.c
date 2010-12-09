@@ -2,9 +2,6 @@
 
 #include <avr/interrupt.h>
 #include <avr/delay.h>
-#include "../drivers/display/display.h"
-
-#define DEBUG_TO_DISPLAY
 
 
 #define NUM_BYTES 254
@@ -63,12 +60,8 @@ uint8_t main(void) {
    // DFLL ein (Auto Kalibrierung)
    DFLLRC32M.CTRL = DFLL_ENABLE_bm;
 
-	
-display_init();
 
 	error_init();
-
-
 
 	//sei();
 	_delay_ms(10);
