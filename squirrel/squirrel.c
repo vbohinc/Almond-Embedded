@@ -298,10 +298,10 @@ int main (void)
         {
 			display_gui_bootup_update_callback(20);
             assert (bt_set_mode (BLUETOOTH_MASTER), "Could not set master mode");
-//            downlink_update ();
+            downlink_update ();
 		
 
-debug_pgm(PSTR("Fake devices:"));
+//debug_pgm(PSTR("Fake devices:"));
 display_gui_bootup_update_callback(0);
 createFakeDevices_address();
 display_gui_bootup_update_callback(100);
@@ -334,12 +334,12 @@ display_gui_bootup_update_callback(100);
                     uplink_process_pkg (data);
 		}
 		
-		enum display_gui_keys buttonlist[] = {display_gui_key_a,display_gui_key_a,display_gui_key_a};
+/*		enum display_gui_keys buttonlist[] = {display_gui_key_a,display_gui_key_a,display_gui_key_a};
 		for(uint8_t i = 0; i < 3; i++)
 		{
 			set_gui_key_pressed(buttonlist[i]);
 			menu_update();
-		}
+		}*/
 		men_ret = menu_update();
 		if (men_ret == MEN_NEW_SEARCH)
 			 squirrel_state_set (MASTER);

@@ -9,6 +9,7 @@
  *
  */
 
+#include <shared/error.h>
 #include "downlink.h"
 #include <bluetooth/bluetooth.h>
 
@@ -35,7 +36,7 @@ static uint16_t downlink_request (uint8_t opcode, uint8_t flag, uint8_t id, uint
 
   if (!bt_send ( (void *) &package, DOWNLINK_PACKAGE_LENGTH))
 	  {
-	  	error_pgm PSTR("send failed");
+	  	error_pgm(PSTR("send failed"));
       return 0;
 	  }
 
