@@ -127,11 +127,9 @@ menu_main_selected(int8_t option)
 	{
 		case 0: //Show Nuts
 			menu_devices(); break;
-		case 1: //Test image
-			display_gui_image(testimg, &menu_main); break;
-		case 2: //Pong game
+		case 1: //Pong game
 			pong(&menu_main); break;
-		case 3: //Credits
+		case 2: //Credits
 			display_gui_about(&menu_main); break;
 		default:
 			break;
