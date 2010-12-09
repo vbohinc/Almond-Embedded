@@ -30,7 +30,7 @@ bool display_gui_button_bar_visible = true;
 const char* display_gui_a_function;
 const char* display_gui_b_function;
 
-char options[3][MENU_OPTION_LENGHT];
+static char options[3][MENU_OPTION_LENGHT];
 
 void display_gui_sleep (uint16_t ms);
 
