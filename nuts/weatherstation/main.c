@@ -79,11 +79,11 @@ uint16_t get_value (uint8_t id)
 
         case 0: // TEMPERATURE
             d = bmp085_get_data();
-            return 0;//(uint16_t) d.temprature;
+            return (uint16_t) d.temprature;
 
         case 1: // PRESSURE
             d = bmp085_get_data();
-            return 0;//(uint16_t) d.pressure;
+            return (uint16_t) d.pressure;
 
         case 2: // LIGHT
             {

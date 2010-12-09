@@ -147,7 +147,7 @@ int32_t calculate_true_pressure(int32_t* B5, int16_t upressure)
   X1 = (X1 * 3038)>>16;
   X2 = (-7357 * p)>>16;
   p = p + ((X1 + X2 + 3791)>>4);
-  return 0;//(p/(int32_t)100);
+  return (p/(int32_t)100);
 }
 
 bmp_data_t bmp085_get_data()
@@ -160,7 +160,7 @@ bmp_data_t bmp085_get_data()
 
   start_converison(0x2E);
   _delay_ms(6);
-  data.temprature= 0;//calculate_true_temprature(&B5, get_word(0xF6));
+  data.temprature= calculate_true_temprature(&B5, get_word(0xF6));
 
   start_converison(0x34);
   _delay_ms(6);
@@ -168,7 +168,7 @@ bmp_data_t bmp085_get_data()
 
   start_converison(0x34);
   _delay_ms(6);
-  data.pressure = 0;//calculate_true_pressure(&B5, get_word(0xF6));
+  data.pressure = calculate_true_pressure(&B5, get_word(0xF6));
   return data;
 }
 
