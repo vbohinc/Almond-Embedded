@@ -274,15 +274,14 @@ uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size) {
 		    return 0;
 
 	    for( int i=0; i<SD_BLOCK_SIZE; i++)
-		    if (i - 1 + block_addr >= addr && bytes_read < size)
-                read_buffer[bytes_read++] = block[i];
+		    if (i + block_addr >= addr && bytes_read < size)
+                	read_buffer[bytes_read++] = block[i];
 
 	    block_addr += SD_BLOCK_SIZE;
      }
 
     return 1;
 }
-
 
 uint8_t read_block(uint32_t block_addr, uint8_t *read_buffer)
 {
@@ -394,8 +393,9 @@ uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size)
 		return 0;
 
          for (uint16_t i = 0; i < SD_BLOCK_SIZE; i++)
-                    if (!(block_addr + i < addr || block_addr + i > addr + size))
-                        block[i] = write_buffer[bytes_written++];
+                    //if (!(block_addr + i < addr || block_addr + i > addr + size))
+			if (i + block_addr >= addr && bytes_written < size)
+	                        block[i] = write_buffer[bytes_written++];
 
         if( write_block(block_addr, block) != 0)
 		return 0;
