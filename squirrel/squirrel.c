@@ -333,13 +333,16 @@ display_gui_bootup_update_callback(100);
                     debug_pgm (PSTR ("Rev success!"));
                     uplink_process_pkg (data);
 		}
-		
+
+#ifdef DBUTTONS_REMOTE
 		enum display_gui_keys buttonlist[] = {display_gui_key_a,display_gui_key_a,display_gui_key_a};
 		for(uint8_t i = 0; i < 3; i++)
 		{
 			set_gui_key_pressed(buttonlist[i]);
 			menu_update();
 		}
+#endif //DBUTTONS_REMOTE
+
 		men_ret = menu_update();
 		if (men_ret == MEN_NEW_SEARCH)
 			 squirrel_state_set (MASTER);
