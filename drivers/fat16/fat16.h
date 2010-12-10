@@ -201,5 +201,7 @@ extern uint8_t fat16_reset_dir(struct fat16_dir* dd);
  */
 extern uint8_t fat16_write_dir_entry(const struct fat16_dir_entry* dir_entry);
 
+extern uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* dir_entry);
+
 #endif /* FAT16_H_ */
 

@@ -74,7 +74,7 @@ struct fat16_read_callback_arg {
 static uint8_t partition_open(uint8_t index);
 static uint8_t fat16_read_header(void);
 
-static uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* dir_entry);
+//static uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* dir_entry);
 static uint8_t fat16_dir_entry_seek_callback(uint8_t* buffer, uint32_t offset, void* p);
 static uint8_t fat16_dir_entry_read_callback(uint8_t* buffer, uint32_t offset, void* p);
 static uint8_t fat16_interpret_dir_entry(struct fat16_dir_entry* dir_entry, const uint8_t* raw_entry);
@@ -89,9 +89,21 @@ static uint8_t storage_read_interval(uint32_t offset, uint8_t* buffer, uint16_t 
 {
     while (length >= interval)
     {
-        if (!sd_read_bytes(offset, buffer, interval))
+        debug_pgm(PSTR("READING FROM:"));
+        byte_to_hex(offset>>24);
+        byte_to_hex(offset>>16);
+        byte_to_hex(offset>>8);
+        byte_to_hex(offset);
+        debug_pgm(PSTR("LENGTH:"));
+        byte_to_hex(interval>>8);
+        byte_to_hex(interval);
+        _delay_ms(10000);
+        if (sd_read_bytes(offset, buffer, interval) != 1)
             return 0;
-        if (!callback(buffer, offset, p))
+        debug_pgm(PSTR("HERE IT COMES:"));
+        for(uint8_t i = 0; i < 32; i++)
+            byte_to_hex(buffer[i]);
+        if (callback(buffer, offset, p) != 1)
             break;
         offset += interval;
         length -= interval;
@@ -105,7 +117,7 @@ static uint8_t partition_open(uint8_t index)
     uint8_t buffer[0x10];
 
     // read specified partition table index
-    if (!sd_read_bytes(0x01be + index * 0x10, buffer, sizeof(buffer)))
+    if (sd_read_bytes(0x01be + index * 0x10, buffer, sizeof(buffer)) != 1)
     {
         debug_pgm(PSTR("SD Read failed"));
         return 0;
@@ -180,11 +192,65 @@ static uint8_t fat16_read_header(void)
     g_filesystem.header.cluster_size        = (uint32_t)bytes_per_sector * sectors_per_cluster;
     g_filesystem.header.root_dir_offset     = g_filesystem.header.fat_offset + (uint32_t)fat_copies * sectors_per_fat * bytes_per_sector;
     g_filesystem.header.cluster_zero_offset = g_filesystem.header.root_dir_offset + (uint32_t)max_root_entries * 32;
+debug_pgm(PSTR("reserved sectors:"));
+    byte_to_hex(reserved_sectors>>8);
+    byte_to_hex(reserved_sectors);
+_delay_ms(8000);
+debug_pgm(PSTR("sector count:"));
+    byte_to_hex(sector_count>>24);
+    byte_to_hex(sector_count>>16);
+    byte_to_hex(sector_count>>8);
+    byte_to_hex(sector_count);
+_delay_ms(8000);
+debug_pgm(PSTR("bytes per sector:"));
+    byte_to_hex(bytes_per_sector>>8);
+    byte_to_hex(bytes_per_sector);
+_delay_ms(8000);
+    debug_pgm(PSTR("size:"));
+    byte_to_hex(g_filesystem.header.size>>24);
+    byte_to_hex(g_filesystem.header.size>>16);
+    byte_to_hex(g_filesystem.header.size>>8);
+    byte_to_hex(g_filesystem.header.size);
+_delay_ms(8000);
+    debug_pgm(PSTR("fat-offset:"));
+    byte_to_hex(g_filesystem.header.fat_offset>>24);
+    byte_to_hex(g_filesystem.header.fat_offset>>16);
+    byte_to_hex(g_filesystem.header.fat_offset>>8);
+    byte_to_hex(g_filesystem.header.fat_offset);
+_delay_ms(8000);
+    debug_pgm(PSTR("fat-size:"));
+    byte_to_hex(g_filesystem.header.fat_size>>24);
+    byte_to_hex(g_filesystem.header.fat_size>>16);
+    byte_to_hex(g_filesystem.header.fat_size>>8);
+    byte_to_hex(g_filesystem.header.fat_size);
+_delay_ms(8000);
+    debug_pgm(PSTR("sector-size:"));
+    byte_to_hex(g_filesystem.header.sector_size>>8);
+    byte_to_hex(g_filesystem.header.sector_size);
+_delay_ms(8000);
+    debug_pgm(PSTR("cluster-size:"));
+    //byte_to_hex(g_filesystem.header.cluster_size>>24);
+    //byte_to_hex(g_filesystem.header.cluster_size>>16);
+    byte_to_hex(g_filesystem.header.cluster_size>>8);
+    byte_to_hex(g_filesystem.header.cluster_size);
+_delay_ms(8000);
+    debug_pgm(PSTR("root-dir-offset:"));
+    byte_to_hex(g_filesystem.header.root_dir_offset>>24);
+    byte_to_hex(g_filesystem.header.root_dir_offset>>16);
+    byte_to_hex(g_filesystem.header.root_dir_offset>>8);
+    byte_to_hex(g_filesystem.header.root_dir_offset);
+_delay_ms(8000);
+    debug_pgm(PSTR("cluster-zero-offset:"));
+    byte_to_hex(g_filesystem.header.cluster_zero_offset>>24);
+    byte_to_hex(g_filesystem.header.cluster_zero_offset>>16);
+    byte_to_hex(g_filesystem.header.cluster_zero_offset>>8);
+    byte_to_hex(g_filesystem.header.cluster_zero_offset);
+_delay_ms(20000);
 
     return 1;
 }
 
-static uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* dir_entry)
+extern uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_entry* dir_entry)
 {
     if (!dir_entry)
         return 0;
@@ -196,22 +262,35 @@ static uint8_t fat16_read_root_dir_entry(uint16_t entry_num, struct fat16_dir_en
     struct fat16_read_callback_arg arg;
     memset(&arg, 0, sizeof(arg));
     arg.entry_num = entry_num;
-    if (!storage_read_interval(
+
+    if (storage_read_interval(
                 g_filesystem.header.root_dir_offset,
                 buffer,
                 sizeof(buffer),
                 g_filesystem.header.cluster_zero_offset - g_filesystem.header.root_dir_offset,
                 fat16_dir_entry_seek_callback,
-                &arg) || arg.entry_offset == 0)
+                &arg) != 1 || arg.entry_offset == 0)
+    {
+        debug_pgm(PSTR("storage read fail"));
         return 0;
-
+    }
+    
     //Read the file
     memset(dir_entry, 0, sizeof(*dir_entry));
-    if (!storage_read_interval(arg.entry_offset, buffer, sizeof(buffer),
-                               arg.byte_count, fat16_dir_entry_read_callback, dir_entry))
+    if (storage_read_interval(arg.entry_offset, buffer, sizeof(buffer),
+                               arg.byte_count, fat16_dir_entry_read_callback, dir_entry) != 1)
+    {
+        debug_pgm(PSTR("storage read interval fail"));
         return 0;
+    }
 
-    return dir_entry->long_name[0] != '\0' ? 1 : 0;
+    if(dir_entry->long_name[0] == '\0')
+    {
+        debug_pgm(PSTR("name is empty"));
+        return 0;
+    }
+
+    return 1;
 }
 
 static uint8_t fat16_dir_entry_seek_callback(uint8_t* buffer, uint32_t offset, void* p)
@@ -247,6 +326,11 @@ static uint8_t fat16_dir_entry_read_callback(uint8_t* buffer, uint32_t offset, v
 
     if (!dir_entry->entry_offset)
         dir_entry->entry_offset = offset;
+
+    for(uint8_t i = 0; i < 32; i++)
+        byte_to_hex(buffer[i]);
+
+    _delay_ms(1000);
 
     switch (fat16_interpret_dir_entry(dir_entry, buffer))
     {
@@ -324,10 +408,12 @@ static uint8_t fat16_read_sub_dir_entry(uint16_t entry_num, const struct fat16_d
 static uint8_t fat16_interpret_dir_entry(struct fat16_dir_entry* dir_entry,
         const uint8_t* raw_entry)
 {
+    byte_to_hex(raw_entry[0]);
     if (!dir_entry || !raw_entry || !raw_entry[0])
         return 0;
 
     char* long_name = dir_entry->long_name;
+    byte_to_hex(raw_entry[11]);
     if (raw_entry[11] == 0x0f)
     {
         uint16_t char_offset = ((raw_entry[0] & 0x3f) - 1) * 13;
@@ -349,6 +435,9 @@ static uint8_t fat16_interpret_dir_entry(struct fat16_dir_entry* dir_entry,
             long_name[char_offset + 11] = raw_entry[28];
             long_name[char_offset + 12] = raw_entry[30];
         }
+
+        for(uint8_t i = 0; i < 13; i++)
+            byte_to_hex(long_name[char_offset + i]);
 
         return 1; //Long File Name entry
     }
@@ -407,16 +496,17 @@ extern uint8_t fat16_get_dir_entry_of_path(const char* path, struct fat16_dir_en
     // begin with the root directory
     memset(dir_entry, 0, sizeof(*dir_entry));
     dir_entry->attributes = FAT16_ATTRIB_DIR;
-
     if (path[0] == '\0')
         return 1;
 
     while (1)
     {
         struct fat16_dir dd;
-        if (!fat16_open_dir(&dd, dir_entry))
+        if (fat16_open_dir(&dd, dir_entry) != 1)
+        {
+            debug_pgm(PSTR("Couldnt open dir"));
             break;
-
+        }
         // extract the next hierarchy we will search for
         const char* sep_pos = strchr(path, '/');
         if (!sep_pos)
@@ -426,6 +516,7 @@ extern uint8_t fat16_get_dir_entry_of_path(const char* path, struct fat16_dir_en
         // read directory entries
         while (fat16_read_dir(&dd, dir_entry))
         {
+            debug_pgm(PSTR("huhu"));
             // check if we have found the next hierarchy
             if ((strlen(dir_entry->long_name) != length_to_sep || strncmp(path, dir_entry->long_name, length_to_sep) != 0))
                 continue;
@@ -873,8 +964,21 @@ extern uint8_t fat16_resize_file(struct fat16_file* fd, uint32_t size)
 
 extern uint8_t fat16_open_dir(struct fat16_dir* dir, const struct fat16_dir_entry* dir_entry)
 {
-    if (!dir_entry || !(dir_entry->attributes & FAT16_ATTRIB_DIR) || !dir)
+    if (!dir_entry)
+    {
+        debug("aa");
         return 0;
+    }
+    if((dir_entry->attributes & FAT16_ATTRIB_DIR) == 0)
+    {
+        debug("bb");
+        return 0;
+    }
+    if(!dir)
+    {
+        debug("cc");
+        return 0;
+    }
 
     memcpy(&dir->dir_entry, dir_entry, sizeof(*dir_entry));
     dir->entry_next = 0;
@@ -889,19 +993,23 @@ extern uint8_t fat16_read_dir(struct fat16_dir* dd, struct fat16_dir_entry* dir_
 
     if (dd->dir_entry.cluster == 0)
     {
+        debug_pgm(PSTR("read root"));
         // read entry from root directory
         if (fat16_read_root_dir_entry(dd->entry_next, dir_entry))
         {
+            debug_pgm(PSTR("read root ok"));
             ++dd->entry_next;
             return 1;
         }
     }
     else
     {
+        debug_pgm(PSTR("read sub"));
         // read entry from a subdirectory
         if (fat16_read_sub_dir_entry(dd->entry_next, &dd->dir_entry,
                                      dir_entry))
         {
+            debug_pgm(PSTR("read sub ok"));
             ++dd->entry_next;
             return 1;
         }
