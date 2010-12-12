@@ -33,7 +33,7 @@
 
 \section{Übersicht}
 \subsection{Team}
-Zunächst eine grafische Übersicht der Teammitglieder und deren Tätigkeitsbereiche:\\
+Zunächst eine graphische Übersicht der Teammitglieder:\\
 \begin{multicols}{2}{
 \begin{list}{ }
 	\item    \includegraphics[height=1.5cm]{./face_Fanter.png}     \\      Stefan Profanter	
@@ -50,8 +50,8 @@ Zunächst eine grafische Übersicht der Teammitglieder und deren Tätigkeitsbere
 \end{multicols}
 
 \subsection{Infrastruktur}
-Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein Netwerk aus unabhängigen Aktoren und Sensoren mit zentraler Überwachung und Steuerung.
-Die Nuts ({\bf N}etworked {\bf Ut}ilities and {\bf S}ensors) sind Gruppierungen von Sensoren oder Aktoren. Diese werden über einen zentralen Controller (Squirrel) gesteuertf. Zusätzlich gibt es ein Backend für PCs, welches über eine Weboberfläche Zugriff auf Gerätedaten gibt und die Steuerung der Aktoren sowie Konfigurationsänderungen erlaubt.\\
+Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein Netzwerk aus unabhängigen Aktoren und Sensoren mit zentraler Überwachung und Steuerung.
+Die Nuts ({\bf N}etworked {\bf Ut}ilities and {\bf S}ensors) sind Gruppierungen von Sensoren oder Aktoren. Diese werden über einen zentralen Controller (Squirrel) gesteuert. Zusätzlich gibt es ein Backend für PCs, welches über eine Weboberfläche Zugriff auf Gerätedaten gibt und die Steuerung der Aktoren sowie Konfigurationsänderungen erlaubt.\\
 Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls über Bluetooth mit dem auf Linux, Windows oder Mac OS X laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensor-Werte) mit übermittelt, die dann später auf dem Rechner ausgewertet werden können.
 \section{Komponenten}
 \subsection{``Nuts''}
@@ -95,22 +95,22 @@ Im Protokoll sind folgende Befehle enthalten: SET, GET, ECHO, BYE\\
 Durch die Reduzierung auf diese geringe Anzahl an Befehlen, wird eine sehr kleine Paketgröße von 4 Bytes erreicht.\\
 Neben dem Opcode findet sich in einem Paket eine ID mit der Aktoren oder Sensoren angesprochen werden können. Sowie ein 16 Bit-Wert, der für Nutzdaten verwendet werden kann.\\
 \begin{itemize}
-	\item{SET}
+	\item{SET}\\
 Der SET-Befehl kann Aktoren auf bestimmte Werte setzen.
-	\item{GET}
+	\item{GET}\\
 Der GET-Befehl liest die aktuellen Sensorwerte oder den Zustand eines Aktors aus.
-	\item{ECHO}
+	\item{ECHO}\\
 Der ECHO-Befehl dient Debugging-Zwecken und sendet das empfangene Paket unverändert zurück.
-	\item{BYE}
+	\item{BYE}\\
 Der BYE-Befehl zeigt das Ende einer Verbindung an.
 \end{itemize}
 Um Variationen des GET-Befehls zu ermöglichen, wurden zusätzlich noch Flags implementiert.\\
 \begin{itemize}
-	\item{STANDARD}
+	\item{STANDARD}\\
 Dieses Flag für die beeinflusst die Ausführung des Befehls nicht.
-	\item{INFO\_NUT}
+	\item{INFO\_NUT}\\
 Dieses Flag dient dazu allgemeine - Sensor und Aktor unspezifische - Informationen der Nut, wie z.B. deren Namen abzurufen. Das übergebene ID-Feld wird nicht berücksichtigt.\\
-	\item{INFO\_EXTENSION}
+	\item{INFO\_EXTENSION}\\
 Mit diesem Flag werden Metadaten über den ausgewählten Sensor oder Aktor abgerufen.
 \end{itemize}
 
@@ -119,13 +119,13 @@ Das Uplinkprotokoll dient zur Kommunikation zwischen der Squirrel und dem Backen
 Zum einen wird mit diesem Protokoll die Squirrel durch das Backend konfiguriert. Zum anderen kann das Backend Informationen über die aktuell verfügbaren Sensoren und Aktoren sowie deren Logdaten abrufen.\\
 Es existieren folgende Befehle:
 \begin{itemize}
-	\item{LIST}
+	\item{LIST}\\
 Teilt dem Backend alle verfügbaren Meta-Daten der Nuts, wie z.B. deren Bluetooth-Adresse, deren Sensoren und Aktoren, mit. Die Mess- und Zustandswerte selbst werden nicht übertragen.
 
-	\item{LOG}
+	\item{LOG}\\
 Mit diesem Befehle werden die in der Squirrel zwischengespeicherten Sensorwerte der verschiedenen Nuts dem Backend mitgeteilt.
 
-	\item{TIME}
+	\item{TIME}\\
 Mit diesem Befehl, kann das Backend die aktuelle Zeit der Squirrel mitteilen.
 
 \end{itemize}
@@ -177,131 +177,6 @@ Die auf der im Rahmen des Projekts entwickelten Nut befindlichen Sensoren wurden
 Das ursprüngliche Vorhaben die Windrichtung zu messen wurde verworfen, es bleiben jedoch Möglichkeiten die Temperatur, Luftfeuchtigkeit, Luftdruck sowie die Helligkeit zu messen.
 % FIXME Geht's jetzt?
 \subsection{Status}
-
-
-%\section{Protokolle}
-
-%
-%\section{Interfaces}
-%Die im folgenden beschriebenen Interfaces sind die Schnittstellen um die im Almond-Projekt vorhandenen Sensoren und Aktoren direkt auf Hardwareebene ansprechen zu können.
-%	\subsection{UART}
-%
-%
-%
-%	\subsection{SPI}
-
-%
-%\subsection{$\text{I}^2$C}
-%Über $\text{I}^2$C ist im Almond-Projekt der Sensorchip der Nut angebunden - der BMP085.
-%
-%
-%
-%\section{Hardware}
-%
-%\includegraphics[height=4.2cm]{./Deployment.pdf}
-%
-%	\subsection{Squirrel}
-%	\subsubsection{Prozessor}
-%	Die Squirrel verfügt über einen Atmel XMega128A1 Prozessor.\\
-%	Dieser hat eine Taktrate von 32 Mhz und 128KB Arbeitsspeicher.\\
-%	
-%	
-%%realtimeclock erwähnen und tasten
-%	\subsubsection{Bluetooth}
-%	\label{bluetooth}
-%Das Bluetooth-Modul ist über UART mit dem XMEGA-Prozessor verbunden. Im Bluetooth-Stack gibt es zwei Modi. \\
-%Zun einen den Command-Modus, welcher dazu dient Befehle direkt an das Bluetooth-Modul zu senden.\\
-%Desweiteren gibt es den Communication-Modus der dann die tatsächlichen Bluetooth-Befehle versendet.\\
-%Die empfangenen Daten werden in einer FIFO-Datenstruktur gespeichert.\\
-%
-%
-%\subsubsection{Display: SDL-Emulation} % FIXME -> Entwicklungsgeschichte
-%Um die Funktionsfähigkeit des Display-Treibers auch ohne Hardwarezugriff testen zu können, wurde eine SDL-Emulation geschrieben.\\
-%Sie bietet die Möglichkeit in einem SDL-Fenster die Ausgabe ähnlich wie auf dem Display auszugeben.\\
-%Somit konnten alle GUI-Libary-Ausgaben bereits im voraus getestet werden und mehrere Programmierer in die Entwicklung von neuen GUI-Anwendungen einbezogen werden, ohne durch die Verfügbarkeit der Hardware eingeschränkt zu sein.\\
-%Um die SDL-Emulation zu Nutzen, muss bei der Compilation des Display-C-Dateien das define x86 gesetzt werden.\\
-%
-%\subsubsection{SD-Kartenleser}
-%Aufgrund der geringen Speicherkapazität der Nuts ist es notwendig Messdaten zwischenzuspeichern wenn diese nicht vom Backend abgerufen werden - hierzu dient eine SD-Karte.
-%Um die Daten direkt in der Gewohnten Betriebsystemumgebung am PC des Anwenders auslesen zu können, ist es notwendig die Daten in einem weit verbreiteten Dateisystem abzulegen.\\
-%Hierbei fiel die Wahl auf das FAT16 Dateisystem, da es gegenüber FAT32 eine einfachere Struktur besitzt und trotzdem Speicherkarten bis 2GB unterstützt. Und somit allen Anforderungen gerecht wird.\\
-%Die Squirrel verfügt über die Fähigkeit Dateien zu
-%\begin{itemize} % FIXME: Liste?
-%\item öffnen
-%\item lesen
-%\item schreiben
-%\item löschen
-%\end{itemize}
-%Außerdem können Verzeichnisse angelegt, entfernt und durchsucht werden.\\
-%
-%
-%\begin{figure}[ht]
-%\includegraphics[height=5cm]{squirrel_shot1.png}
-%\label{fig:0}
-%\caption{Squirrel: Boot-Sequenz}
-%\end{figure}
-%\begin{figure}[ht]
-%\includegraphics[height=5cm]{squirrel_shot2.png}
-%\label{fig:1}
-%\caption{Squirrel: Hauptmenü}
-%\end{figure}
-%
-%
-%\subsection{Nut}
-%
-%Die hier aufgeführte Hardware stellt das Grundgerüst einer Nut da.
-%Zur Verbesserung der Kompatibilität ist das selbe Bluetooth-Modul wie bei der Squirrel gewählt worden. Diese Wahl wirkte sich durch verringerte Einarbeitungszeit positiv auf den Entwicklungsprozess aus. % [sic]
-%
-%\subsubsection{Prozessor}
-%Die Nut verfügt über einen Atmel Atmega8535 Prozessor.\\
-%Dieser hat eine Taktrate von 16 MHz und 8KB Arbeitsspeicher.\\
-%
-%
-%\subsubsection{Bluetooth}
-%Siehe Abschnitt~\ref{bluetooth}
-%
-%
-%\section{Wetterstation}
-%	\subsection{Funktionen}
-%	Die Wetterstation erfasst Luftdruck, Umgebungstemperatur, Helligkeit und Luftfeuchtigkeit. Desweiteren verfügt sie über zwei rote LED's, welche an und abgeschaltet werden können.
-%	\subsection{Hardware}
-%		\subsubsection{Drucksensor (BMP085)}
-%		Der Drucksensor ist durch $\text{I}^2$C angebunden und kann Drücke zwischen 300 hPa und 1100 hPa mit einer Genauigkeit von 16bit erfassen.
-%		\subsubsection{Temperatursensor (BMP085)}
-%		Dieser ist in denselben Chip wie der Drucksenor integriert und gibt in 0.1 Cº die Temperatur in einem 16 Bit-Wert aus.
-%		\subsubsection{Lichtstärke (Photoresistor)}
-%		Die Lichtstärke wird von einem Photoresitor gemessen und der AVR liest diesen analogen Wert durch einen Analog-Digital-Converter (ADC) ein. Es kann eine Helligkeit von 0,1 Lux bis 1000 Lux in einer Schrittweite von 10 Lux gemessen werden.
-%		\subsubsection{Feuchtigkeitssensor (HIH3001)}
-%		Der Feuchtigkeitssensor HIH3001 misst die relative Luftfeuchtigkeit in \% in ganz kleinen Schritten. 
-%
-%		\begin{figure}[h]
-%		\includegraphics[height=5cm]{nut_shot1.png} 
-%		\label{fig:2}
-%		\caption{Nut}
-%		\end{figure}
-%
-%		
-%\section{Backend}
-%
-%		
-%
-%
-%
-%\section{Entwicklungeschichte}
-%\subsection{Display}
-%Zunächst wurde zum Entwickeln des Display-Treibers auf eine Test-Hardware zurückgegriffen, in der ebenfalls ein 13BB0-Display verbaut worden war.\\
-%Das ursprünglich in einem DVB-T Receiver eingesetzte Board verfügt jedoch nur nur über den schwächeren ATMEGA 8515, welcher über weniger Speicher verfügt.\\
-%Daher wurde zunächst ein Programm entwickelt, das nur wenig Platz verbraucht und trotzdem die notwendige Flexibilität bietet, beliebige Inhalte anzuzeigen.\\
-%Um Buchstaben komfortabel für dieses Programm codieren zu können, wurde ein Hilfsprogramm in Java erstellt, welches eine Grafische Oberfläche bietet zum Entwerfen der Buchstaben.\\
-%Im Laufe der Entwicklung stellte sich jedoch heraus, dass nicht nur eine Darstellung von Buchstaben an bestimmten fixen Plätzen auf dem Display benötigt wird, sondern eine noch flexiblere pixelweise Ansteuerung.\\
-%Da die endültige Hardware des Squirrels über mehr Speicher verfügt, war dies durch ein Neuschreiben vieler Teile des Display-Treibers möglich.\\
-% Um das den weitgehen neuen Display Treiber mit verschiedenen Schriftarten versorgen zu können, wurde ein Perl-Skript geschrieben, welches die Standardfonts der GD-Libary konvertieren kann.\\
-%
-%
-%
-%\subsection{Bluetooth}
-%Zunächst wurde ein eher monolithischer Bluetooth-Stack geschrieben, dies führte jedoch zu einem Komplexitätsproblem.\\
-%Folglich wurde ein neuer leichtgewichtigerer und übersichtlicher Stack entworfen.
-
+Aufgrund der erheblichen Widrigkeiten welche unter anderem bei der Nutzung des Bluetoothmoduls bestehen, ist die integrierte Nutzung der im einzelnen weitgehend funktionstüchtigen Komponenten nicht möglich. Es lassen sich jedoch in gewissem Umfang bestimmte Komponenten wie das Backend zur Auswertung der Logdaten, zu Zeitpunkten wo eine Datenübertragung per Bluetooth möglich ist, nutzen.
 
 \end{document}
