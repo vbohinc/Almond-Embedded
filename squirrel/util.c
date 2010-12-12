@@ -16,22 +16,6 @@
 #include <protocols/uplink/uplink.h>
 
 /**
- * Time
- */
-static uint32_t soft_time = 0;
-
-bool time_set (uint32_t time)
-{
-    soft_time = time;
-    return true;
-}
-
-uint32_t time_get()
-{
-    return soft_time;
-}
-
-/**
  * Log Access
  */
 
@@ -47,8 +31,6 @@ void lookup (const char *mac, const uint8_t id, char *dst)
 
 bool log_write (const char *mac, const uint8_t id, const uint32_t time, const uint16_t value)
 {
-    debug_pgm (PSTR ("LOG: WRITE"));
-
     struct fat16_file file;
     char filename[30];
 
@@ -58,17 +40,16 @@ bool log_write (const char *mac, const uint8_t id, const uint32_t time, const ui
 
     if (!fat16_open_file_by_name (&file, filename))
     {
-        debug_pgm (PSTR ("Could not open file, creating new one..."));
+        struct fat16_dir_entry dir_dir_entry;        
+        struct fat16_dir dir;
 
-        struct fat16_dir_entry dir_dir_entry;
+        debug_pgm (PSTR ("File not found, creating new one..."));
 
         if (!fat16_get_dir_entry_of_path ("/logs", &dir_dir_entry))
             debug_pgm (PSTR ("Could not open DirEntry of /logs"));
 
-        struct fat16_dir dir;
-
         if (!fat16_open_dir (&dir, &dir_dir_entry))
-            debug_pgm (PSTR ("Could not open Dir /logs!"));
+            debug_pgm (PSTR ("Could not open Dir /logs"));
 
         if (!fat16_create_file (&dir, &filename[6], &file.dir_entry))
             debug_pgm (PSTR ("Could not create file!"));
@@ -78,7 +59,6 @@ bool log_write (const char *mac, const uint8_t id, const uint32_t time, const ui
         // Write start pos...
 
         new_pos = 2;
-
         fat16_write_file (&file, (uint8_t*)&new_pos, 2);
     }
 
@@ -97,8 +77,6 @@ bool log_write (const char *mac, const uint8_t id, const uint32_t time, const ui
 
 bool log_read (const char *mac, const uint8_t id, const uint8_t page, uint8_t* buffer)
 {
-    debug_pgm (PSTR ("LOG: READ"));
-
     struct fat16_file file;
     char filename[30];
 

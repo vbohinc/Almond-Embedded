@@ -14,7 +14,7 @@
 #ifdef SQUIRREL
 
 #include <squirrel/squirrel.h>
-#include <squirrel/util.h>
+#include <rtc/rtc.h>
 #include <bluetooth/bluetooth.h>
 
 /**
@@ -57,7 +57,7 @@ static inline bool uplink_handle_get_package (uplink_package *p)
 
         case TIME:
             debug ("Time");            
-            p->payload.time.time = time_get ();
+            p->payload.time.time = get_time ();
             return true;
 
         default:
@@ -71,7 +71,8 @@ static inline bool uplink_handle_set_package (uplink_package *p)
     {
 
         case TIME:
-            return !time_set (p->payload.time.time);
+            set_time (p->payload.time.time);
+            return true;
 
         default:
             return false;
