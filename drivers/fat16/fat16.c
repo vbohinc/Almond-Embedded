@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sd/sd.h>
 
 // Globals:
 static struct fat16_filesystem g_filesystem;
@@ -108,12 +109,14 @@ static uint8_t partition_open(uint8_t index)
     // read specified partition table index
     if (sd_read_bytes(0x01be + index * 0x10, buffer, sizeof(buffer)) != 1)
     {
+        debug_pgm(PSTR("Read Bytes Failed!"));
         return 0;
     }
         
     // abort on empty partition entry
     if (buffer[4] == PARTITION_TYPE_NONE)
     {
+        debug_pgm(PSTR("Partitiontype is NONE"));
         return 0;
     }
 
@@ -158,7 +161,10 @@ static uint8_t fat16_read_header(void)
     if (g_filesystem.partition.type != PARTITION_TYPE_FAT16 &&
             g_filesystem.partition.type != PARTITION_TYPE_FAT16_LBA &&
             g_filesystem.partition.type != PARTITION_TYPE_FAT16_32MB)
+    {
+        debug_pgm(PSTR("Wrong Partition type"));
         return 0;
+    }
 
     uint32_t partition_offset = g_filesystem.partition.offset * 512;
     if (!sd_read_bytes(partition_offset + 0x0b, buffer, sizeof(buffer)))

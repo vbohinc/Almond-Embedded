@@ -38,13 +38,19 @@ int main (void)
 	struct fat16_file f;
     debug_pgm(PSTR("Los gehts"));
 
-	if(fat16_open_file_by_name(&f, "/amlond") != 1)
+	if(fat16_open_file_by_name(&f, "/dei.txt") != 1)
 	{
 	    debug_pgm(PSTR("FAT16 file open fail!"));
 	    return -1;
 	}
 	debug_pgm(PSTR("open file ok"));
-	
+
+    uint8_t buffer[1];
+	while(fat16_read_file(&f,buffer,1) == 1)
+    {
+		debug(&buffer[0]);
+        _delay_ms(250);
+	}
 	
 #if 0
 
