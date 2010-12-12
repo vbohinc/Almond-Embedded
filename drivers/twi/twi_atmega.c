@@ -50,28 +50,23 @@ void twi_stop(void) {
 
 uint8_t twi_connect(enum twi_access_mode mode, uint8_t addr)
 {
-  //check for valid status
-  uint8_t status;// = twi_status();
-  /*if(status == 0x08 || status == 0x10)
-    return 0;
-  else {
-debug_pgm(PSTR("error connect1 twi"));
-    return 1;
-}*/
+  uint8_t status;
+
   TWDR = (addr<<1)|mode;
 byte_to_hex((addr<<1)|mode);
   TWCR = (1<<TWINT)|(1<<TWEN);
 
   twi_wait();
+
+  //check for valid status
   status = twi_status();
   if(status == 0x18 || status == 0x20 || status == 0x40 || status == 0x48 || status == 0xF8)
     return 0;
   else {
-PORTD |= (1<<7);
-debug_pgm(PSTR("err twi_con"));
+    PORTD |= (1<<7);
+    debug_pgm(PSTR("err twi_con"));
     return 1;
-  
-}
+  }
 }
 
 uint8_t twi_write(uint8_t data)
@@ -80,15 +75,15 @@ uint8_t twi_write(uint8_t data)
   TWCR = (1<<TWINT)|(1<<TWEN); 
   twi_wait();
 
-uint8_t status = twi_status();
+  uint8_t status = twi_status();
 
   if(status == 0x28 || status == 0x30)
     return 0;
   else {
-PORTD |= (1<<7);
-debug_pgm(PSTR("err twi_wr"));
+    PORTD |= (1<<7);
+    debug_pgm(PSTR("err twi_wr"));
     return 1;
-}
+  }
 
 }
 
@@ -101,10 +96,10 @@ uint8_t twi_read(uint8_t* data, enum twi_send_ack ack)
   if(status == 0x50 || status == 0x58)
     return 0;
   else {
-PORTD |= (1<<7);
-debug_pgm(PSTR("err twi_re"));
+    PORTD |= (1<<7);
+    debug_pgm(PSTR("err twi_re"));
     return 1;
-}
+  }
 }
 
 uint8_t twi_status(void)
@@ -116,9 +111,8 @@ uint8_t twi_status(void)
 
 void twi_wait(void)
 {
-PORTD |= (1<<7);
-//debug_pgm(PSTR("twi waiting"));
-   while (!(TWCR & (1<<TWINT)));
-PORTD &= ~(1<<7);
+  PORTD |= (1<<7);
+  while (!(TWCR & (1<<TWINT)));
+  PORTD &= ~(1<<7);
 }
 

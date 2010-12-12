@@ -19,10 +19,8 @@
 
 #define R1_IDLE_STATE 0
 
-//static uint8_t sd_token_buffer[SD_BLOCK_SIZE + 3];
-
-//void sd_read_block(uint8_t *addr, uint8_t *read_buffer);
-//void sd_write_block(uint8_t *addr, uint8_t *write_buffer);
+uint8_t read_block(uint32_t block_addr, uint8_t *read_buffer);
+uint8_t write_block(uint32_t block_addr, uint8_t *write_buffer);
 void sd_send_buffer (void);
 void sd_get_response (uint8_t response_type, uint8_t *sd_response_buffer);
 
@@ -55,13 +53,10 @@ int sd_init (void)
 
     for (uint8_t i = 0; i < 80; ++i)
     {
-        //spi_receive_byte();
         spi_send_byte (0xFF);
     }
 
     sd_enable();
-
-    //while(true);
 
     /* reset card */
     uint8_t sd_response_buffer[5];
@@ -82,19 +77,9 @@ int sd_init (void)
         }
     }
 
-    //display_flip();
-    // Place SD Card into Idle State
-    //sd_send_command (CMD1, NULL);
-    //sd_get_response (R1,sd_response_buffer);
-    // Chip Select Low
-    //clear_bit(PORTC.OUT, 3); // Redundant if CS == SS?
-    // Place SD Card into Idle State (again). Transition to SPI mode
-    //sd_send_command (CMD0, NULL);
-    //sd_get_response (R1,sd_response_buffer);
     // Check supply voltage
     sd_send_command (CMD8, NULL);
     sd_get_response (R1,sd_response_buffer);
-    //display_flip();
 
     if (sd_response_buffer[0] == 0x04)
     { // CMD8 is illegal, Version 1 card
@@ -254,11 +239,7 @@ void sd_send_command (uint8_t command_nr, uint8_t *arguments)
     {
         spi_send_byte (sd_buffer[i]);
     }
-
-    //return response;
 }
-
-uint8_t read_block(uint32_t block_addr, uint8_t *read_buffer);
 
 uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size) {
     if (read_buffer == NULL)
@@ -321,7 +302,6 @@ uint8_t read_block(uint32_t block_addr, uint8_t *read_buffer)
     return 0;
 }
 
-uint8_t write_block(uint32_t block_addr, uint8_t *write_buffer);
 uint8_t write_block(uint32_t block_addr, uint8_t *write_buffer) {
     uint16_t bytes_written = 0;
     uint8_t sd_response_buffer[5];
@@ -345,7 +325,7 @@ uint8_t write_block(uint32_t block_addr, uint8_t *write_buffer) {
 
             if (sd_response_buffer[0] == 0x00)
             {
-	//Wartet einen Moment und sendet einen Clock an die MMC/SD-Karte
+	        //Wartet einen Moment und sendet einen Clock an die MMC/SD-Karte
                 unsigned char a=0;
                 for (a=0;a<100;a++)
 		{
@@ -366,9 +346,6 @@ uint8_t write_block(uint32_t block_addr, uint8_t *write_buffer) {
 
 		//Wartet auf MMC/SD-Karte Bussy
 		while (spi_receive_byte() != 0xff){};
-
-                // TODO: Check status bits -> return 0 on failure
-                // Busy tokens?
 
             } else {
 		debug_pgm (PSTR ("SD: write return fail"));
