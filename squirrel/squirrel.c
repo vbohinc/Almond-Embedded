@@ -3,19 +3,33 @@
  * the Squirrel's c file
  */
 
-#include <util/delay.h>
-#include <avr/eeprom.h>
-#include <avr/interrupt.h>
+/* Common */
+
 #include <stdlib.h>
 #include <string.h>
 #include "squirrel.h"
 #include "util.h"
-#include <bluetooth/bluetooth.h>
-#include <gui/gui.h>
-#include <platform/buttons.h>
+
+/* Protocols */
+
 #include <downlink/downlink.h>
 #include <uplink/uplink.h>
 #include <package_types.h>
+
+/* Drivers */
+
+#include <util/delay.h>
+#include <avr/eeprom.h>
+#include <avr/interrupt.h>
+#include <rtc/rtc.h>
+#include <bluetooth/bluetooth.h>
+#include <sd/sd.h>
+#include <fat16/fat16.h>
+#include <platform/buttons.h>
+
+/* UI */
+
+#include <gui/gui.h>
 #include <gui/menu.h>
 
 /* -----------------------------------------------------------------------
@@ -79,14 +93,14 @@ bool squirrel_log(uplink_package * p)
 
 device_info device_list[NUTS_LIST];
 
-bool bt_cmp(const char *add1, const char *add2)
+static bool bt_cmp(const char *add1, const char *add2)
 {
 	uint8_t i;
 	for (i = 0; i < 12 && add1[i] == add2[i]; i++) ;
 	return (i == 12);
 }
 
-static void update_info(uint8_t num)
+static void downlink_update_info(uint8_t num)
 {
 	bool err = false;
 	uint8_t j;
@@ -107,7 +121,7 @@ static void update_info(uint8_t num)
 		device_list[num].extension_types[j] = INVALID;
 }
 
-static void update_values(uint8_t num)
+static void downlink_update_values(uint8_t num)
 {
 	bool err = false;
 
@@ -118,57 +132,130 @@ static void update_values(uint8_t num)
 		if (device_list[num].extension_types[i] < GENERIC_ACTOR) {
 			device_list[num].values_cache[i] =
 			    downlink_get_sensor_value(i, &err);
-			// log??
 		}
 	}
 }
 
-static void create_device_entry(const char *address)
+static void downlink_work (void) 
 {
 	bool err;
 
-	for (uint8_t k = 0; k < NUTS_LIST; k++) {
-		if (bt_cmp(device_list[k].mac, address))
+	for (uint8_t k = 0; k < NUTS_LIST && valid(k); k++) {
+		
+		if (!bt_set_mode (BLUETOOTH_MASTER)) {
+			debug_pgm(PSTR("Couldn't set master!"));
 			return;
-		else if (valid(k))
-			continue;
+		}
 
-		debug_pgm(PSTR("Open Connection"));
-		for (uint8_t i = 0; i < 3 && !bt_connect(address); i++) {
-			error_pgm(PSTR("Conn failed"));
+		if (!bt_connect(device_list[k].mac)) {
+			debug_pgm(PSTR("Connection failed"));
 			bt_disconnect();
+			return;
 		}
 
 		if (!downlink_is_nut(&err)) {
-			error_pgm(PSTR("No Nut today"));
-			if (!bt_disconnect())
-				error_pgm(PSTR("Conn not closed"));
-			return;
-		}
+			error_pgm(PSTR("Remote dev is not a nut'"));
+			bt_disconnect();
+			continue;
+		}	
 
-		memcpy(&device_list[k], (void *)address, 12);
-
-		update_info(k);
-		update_values(k);
+		downlink_update_info(k);
+		downlink_update_values(k);
 		downlink_bye(POLL_INTERVALL, &err);
 
-		if (!bt_disconnect())
-			error_pgm(PSTR("Conn not closed"));
+		bt_disconnect();
+	}
+}
 
+static void downlink_log (void)
+{
+	debug_pgm ("Writing log for devices");
+
+	for (uint8_t k = 0; k < NUTS_LIST && valid(k); k++)
+		for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
+			if (device_list[k].extension_types[i] < GENERIC_ACTOR)
+				log_write (device_list[k].mac, i, get_time(), device_list[k].values_cache[i]);
+
+	debug_pgm ("Finished writing log for devices");
+}
+
+
+static void downlink_create (const char *address)
+{
+	uint8_t k = 0;
+	bool err;
+
+	for (; k < NUTS_LIST; k++) {
+		if (bt_cmp(device_list[k].mac, address))
+			return;
+		else if (!valid(k))
+			break;
+	}
+
+	if (k == NUTS_LIST) {
+		debug_pgm(PSTR("Out of Memory"));
+		bt_disconnect();
 		return;
 	}
 
-	error_pgm(PSTR("Out of Memory"));
+	if (!bt_set_mode (BLUETOOTH_MASTER)) {
+		debug_pgm(PSTR("Couldn't set master!"));
+		return;
+	}
+
+	if (!bt_connect(device_list[k].mac)) {
+		debug_pgm(PSTR("Conn failed"));
+		bt_disconnect();
+		return;
+	}
+
+	if (!downlink_is_nut(&err) && !err) {
+		error_pgm(PSTR("Remote dev is not a nut'"));
+		bt_disconnect();
+		return;
+	}	
+
+	memcpy(&device_list[k], (void *)address, 12);
+
+	downlink_update_info(k);
+	downlink_update_values(k);
+	downlink_bye(POLL_INTERVALL, &err);
+
+	bt_disconnect();
 }
 
-//00126f095065
+void downlink_init(void)
+{
+	char result[8][12];
+
+	if (!bt_set_mode (BLUETOOTH_MASTER)) {
+		debug_pgm(PSTR("Couldn't set master!"));
+		return;
+	}
+
+	for (uint8_t i = 0; i < 8; i++)
+		for (uint8_t j = 0; j < 12; j++)
+			result[i][j] = 0;
+
+	if (bt_discover(result, display_gui_bootup_update_callback))
+		for (uint8_t i = 0; i < 8; i++)
+			downlink_create(result[i]);
+	else
+		debug_pgm(PSTR("Search failed"));
+}
+
+
+
+/* -----------------------------------------------------------------------
+ * Debug
+ * ----------------------------------------------------------------------- */
 
 void createFakeDevices_address(void)
 {
 	char result[8][12];
 	memcpy(result[0], "00126f095065", 12);
 
-	create_device_entry(result[0]);
+	downlink_create(result[0]);
 }
 
 void createFakeDevices_full(void)
@@ -184,20 +271,7 @@ void createFakeDevices_full(void)
 		device_list[0].extension_types[i] = INVALID;
 }
 
-void downlink_update(void)
-{
-	char result[8][12];
 
-	for (uint8_t i = 0; i < 8; i++)
-		for (uint8_t j = 0; j < 12; j++)
-			result[i][j] = 0;
-
-	if (bt_discover(result, display_gui_bootup_update_callback))
-		for (uint8_t i = 0; i < 8; i++)
-			create_device_entry(result[i]);
-	else
-		debug_pgm(PSTR("Search failed"));
-}
 
 /* -----------------------------------------------------------------------
  * Init
@@ -253,30 +327,50 @@ int main(void)
 	CLK.CTRL = CLK_SCLKSEL_PLL_gc;
 
 	display_gui_bootup_update_callback(15);
-
+	rtc_init();
 	sei();
-	bt_init(display_gui_bootup_update_callback);
+	set_time (1337);
+#if 0
+	uint8_t time;
+
+
+	while (true) {
+		if (time != get_time ()) {
+			time = get_time ();
+			debug_pgm (PSTR ("Tock!"));
+		}
+	}
+#endif
+
+	bt_init(display_gui_bootup_update_callback);	
+	downlink_init();
+
+	sd_init();
+	
+  if (fat16_init(0) != 1) {
+	    debug_pgm(PSTR("FAT16 init fail!"));
+      _delay_ms (1000);
+  }
+	
+#if 0
+  debug_pgm(PSTR("Fake devices:"));
+	display_gui_bootup_update_callback(0);
+	createFakeDevices_address();
+	isplay_gui_bootup_update_callback(100);
+#endif
+
 	squirrel_state_set(MASTER);
 
 	while (true) {
 
 		if (state == MASTER) {
-			display_gui_bootup_update_callback(20);
-			assert(bt_set_mode(BLUETOOTH_MASTER),
-			       "Could not set master mode");
-			downlink_update();
-
-#if 0
-            debug_pgm(PSTR("Fake devices:"));
 			display_gui_bootup_update_callback(0);
-			createFakeDevices_address();
+			downlink_work ();
+			display_gui_bootup_update_callback(50);
+			downlink_log ();
 			display_gui_bootup_update_callback(100);
-#endif
 
-			bt_disconnect();
-
-			assert(bt_set_mode(BLUETOOTH_SLAVE),
-			       "Could not set slave mode");
+			bt_disconnect ();
 			squirrel_state_set(SLAVE);
 		} else if (state == SLAVE || state == SLAVE_BUSY) {
 			uint8_t data[UPLINK_PACKAGE_LENGTH];
