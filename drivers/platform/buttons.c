@@ -15,9 +15,10 @@
 
 #ifdef X86
 #include "buttons_x86.c"
-#elif BUTTONS_REMOTE
+#else
+#ifdef BUTTONS_REMOTE
 #include "buttons_remote.c"
 #else
 #include "buttons_avr.c"
 #endif
-
+#endif

@@ -19,7 +19,7 @@
 
 #define R1_IDLE_STATE 0
 
-static uint8_t sd_token_buffer[SD_BLOCK_SIZE + 3];
+//static uint8_t sd_token_buffer[SD_BLOCK_SIZE + 3];
 
 //void sd_read_block(uint8_t *addr, uint8_t *read_buffer);
 //void sd_write_block(uint8_t *addr, uint8_t *write_buffer);
@@ -267,7 +267,7 @@ uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size) {
     uint8_t block[SD_BLOCK_SIZE];
     uint32_t block_addr = addr - (addr % SD_BLOCK_SIZE);
     uint16_t bytes_read = 0;
-    uint8_t ret;
+    //uint8_t ret;
 
     while( bytes_read < size) {
         if( read_block(block_addr,block) != 0)

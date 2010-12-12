@@ -27,7 +27,7 @@ void rtc_init()
 
 uint32_t get_time()
 {
-	return ((uint32_t)timeH)<<16 + RTC.CNT;
+	return (((uint32_t)timeH)<<16) + RTC.CNT;
 }
 
 void set_time (uint32_t time)

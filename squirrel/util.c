@@ -10,6 +10,8 @@
  */
 
 #include "util.h"
+#include <common.h>
+#include <string.h>
 #include <fat16/fat16.h>
 #include <protocols/uplink/uplink.h>
 
