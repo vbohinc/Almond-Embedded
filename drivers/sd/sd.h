@@ -1,14 +1,8 @@
 /**
- * sd.c - Driver for a SD Card
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Stefan Profanter
- * \author Sean Labastille
+ * Driver for a SD Card
+ * @file sd.h
+ * @author Stefan Profanter
+ * @author Sean Labastille
  */
 #ifndef __SD_H__
 #define __SD_H__
@@ -31,11 +25,35 @@
 #define R3 4
 #define R7 5
 
+///SD block size define
 #define SD_BLOCK_SIZE 512
 
+/// Initialize SD card
 int sd_init (void);
+/**
+* \brief send sd command
+* sends an commad with arguments to the sd card
+* @param command_nr is the number of the wanted command
+* @param arguments pointer array with all arguments to be passed
+*/
 void sd_send_command (uint8_t command_nr, uint8_t *arguments);
+
+/**
+* \brief read bytes from sd
+* reads bytes on sd card at addr into buffer
+* @param addr address on sd card to where start reading
+* @param read_buffer pointer where the read data will be saved to
+* @param size of how much will be read
+*/
 uint8_t sd_read_bytes (uint32_t addr, uint8_t *read_buffer, uint16_t size);
+
+/**
+* \brief write bytes to sd
+* writes bytes from a buffer to th sd card
+* @param addr on sd card where to start rading
+* @param write_buffer pointer to the data to write to sd
+* @param size of the data to write 
+*/
 uint8_t sd_write_bytes (uint32_t addr, uint8_t *write_buffer, uint16_t size);
 
 uint8_t read_block(uint32_t block_addr, uint8_t *read_buffer);

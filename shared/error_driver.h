@@ -1,12 +1,6 @@
 /**
- * error_driver.h - Error output Driver
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
+ * Error output Driver
+ * @file error_driver.h
  */
 
 #ifndef __ERROR_DRIVER__
@@ -16,7 +10,16 @@
 
 #ifndef X86
 #ifdef DEBUG
+
+/**
+* writes a char c on output device (on squirrel display)
+* @param c char to write
+*/
 extern void error_driver_write_c (uint8_t c);
+
+/**
+* Initializes error output driver(on squirrel display)
+*/
 extern void error_driver_init (void);
 #else
 #define error_driver_write_c(c) {}

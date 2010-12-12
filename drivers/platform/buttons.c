@@ -1,13 +1,7 @@
 /**
- * button.c - Driver for the Buttons on XMega
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- * \author Stefan Profanter
+ * Driver for the Buttons on XMega
+ * @file button.c
+ * @author Stefan Profanter
  */
 #include "buttons.h"
 #include <gui/gui.h>

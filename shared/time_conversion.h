@@ -1,3 +1,8 @@
+/**
+ * header for time conversion
+ * @file time_conversion.h
+ */
+
 #ifndef __TIME_CONVERSION__
 #define __TIME_CONVERSION__
 

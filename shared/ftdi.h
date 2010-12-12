@@ -1,12 +1,6 @@
 /**
- * ftdi.h - a FTDI Debug output Driver
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
+ * a FTDI Debug output Driver
+ * @file ftdi.h
  */
 
 #ifndef _FTDI_H_
@@ -36,12 +30,25 @@
 #define FTDI_DD1 ( (1 << DD_RD) | (1 << DD_SI) )
 #define FTDI_DD2 ( (1 << DD_WR) )
 
+///Init FTDI
 extern void FTDIInit (void);
 
+/**
+*Sends a buffer over FTDI
+*@param out_buf containts a byte with the data so send
+*/
 extern void FTDISend (uint8_t out_buf);
 
+/**
+*Send FTDI now
+*/
 extern void FTDISendImmediate (void);
 
+/**
+* reads FTDI in a byte buffer
+* @param out_buf the buffer for the read data
+* @return 0 if no data is aviable 1 if there was data to read
+*/
 extern uint8_t FTDIRead (uint8_t *out_buf);
 
 #endif /* _FTDI_H_ */

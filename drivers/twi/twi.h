@@ -73,6 +73,9 @@ uint8_t twi_read (uint8_t * data, enum twi_send_ack ack);
  */
 uint8_t twi_status (void);
 
+/** \brief accept to commit twi ackoledge
+* only needed on xmega, where you have to either stop restart or accept after a read(to commit the acknoledge)
+*/
 void twi_accept (void);
 
 #endif // TWI_H_INCLUDED

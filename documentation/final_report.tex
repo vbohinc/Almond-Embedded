@@ -8,11 +8,12 @@
 \usepackage{amsmath, amsthm, amssymb}
 \usepackage[top=3cm, bottom=3cm, left=2cm, right=2cm]{geometry}
 \usepackage{minitoc}
+\usepackage{multicol}
 \pagestyle{fancy}
 
 % Header
 \lhead{Projekt Almond}
-\chead{Aschlussbericht}
+\chead{Abschlussbericht}
 \rhead{Seite \thepage /\pageref{LastPage} }
 
 \begin{document}
@@ -30,104 +31,152 @@
 
 % Inhalt
 
-\section{Übersicht}
-Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein System aus vernetzten Aktoren und Sensoren: Nuts ({\bf N}etworked {\bf Ut}ilities and {\bf S}ensors), die über einen zentralen Controller (Squirrel) gesteuert werden. Zusätzlich gibt es ein Backend für PCs, welches über eine Weboberfläche Zugriff auf Gerätedaten gibt und die Steuerung der Aktoren sowie Konfigurationsänderungen erlaubt.\\
-Die einzelnen Geräte werden über ein dafür entwickeltes Protokoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls über Bluetooth mit dem auf einem Linux/Windows/Mac laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensor-Werte) mit übermittelt, die dann später auf dem Rechner ausgewertet werden können.
+\section{Ãœbersicht}
+\subsection{Team}
+ZunÃ¤chst eine graphische Ãœbersicht der Teammitglieder:\\
+\begin{multicols}{2}{
+\begin{list}{ }
+	\item    \includegraphics[height=1.5cm]{./face_Fanter.png}     \\      Stefan Profanter	
+	\item    \includegraphics[height=1.5cm]{./face_Lotz.png}       \\      Linus Lotz 
+	\item    \includegraphics[height=1.5cm]{./face_Matthias.png}   \\      Matthias Schwab	
+	\item    \includegraphics[height=1.5cm]{./face_Maxikay.png}    \\      Maximilian Karl
+	\item    \includegraphics[height=1.5cm]{./face_Parsch.png}     \\      Thomas Parsch		
+	\item 	\includegraphics[height=1.5cm]{./face_Rupprecht.png}   \\      Christian Rupprecht
+	\item    \includegraphics[height=1.5cm]{./face_Schnurrrr.png}  \\      Pascal Schnurr    
+	\item    \includegraphics[height=1.5cm]{./face_Schon.png}      \\      SeÃ¡n Labastille   
+	\item    \includegraphics[height=1.5cm]{./face_Sickert.png}    \\      Salomon Sickert
+\end{list}
+}
+\end{multicols}
 
-\section{Protokolle}
-Um die Kommunikation zwischen den Nuts und dem Squirrel, sowie des Squirrels zum Backend zu gewährleisten sind zwei Protokolle entworfen worden.
-	\subsection{Downlink}  
-Das Downlinkprotokoll dient zur Kommunikation der Nuts mit dem Squirrel.
-	\subsection{Uplink}
-Das Uplinkprotokoll dient zur Kommunikation zwischen dem Squirrel und dem Backend.
-
-\section{Interfaces}
-	\subsection{UART}
-	\subsection{SPI}
-
-\section{Hardware}
-	\subsection{Squirrel}
-%realtimeclock erwähnen und tasten
-	\subsubsection{Bluetooth}
-Das Bluetooth-Modul ist über UART mit dem XMEGA-Prozessor verbunden. Im Bluetooth-Stack gibt es zwei Modi. \\
-Zun einen den Command-Modus, welcher dazu dient Befehle direkt an das Bluetooh-Modul zu senden.\\
-Desweiteren gibt es den Communication-Modus der dann die tatsächlichen Bluetooth-Befehle versendet.\\
-Die empfangenen Daten werden in einer Fifo-Datenstruktur gespeichert.\\
-
-
-\subsubsection{Display}
-\subsubsubsection{SDL-Emulation}
-Um die Funktionsfähigkeit des Display-Treibers auch ohne Hardwarezugriff testen zu können, wurde eine SDL-Emulation geschrieben.\\
-Sie bietet die Möglichkeit in einem SDL-Fenster die Ausgabe ähnlich wie auf dem Diplay auszugeben.\\
-Somit konnten alle GUI-Libary-Ausgaben bereits im voraus getestet werden und mehrere Programmierer in die Entwicklung von neuen GUI-Anwendungen einbezogen werden, ohne durch die Verfügbarkeit der Hardware eingeschränkt zu sein.\\
-Um die SDL-Emulation zu Nutzen, muss bei der Compilation des Display-C-Dateeien das define x86 gesetzt werden.\\
-
-\subsubsection{SD-Kartenleser}
-Um den Nutzer die Möglichkeit zu geben, Messendatenprotokolle direkt aus der Squirrel unter Umgehung des Backends zu erhalten.
-Damit die Daten direkt in der Gewohnten Betriebsystemumgebung am PC des Anwenders auslesen zu können, ist es notwendig die Daten in einem weit verbreiteten Dateisystem abzulegen.\\
-Hierbei fiel die Wahl auf das FAT16 System, da es gegenüber FAT32 eine einfachere Struktur besitzt und trotzdem Speicherkarten bis 2GB unterstützt. Somit allen Anforderungen gerecht werden.\\
-Die Squirrel verfügt über die Fähigkeit Dateien zu
+\subsection{Infrastruktur}
+Almond ({\bf A}utonomous {\bf L}ogging and {\bf M}anagement of {\bf N}etworked {\bf D}evices) ist ein Netzwerk aus unabhÃ¤ngigen Aktoren und Sensoren mit zentraler Ãœberwachung und Steuerung.
+Die Nuts ({\bf N}etworked {\bf Ut}ilities and {\bf S}ensors) sind Gruppierungen von Sensoren oder Aktoren. Diese werden Ã¼ber einen zentralen Controller (Squirrel) gesteuert. ZusÃ¤tzlich gibt es ein Backend fÃ¼r PCs, welches Ã¼ber eine WeboberflÃ¤che Zugriff auf GerÃ¤tedaten gibt und die Steuerung der Aktoren sowie KonfigurationsÃ¤nderungen erlaubt.\\
+Die einzelnen GerÃ¤te werden Ã¼ber ein dafÃ¼r entwickeltes Protokoll via Bluetooth mit dem Controller verbunden. Der Controller selbst wird dann ebenfalls Ã¼ber Bluetooth mit dem auf Linux, Windows oder Mac OS X laufenden Backend verbunden. Dabei werden auch Logdaten (Verlauf der Sensor-Werte) mit Ã¼bermittelt, die dann spÃ¤ter auf dem Rechner ausgewertet werden kÃ¶nnen.
+\section{Komponenten}
+\subsection{``Nuts''}
 \begin{itemize}
-\item öffnen
-\item lesen
-\item schreiben
-\item löschen
+	\item Entwurfsziele\\
+	Eine Nut ist eine kompakte, kabellose Gruppierung von Sensoren und Aktoren mit mÃ¶glichst niedrigem Stromverbrauch.
+	\item Hardware\\
+	Das GrundgerÃ¼st einer Nut bildet ein ATMega 8535 sowie eine Echtzeituhr und ein standardisiertes Bluetoothmodul welches auch auf der Suqirrel genutzt wird.
+	\item Software\\
+	Die Hauptaufgabe der in C entwickelten Software der Nut besteht darin die Sensorkalibrierung durchzufÃ¼hren, Sensordaten auszulesen sowie per Downlink-Protokoll mit der Squirrel zu kommunizieren. Ãœber Downlink kÃ¶nnen auch Befehle zum setzen von Aktoren empfangen werden.
 \end{itemize}
-Außerdem können Verzeichnisse angelegt, entfernt und durchsucht werden.\\
+\subsection{``Squirrel''}
+\begin{itemize}
+	\item Entwurfsziele\\
+	Die Squirrel arbeitet als Autonome Kontrolleinheit mit der Aufgabe, die Log-Daten der Nuts auf SD-Karte zwischenzuspeichern und dem Backend bereitzustellen. Ãœber ein integriertes Display (Emerging Display 13BB0) kann ein MenÃ¼ angezeigt werden welches mit den 6 SteuerknÃ¶pfen gesteuert werden kann.
+	\item Hardware\\
+	Als Hauptprozessor dient ein XMega128A1. Das Board wurde selbst entwickelt und enhÃ¤lt einen SD-Kartenleser, eine Echtzeituhr (RTC) und ein Bluetoothmodul (BTM-222).
+	\item Software\\
+	Die Hauptaufgabe der Software, welche in C entwickelt wurde, dient zum Sammeln der Logdaten der Nuts und zum Ãœbertragen der Logdaten an das Backend. ZusÃ¤tzlich beinhaltet die Software den Display-/GUI-Treiber sowie einen FAT16-Treiber zum Speichern der Logdaten auf der SD-Karte.
+\end{itemize}
+\subsection{Backend}
+\begin{itemize}
+	\item Entwurfsziele\\
+	Beim Backend handelt es sich um einen PlattformunabhÃ¤ngigen Server mit einer Webschnittstelle. Das Beckend dient zum Auslesen und Auswerten der Logdaten der Squirrel sowie zum Anzeigen von Log-Statistiken. Das Backend bietet zudem eine Ãœbersicht Ã¼ber die GerÃ¤te und deren Status.
+	\item Hardware\\
+	FÃ¼r das Backend wird ein Rechner mit Linux, Mac oder Windows benÃ¶tigt, welcher Ã¼ber ein funktionierendes Bluetooth-Modul verfÃ¼gen muss.
+	\item Software\\
+	Um PlattformunabhÃ¤ngigkeit zu erreichen wird fÃ¼r die Bluetooth-Kommunikation Java eingesetzt. FÃ¼r das Webinterface wird Perl mit CGI verwendet, wodurch eine Integration in gÃ¤ngige Webserver gewÃ¤hrleistet wird. FÃ¼r den Datenaustausch zwischen dem Java-Daemon und dem Webinterface dient eine MySQL-Datenbank.
+\end{itemize}
+\section{Umsetzung}
+\subsection{Protokolle}
+Um die Kommunikation zwischen den Nuts und der Squirrel, sowie der Squirrels zum Backend zu gewÃ¤hrleisten sind zwei Protokolle entworfen worden.\\
+Die Protokollpakete sind folgendermaÃŸen aufgebaut:
+\\
+\\
+\includegraphics[height=6.5cm]{./ProkollDiagrams.pdf}\\
 
+	\subsubsection{Downlink}  
+Das Downlinkprotokoll dient zur Kommunikation der Nuts mit der Squirrel.\\
+Im Protokoll sind folgende Befehle enthalten: SET, GET, ECHO, BYE\\
+Durch die Reduzierung auf diese geringe Anzahl an Befehlen, wird eine sehr kleine PaketgrÃ¶ÃŸe von 4 Bytes erreicht.\\
+Neben dem Opcode findet sich in einem Paket eine ID mit der Aktoren oder Sensoren angesprochen werden kÃ¶nnen. Sowie ein 16 Bit-Wert, der fÃ¼r Nutzdaten verwendet werden kann.\\
+\begin{itemize}
+	\item{SET}\\
+Der SET-Befehl kann Aktoren auf bestimmte Werte setzen.
+	\item{GET}\\
+Der GET-Befehl liest die aktuellen Sensorwerte oder den Zustand eines Aktors aus.
+	\item{ECHO}\\
+Der ECHO-Befehl dient Debugging-Zwecken und sendet das empfangene Paket unverÃ¤ndert zurÃ¼ck.
+	\item{BYE}\\
+Der BYE-Befehl zeigt das Ende einer Verbindung an.
+\end{itemize}
+Um Variationen des GET-Befehls zu ermÃ¶glichen, wurden zusÃ¤tzlich noch Flags implementiert.\\
+\begin{itemize}
+	\item{STANDARD}\\
+Dieses Flag fÃ¼r die beeinflusst die AusfÃ¼hrung des Befehls nicht.
+	\item{INFO\_NUT}\\
+Dieses Flag dient dazu allgemeine - Sensor und Aktor unspezifische - Informationen der Nut, wie z.B. deren Namen abzurufen. Das Ã¼bergebene ID-Feld wird nicht berÃ¼cksichtigt.\\
+	\item{INFO\_EXTENSION}\\
+Mit diesem Flag werden Metadaten Ã¼ber den ausgewÃ¤hlten Sensor oder Aktor abgerufen.
+\end{itemize}
 
+	\subsubsection{Uplink}
+Das Uplinkprotokoll dient zur Kommunikation zwischen der Squirrel und dem Backend.\\
+Zum einen wird mit diesem Protokoll die Squirrel durch das Backend konfiguriert. Zum anderen kann das Backend Informationen Ã¼ber die aktuell verfÃ¼gbaren Sensoren und Aktoren sowie deren Logdaten abrufen.\\
+Es existieren folgende Befehle:
+\begin{itemize}
+	\item{LIST}\\
+Teilt dem Backend alle verfÃ¼gbaren Meta-Daten der Nuts, wie z.B. deren Bluetooth-Adresse, deren Sensoren und Aktoren, mit. Die Mess- und Zustandswerte selbst werden nicht Ã¼bertragen.
 
-\subsubsection{}
-\subsection{Nut}
+	\item{LOG}\\
+Mit diesem Befehle werden die in der Squirrel zwischengespeicherten Sensorwerte der verschiedenen Nuts dem Backend mitgeteilt.
 
+	\item{TIME}\\
+Mit diesem Befehl, kann das Backend die aktuelle Zeit der Squirrel mitteilen.
 
-\section{Wetterstation}
-	\subsection{Funktionen}
-	\subsection{Hardware}
-		\subsubsection Drucksensor (BMP085)
-		\subsubsection Temperatursensor (BMP085)
-		\subsubsection Windrichtungssensor (Eigenbau, optische Dekodierung)
-		\subsubsection Windgeschwindigkeitssensor (Eigenbau, Dynamo)
-		\subsubsection Lichtstärke (Fotowiderstand)
-		\subsubsection Fechtigkeitssensor
-
-		
-\section{Backend}
-Das Backend stellt eine Web-Oberfläche zur Verfügung über die es möglich ist Log-Daten aus der Squirrel grafisch aufbereitet darzustellen oder Aktor-Befehle an die angeschlossenen Geräte zu senden. Das Backend besteht aus einem in Java geschriebenen Daemon sowie einer in Perl geschriebenen Web-Oberfläche die via CGI über einen Webserver verfügbar gemacht wird.
+\end{itemize}
+Hier folgt schematischer Kommunikationsablauf zwischen Backend, Squirrel und Nut:\\ 
+\includegraphics[height=8cm]{./ProtokollSequence.pdf}\\
+\subsection{Embedded}
+Die oben vorgestellten Protokolle stellen den GroÃŸteil des High-Level Interface zu dem Embedded-Teil von Almond. Als letzte wichtige High-Level-Komponente ist das Display zu erwÃ¤hnen - auf dem eine mÃ¶glichst komfortable MÃ¶glichkeit besteht direkt an der Squirrel einen Ãœberblick Ã¼ber die vorhandenen Nuts und deren Zustand zu bekommen.\\
+Diese Dienste basieren natÃ¼rlich auf darunter liegende Hardwareschichten welche wir nun betrachten werden.\\
+\subsubsection{Schnittstellen}
+Auf Hardwareebene werden von den diversen Komponenten 3 Schnittstellen verwendet: SPI, I$^2$C sowie UART. Die GUI greift natÃ¼rlich auf das Display zurÃ¼ck, wobei dieses nicht unbedingt als Schnittstelle im Sinne der gerade AufgefÃ¼hrten gilt.\\
+Kurz zu den Hardwareschnittstellen:
+\begin{itemize}
+	\item SPI\\
+	Das Serial Peripheral Interface verfÃ¼gt Ã¼ber 4 Pins, welche mit Master-Out-Slave-In (MOSI), Master-In-Slave-Out (MISO), CLOCK und Slave-Select (SS) bezeichnet werden.
+	\begin{itemize}
+	\item MOSI
+	Der MOSI Pin stellt die Datenleitung vom Master zum Slave dar.
+	\item MISO
+	Der MISO Pin stellt die Datenleitung vom Slave zum Master dar.
+	\item CLOCK
+	Der Clock Pin ist der Anschluss der Taktleitung um die Taktfrequenz zu Ã¼bertragen.
+	\item SS
+	Dient in diesem Projekt das GerÃ¤t zu aktivieren, da nur eines, die SD-Karte angeschlossen ist.
+	\end{itemize}
+	SPI wird zur Ansteuerung der SD-Karte genutzt.
+	\item I$^2$C\\
+	Ãœber I$^2$C sind der Sensorchip der Nut (BMP085), sowie die Echtzeituhr der Squirrel angeschlossen.
+	\item UART\\
+	Universal Asynchronous Receiver/Transmitter - ein Ãœbertragungsstandard fÃ¼r serielle Schnittstellen - wird im Almond-Projekt fÃ¼r die Anbindung der Bluetoothmodule sowohl auf der Nut als auch der Squirrel verwendet.
+\end{itemize}
+\subsection{Backend}
+Das Backend stellt eine Web-OberflÃ¤che zur VerfÃ¼gung Ã¼ber die es mÃ¶glich ist Log-Daten aus der Squirrel grafisch aufbereitet darzustellen oder Aktor-Befehle an die angeschlossenen GerÃ¤te zu senden. Das Backend besteht aus einem in Java geschriebenen Daemon sowie einer in Perl geschriebenen Web-OberflÃ¤che die via CGI Ã¼ber einen Webserver verfÃ¼gbar gemacht wird.
 
 \subsubsection{Daemon}
-Der Daemon ist ein in Java geschriebenes Programm, welches mit Hilfe der Bluecove-Libary die Aktivitäten des Squirrels - und somit des gesamten Almond-Systems - überwacht.\\
+Der Daemon ist ein in Java geschriebenes Programm, welches mit Hilfe der Bluecove-Libary die AktivitÃ¤ten des Squirrels - und somit des gesamten Almond-Systems - Ã¼berwacht.\\
 Die anfallenden Log-Daten werden in einer SQLite-Datenbank gespeichert.\\
-Außerdem überprüft es in der Datenbank, ob mit Hilfe des Web-Interfaces Aktoren gesteuert werden. Ist dies der Fall, werden die entsprechenden Kommandos direkt über Bluetooth mit dem Downlinkprotokoll - unter Umgehung des Squirrels - an die Nuts gesendet.\\
+AuÃŸerdem Ã¼berprÃ¼ft es in der Datenbank, ob mit Hilfe des Web-Interfaces Aktoren gesteuert werden. Ist dies der Fall, werden die entsprechenden Kommandos direkt Ã¼ber Bluetooth mit dem Downlinkprotokoll - unter Umgehung des Squirrels - an die Nuts gesendet.\\
 
 \subsubsection{Datenbank}
-Als Datenbank wird auf MySQL Server zurückgegriffen. Auf dem Backend-System welches den Webserver zur Verfügung stellt wird ein MySQL vorrausgesetzt das auch zur Kommunikation zwischen der Web-Oberfläche und dem Java-Daemon dient. \\
-Das launch-Script des Backends liest Zugangsdaten und Schema-Name aus der Konfigurationsdatei und legt die benötigten Tabellen an.
+Als Datenbank wird auf MySQL Server zurÃ¼ckgegriffen. Auf dem Backend-System welches den Webserver zur VerfÃ¼gung stellt wird ein MySQL vorrausgesetzt das auch zur Kommunikation zwischen der Web-OberflÃ¤che und dem Java-Daemon dient. \\
+Das launch-Script des Backends liest Zugangsdaten und Schema-Name aus der Konfigurationsdatei und legt die benÃ¶tigten Tabellen an.
 
 \subsubsection{Web-Server}
-Das Backend nutzt als Benutzeroberfläche eine in Perl geschriebene Web-Anwendung, was Nutzung von mehreren Web-Fähigen Geräten aus einfach macht. Die Web-Oberfläche kann als Virtual-Host in einen vorhandenen Webserver (z.B. Apache oder lighttpd) integriert werden. Vorraussetzung ist eine perl Runtime, einige Perl-Module (siehe README.txt im Backend) sowie ein CGI fähiger Webserver. Ist ein lighttpd auf dem Server-System installiert der nicht genutzt wird, kann das launch-Script diesen mit einer bereits vorkonfigurierten Datei starten und das Web-Interface läuft ohne weitere Modifikationen.
-Das launch-Script des Backends startet auch den Java-Daemon, der über die MySQL Datenbank dann mit der Oberfläche kommuniziert.
-		
-\section{Team}
-
-\section{Entwicklungeschichte}
-\subsection{Display}
-Zunächst wurde zum Entwickeln des Display-Treibers auf eine Test-Hardware zurückgegriffen, in der ebenfalls ein 13BB0-Display verbaut worden war.\\
-Das ursprünglich in einem DVB-T Receiver eingesetzte Board verfügt jedoch nur nur über den schwächeren ATMEGA 8515, welcher über weniger Speicher verfügt.\\
-Daher wurde zunächst ein Programm entwickelt, das nur wenig Platz verbraucht und trotzdem die notwendige Flexibilität bietet, beliebige Inhalte anzuzeigen.\\
-Um Buchstaben komfortabel für dieses Programm codieren zu können, wurde ein Hilfsprogramm in Java erstellt, welches eine Grafische Oberfläche bietet zum Entwerfen der Buchstaben.\\
-Im Laufe der Entwicklung stellte sich jedoch heraus, dass nicht nur eine Darstellung von Buchstaben an bestimmten fixen Plätzen auf dem Display benötigt wird, sondern eine noch flexiblere pixelweise Ansteuerung.\\
-Da die endültige Hardware des Squirrels über mehr Speicher verfügt, war dies durch ein Neuschreiben vieler Teile des Display-Treibers möglich.\\
- Um das den weitgehen neuen Display Treiber mit verschiedenen Schriftarten versorgen zu können, wurde ein Perl-Skript geschrieben, welches die Standardfonts der GD-Libary konvertieren kann.\\
-
-
-
-\subsection{Bluetooth}
-Zunächst wurde ein eher monolithischer Bluetooth-Stack geschrieben, dies führte jedoch zu einem Komplexitätsproblem.\\
-Folglich wurde ein neuer leichtgewichtigerer und übersichtlicher Stack entworfen.
-
-
-\section{Quellenverzeichnis}
-
+Das Backend nutzt als BenutzeroberflÃ¤che eine in Perl geschriebene Web-Anwendung, was Nutzung von mehreren Web-FÃ¤higen GerÃ¤ten aus einfach macht. Die Web-OberflÃ¤che kann als Virtual-Host in einen vorhandenen Webserver (z.B. Apache oder lighttpd) integriert werden. Vorraussetzung ist eine perl Runtime, einige Perl-Module (siehe README.txt im Backend) sowie ein CGI fÃ¤higer Webserver. Ist ein lighttpd auf dem Server-System installiert der nicht genutzt wird, kann das launch-Script diesen mit einer bereits vorkonfigurierten Datei starten und das Web-Interface lÃ¤uft ohne weitere Modifikationen.
+Das launch-Script des Backends startet auch den Java-Daemon, der Ã¼ber die MySQL Datenbank dann mit der OberflÃ¤che kommuniziert.
+\section{Stand}
+\subsection{Wetterstation}
+Die auf der im Rahmen des Projekts entwickelten Nut befindlichen Sensoren wurden zum Einsatz als ``Wetterstation'' gewÃ¤hlt.
+Das ursprÃ¼ngliche Vorhaben die Windrichtung zu messen wurde verworfen, es bleiben jedoch MÃ¶glichkeiten die Temperatur, Luftfeuchtigkeit, Luftdruck sowie die Helligkeit zu messen.
+% FIXME Geht's jetzt?
+\subsection{Status}
+Aufgrund der erheblichen Widrigkeiten welche unter anderem bei der Nutzung des Bluetoothmoduls bestehen, ist die integrierte Nutzung der im einzelnen weitgehend funktionstÃ¼chtigen Komponenten nicht mÃ¶glich. Es lassen sich jedoch in gewissem Umfang bestimmte Komponenten wie das Backend zur Auswertung der Logdaten, zu Zeitpunkten wo eine DatenÃ¼bertragung per Bluetooth mÃ¶glich ist, nutzen.
 
 \end{document}

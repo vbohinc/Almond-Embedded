@@ -6,6 +6,7 @@
 #include "gui.h"
 #include "gui_draw.h"
 #include "pong.h"
+#include <string.h>
 
 #include <string.h>
 

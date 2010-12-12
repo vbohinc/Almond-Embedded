@@ -1,13 +1,7 @@
 /**
- * error.h - Error output Driver
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
- */
+ * header for the error output driver
+ * @file error.h
+*/
 
 #ifndef __ERROR__
 #define __ERROR__
@@ -20,22 +14,68 @@
 
 #ifdef DEBUG
 
+/// Initializes error management
 void error_init (void);
 
+/** Prints a char as error message
+* @param c char to be printed
+*/
 void error_putc (const char c);
 
+/** Asserts a certain condition
+* @param condition condition to be asserted
+* @param msg message to be send, when condition fails
+*/
 void assert (bool condition, const char *msg);
+
+/** Sends an information message
+* @param msg message to be send
+*/
 void info (const char *msg);
+
+/** Sends an warning message
+* @param msg message to be send
+*/
 void warn (const char *msg);
+
+/** Sends an debug message
+* @param msg message to be send
+*/
 void debug (const char *msg);
+
+/** Sends an error message
+* @param msg message to be send
+*/
 void error (const char *msg);
 
+/** Sends an error message
+* @param msg message to be send
+*/
 void assert_pgm (bool condition, const prog_char *msg);
+
+/** Writes an info message to program memory
+* @param msg message to be written
+*/
 void info_pgm (const prog_char *msg);
+
+/** Writes an warning message to program memory
+* @param msg message to be written
+*/
 void warn_pgm (const prog_char *msg);
+
+/** Writes an debug message to program memory
+* @param msg message to be written
+*/
 void debug_pgm (const prog_char *msg);
+
+/** Writes an error message to program memory
+* @param msg message to be written
+*/
 void error_pgm (const prog_char *msg);
 
+/** Prints a byte value as hexadecimal value
+* @param byte byte value to be printed
+*/
 void byte_to_hex (uint8_t byte);
 
 #else
