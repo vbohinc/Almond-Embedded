@@ -1,12 +1,6 @@
 /**
- * squirrel.h - the Squirrel
- * Part of the ALMOND Project
- *     _    _     __  __  ___  _   _ ____
- *    / \  | |   |  \/  |/ _ \| \ | |  _ \
- *   / _ \ | |   | |\/| | | | |  \| | | | |
- *  / ___ \| |___| |  | | |_| | |\  | |_| |
- * /_/   \_\_____|_|  |_|\___/|_| \_|____/
- *
+ * @file squirrel.h
+ * the Squirrel header
  */
 
 #ifndef __SQUIRREL__
@@ -15,15 +9,30 @@
 #include "../shared/common.h"
 #include "../protocols/uplink/uplink.h"
 
+///the state for the squirrel
 enum STATES
 {
     SLAVE, SLAVE_BUSY, MASTER
 };
 
+///returns current squirrel state
 extern uint8_t squirrel_state_get (void);
+///sets current squirrel state
 extern void    squirrel_state_set (uint8_t state);
 
+/**
+*get a uplink packet with list of devices
+*@param num of the number of packet
+*@param buffer for the payload packet
+*@return true if succeded
+*/
 extern bool    squirrel_list (uint8_t num, uplink_payload_list *p);
+
+/**
+*create an log uplink packet
+*@param p bufer for uplink log packet
+*@return treu if successful
+*/
 extern bool    squirrel_log (uplink_package *p);
 
 #define NUTS_LIST 16
@@ -31,6 +40,7 @@ extern bool    squirrel_log (uplink_package *p);
 
 typedef struct _device_info device_info;
 
+///device info struct, holds mac , class and extensions + values of a device
 struct _device_info
 {
     char mac[12];
