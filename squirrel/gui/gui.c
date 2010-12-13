@@ -265,22 +265,6 @@ display_gui_bootup_screen (void)
     display_gui_bootup_progress (0);
     display_flip();
 
-#ifdef X86
-    //FIXME DELETE ME ONLY FOR TESTING
-    /* display_gui_sleep(1000);
-     display_gui_bootup_update_callback(10);
-     display_gui_sleep(1000);
-     display_gui_bootup_update_callback(30);
-     display_gui_sleep(1000);
-     display_gui_bootup_update_callback(45);
-     display_gui_sleep(1000);
-     display_gui_bootup_update_callback(65);
-     display_gui_sleep(1000);
-     display_gui_bootup_update_callback(83);
-     display_gui_sleep(1000);
-     display_gui_bootup_update_callback(100);*/
-#endif
-
 }
 
 
