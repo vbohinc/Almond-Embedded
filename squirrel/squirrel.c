@@ -113,12 +113,10 @@ static void downlink_update_info(uint8_t num)
 	if (err)
 		debug_pgm(PSTR("GET NUT_CLASS FAILED"));
 
-	for (j = 0; j < EXTENSIONS_LIST && !err; j++)
-		device_list[num].extension_types[j] =
-		    downlink_get_extension_class(j, &err);
-
-	for (; j < EXTENSIONS_LIST; j++)
-		device_list[num].extension_types[j] = INVALID;
+	for (j = 0; j < EXTENSIONS_LIST && !err; j++) {
+		uint8_t ext_class = downlink_get_extension_class(j, &err);
+		device_list[num].extension_types[j] = err ? INVALID : ext_class;
+	}
 }
 
 static void downlink_update_values(uint8_t num)
@@ -384,7 +382,8 @@ int main(void)
 			display_gui_bootup_update_callback(0);
 			downlink_work ();
 			display_gui_bootup_update_callback(50);
-			downlink_log ();
+      if (get_time () > 100000) 
+			  downlink_log ();
 			display_gui_bootup_update_callback(100);
 			bt_disconnect ();
 			squirrel_state_set(SLAVE);
@@ -400,10 +399,10 @@ int main(void)
 		men_ret = menu_update();
 
 		if (men_ret == MEN_NEW_SEARCH)
-			squirrel_state_set(MASTER);
+			squirrel_state_set (MASTER);
 
-		if (time  < (get_time () - 300)) {
-			squirrel_state_set(MASTER);
+		if (state != SLAVE_BUSY && time  < (get_time () - 300)) {
+			squirrel_state_set (MASTER);
 			debug_pgm (PSTR("Switching to Master!"));
 		}
 	}
