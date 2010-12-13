@@ -4,7 +4,7 @@
  * @author Stefan Profanter
  */
 
-#include <stdbool.h>
+#include "../../shared/common.h"
 
 ///enum for menu return
 enum menu_return {
@@ -20,4 +20,4 @@ enum menu_return {
  */
 enum menu_return menu_update(void);
 
-void menu_show_found_count(uint8_t num_found);
+void menu_show_found_count (uint8_t num_found);
