@@ -114,8 +114,6 @@ int sd_init (void)
     sd_send_command(CMD16, NULL);
     sd_get_response(R1,sd_response_buffer);
 
-	byte_to_hex(sd_response_buffer[0]);
-
 sd_disable();
 	return 0;
 }

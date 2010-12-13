@@ -171,8 +171,9 @@ void menu_device_query(uint8_t num_device)
 {
 	display_clear();
 	char str[30];
-	sprintf(str, "Connecting to device: %d", num_device);
-	display_draw_string(0,20,0,str);
+	display_draw_string(0,20,0,"Connecting to");
+	sprintf(str, "device: %d", num_device);
+	display_draw_string(0,28,0,str);
 	display_flip();
 }
 
