@@ -169,6 +169,8 @@ int main (void)
     /* Initialize Sensors */
     init_bmp085_sensor ();
 
+    LED1_PORT |= (1 << LED1_PIN);
+
     while (true)
     {
         uint8_t data[DOWNLINK_PACKAGE_LENGTH];
