@@ -382,7 +382,8 @@ int main(void)
 			display_gui_bootup_update_callback(0);
 			downlink_work ();
 			display_gui_bootup_update_callback(50);
-			downlink_log ();
+      if (get_time () > 100000) 
+			  downlink_log ();
 			display_gui_bootup_update_callback(100);
 			bt_disconnect ();
 			squirrel_state_set(SLAVE);
