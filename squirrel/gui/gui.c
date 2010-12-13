@@ -535,8 +535,8 @@ display_gui_standby ()
 	
 	display_draw_rect(88,DISPLAY_HEIGHT-12,108,DISPLAY_HEIGHT-2,false);
 	
-	display_draw_string(4,DISPLAY_HEIGHT-40,0,"A really long status message\n");
-	display_draw_string(4,DISPLAY_HEIGHT-30,0,"Blubb, blubb, blubb...");
+	display_draw_string(4,DISPLAY_HEIGHT-40,0,"A delightful status\n");
+	display_draw_string(4,DISPLAY_HEIGHT-30,0,"");
 	
 	
 	uint32_t current_timestamp = get_time();
