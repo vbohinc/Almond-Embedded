@@ -52,10 +52,10 @@ static inline bool uplink_handle_get_package (uplink_package *p)
         case TIME:
             debug ("Time");            
             p->payload.time.time = get_time ();
-            return true;
+            return false;
 
         default:
-            return false;
+            return true;
     }
 }
 
@@ -66,10 +66,10 @@ static inline bool uplink_handle_set_package (uplink_package *p)
 
         case TIME:
             set_time (p->payload.time.time);
-            return true;
+            return false;
 
-    default:
-      return false;
+        default:
+            return true;
     }
 }
 
