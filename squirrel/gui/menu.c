@@ -162,7 +162,7 @@ void menu_show_found_count(uint8_t num_found)
 	char str[30];
 	sprintf(str, "Found devices: %d", num_found);
 	display_clear();
-	display_draw_image(39,0,almond_logo_f1);
+	display_draw_image(39,0,almond_logo_f4);
 	display_draw_string(13,DISPLAY_HEIGHT - 12,0,str);
 	display_flip();
 }
