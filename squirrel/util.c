@@ -30,7 +30,8 @@ bool log_write (const char *mac, const uint8_t id, const uint32_t time, const ui
 
     lookup (mac, id, filename);
 
-    uint16_t new_pos;
+    int32_t offset = 0;
+    uint16_t pos = 2;
 
     if (!fat16_open_file_by_name (&file, filename))
     {
@@ -48,23 +49,39 @@ bool log_write (const char *mac, const uint8_t id, const uint32_t time, const ui
         if (!fat16_create_file (&dir, &filename[6], &file.dir_entry))
             debug_pgm (PSTR ("Could not create file!"));
 
-        file.pos = 0;
-
         // Write start pos...
+        fat16_write_file (&file, (uint8_t*)&pos, 2);
+    } else {
+        if (1 != fat16_seek_file(&file, &offset, FAT16_SEEK_SET))
+        {
+            debug_pgm (PSTR ("Could not seek at dat pos!"));
+            return false;
+        }
 
-        new_pos = 2;
-        fat16_write_file (&file, (uint8_t*)&new_pos, 2);
+        fat16_read_file (&file, (uint8_t*)&pos, 2);
     }
 
-    fat16_read_file (&file, (uint8_t*)&new_pos, 2);
+    offset = (int32_t) pos;
 
-    // Pos...
-    file.pos = new_pos;
+    if (1 != fat16_seek_file(&file, &offset, FAT16_SEEK_SET))
+        {
+            debug_pgm (PSTR ("Could not seek at dat pos!"));
+            return false;
+        }
+    
     fat16_write_file (&file, (uint8_t*)&time, 4);
     fat16_write_file (&file, (uint8_t*)&value, 2);
-    file.pos = 0;
-    new_pos += 6;
-    fat16_write_file (&file, (uint8_t*)&new_pos, 2);
+    
+    offset = 0;
+    pos += 6;
+
+    if (1 != fat16_seek_file(&file, &offset, FAT16_SEEK_SET))
+        {
+            debug_pgm (PSTR ("Could not seek at dat pos!"));
+            return false;
+        }
+
+    fat16_write_file (&file, (uint8_t*)&pos, 2);
     
     return true;
 }
@@ -73,21 +90,35 @@ bool log_read (const char *mac, const uint8_t id, const uint8_t page, uint8_t* b
 {
     struct fat16_file file;
     char filename[30];
+    int16_t foo;
+    int32_t offset = 2 + 6 * 8 * page; // Ein Eintrag ist 6 Byte groß, also passen davon 8 rein (48 byte);
 
     lookup (mac, id, filename);
 
-    if (!fat16_open_file_by_name (&file, filename))
+    if (1 != fat16_open_file_by_name (&file, filename))
       {
         debug_pgm (PSTR ("Could not open file!"));
         return false;
       }
 
-    file.pos = 2 + 6 * 8 * page; //buffer: Ein Eintrag ist 6 Byte groß, also passen davon 8 rein (48 byte);
+    if (1 != fat16_seek_file(&file, &offset, FAT16_SEEK_SET))
+      {
+        debug_pgm (PSTR ("Could not seek at dat pos!"));
+        return false;
+      }
 
     for (uint8_t i = 0; i < sizeof (log_entry) * 8; i++)
         buffer[i] = 0;
 
-    fat16_read_file (&file, buffer, sizeof (log_entry) * 8);
+    foo = fat16_read_file (&file, buffer, sizeof (log_entry) * 8);
+    byte_to_hex (foo >> 8);
+    byte_to_hex (foo);
 
-    return true;
+    if (0 < foo) {
+                return true;
+
+    }
+    
+    debug_pgm (PSTR("LOG END"));
+    return false;
 }

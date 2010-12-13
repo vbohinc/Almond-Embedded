@@ -169,14 +169,14 @@ static void downlink_work (void)
 
 static void downlink_log (void)
 {
-	debug_pgm ("Writing log for devices");
+	debug_pgm (PSTR("Writing log for devices"));
 
 	for (uint8_t k = 0; k < NUTS_LIST && valid(k); k++)
 		for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
 			if (device_list[k].extension_types[i] < GENERIC_ACTOR)
 				log_write (device_list[k].mac, i, get_time(), device_list[k].values_cache[i]);
 
-	debug_pgm ("Finished writing log for devices");
+	debug_pgm (PSTR("Finished writing log for devices"));
 }
 
 
@@ -203,7 +203,7 @@ static void downlink_create (const char *address)
 		return;
 	}
 
-	if (!bt_connect(device_list[k].mac)) {
+	if (!bt_connect(address)) {
 		debug_pgm(PSTR("Conn failed"));
 		bt_disconnect();
 		return;
@@ -244,8 +244,6 @@ void downlink_init(void)
 		debug_pgm(PSTR("Search failed"));
 }
 
-
-
 /* -----------------------------------------------------------------------
  * Debug
  * ----------------------------------------------------------------------- */
@@ -270,8 +268,6 @@ void createFakeDevices_full(void)
 	for (; i < EXTENSIONS_LIST; i++)
 		device_list[0].extension_types[i] = INVALID;
 }
-
-
 
 /* -----------------------------------------------------------------------
  * Init
@@ -326,40 +322,47 @@ int main(void)
 
 	CLK.CTRL = CLK_SCLKSEL_PLL_gc;
 
-	display_gui_bootup_update_callback(15);
-	rtc_init();
 	sei();
+	rtc_init();
 	set_time (1337);
-#if 0
-	uint8_t time;
-
-
-	while (true) {
-		if (time != get_time ()) {
-			time = get_time ();
-			debug_pgm (PSTR ("Tock!"));
-		}
-	}
-#endif
-
-	bt_init(display_gui_bootup_update_callback);	
-	downlink_init();
 
 	sd_init();
 	
-  if (fat16_init(0) != 1) {
-	    debug_pgm(PSTR("FAT16 init fail!"));
-      _delay_ms (1000);
-  }
+	if (fat16_init(0) != 1) {
+		debug_pgm(PSTR("FAT16 init fail!"));
+    	_delay_ms (1000);
+	}
+
+	bt_init(display_gui_bootup_update_callback);
 	
-#if 0
-  debug_pgm(PSTR("Fake devices:"));
+	for (uint8_t k = 0; k < NUTS_LIST; k++) {
+		for (uint8_t i = 0; i < 12; i++) 
+			device_list[k].mac[i] = 0;
+
+		device_list[k].class = 0;
+
+		for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
+			device_list[k].extension_types[i] = INVALID;
+		for (uint8_t i = 0; i < EXTENSIONS_LIST; i++)
+			device_list[k].values_cache[i] = 0;
+	}
+	
+	debug_pgm(PSTR("Downlink Init"));
+	downlink_init();
+	debug_pgm(PSTR("Entering Mainloop"));
+	
+#if 0	
+	display_print ("Fake devices:");
+	display_flip ();	
 	display_gui_bootup_update_callback(0);
 	createFakeDevices_address();
-	isplay_gui_bootup_update_callback(100);
+	bt_disconnect ();
+	display_gui_bootup_update_callback(100);
 #endif
 
 	squirrel_state_set(MASTER);
+
+	uint32_t time;
 
 	while (true) {
 
@@ -369,9 +372,9 @@ int main(void)
 			display_gui_bootup_update_callback(50);
 			downlink_log ();
 			display_gui_bootup_update_callback(100);
-
 			bt_disconnect ();
 			squirrel_state_set(SLAVE);
+			time = get_time ();
 		} else if (state == SLAVE || state == SLAVE_BUSY) {
 			uint8_t data[UPLINK_PACKAGE_LENGTH];
 
@@ -380,19 +383,14 @@ int main(void)
 				uplink_process_pkg(data);
 		}
 
-#ifdef DBUTTONS_REMOTE
-		enum display_gui_keys buttonlist[] =
-		    { display_gui_key_a, display_gui_key_a, display_gui_key_a };
-		for (uint8_t i = 0; i < 3; i++) {
-			set_gui_key_pressed(buttonlist[i]);
-			menu_update();
-		}
-#endif				//DBUTTONS_REMOTE
-
 		men_ret = menu_update();
 
 		if (men_ret == MEN_NEW_SEARCH)
 			squirrel_state_set(MASTER);
-	}
 
+		if ((time + 300) > get_time () || time < get_time()) {
+			squirrel_state_set(MASTER);
+			debug_pgm (PSTR("Switching to Master!"));
+		}
+	}
 }
