@@ -238,8 +238,19 @@ void downlink_init(void)
 			result[i][j] = 0;
 
 	if (bt_discover(result, display_gui_bootup_update_callback))
+	{
+		uint8_t count = 0;
+		for (uint8_t i = 0; i < 8; i++)
+		{
+			if (valid(result[i]))
+				count++;
+			else break;
+		}
+		menu_show_found_count(count);
 		for (uint8_t i = 0; i < 8; i++)
 			downlink_create(result[i]);
+
+	}
 	else
 		debug_pgm(PSTR("Search failed"));
 }
@@ -347,7 +358,6 @@ int main(void)
 			device_list[k].values_cache[i] = 0;
 	}
 	
-	debug_pgm(PSTR("Downlink Init"));
 	downlink_init();
 	debug_pgm(PSTR("Entering Mainloop"));
 	

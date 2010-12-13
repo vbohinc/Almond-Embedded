@@ -508,7 +508,6 @@ bt_discover(char result[8][12],
 			continue;	//the empty line before end of inquiry
 
 		if (strstr_P(buffer, PSTR("Inquiry End"))) {
-			error_putc('0' + pos);
 			fifo_clear(&in_fifo);
 			test();
 			return true;

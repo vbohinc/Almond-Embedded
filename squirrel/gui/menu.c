@@ -157,6 +157,16 @@ menu_main(void)
     }
 }
 
+void menu_show_found_count(uint8_t num_found)
+{
+	char str[30];
+	sprintf(str, "Found devices: %d");
+	display_clear();
+	display_draw_image(39,0,almond_logo_f1);
+	display_draw_string(14,DISPLAY_HEIGHT - 12,0,str);
+	display_flip();
+}
+
 enum menu_return menu_update(void)
 {
 	if (menu_new_return == MEN_NEW_SEARCH) //comes back here after a rescan

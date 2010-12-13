@@ -19,3 +19,5 @@ enum menu_return {
  * @return Value to indicate what squirrel can do next
  */
 enum menu_return menu_update(void);
+
+void menu_show_found_count(uint8_t num_found);
