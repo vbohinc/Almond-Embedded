@@ -58,7 +58,7 @@ uint8_t sd_raw_xmit_byte (uint8_t b)
    asm volatile ("nop")
 void spi_init()
 {
-    debug_pgm (PSTR ("spi_init"));
+    //debug_pgm (PSTR ("spi_init"));
 
     SPIPORT.DIR |= 0xB0;
     set_bit (SPIPORT.DIR, CS);

@@ -20,4 +20,5 @@ enum menu_return {
  */
 enum menu_return menu_update(void);
 
-void menu_show_found_count (uint8_t num_found);
+void menu_show_found_count(uint8_t num_found);
+void menu_device_query(uint8_t num_device);

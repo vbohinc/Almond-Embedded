@@ -192,6 +192,8 @@ static void downlink_create (const char *address)
 			break;
 	}
 
+	menu_device_query(k);
+
 	if (k == NUTS_LIST) {
 		debug_pgm(PSTR("Out of Memory"));
 		bt_disconnect();
@@ -242,7 +244,7 @@ void downlink_init(void)
 		uint8_t count = 0;
 		for (uint8_t i = 0; i < 8; i++)
 		{
-			if (valid(result[i]))
+			if (valid(i))
 				count++;
 			else break;
 		}
