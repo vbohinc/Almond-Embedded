@@ -142,6 +142,8 @@ static void downlink_work (void)
 
 	for (uint8_t k = 0; k < NUTS_LIST && valid(k); k++) {
 		
+		menu_device_query(k);
+
 		if (!bt_set_mode (BLUETOOTH_MASTER)) {
 			debug_pgm(PSTR("Couldn't set master!"));
 			return;
