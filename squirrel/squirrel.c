@@ -335,7 +335,7 @@ int main(void)
 
 	sei();
 	rtc_init();
-	set_time (1337);
+	set_time (0);
 
 	sd_init();
 	
@@ -398,7 +398,7 @@ int main(void)
 		if (men_ret == MEN_NEW_SEARCH)
 			squirrel_state_set(MASTER);
 
-		if ((time + 300) > get_time () || time < get_time()) {
+		if (time  < (get_time () - 300)) {
 			squirrel_state_set(MASTER);
 			debug_pgm (PSTR("Switching to Master!"));
 		}
